@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}
+{% if category == 'oslo' %}
+Oslo Børs - Aksjer
+{% else %}
+    {% if category == 'global' %}
+    Globale aksjer - Aksjer
+    {% else %}
+    {{ title if title else category }} - Aksjer
+    {% endif %}
+{% endif %}
+{% endblock %}
+
+{% block description %}
+{% if category == 'oslo' %}
+Komplett oversikt over alle selskaper på Oslo Børs. Sanntids aksjekurser, teknisk analyse og fundamental analyse for norske aksjer. EQNR, DNB, TEL og mer.
+{% else %}
+    {% if category == 'global' %}
+    Globale aksjer og internasjonale markeder. Følg AAPL, MSFT, TSLA og andre amerikanske og europeiske aksjer med AI-drevne analyser.
+    {% else %}
+    {{ title if title else category }} - Aksjeoversikt med teknisk og fundamental analyse
+    {% endif %}
+{% endif %}
+{% endblock %}
+
+{% block keywords %}
+{% if category == 'oslo' %}
+Oslo Børs, norske aksjer, EQNR, DNB, TEL, MOWI, NEL, aksjekurser Norge, børs Oslo
+{% else %}
+    {% if category == 'global' %}
+    globale aksjer, AAPL, MSFT, TSLA, NVDA, amerikanske aksjer, internasjonale markeder
+    {% else %}
+    {{ category }}, aksjer, aksjekurser, teknisk analyse
+    {% endif %}
+{% endif %}
+{% endblock %}
+
+    // Favoritt-knapper bruker global toggleFavorite fra base.html
+    window.initListFavorite = function(ticker, btn){
+        if (!window.toggleFavorite) { console.error('toggleFavorite missing'); return; }
+        toggleFavorite(ticker, {
+            button: btn,
+            favoritedText: '<i class="bi bi-star-fill"></i>',
+            unfavoritedText: '<i class="bi bi-star"></i>',
+            onSuccess: (d) => {
+                if (window.portfolioActionsManager && window.portfolioActionsManager.showToast) {
+                    window.portfolioActionsManager.showToast(d.message || (d.favorited ? `${ticker} lagt til i favoritter` : `${ticker} fjernet fra favoritter`), d.favorited ? 'success' : 'info');
+                }
+            },
+            onError: () => { if (window.portfolioActionsManager && window.portfolioActionsManager.showToast) window.portfolioActionsManager.showToast('Favoritt-feil', 'danger'); }
+        });
+    }
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-end {{ 'text-success' if stock.get('change_percent') and stock.get('change_percent')|float > 0 else 'text-danger' if stock.get('change_percent') and stock.get('change_percent')|float < 0 else '' }}">
+                                                {% if stock.get('change_percent') is not none %}
+                                                    {% set change = stock.get('change_percent')|float if stock.get('change_percent') is string else stock.get('change_percent', 0) %}
+                                                    {{ "{:+.2f}".format(change).replace('.', ',') }}%
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-end">
+                                                {% set volume = stock['volume']|float if stock['volume'] is string else stock['volume'] %}
+                                                {{ '{:,.0f}'.format(volume) if volume is not none and volume != '' else '0' }}
+                                            </td>
+                                            <td class="text-center">
+                                                {% set signal = stock.get('signal', 'HOLD') %}
+                                                {% if signal == 'BUY' %}
+                                                    <span class="badge bg-success">KJØP</span>
+                                                {% elif signal == 'SELL' %}
+                                                    <span class="badge bg-danger">SELG</span>
+                                                {% elif signal == 'STRONG_BUY' %}
+                                                    <span class="badge bg-success fw-bold">STERK KJØP</span>
+                                                {% elif signal == 'STRONG_SELL' %}
+                                                    <span class="badge bg-danger fw-bold">STERK SELG</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">HOLD</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <button class="btn btn-sm btn-success external-buy-btn" data-ticker="{{ ticker }}">
+                                                        <i class="bi bi-plus-circle"></i> Kjøp
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-warning btn-star-favorite text-white" style="background: #007bff; border: none;" title="Legg til favoritt" data-ticker="{{ ticker }}" onclick="toggleFavorite('{{ ticker }}', this)">
+                                                        <i class="bi bi-star"></i>
+                                                    </button>
+                                                    <a href="{{ url_for('analysis.technical', symbol=ticker) }}" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="bi bi-graph-up"></i> Analyse
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4">
+                                            <p class="text-muted">Ingen aksjer tilgjengelig</p>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.portfolioActionsManager && typeof window.portfolioActionsManager.initializeFavoriteButtonStates === 'function') {
+        window.portfolioActionsManager.initializeFavoriteButtonStates();
+    }
+    // External buy button functionality - redirect to external broker
+    document.querySelectorAll('.external-buy-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const ticker = this.dataset.ticker;
+            if (!ticker) return;
+            let externalUrl;
+            if (ticker.endsWith('.OL')) {
+                const norwegianTicker = ticker.replace('.OL', '');
+                externalUrl = `https://www.nordnet.no/market/stocks/${norwegianTicker}`;
+            } else {
+                externalUrl = `https://www.nordnet.no/market/stocks?query=${ticker}`;
+            }
+            window.open(externalUrl, '_blank', 'noopener,noreferrer');
+            setTimeout(() => {
+                this.innerHTML = '<i class="bi bi-plus-circle"></i> Kjøp';
+                this.disabled = false;
+            }, 2000);
+            if (window.portfolioActionsManager) {
+                window.portfolioActionsManager.showToast(`Åpner kjøpsside for ${ticker}`, 'success');
+            }
+        });
+    });
+
+    // Wire favorite buttons to global helper if present
+    document.querySelectorAll('.btn-star-favorite').forEach(btn => {
+        const ticker = btn.getAttribute('data-ticker');
+        if (!ticker) return;
+        btn.addEventListener('click', function(){
+            if (!window.toggleFavorite) { console.error('toggleFavorite missing'); return; }
+            toggleFavorite(ticker, {
+                button: btn,
+                favoritedText: '<i class="bi bi-star-fill"></i>',
+                unfavoritedText: '<i class="bi bi-star"></i>',
+                onSuccess: (d) => {
+                    if (window.portfolioActionsManager && window.portfolioActionsManager.showToast) {
+                        window.portfolioActionsManager.showToast(d.message || (d.favorited ? `${ticker} lagt til i favoritter` : `${ticker} fjernet fra favoritter`), d.favorited ? 'success' : 'info');
+                    }
+                },
+                onError: () => { if (window.portfolioActionsManager && window.portfolioActionsManager.showToast) window.portfolioActionsManager.showToast('Favoritt-feil', 'danger'); }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

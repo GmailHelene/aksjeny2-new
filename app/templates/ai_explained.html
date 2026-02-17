@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}AI Forklart - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h1 class="text-center mb-5">Hvordan fungerer vår AI?</h1>
+            
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h3 class="card-title">
+                                <i class="bi bi-cpu text-primary me-2"></i>
+                                Maskinlæring
+                            </h3>
+                            <p>Vår AI bruker avanserte maskinlæringsalgoritmer som er trent på millioner av historiske aksjebevegelser for å identifisere mønstre og trender.</p>
+                            <ul>
+                                <li>Nevrale nettverk for prediksjon</li>
+                                <li>Random Forest for klassifisering</li>
+                                <li>LSTM for tidsserieanalyse</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h3 class="card-title">
+                                <i class="bi bi-database text-primary me-2"></i>
+                                Datakilder
+                            </h3>
+                            <p>Vi samler og analyserer data fra flere pålitelige kilder:</p>
+                            <ul>
+                                <li>Sanntids markedsdata</li>
+                                <li>Finansielle rapporter</li>
+                                <li>Nyheter og sentiment</li>
+                                <li>Tekniske indikatorer</li>
+                                <li>Makroøkonomiske data</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h3 class="card-title">
+                                <i class="bi bi-shield-check text-primary me-2"></i>
+                                Nøyaktighet
+                            </h3>
+                            <p>Vår AI har en gjennomsnittlig nøyaktighet på:</p>
+                            <div class="progress mb-3" style="height: 25px;">
+                                <div class="progress-bar bg-success" style="width: 78%">78% for kortsiktige prediksjoner</div>
+                            </div>
+                            <div class="progress mb-3" style="height: 25px;">
+                                <div class="progress-bar bg-info" style="width: 85%">85% for trendidentifikasjon</div>
+                            </div>
+                            <p class="text-muted small">Basert på historisk testing over 5 år</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h3 class="card-title">
+                                <i class="bi bi-arrow-repeat text-primary me-2"></i>
+                                Kontinuerlig Forbedring
+                            </h3>
+                            <p>Vår AI lærer og forbedres kontinuerlig:</p>
+                            <ul>
+                                <li>Daglig retrening med nye data</li>
+                                <li>Tilbakemeldinger fra brukere</li>
+                                <li>A/B-testing av modeller</li>
+                                <li>Kvartalsvis modellgjennomgang</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-5">
+                <a href="{{ url_for('main.register') }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-rocket me-2"></i>Prøv AI-Analyse Gratis
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title|default('Aksjeradar Blogg - AI-drevet Aksjeanalyse og Markedsinnsikt') }}{% endblock %}
+
+{% block head %}
+<meta name="description" content="Få daglige innsikter om aksjer, teknisk analyse og AI-prediksjoner. Norges mest avanserte aksjeblogg med data-drevet innhold og ekspertanalyser.">
+<meta name="keywords" content="aksjeanalyse, teknisk analyse, AI aksjer, Oslo Børs, amerikanske aksjer, investeringstips, markedsanalyse">
+<meta property="og:title" content="Aksjeradar Blogg - AI-drevet Markedsanalyse">
+<meta property="og:description" content="Avansert aksjeanalyse og markedsinnsikt drevet av kunstig intelligens">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ request.url }}">
+<meta property="og:image" content="{{ url_for('static', filename='images/blog/og-image.jpg', _external=True) }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Aksjeradar Blogg - AI-drevet Markedsanalyse">
+<meta name="twitter:description" content="Avansert aksjeanalyse og markedsinnsikt drevet av kunstig intelligens">
+
+<!-- Schema.org markup for SEO -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  "name": "Aksjeradar Blogg",
+  "description": "AI-drevet aksjeanalyse og markedsinnsikt",
+  "url": "{{ url_for('seo_content.blog_index', _external=True) }}",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Aksjeradar",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "{{ url_for('static', filename='images/logo-512.png', _external=True) }}"
+    }
+  }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="jumbotron bg-primary text-white p-5 rounded-3">
+                <div class="row align-items-center">
+                    <div class="col-lg-8">
+                        <h1 class="display-4 fw-bold mb-3">🧠 AI-drevet Markedsanalyse</h1>
+                        <p class="lead mb-4">Få daglige innsikter, teknisk analyse og prediksjoner basert på avanserte algoritmer og maskinlæring. Norges mest sofistikerte aksjeblogg.</p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge bg-light text-dark px-3 py-2">Teknisk Analyse</span>
+                            <span class="badge bg-light text-dark px-3 py-2">AI Prediksjoner</span>
+                            <span class="badge bg-light text-dark px-3 py-2">Oslo Børs</span>
+                            <span class="badge bg-light text-dark px-3 py-2">Globale Markeder</span>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 text-center">
+                        <i class="bi bi-graph-up-arrow display-1 opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Navigation -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                <a href="#aksjetips" class="btn btn-outline-primary">📈 Aksjetips</a>
+                <a href="#teknisk-analyse" class="btn btn-outline-success">📊 Teknisk Analyse</a>
+                <a href="#ai-analyse" class="btn btn-outline-info">🤖 AI-Analyse</a>
+                <a href="#markedsrapport" class="btn btn-outline-warning">📰 Markedsrapporter</a>
+                <a href="{{ url_for('seo_content.weekly_market_report') }}" class="btn btn-primary">🔥 Ukentlig Rapport</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Articles -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="h3 mb-4">🌟 Utvalgte Artikler</h2>
+        </div>
+        {% for post in posts[:2] %}
+        <div class="col-lg-6 mb-4">
+            <article class="card h-100 border-0 shadow-sm hover-lift">
+                <div class="card-img-top bg-gradient position-relative" style="height: 200px;">
+                    <div class="position-absolute top-0 start-0 p-3">
+                        <span class="badge bg-primary">{{ post.category }}</span>
+                    </div>
+                    <div class="position-absolute bottom-0 end-0 p-3">
+                        <small class="text-white bg-dark px-2 py-1 rounded">{{ post.read_time }}</small>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center h-100">
+                        <i class="bi bi-graph-up fs-1 text-white opacity-75"></i>
+                    </div>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <h3 class="card-title h5">
+                        <a href="{{ url_for('seo_content.blog_post', slug=post.slug) }}" class="text-decoration-none">
+                            {{ post.title }}
+                        </a>
+                    </h3>
+                    <p class="card-text text-muted flex-grow-1">{{ post.excerpt }}</p>
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <small class="text-muted">{{ post.date.strftime('%d. %b %Y') }}</small>
+                        <a href="{{ url_for('seo_content.blog_post', slug=post.slug) }}" class="btn btn-primary btn-sm">
+                            Les mer <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </article>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Article Categories -->
+    <div class="row">
+        <!-- Aksjetips Section -->
+        <div class="col-lg-6 mb-5" id="aksjetips">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h4">📈 Aksjetips & Anbefalinger</h2>
+                <a href="#" class="text-primary text-decoration-none">Se alle →</a>
+            </div>
+            {% for post in posts %}
+                {% if post.category == 'Aksjetips' %}
+                <article class="border-bottom pb-3 mb-3">
+                    <h3 class="h6">
+                        <a href="{{ url_for('seo_content.blog_post', slug=post.slug) }}" class="text-decoration-none">
+                            {{ post.title }}
+                        </a>
+                    </h3>
+                    <p class="text-muted small mb-1">{{ post.excerpt[:100] }}...</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">{{ post.date.strftime('%d. %b') }}</small>
+                        <span class="badge bg-success">{{ post.read_time }}</span>
+                    </div>
+                </article>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- Teknisk Analyse Section -->
+        <div class="col-lg-6 mb-5" id="teknisk-analyse">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h4">📊 Teknisk Analyse</h2>
+                <a href="{{ url_for('seo_content.technical_analysis_oslo') }}" class="text-primary text-decoration-none">Oslo Børs →</a>
+            </div>
+            {% for post in posts %}
+                {% if post.category == 'Utdanning' %}
+                <article class="border-bottom pb-3 mb-3">
+                    <h3 class="h6">
+                        <a href="{{ url_for('seo_content.blog_post', slug=post.slug) }}" class="text-decoration-none">
+                            {{ post.title }}
+                        </a>
+                    </h3>
+                    <p class="text-muted small mb-1">{{ post.excerpt[:100] }}...</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">{{ post.date.strftime('%d. %b') }}</small>
+                        <span class="badge bg-info">{{ post.read_time }}</span>
+                    </div>
+                </article>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- AI & Technology Section -->
+    <div class="row mb-5" id="ai-analyse">
+        <div class="col-12">
+            <div class="card bg-light border-0">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-lg-8">
+                            <h2 class="h4 mb-3">🤖 AI-revolusjon i Finansverdenen</h2>
+                            <p class="text-muted mb-3">Lær hvordan kunstig intelligens og maskinlæring endrer aksjehandel og investeringsstrategier.</p>
+                            <a href="{{ url_for('seo_content.ai_prediction_stocks') }}" class="btn btn-primary">
+                                Utforsk AI-prediksjoner <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                        <div class="col-lg-4 text-center">
+                            <i class="bi bi-cpu display-1 text-primary opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Reports Section -->
+    <div class="row mb-5" id="markedsrapport">
+        <div class="col-12">
+            <h2 class="h4 mb-4">📰 Markedsrapporter & Analyser</h2>
+        </div>
+        <div class="col-lg-4 mb-3">
+            <div class="card border-primary">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">📊 Ukentlig Rapport</h5>
+                    <p class="card-text small">Omfattende AI-analyse av Oslo Børs og globale markeder hver uke.</p>
+                    <a href="{{ url_for('seo_content.weekly_market_report') }}" class="btn btn-primary btn-sm">Les rapport</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-3">
+            <div class="card border-success">
+                <div class="card-body">
+                    <h5 class="card-title text-success">🎯 Teknisk Oversikt</h5>
+                    <p class="card-text small">Daglig teknisk analyse av de mest handlede aksjene på Oslo Børs.</p>
+                    <a href="{{ url_for('seo_content.technical_analysis_oslo') }}" class="btn btn-success btn-sm">Se analyse</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-3">
+            <div class="card border-info">
+                <div class="card-body">
+                    <h5 class="card-title text-info">🔮 AI Prediksjoner</h5>
+                    <p class="card-text small">Maskinlæringsdrevne prognoser for kursutviklingen fremover.</p>
+                    <a href="{{ url_for('seo_content.ai_prediction_stocks') }}" class="btn btn-info btn-sm">Se prediksjoner</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Newsletter Signup -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center py-5">
+                    <h2 class="h3 mb-3">📧 Få våre analyser direkte i innboksen</h2>
+                    <p class="mb-4">Meld deg på vårt ukentlige nyhetsbrev og få de beste aksjeinnsiktene levert rett til deg.</p>
+                    <form class="row g-3 justify-content-center" style="max-width: 500px; margin: 0 auto;">
+                        <div class="col-8">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="email" class="form-control" placeholder="Din e-postadresse" required>
+                        </div>
+                        <div class="col-4">
+                            <button type="submit" class="btn btn-light w-100">Meld meg på</button>
+                        </div>
+                    </form>
+                    <small class="d-block mt-2 opacity-75">Vi sender aldri spam og du kan melde deg av når som helst.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+}
+
+.bg-primary {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+}
+
+.bg-gradient {
+    background:  background: #344686;
+;
+}
+
+.jumbotron {
+    border-radius: 15px !important;
+}
+
+.card {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.badge {
+    border-radius: 6px;
+}
+
+article h3 a:hover {
+    color: #0d6efd !important;
+    transition: color 0.3s ease;
+}
+</style>
+
+<!-- SEO-optimalized internal linking -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "itemListElement": [
+    {% for post in posts %}
+    {
+      "@type": "ListItem",
+      "position": {{ loop.index }},
+      "item": {
+        "@type": "BlogPosting",
+        "headline": "{{ post.title }}",
+        "description": "{{ post.excerpt }}",
+        "url": "{{ url_for('seo_content.blog_post', slug=post.slug, _external=True) }}",
+        "datePublished": "{{ post.date.isoformat() }}",
+        "author": {
+          "@type": "Organization",
+          "name": "Aksjeradar"
+        }
+      }
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Track user engagement for SEO
+document.addEventListener('DOMContentLoaded', function() {
+    // Track time spent on page
+    let timeOnPage = 0;
+    const timer = setInterval(() => {
+        timeOnPage += 1;
+        if (timeOnPage % 30 === 0) { // Every 30 seconds
+            // Could send analytics data here
+            console.log(`User on page for ${timeOnPage} seconds`);
+        }
+    }, 1000);
+    
+    // Track scroll depth
+    let maxScroll = 0;
+    window.addEventListener('scroll', () => {
+        const scrollPercent = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+        if (scrollPercent > maxScroll) {
+            maxScroll = scrollPercent;
+            if (maxScroll % 25 === 0) { // Every 25%
+                console.log(`User scrolled ${maxScroll}%`);
+            }
+        }
+    });
+    
+    // Clean up on page unload
+    window.addEventListener('beforeunload', () => {
+        clearInterval(timer);
+    });
+});
+</script>
+{% endblock %}

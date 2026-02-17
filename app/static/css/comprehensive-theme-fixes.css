@@ -1,0 +1,128 @@
+/* Comprehensive Theme Fixes - August 24, 2025 */
+
+/* Unified background color #252525 for all dark backgrounds */
+.navbar,
+.navbar-nav,
+.dropdown-menu,
+.navbar-collapse,
+.navbar-nav .dropdown-menu {
+    background-color: #252525 !important;
+    background: #252525 !important;
+}
+
+
+
+/* Card header styling - removing problematic rules */
+.card-header {
+    /* Remove forced background colors */
+    background: none !important;
+    background-color: transparent !important;
+}
+
+.card-header h5,
+.card-header h6,
+.card-header .small {
+    /* Color inherited from parent */
+    color: inherit !important;
+}
+
+
+.card-header a {
+    /* Color inherited from parent */
+    color: inherit !important;
+}
+
+.card-header .bi {
+    /* Icons inherit color from parent */
+    color: inherit !important;
+}
+
+/* Text muted color fixes */
+.dark-bg small.text-muted,
+.dark-bg .small.text-muted,
+[class*="bg-dark"] small.text-muted,
+[class*="bg-dark"] .small.text-muted,
+.bg-primary small.text-muted,
+.bg-primary .small.text-muted {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Alert and card text-muted fixes */
+.alert .text-muted,
+.card.bg-light .text-muted,
+.card-body .text-muted {
+    /* Remove forced colors */
+    color: inherit !important;
+}
+
+/* Coverage header styling */
+.coverage-header {
+    background: steelblue !important;
+}
+
+/* Card header with light background needs dark text */
+.card-header.bg-primary {
+    color: #000000 !important;
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Dropdown item styling - white text for both normal and hover states */
+.dropdown-item {
+    color: #ffffff !important;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Navigation hover states - WHITE hover instead of blue */
+.nav-link:hover {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Main navigation links hover - force white color */
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link:focus,
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link:focus {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Remove problematic button active background */
+.btn-check:checked+.btn, 
+.btn.active, 
+.btn.show, 
+.btn:first-child:active, 
+:not(.btn-check)+.btn:active {
+    background-color: transparent !important;
+}
+
+/* Dark theme text contrast fixes */
+.dark-theme .text-muted,
+[class*="bg-dark"] .text-muted {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Card header colors in dark theme */
+.dark-theme .card-header,
+[class*="bg-dark"] .card-header {
+    background-color: #252525 !important;
+    color: #ffffff !important;
+}
+
+/* Ensure all dark backgrounds use #282828 */
+[class*="bg-dark"],
+.bg-dark,
+.dark-bg,
+.dark-theme,
+.navbar-dark,
+[style*="background-color: #1"],
+[style*="background-color: #2"],
+[style*="background-color: #3"] {
+    background-color: #252525 !important;
+}

@@ -1,0 +1,271 @@
+{% extends 'base.html' %}
+
+{% block title %}Priser - Aksjeradar{% endblock %}
+
+{% block content %}
+<style>
+/* Fix pricing banner margin for "Mest populær" */
+.pricing-card .badge {
+    margin-top: 0.75rem !important;
+    margin-bottom: 0.5rem !important;
+    padding: 0.5rem 1rem !important;
+}
+
+.pricing-card .card-header {
+    padding-top: 1.5rem !important;
+    position: relative;
+}
+
+.pricing-card .badge.position-absolute {
+    top: -0.5rem !important;
+}
+</style>
+
+<div class="container-fluid py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold">Velg din plan</h1>
+        <p class="lead text-muted">Start gratis, oppgrader når du vil</p>
+    </div>
+    
+    <div class="row justify-content-center g-4">
+        <!-- Gratis Plan -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-light text-center py-4">
+                    <h3 class="mb-0 text-dark">Gratis</h3>
+                    <div class="display-4 fw-bold my-3 text-dark">
+                        kr 0
+                        <span class="fs-6 fw-normal text-muted">/måned</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Begrensede aksje-analyser (5/dag)
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Grunnleggende AI-score
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Demo-tilgang til alle funksjoner
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Begrenset watchlist (5 aksjer)
+                        </li>
+                        <li class="mb-3 text-muted">
+                            <i class="bi bi-x-circle me-2"></i>
+                            Ubegrensede analyser
+                        </li>
+                        <li class="mb-3 text-muted">
+                            <i class="bi bi-x-circle me-2"></i>
+                            Avansert porteføljeanalyse
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-footer bg-white border-0 p-4">
+                    <a href="{{ url_for('main.register') }}" class="btn btn-outline-primary w-100" style="color: #0d6efd !important; border-color: #0d6efd !important; background-color: white !important;">
+                        Kom i gang gratis
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Plan -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 shadow-sm border-primary">
+                <div class="position-absolute top-0 start-50 translate-middle">
+                    <span class="badge bg-primary px-3 py-2">Mest populær</span>
+                </div>
+                <div class="card-header bg-primary text-center py-4" style="background-color: #0d6efd !important;">
+                    <h3 class="mb-0 text-white">Månedlig</h3>
+                    <div class="display-4 fw-bold my-3 text-white">
+                        kr 399
+                        <span class="fs-6 fw-normal text-white-50">/måned</span>
+                    </div>
+                    <span class="badge bg-warning text-dark">Mest populær</span>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Ubegrensede aksje-analyser
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Full AI-analyse med signaler
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Avansert porteføljeanalyse
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            E-postvarsler og ukentlig rapport
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Ubegrenset watchlist
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            API-tilgang
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Ingen bindingstid
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-footer bg-white border-0 p-4">
+                    <a href="{{ url_for('pricing.upgrade', tier='monthly') }}" class="btn btn-primary w-100" style="background-color: #0d6efd !important; border-color: #0d6efd !important; color: white !important;">
+                        Velg Månedlig
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Årlig Plan -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 shadow-sm border-success">
+                <div class="card-header bg-success text-center py-4">
+                    <h3 class="mb-0 text-dark">Årlig</h3>
+                    <div class="display-4 fw-bold my-3 text-dark">
+                        kr 2499
+                        <span class="fs-6 fw-normal text-dark">/år</span>
+                    </div>
+                    <span class="badge bg-warning text-dark">Spar 25%</span>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            <strong>Alt fra månedlig abonnement</strong>
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            <strong>Spar 1789 kr per år</strong>
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Prioritert kundesupport
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Eksklusive markedsrapporter
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Beta-tilgang til nye funksjoner
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Kun 249 kr/måned i gjennomsnitt
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-footer bg-white border-0 p-4">
+                    <a href="{{ url_for('pricing.upgrade', tier='yearly') }}" class="btn btn-success w-100" style="background-color: #198754 !important; border-color: #198754 !important; color: white !important;">
+                        Velg Årlig (Spar 25%)
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team Plan -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 shadow-sm border-info">
+                <div class="card-header bg-info text-white text-center py-4">
+                    <h3 class="mb-0">Team</h3>
+                    <div class="display-4 fw-bold my-3">
+                        Kontakt
+                        <span class="fs-6 fw-normal">oss</span>
+                    </div>
+                    <span class="badge bg-warning text-dark">For bedrifter</span>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            <strong>Alt fra årlig abonnement</strong>
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            <strong>Flere brukere per konto</strong>
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Sentralisert administrasjon
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Dedikert kundeservice
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Tilpassede rapporter
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Volumrabatter
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-footer bg-white border-0 p-4">
+                    <a href="{{ url_for('main.contact') }}" class="btn btn-info w-100" style="background-color: #0dcaf0 !important; border-color: #0dcaf0 !important; color: white !important;">
+                        Kontakt oss
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="row mt-5">
+        <div class="col-lg-8 mx-auto">
+            <h2 class="text-center mb-4">Ofte stilte spørsmål</h2>
+            <div class="accordion" id="pricingFAQ">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                            Kan jeg avbryte når som helst?
+                        </button>
+                    </h2>
+                    <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
+                        <div class="accordion-body">
+                            Ja, du kan avbryte abonnementet ditt når som helst. Hvis du avslutter abonnementet, løper det ut ved slutten av perioden du har betalt for (månedlig eller årlig), og fornyes ikke automatisk.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                            Hvilke betalingsmetoder aksepterer dere?
+                        </button>
+                    </h2>
+                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
+                        <div class="accordion-body">
+                            Vi aksepterer kun betalingskort (Visa, Mastercard, American Express) via vår sikre betalingspartner Stripe. Alle betalinger behandles sikkert og kryptert.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                            Hva skjer når jeg avslutter abonnementet?
+                        </button>
+                    </h2>
+                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
+                        <div class="accordion-body">
+                            Når du avslutter abonnementet fortsetter du å ha tilgang til alle premium-funksjoner ut den perioden du har betalt for. Etter det vil tilgangen din gå tilbake til gratis demo-modus. Ingen automatisk fornyelse skjer etter avslutning.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

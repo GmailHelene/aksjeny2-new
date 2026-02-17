@@ -1,0 +1,904 @@
+{% extends "base.html" %}
+
+{% block title %}Varselinnstillinger{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">⚙️ Varselinnstillinger</h2>
+                <a href="{{ url_for('notifications_web.notifications_page') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left"></i> Tilbake til varsler
+                </a>
+            </div>
+
+            <form id="settings-form">
+                <!-- Email Notifications -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">📧 E-postvarsler</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input class="form-check-input" type="checkbox" id="email_enabled" name="email_enabled">
+                                <label class="form-check-label" for="email_enabled">
+                                    <strong>Aktiver e-postvarsler</strong>
+                                </label>
+                            </div>
+                            <div class="form-text">Hovedbryter for alle e-postvarsler</div>
+                        </div>
+
+                        <div id="email-options" class="border-start border-3 border-primary ps-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="email_price_alerts" name="email_price_alerts">
+                                        <label class="form-check-label" for="email_price_alerts">
+                                            💰 Prisvarsler
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="email_ai_predictions" name="email_ai_predictions">
+                                        <label class="form-check-label" for="email_ai_predictions">
+                                            🤖 AI-prediksjoner
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="email_portfolio_updates" name="email_portfolio_updates">
+                                        <label class="form-check-label" for="email_portfolio_updates">
+                                            📈 Porteføljeoppdateringer
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="email_news_alerts" name="email_news_alerts">
+                                        <label class="form-check-label" for="email_news_alerts">
+                                            📰 Nyhetsvarsler
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="email_market_alerts" name="email_market_alerts">
+                                        <label class="form-check-label" for="email_market_alerts">
+                                            🌍 Markedsvarsler
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Push Notifications -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">📱 Push-notifikasjoner</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="push_enabled" name="push_enabled">
+                                <label class="form-check-label" for="push_enabled">
+                                    <strong>Aktiver push-notifikasjoner</strong>
+                                </label>
+                            </div>
+                            <div class="form-text">Få øyeblikkelige varsler direkte til enheten din</div>
+                        </div>
+
+                        <div id="push-options" class="border-start border-3 border-success ps-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="push_price_alerts" name="push_price_alerts">
+                                        <label class="form-check-label" for="push_price_alerts">
+                                            💰 Prisvarsler
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="push_ai_predictions" name="push_ai_predictions">
+                                        <label class="form-check-label" for="push_ai_predictions">
+                                            🤖 AI-prediksjoner
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="push_portfolio_updates" name="push_portfolio_updates">
+                                        <label class="form-check-label" for="push_portfolio_updates">
+                                            📈 Porteføljeoppdateringer
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="push_news_alerts" name="push_news_alerts">
+                                        <label class="form-check-label" for="push_news_alerts">
+                                            📰 Nyhetsvarsler
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="push_market_alerts" name="push_market_alerts">
+                                        <label class="form-check-label" for="push_market_alerts">
+                                            🌍 Markedsvarsler
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info mt-3" id="push-status">
+                                <i class="bi bi-info-circle"></i>
+                                <span id="push-status-text">Sjekker push-notifikasjonsstatus...</span>
+                                <button type="button" class="btn btn-sm btn-outline-primary ms-2" id="enable-push-btn" style="display: none;" onclick="enablePushNotifications()">
+                                    Aktiver push-notifikasjoner
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quiet Hours -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">🌙 Stille timer</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label for="quiet_hours_start" class="form-label">Fra klokkeslett</label>
+                                <input type="time" class="form-control" id="quiet_hours_start" name="quiet_hours_start">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="quiet_hours_end" class="form-label">Til klokkeslett</label>
+                                <input type="time" class="form-control" id="quiet_hours_end" name="quiet_hours_end">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="timezone" class="form-label">Tidssone</label>
+                                <select class="form-select" id="timezone" name="timezone">
+                                    <option value="Europe/Oslo">Oslo (CET/CEST)</option>
+                                    <option value="UTC">UTC</option>
+                                    <option value="America/New_York">New York (EST/EDT)</option>
+                                    <option value="Asia/Tokyo">Tokyo (JST)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-text">I løpet av stille timer vil du ikke motta push-notifikasjoner (e-post påvirkes ikke)</div>
+                    </div>
+                </div>
+
+                <!-- Save Button -->
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="button" class="btn btn-outline-secondary me-md-2" onclick="resetToDefaults()">
+                        Tilbakestill til standard
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Lagre innstillinger
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Price Alerts -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">💰 Prisvarsler</h5>
+                </div>
+                <div class="card-body">
+                    <div id="price-alerts-list">
+                        <div class="text-center py-3" id="alerts-loading">
+                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                            <small class="text-muted ms-2">Laster...</small>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-outline-primary btn-sm w-100 mt-3" data-bs-toggle="modal" data-bs-target="#createAlertModal">
+                        <i class="bi bi-plus-circle"></i> Opprett nytt prisvarsel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">💡 Tips</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="small mb-0">
+                        <li>Aktiver push-notifikasjoner for raskeste varsler</li>
+                        <li>Bruk stille timer for å unngå varsler om natten</li>
+                        <li>Prisvarsler utløses kun én gang per varsel</li>
+                        <li>AI-prediksjoner sendes daglig for dine favorittaksjer</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Price Alert Modal -->
+<div class="modal fade" id="createAlertModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Opprett prisvarsel</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="create-alert-form">
+                    <div class="mb-3">
+                        <label for="alert_ticker" class="form-label">Aksje (ticker)</label>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="text" class="form-control" id="alert_ticker" name="ticker" placeholder="EQNR.OL" required>
+                        <div class="form-text">Skriv inn ticker-symbol, f.eks. EQNR.OL for Equinor</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="alert_type" class="form-label">Varselstype</label>
+                        <select class="form-select" id="alert_type" name="alert_type" required>
+                            <option value="">Velg type</option>
+                            <option value="above">Over pris</option>
+                            <option value="below">Under pris</option>
+                            <option value="change_percent">Prosentvis endring</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3" id="price-input">
+                        <label for="threshold_price" class="form-label">Grensepris (NOK)</label>
+                        <input type="number" class="form-control" id="threshold_price" name="threshold_price" step="0.01" min="0">
+                    </div>
+                    
+                    <div class="mb-3" id="percent-input" style="display: none;">
+                        <label for="threshold_percent" class="form-label">Endring (%)</label>
+                        <input type="number" class="form-control" id="threshold_percent" name="threshold_percent" step="0.1" min="0">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="notify_email" name="notify_email" checked>
+                            <label class="form-check-label" for="notify_email">
+                                Send e-post
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="notify_push" name="notify_push" checked>
+                            <label class="form-check-label" for="notify_push">
+                                Send push-notifikasjon
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Avbryt</button>
+                <button type="button" class="btn btn-primary" onclick="createPriceAlert()">Opprett varsel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentSettings = {};
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadSettings();
+    loadPriceAlerts();
+    checkPushNotificationStatus();
+    
+    // Handle alert type change
+    document.getElementById('alert_type').addEventListener('change', function() {
+        const priceInput = document.getElementById('price-input');
+        const percentInput = document.getElementById('percent-input');
+        
+        if (this.value === 'change_percent') {
+            priceInput.style.display = 'none';
+            percentInput.style.display = 'block';
+            document.getElementById('threshold_price').required = false;
+            document.getElementById('threshold_percent').required = true;
+        } else {
+            priceInput.style.display = 'block';
+            percentInput.style.display = 'none';
+            document.getElementById('threshold_price').required = true;
+            document.getElementById('threshold_percent').required = false;
+        }
+    });
+    
+    // Handle form submission
+    document.getElementById('settings-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Lagrer...';
+        
+        try {
+            await saveSettings();
+            
+            // Reload settings after save
+            await loadSettings();
+            
+        } catch(error) {
+            console.error('Error saving settings:', error);
+            showError('Feil ved lagring av innstillinger');
+        } finally {
+            // Restore button state
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    });
+    
+    // Handle email enabled toggle
+    document.getElementById('email_enabled').addEventListener('change', function() {
+        const options = document.getElementById('email-options');
+        options.style.opacity = this.checked ? '1' : '0.5';
+        document.querySelectorAll('#email-options input').forEach(input => {
+            input.disabled = !this.checked;
+        });
+    });
+    
+    // Handle push enabled toggle
+    document.getElementById('push_enabled').addEventListener('change', function() {
+        const options = document.getElementById('push-options');
+        options.style.opacity = this.checked ? '1' : '0.5';
+        document.querySelectorAll('#push-options input').forEach(input => {
+            input.disabled = !this.checked;
+        });
+    });
+    
+    // Handle in-app enabled toggle
+    document.getElementById('inapp_enabled')?.addEventListener('change', function() {
+        const options = document.getElementById('inapp-options');
+        if (options) {
+            options.style.opacity = this.checked ? '1' : '0.5';
+            document.querySelectorAll('#inapp-options input').forEach(input => {
+                input.disabled = !this.checked;
+            });
+        }
+    });
+});
+
+async function loadSettings() {
+    try {
+        const response = await fetch('/notifications/api/settings', {
+            headers: {
+                'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to load settings');
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            currentSettings = data.settings;
+            populateForm(data.settings);
+        } else {
+            showError('Feil ved lasting av innstillinger: ' + data.error);
+        }
+    } catch (error) {
+        showError('Nettverksfeil ved lasting av innstillinger');
+        console.error('Error loading settings:', error);
+    }
+}
+
+function populateForm(settings) {
+    // Set defaults if settings is undefined or null
+    settings = settings || {};
+    
+    // Handle basic settings
+    Object.keys(settings).forEach(key => {
+        const element = document.getElementById(key);
+        if (element) {
+            if (element.type === 'checkbox') {
+                element.checked = Boolean(settings[key]);
+            } else {
+                element.value = settings[key] || '';
+            }
+        }
+    });
+    
+    // Set default values for checkboxes if not present in settings
+    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        if (!settings.hasOwnProperty(checkbox.id)) {
+            checkbox.checked = checkbox.id.includes('enabled'); // Enable by default for main toggles
+        }
+    });
+    
+    // Special handling for quiet hours
+    if (settings.quiet_hours_start) {
+        document.getElementById('quiet_hours_start').value = settings.quiet_hours_start;
+    }
+    if (settings.quiet_hours_end) {
+        document.getElementById('quiet_hours_end').value = settings.quiet_hours_end; 
+    }
+    
+    // Set timezone
+    const timezone = document.getElementById('timezone');
+    if (timezone) {
+        timezone.value = settings.timezone || 'Europe/Oslo';
+    }
+    
+    // Trigger change events for toggles
+    const emailEnabled = document.getElementById('email_enabled');
+    const pushEnabled = document.getElementById('push_enabled');
+    const inappEnabled = document.getElementById('inapp_enabled');
+    
+    if (emailEnabled) emailEnabled.dispatchEvent(new Event('change'));
+    if (pushEnabled) pushEnabled.dispatchEvent(new Event('change'));
+    if (inappEnabled) inappEnabled.dispatchEvent(new Event('change'));
+}
+
+async function saveSettings() {
+    const formData = new FormData(document.getElementById('settings-form'));
+    const settings = {};
+    
+    // Convert form data to object
+    for (let [key, value] of formData.entries()) {
+        const element = document.getElementById(key);
+        if (element && element.type === 'checkbox') {
+            settings[key] = element.checked;
+        } else {
+            settings[key] = value;
+        }
+    }
+    
+    // Handle unchecked checkboxes - explicitly add all checkbox values
+    document.querySelectorAll('#settings-form input[type="checkbox"]').forEach(checkbox => {
+        settings[checkbox.id] = checkbox.checked;
+    });
+    
+    // Add CSRF token to request
+    const csrfToken = document.querySelector('input[name="csrf_token"]')?.value;
+    
+    try {
+        const response = await fetch('/notifications/api/settings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken || ''
+            },
+            body: JSON.stringify(settings)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showSuccess('Innstillinger lagret!');
+            currentSettings = settings;
+            return true;
+        } else {
+            showError('Feil ved lagring av innstillinger: ' + (data.error || 'Ukjent feil'));
+            return false;
+        }
+    } catch (error) {
+        console.error('Error saving settings:', error);
+        showError('Nettverksfeil ved lagring av innstillinger: ' + error.message);
+        return false;
+    }
+}
+
+async function loadPriceAlerts() {
+    const loading = document.getElementById('alerts-loading');
+    const container = document.getElementById('price-alerts-list');
+    
+    // Add timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+        if (loading && loading.style.display !== 'none') {
+            loading.style.display = 'none';
+            if (container) {
+                container.innerHTML = '<p class="text-muted small">Prisvarsler er midlertidig utilgjengelig. Prøv igjen senere.</p>';
+            }
+        }
+    }, 8000); // 8 second timeout
+    
+    try {
+        const response = await fetch('/notifications/api/price_alerts', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('input[name="csrf_token"]')?.value || ''
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        clearTimeout(timeoutId); // Clear timeout on successful response
+        
+        if (data.success) {
+            renderPriceAlerts(data.alerts || []);
+            if (data.fallback) {
+                showInfo(data.message || 'Prisvarsler lastet med fallback-data');
+            }
+        } else {
+            showError('Feil ved lasting av prisvarsler: ' + (data.error || 'Ukjent feil'));
+            renderPriceAlerts([]);
+        }
+    } catch (error) {
+        clearTimeout(timeoutId); // Clear timeout on error
+        console.error('Error loading price alerts:', error);
+        showError('Nettverksfeil ved lasting av prisvarsler: ' + error.message);
+        renderPriceAlerts([]);
+    }
+}
+
+function renderPriceAlerts(alerts) {
+    const container = document.getElementById('price-alerts-list');
+    const loading = document.getElementById('alerts-loading');
+    
+    loading.style.display = 'none';
+    
+    if (alerts.length === 0) {
+        container.innerHTML = '<p class="text-muted small">Ingen prisvarsler opprettet ennå.</p>';
+        return;
+    }
+    
+    const html = alerts.map(alert => {
+        const statusBadge = alert.is_triggered ? 
+            '<span class="badge bg-success">Utløst</span>' : 
+            (alert.is_active ? '<span class="badge bg-primary">Aktiv</span>' : '<span class="badge bg-secondary">Inaktiv</span>');
+        
+        const threshold = alert.alert_type === 'change_percent' ? 
+            `${alert.threshold_percent}%` : 
+            `${alert.threshold_price} kr`;
+            
+        return `
+            <div class="border rounded p-2 mb-2">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong>${alert.ticker}</strong>
+                        <br>
+                        <small class="text-muted">
+                            ${alert.alert_type === 'above' ? 'Over' : (alert.alert_type === 'below' ? 'Under' : 'Endring')} ${threshold}
+                        </small>
+                    </div>
+                    <div class="text-end">
+                        ${statusBadge}
+                        <br>
+                        <button type="button" class="btn btn-outline-danger btn-sm mt-1" onclick="deletePriceAlert(${alert.id})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    container.innerHTML = html;
+}
+
+async function createPriceAlert() {
+    const form = document.getElementById('create-alert-form');
+    const formData = new FormData(form);
+    const alertData = {};
+    
+    for (let [key, value] of formData.entries()) {
+        const element = document.getElementById('alert_' + key) || document.getElementById(key);
+        if (element && element.type === 'checkbox') {
+            alertData[key] = element.checked;
+        } else if (key === 'threshold_price' || key === 'threshold_percent') {
+            alertData[key] = value ? parseFloat(value) : null;
+        } else {
+            alertData[key] = value;
+        }
+    }
+    
+    // Handle unchecked checkboxes
+    if (!alertData.hasOwnProperty('notify_email')) {
+        alertData.notify_email = false;
+    }
+    if (!alertData.hasOwnProperty('notify_push')) {
+        alertData.notify_push = false;
+    }
+    
+    try {
+        const response = await fetch('/price-alerts/api/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            },
+            body: JSON.stringify({
+                symbol: alertData.symbol,
+                target_price: alertData.target_price || alertData.threshold_price,
+                alert_type: alertData.alert_type || 'above',
+                company_name: alertData.company_name || '',
+                notes: alertData.notes || ''
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showSuccess('Prisvarsel opprettet!');
+            bootstrap.Modal.getInstance(document.getElementById('createAlertModal')).hide();
+            form.reset();
+            loadPriceAlerts();
+        } else {
+            showError('Feil ved opprettelse av prisvarsel: ' + data.error);
+        }
+    } catch (error) {
+        showError('Nettverksfeil ved opprettelse av prisvarsel');
+        console.error('Error creating price alert:', error);
+    }
+}
+
+async function deletePriceAlert(alertId) {
+    if (!confirm('Er du sikker på at du vil slette dette prisvarselet?')) {
+        return;
+    }
+    try {
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        const response = await fetch(`/price-alerts/api/delete/${alertId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': csrf
+            }
+        });
+        const data = await response.json();
+        if (data.success) {
+            showSuccess('Prisvarsel slettet!');
+            loadPriceAlerts();
+        } else {
+            showError('Feil ved sletting av prisvarsel: ' + (data.error || 'Ukjent feil'));
+        }
+    } catch (error) {
+        showError('Nettverksfeil ved sletting av prisvarsel');
+        console.error('Error deleting price alert:', error);
+    }
+}
+
+function resetToDefaults() {
+    if (!confirm('Er du sikker på at du vil tilbakestille alle innstillinger til standard?')) {
+        return;
+    }
+    
+    // Set default values
+    const defaults = {
+        email_enabled: true,
+        email_price_alerts: true,
+        email_news_alerts: true,
+        email_ai_predictions: true,
+        email_portfolio_updates: true,
+        email_market_alerts: true,
+        push_enabled: true,
+        push_price_alerts: true,
+        push_news_alerts: false,
+        push_ai_predictions: true,
+        push_portfolio_updates: false,
+        push_market_alerts: true,
+        quiet_hours_start: '22:00',
+        quiet_hours_end: '08:00',
+        timezone: 'Europe/Oslo'
+    };
+    
+    populateForm(defaults);
+}
+
+function checkPushNotificationStatus() {
+    const statusElement = document.getElementById('push-status-text');
+    const enableButton = document.getElementById('enable-push-btn');
+    
+    // Add timeout to prevent infinite loading
+    setTimeout(() => {
+        if (statusElement.innerHTML.includes('Sjekker')) {
+            statusElement.innerHTML = `
+                <strong>Push-notifikasjoner er ikke tilgjengelig</strong><br>
+                <small>Kunne ikke verifisere push-status. E-post og in-app varsler fungerer fortsatt.</small>
+            `;
+            statusElement.parentElement.className = 'alert alert-info mt-3';
+        }
+    }, 5000); // 5 second timeout
+    
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        statusElement.innerHTML = `
+            <strong>Push-notifikasjoner støttes ikke i denne nettleseren</strong><br>
+            <small>E-post og in-app varsler er fortsatt tilgjengelig</small>
+        `;
+        statusElement.parentElement.className = 'alert alert-warning mt-3';
+        return;
+    }
+    
+    if (Notification.permission === 'denied') {
+        statusElement.innerHTML = `
+            <strong>Push-notifikasjoner er blokkert</strong><br>
+            <small>For å aktivere: Gå til nettleserinnstillinger > Nettsideinnstillinger > Varsler og aktiver for aksjeradar.trade</small><br>
+            <small class="text-muted">Alternativt: E-post og in-app varsler fungerer fortsatt</small>
+        `;
+        statusElement.parentElement.className = 'alert alert-warning mt-3';
+    } else if (Notification.permission === 'granted') {
+        statusElement.innerHTML = `
+            <strong>✅ Push-notifikasjoner er aktivert og klare</strong><br>
+            <small>Du vil motta øyeblikkelige varsler på denne enheten</small>
+        `;
+        statusElement.parentElement.className = 'alert alert-success mt-3';
+    } else {
+        statusElement.innerHTML = `
+            <strong>Push-notifikasjoner er ikke aktivert</strong><br>
+            <small>Klikk knappen nedenfor for å aktivere øyeblikkelige varsler</small>
+        `;
+        statusElement.parentElement.className = 'alert alert-info mt-3';
+        if (enableButton) {
+            enableButton.style.display = 'inline-block';
+        }
+    }
+}
+
+async function enablePushNotifications() {
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+            showError('Push-notifikasjoner avvist. E-post og in-app varsler fungerer fortsatt.');
+            checkPushNotificationStatus();
+            return;
+        }
+        
+        // Check if we have service worker support
+        if (!('serviceWorker' in navigator)) {
+            showError('Service Worker ikke støttet. Bruker alternative varslingsmetoder.');
+            return;
+        }
+        
+        // Register service worker with error handling
+        let registration;
+        try {
+            registration = await navigator.serviceWorker.register('/static/sw.js');
+        } catch (swError) {
+            console.warn('Service Worker registration failed:', swError);
+            showError('Push-notifikasjoner ikke tilgjengelig, men andre varslingsmetoder fungerer.');
+            return;
+        }
+        
+        // Try to get push subscription
+        try {
+            const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: 'BMGCGdFLIzZlCGQTWDNQHEP-gw4pG9K-Qig_sMxZj4oWGdJ1RNrb-l3pz-H7Lm_xUkFp3MfQtzTdPVcZj5SgsQ8'
+            });
+            
+            // Send subscription to server
+            const response = await fetch('/notifications/api/push_subscription', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+                },
+                body: JSON.stringify(subscription.toJSON())
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                if (result.fallback) {
+                    showSuccess(result.message || 'Push notifications fallback aktivert');
+                } else {
+                    showSuccess(result.message || 'Push-notifikasjoner aktivert!');
+                }
+            } else {
+                showError(result.error || 'Kunne ikke aktivere push-notifikasjoner');
+            }
+        } catch (subscriptionError) {
+            console.warn('Push subscription failed:', subscriptionError);
+            showError('Push-notifikasjoner ikke tilgjengelig på denne enheten. E-post varsler fungerer fortsatt.');
+        }
+        
+        checkPushNotificationStatus();
+    } catch (error) {
+        showError('Feil ved aktivering av push-notifikasjoner. Andre varslingsmetoder er tilgjengelig.');
+        console.error('Error enabling push notifications:', error);
+    }
+}
+        
+        checkPushNotificationStatus();
+        showSuccess('Push-notifikasjoner aktivert!');
+    } catch (error) {
+        showError('Feil ved aktivering av push-notifikasjoner');
+        console.error('Error enabling push notifications:', error);
+    }
+}
+
+function showSuccess(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast align-items-center text-white bg-success border-0 position-fixed';
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999;';
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    
+    toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+    });
+}
+
+function showError(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast align-items-center text-white bg-danger border-0 position-fixed';
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999;';
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    
+    toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+    });
+}
+
+function showInfo(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast align-items-center text-white bg-info border-0 position-fixed';
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999;';
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    
+    toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+    });
+}
+
+function showError(message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+    alertDiv.innerHTML = `
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.querySelector('.card-body').insertBefore(alertDiv, document.querySelector('.card-body').firstChild);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        const bsAlert = new bootstrap.Alert(alertDiv);
+        bsAlert.close();
+    }, 5000);
+}
+
+function showSuccess(message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+    alertDiv.innerHTML = `
+        <i class="bi bi-check-circle-fill me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.querySelector('.card-body').insertBefore(alertDiv, document.querySelector('.card-body').firstChild);
+    
+    // Auto-dismiss after 3 seconds 
+    setTimeout(() => {
+        const bsAlert = new bootstrap.Alert(alertDiv);
+        bsAlert.close();
+    }, 3000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,5 @@
+# Legacy alternate startup script (archived). Prefer using main.py or wsgi.py.
+import os, importlib.util, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from app import create_app
+app = create_app(os.getenv('APP_ENV','production'))

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="alert alert-danger">
+        <h4><i class="bi bi-exclamation-triangle"></i> Beklager, en feil oppsto</h4>
+        <p>Vi jobber med å løse problemet. Prøv igjen senere.</p>
+        {% if error %}
+        <hr>
+        <details>
+            <summary>Tekniske detaljer (for utviklere)</summary>
+            <pre class="mt-2 p-2 bg-light border rounded"><code>{{ error }}</code></pre>
+        </details>
+        {% endif %}
+    </div>
+    
+    <div class="text-center mt-4">
+        <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+            <i class="bi bi-house"></i> Tilbake til forsiden
+        </a>
+        <a href="{{ url_for('analysis.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-bar-chart"></i> Analyseoversikt
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,950 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} - Aksjeradar{% endblock %}
+
+{% block extra_css %}
+<style>
+    .realtime-dashboard {
+        background:  background: #344686;
+;
+        min-height: 100vh;
+        padding: 20px 0;
+    }
+    
+    .dashboard-container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        padding: 30px;
+        margin: 20px auto;
+        max-width: 1400px;
+    }
+    
+    .dashboard-header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .dashboard-header h1 {
+        color: #2c3e50;
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        font-weight: 700;
+    }
+    
+    .connection-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+    
+    .status-connected {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-disconnected {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .status-connecting {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    
+    .dashboard-tabs {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .dashboard-tab {
+        padding: 12px 24px;
+        background: #e9ecef;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .dashboard-tab.active {
+        background:  background: #344686;
+;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .tab-content {
+        display: none;
+        animation: fadeIn 0.5s ease-in;
+    }
+    
+    .tab-content.active {
+        display: block;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .market-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .market-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        border-left: 5px solid #667eea;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .market-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+    
+    .market-card h3 {
+        color: #2c3e50;
+        margin-bottom: 15px;
+        font-size: 1.3rem;
+    }
+    
+    .price-display {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+    
+    .price-positive {
+        color: #28a745;
+    }
+    
+    .price-negative {
+        color: #dc3545;
+    }
+    
+    .price-neutral {
+        color: #6c757d;
+    }
+    
+    .change-indicator {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    .live-chart {
+        height: 200px;
+        width: 100%;
+        margin-top: 15px;
+    }
+    
+    .subscription-panel {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+    
+    .symbol-input {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .symbol-input input {
+        flex: 1;
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        font-size: 1.1rem;
+    }
+    
+    .subscribe-btn {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .subscribe-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+    }
+    
+    .subscribed-symbols {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .symbol-tag {
+        background: #e7f3ff;
+        color: #0056b3;
+        padding: 8px 15px;
+        border-radius: 15px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .symbol-tag .remove-btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .alerts-panel {
+        background: #fff3cd;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+    
+    .alert-form {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+        align-items: end;
+    }
+    
+    .alert-item {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        border-left: 4px solid #ffc107;
+    }
+    
+    .alert-info {
+        flex: 1;
+    }
+    
+    .alert-remove {
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+    
+    .market-summary {
+        background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
+        border-radius: 15px;
+        padding: 25px;
+        color: white;
+        margin-bottom: 30px;
+    }
+    
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 20px;
+        text-align: center;
+    }
+    
+    .summary-item h4 {
+        font-size: 2rem;
+        margin-bottom: 5px;
+    }
+    
+    .summary-item p {
+        opacity: 0.9;
+        margin: 0;
+    }
+    
+    .trending-stocks {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 25px;
+    }
+    
+    .trending-item {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .trending-item:last-child {
+        border-bottom: none;
+    }
+    
+    .trending-symbol {
+        font-weight: 700;
+        color: #2c3e50;
+    }
+    
+    .trending-price {
+        font-weight: 600;
+    }
+    
+    .message-log {
+        background: #212529;
+        color: #28a745;
+        border-radius: 10px;
+        padding: 20px;
+        height: 300px;
+        overflow-y: auto;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        margin-top: 20px;
+    }
+    
+    .log-entry {
+        margin-bottom: 5px;
+        opacity: 0.8;
+    }
+    
+    .log-entry.new {
+        opacity: 1;
+        color: #00ff00;
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-container {
+            margin: 10px;
+            padding: 20px;
+        }
+        
+        .dashboard-header h1 {
+            font-size: 2rem;
+        }
+        
+        .dashboard-tabs {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .dashboard-tab {
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+        }
+        
+        .market-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .alert-form {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="realtime-dashboard">
+    <div class="dashboard-container">
+        <!-- Header Section -->
+        <div class="dashboard-header">
+            <h1>📡 Real-time Markedsdata</h1>
+            <div id="connectionStatus" class="connection-status status-connecting">
+                <div class="status-indicator"></div>
+                <span>Kobler til...</span>
+            </div>
+            <p>Live markedsdata, prisalarmer og real-time porteføljeoppfølging</p>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="dashboard-tabs">
+            <button class="dashboard-tab active" data-tab="market">
+                <i class="bi bi-graph-up me-2"></i>Live Markedsdata
+            </button>
+            <button class="dashboard-tab" data-tab="subscriptions">
+                <i class="bi bi-bell me-2"></i>Abonnementer
+            </button>
+            <button class="dashboard-tab" data-tab="alerts">
+                <i class="bi bi-exclamation-triangle me-2"></i>Prisalarmer
+            </button>
+            <button class="dashboard-tab" data-tab="trending">
+                <i class="bi bi-fire me-2"></i>Trending
+            </button>
+            <button class="dashboard-tab" data-tab="logs">
+                <i class="bi bi-terminal me-2"></i>Live Feed
+            </button>
+        </div>
+        
+        <!-- Market Data Tab -->
+        <div id="market-tab" class="tab-content active">
+            <!-- Market Summary -->
+            <div class="market-summary">
+                <h3 class="mb-4">📊 Markedsoversikt</h3>
+                <div id="marketSummaryGrid" class="summary-grid">
+                    <div class="summary-item">
+                        <h4>-</h4>
+                        <p>Oslo Børs</p>
+                    </div>
+                    <div class="summary-item">
+                        <h4>-</h4>
+                        <p>Positive</p>
+                    </div>
+                    <div class="summary-item">
+                        <h4>-</h4>
+                        <p>Negative</p>
+                    </div>
+                    <div class="summary-item">
+                        <h4>-</h4>
+                        <p>Uendret</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Live Market Data Grid -->
+            <div id="marketDataGrid" class="market-grid">
+                <!-- Market cards will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Subscriptions Tab -->
+        <div id="subscriptions-tab" class="tab-content">
+            <div class="subscription-panel">
+                <h3 class="mb-4">📈 Abonnér på aksjer</h3>
+                
+                <div class="symbol-input">
+                    <input type="text" id="symbolInput" placeholder="Skriv inn aksjesymbol (f.eks. EQNR, TEL, DNB)" 
+                           class="form-control">
+                    <button id="subscribeBtn" class="subscribe-btn">
+                        <i class="bi bi-plus me-2"></i>Abonnér
+                    </button>
+                </div>
+                
+                <h4 class="mb-3">Aktive abonnementer:</h4>
+                <div id="subscribedSymbols" class="subscribed-symbols">
+                    <!-- Subscribed symbols will appear here -->
+                    <p class="text-muted">Ingen aktive abonnementer</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Price Alerts Tab -->
+        <div id="alerts-tab" class="tab-content">
+            <div class="alerts-panel">
+                <h3 class="mb-4">🔔 Prisalarmer</h3>
+                
+                {% if current_user.is_authenticated %}
+                <div class="alert-form">
+                    <input type="text" id="alertSymbol" placeholder="Aksjesymbol" class="form-control">
+                    <input type="number" id="alertPrice" placeholder="Pris" step="0.01" class="form-control">
+                    <select id="alertType" class="form-control">
+                        <option value="above">Over</option>
+                        <option value="below">Under</option>
+                        <option value="change_percent">Endring %</option>
+                    </select>
+                    <button id="addAlertBtn" class="btn btn-warning">
+                        <i class="bi bi-bell me-2"></i>Legg til
+                    </button>
+                </div>
+                
+                <h4 class="mb-3">Aktive alarmer:</h4>
+                <div id="activeAlerts">
+                    <!-- Active alerts will appear here -->
+                    <p class="text-muted">Ingen aktive alarmer</p>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <strong>Logg inn</strong> for å opprette prisalarmer og få real-time varsler.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Trending Tab -->
+        <div id="trending-tab" class="tab-content">
+            <div class="trending-stocks">
+                <h3 class="mb-4">🔥 Trending aksjer</h3>
+                <div id="trendingList">
+                    <!-- Trending stocks will appear here -->
+                    <p class="text-muted">Laster trending data...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Logs Tab -->
+        <div id="logs-tab" class="tab-content">
+            <h3 class="mb-4">📊 Live Data Feed</h3>
+            <div id="messageLog" class="message-log">
+                <!-- Live messages will appear here -->
+            </div>
+            <div class="mt-3">
+                <button id="clearLogBtn" class="btn btn-secondary">
+                    <i class="bi bi-trash me-2"></i>Tøm logg
+                </button>
+                <button id="pauseLogBtn" class="btn btn-warning">
+                    <i class="bi bi-pause me-2"></i>Pause logg
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+class RealTimeMarketDashboard {
+    constructor() {
+        this.socket = null;
+        this.subscriptions = new Set();
+        this.charts = new Map();
+        this.logPaused = false;
+        this.maxLogEntries = 100;
+        
+        this.initializeUI();
+        this.connectWebSocket();
+    }
+    
+    initializeUI() {
+        // Tab switching
+        document.querySelectorAll('.dashboard-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                this.switchTab(e.target.dataset.tab);
+            });
+        });
+        
+        // Subscribe button
+        document.getElementById('subscribeBtn').addEventListener('click', () => {
+            this.subscribeToSymbol();
+        });
+        
+        // Symbol input enter key
+        document.getElementById('symbolInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.subscribeToSymbol();
+            }
+        });
+        
+        // Add alert button
+        const addAlertBtn = document.getElementById('addAlertBtn');
+        if (addAlertBtn) {
+            addAlertBtn.addEventListener('click', () => {
+                this.addPriceAlert();
+            });
+        }
+        
+        // Log controls
+        document.getElementById('clearLogBtn').addEventListener('click', () => {
+            this.clearLog();
+        });
+        
+        document.getElementById('pauseLogBtn').addEventListener('click', () => {
+            this.toggleLogPause();
+        });
+    }
+    
+    connectWebSocket() {
+        this.updateConnectionStatus('connecting', 'Kobler til...');
+        
+        this.socket = io();
+        
+        this.socket.on('connect', () => {
+            this.updateConnectionStatus('connected', 'Tilkoblet');
+            this.logMessage('WebSocket tilkoblet');
+            
+            // Request initial data
+            this.socket.emit('get_market_summary');
+            this.socket.emit('get_trending_stocks', {limit: 10});
+        });
+        
+        this.socket.on('disconnect', () => {
+            this.updateConnectionStatus('disconnected', 'Frakoblet');
+            this.logMessage('WebSocket frakoblet');
+        });
+        
+        this.socket.on('market_data_update', (data) => {
+            this.handleMarketDataUpdate(data);
+        });
+        
+        this.socket.on('market_summary', (data) => {
+            this.updateMarketSummary(data);
+        });
+        
+        this.socket.on('trending_stocks', (data) => {
+            this.updateTrendingStocks(data.stocks);
+        });
+        
+        this.socket.on('subscription_response', (data) => {
+            this.handleSubscriptionResponse(data);
+        });
+        
+        this.socket.on('price_alert', (data) => {
+            this.handlePriceAlert(data);
+        });
+        
+        this.socket.on('alert_response', (data) => {
+            this.handleAlertResponse(data);
+        });
+        
+        this.socket.on('error', (data) => {
+            this.logMessage(`Feil: ${data.message}`, 'error');
+        });
+    }
+    
+    switchTab(tabName) {
+        // Update tab buttons
+        document.querySelectorAll('.dashboard-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        
+        // Update content
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(`${tabName}-tab`).classList.add('active');
+        
+        // Load tab-specific data
+        if (tabName === 'trending') {
+            this.socket.emit('get_trending_stocks', {limit: 10});
+        }
+    }
+    
+    updateConnectionStatus(status, message) {
+        const statusElement = document.getElementById('connectionStatus');
+        statusElement.className = `connection-status status-${status}`;
+        statusElement.innerHTML = `
+            <div class="status-indicator"></div>
+            <span>${message}</span>
+        `;
+    }
+    
+    subscribeToSymbol() {
+        const symbolInput = document.getElementById('symbolInput');
+        const symbol = symbolInput.value.trim().toUpperCase();
+        
+        if (!symbol) {
+            alert('Vennligst skriv inn et aksjesymbol');
+            return;
+        }
+        
+        if (this.subscriptions.has(symbol)) {
+            alert('Du abonnerer allerede på denne aksjen');
+            return;
+        }
+        
+        this.socket.emit('subscribe_symbol', {symbol: symbol});
+        symbolInput.value = '';
+    }
+    
+    unsubscribeFromSymbol(symbol) {
+        this.socket.emit('unsubscribe_symbol', {symbol: symbol});
+        this.subscriptions.delete(symbol);
+        this.updateSubscriptionsList();
+    }
+    
+    handleSubscriptionResponse(data) {
+        if (data.status === 'subscribed') {
+            this.subscriptions.add(data.symbol);
+            this.updateSubscriptionsList();
+            this.logMessage(`Abonnerte på ${data.symbol}`);
+        } else if (data.status === 'unsubscribed') {
+            this.subscriptions.delete(data.symbol);
+            this.updateSubscriptionsList();
+            this.logMessage(`Avsluttet abonnement på ${data.symbol}`);
+        }
+    }
+    
+    updateSubscriptionsList() {
+        const container = document.getElementById('subscribedSymbols');
+        
+        if (this.subscriptions.size === 0) {
+            container.innerHTML = '<p class="text-muted">Ingen aktive abonnementer</p>';
+            return;
+        }
+        
+        container.innerHTML = Array.from(this.subscriptions).map(symbol => `
+            <div class="symbol-tag">
+                ${symbol}
+                <button class="remove-btn" onclick="dashboard.unsubscribeFromSymbol('${symbol}')">
+                    ×
+                </button>
+            </div>
+        `).join('');
+    }
+    
+    handleMarketDataUpdate(data) {
+        this.logMessage(`${data.symbol}: ${data.price} (${data.change >= 0 ? '+' : ''}${data.change_percent}%)`);
+        this.updateMarketCard(data);
+    }
+    
+    updateMarketCard(data) {
+        let card = document.getElementById(`card-${data.symbol}`);
+        
+        if (!card) {
+            // Create new card
+            const grid = document.getElementById('marketDataGrid');
+            card = document.createElement('div');
+            card.id = `card-${data.symbol}`;
+            card.className = 'market-card';
+            grid.appendChild(card);
+        }
+        
+        const changeClass = data.change > 0 ? 'price-positive' : data.change < 0 ? 'price-negative' : 'price-neutral';
+        const changeIcon = data.change > 0 ? '↗' : data.change < 0 ? '↘' : '→';
+        
+        card.innerHTML = `
+            <h3>${data.symbol}</h3>
+            <div class="price-display ${changeClass}">
+                ${data.price.toFixed(2)} NOK
+            </div>
+            <div class="change-indicator ${changeClass}">
+                ${changeIcon} ${data.change.toFixed(2)} (${data.change_percent.toFixed(2)}%)
+            </div>
+            <small class="text-muted">Volume: ${data.volume.toLocaleString()}</small>
+            <div class="live-chart">
+                <canvas id="chart-${data.symbol}"></canvas>
+            </div>
+        `;
+        
+        // Update or create chart
+        this.updateChart(data);
+    }
+    
+    updateChart(data) {
+        const chartId = `chart-${data.symbol}`;
+        const ctx = document.getElementById(chartId);
+        
+        if (!ctx) return;
+        
+        if (!this.charts.has(data.symbol)) {
+            // Create new chart
+            this.charts.set(data.symbol, new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [new Date().toLocaleTimeString()],
+                    datasets: [{
+                        label: data.symbol,
+                        data: [data.price],
+                        borderColor: data.change >= 0 ? '#28a745' : '#dc3545',
+                        backgroundColor: data.change >= 0 ? 'rgba(40, 167, 69, 0.1)' : 'rgba(220, 53, 69, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            }));
+        } else {
+            // Update existing chart
+            const chart = this.charts.get(data.symbol);
+            const now = new Date().toLocaleTimeString();
+            
+            chart.data.labels.push(now);
+            chart.data.datasets[0].data.push(data.price);
+            
+            // Keep only last 20 data points
+            if (chart.data.labels.length > 20) {
+                chart.data.labels.shift();
+                chart.data.datasets[0].data.shift();
+            }
+            
+            chart.update('none');
+        }
+    }
+    
+    updateMarketSummary(data) {
+        const grid = document.getElementById('marketSummaryGrid');
+        
+        if (data.oslo_bors && data.oslo_bors.status === 'active') {
+            const summary = data.oslo_bors;
+            grid.innerHTML = `
+                <div class="summary-item">
+                    <h4>${summary.total_stocks}</h4>
+                    <p>Totalt aksjer</p>
+                </div>
+                <div class="summary-item">
+                    <h4>${summary.positive_count}</h4>
+                    <p>Positive</p>
+                </div>
+                <div class="summary-item">
+                    <h4>${summary.negative_count}</h4>
+                    <p>Negative</p>
+                </div>
+                <div class="summary-item">
+                    <h4>${summary.avg_change.toFixed(2)}%</h4>
+                    <p>Gj.snitt endring</p>
+                </div>
+            `;
+        }
+    }
+    
+    updateTrendingStocks(stocks) {
+        const container = document.getElementById('trendingList');
+        
+        if (!stocks || stocks.length === 0) {
+            container.innerHTML = '<p class="text-muted">Ingen trending data tilgjengelig</p>';
+            return;
+        }
+        
+        container.innerHTML = stocks.map((stock, index) => {
+            const changeClass = stock.change > 0 ? 'price-positive' : stock.change < 0 ? 'price-negative' : 'price-neutral';
+            return `
+                <div class="trending-item">
+                    <div>
+                        <span class="trending-symbol">#${index + 1} ${stock.ticker}</span>
+                        <div class="trending-price ${changeClass}">
+                            ${stock.current_price.toFixed(2)} NOK (${stock.change_percent.toFixed(2)}%)
+                        </div>
+                    </div>
+                    <small class="text-muted">Vol: ${stock.volume.toLocaleString()}</small>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    addPriceAlert() {
+        const symbol = document.getElementById('alertSymbol').value.trim().toUpperCase();
+        const price = parseFloat(document.getElementById('alertPrice').value);
+        const type = document.getElementById('alertType').value;
+        
+        if (!symbol || isNaN(price) || price <= 0) {
+            alert('Vennligst fyll inn gyldig symbol og pris');
+            return;
+        }
+        
+        this.socket.emit('add_price_alert', {
+            symbol: symbol,
+            trigger_price: price,
+            alert_type: type
+        });
+        
+        // Clear form
+        document.getElementById('alertSymbol').value = '';
+        document.getElementById('alertPrice').value = '';
+    }
+    
+    handleAlertResponse(data) {
+        if (data.status === 'created') {
+            this.logMessage(`Prisalarm opprettet: ${data.symbol} ${data.alert_type} ${data.trigger_price}`);
+        } else if (data.status === 'removed') {
+            this.logMessage(`Prisalarm fjernet: ID ${data.alert_id}`);
+        }
+    }
+    
+    handlePriceAlert(data) {
+        this.logMessage(`🔔 ALARM: ${data.message}`, 'alert');
+        
+        // Show browser notification if supported
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Prisalarm utløst!', {
+                body: data.message,
+                icon: '/static/favicon.ico'
+            });
+        }
+    }
+    
+    logMessage(message, type = 'info') {
+        if (this.logPaused) return;
+        
+        const log = document.getElementById('messageLog');
+        const timestamp = new Date().toLocaleTimeString();
+        const entry = document.createElement('div');
+        entry.className = `log-entry new ${type}`;
+        entry.textContent = `[${timestamp}] ${message}`;
+        
+        log.appendChild(entry);
+        
+        // Remove old entries
+        while (log.children.length > this.maxLogEntries) {
+            log.removeChild(log.firstChild);
+        }
+        
+        // Scroll to bottom
+        log.scrollTop = log.scrollHeight;
+        
+        // Remove 'new' class after animation
+        setTimeout(() => {
+            entry.classList.remove('new');
+        }, 2000);
+    }
+    
+    clearLog() {
+        document.getElementById('messageLog').innerHTML = '';
+    }
+    
+    toggleLogPause() {
+        this.logPaused = !this.logPaused;
+        const btn = document.getElementById('pauseLogBtn');
+        btn.innerHTML = this.logPaused 
+            ? '<i class="bi bi-play me-2"></i>Start logg'
+            : '<i class="bi bi-pause me-2"></i>Pause logg';
+    }
+}
+
+// Initialize dashboard when page loads
+let dashboard;
+document.addEventListener('DOMContentLoaded', () => {
+    dashboard = new RealTimeMarketDashboard();
+    
+    // Request notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+});
+</script>
+{% endblock %}

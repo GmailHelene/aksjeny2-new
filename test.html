@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .result {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .success {
+            border-color: green;
+            background-color: #f0fff0;
+        }
+        .error {
+            border-color: red;
+            background-color: #fff0f0;
+        }
+        h3 {
+            margin-top: 0;
+        }
+        pre {
+            white-space: pre-wrap;
+            overflow-x: auto;
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>API Test</h1>
+    
+    <div id="results"></div>
+    
+    <script>
+        const endpoints = [
+            '/',
+            '/diagnostic/auth-status',
+            '/test/access-control',
+            '/profile/',
+            '/portfolio/'
+        ];
+        
+        const resultsContainer = document.getElementById('results');
+        
+        async function testEndpoint(endpoint) {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'result';
+            
+            const title = document.createElement('h3');
+            title.textContent = `Endpoint: ${endpoint}`;
+            resultDiv.appendChild(title);
+            
+            try {
+                const response = await fetch(`http://localhost:5000${endpoint}`);
+                const status = document.createElement('p');
+                status.textContent = `Status: ${response.status} ${response.statusText}`;
+                resultDiv.appendChild(status);
+                
+                try {
+                    // Try to parse as JSON first
+                    const contentType = response.headers.get('content-type');
+                    let content;
+                    
+                    if (contentType && contentType.includes('application/json')) {
+                        content = await response.json();
+                        const pre = document.createElement('pre');
+                        pre.textContent = JSON.stringify(content, null, 2);
+                        resultDiv.appendChild(pre);
+                    } else {
+                        // If not JSON, get as text
+                        content = await response.text();
+                        const pre = document.createElement('pre');
+                        pre.textContent = content.length > 500 ? 
+                            content.substring(0, 500) + '...' : content;
+                        resultDiv.appendChild(pre);
+                    }
+                    
+                    if (response.status >= 200 && response.status < 300) {
+                        resultDiv.classList.add('success');
+                    } else {
+                        resultDiv.classList.add('error');
+                    }
+                } catch (e) {
+                    const error = document.createElement('p');
+                    error.textContent = `Error parsing response: ${e.message}`;
+                    resultDiv.appendChild(error);
+                    resultDiv.classList.add('error');
+                }
+            } catch (e) {
+                const error = document.createElement('p');
+                error.textContent = `Connection error: ${e.message}`;
+                resultDiv.appendChild(error);
+                resultDiv.classList.add('error');
+            }
+            
+            resultsContainer.appendChild(resultDiv);
+        }
+        
+        async function runTests() {
+            for (const endpoint of endpoints) {
+                await testEndpoint(endpoint);
+            }
+        }
+        
+        runTests();
+    </script>
+</body>
+</html>

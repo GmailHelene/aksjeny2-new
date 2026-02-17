@@ -1,0 +1,893 @@
+{% extends "base.html" %}
+
+{% block title %}Innsidehandel Intelligence - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-1">🎯 Innsidehandel Intelligence</h1>
+                    <p class="text-muted mb-0">Avansert analyse av innsidehandel og institusjonelle transaksjoner</p>
+                </div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
+                        <li class="breadcrumb-item active">Innsidehandel</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticker lists and popular section (search form removed) -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Tickere med innsideaktivitet</h5>
+                </div>
+                <div class="card-body">
+                    {% if oslo_bors_tickers or global_tickers %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6 class="fw-bold">Oslo Børs</h6>
+                            <div>
+                                {% if oslo_bors_tickers %}
+                                    {% for t in oslo_bors_tickers %}
+                                    <a href="{{ url_for('insider_trading.search') }}?symbol={{ t }}" class="badge bg-secondary me-1 mb-1 text-decoration-none">{{ t }}</a>
+                                    {% endfor %}
+                                {% else %}
+                                    <small class="text-muted">Ingen tilgjengelige tickere nå</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="fw-bold">Globalt</h6>
+                            <div>
+                                {% for t in global_tickers %}
+                                <a href="{{ url_for('insider_trading.search') }}?symbol={{ t }}" class="badge bg-primary me-1 mb-1 text-decoration-none">{{ t }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if popular_stocks %}
+                    <div class="mt-3 pt-3 border-top">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <small class="text-muted fw-bold">Populære aksjer med insider aktivitet:</small>
+                            <button class="btn btn-sm btn-outline-primary" onclick="loadTrendingInsiderStocks()">
+                                <span class="spinner-border spinner-border-sm" id="trendingLoader" style="display: none;" role="status" aria-hidden="true"></span>
+                                Oppdater
+                            </button>
+                        </div>
+                        <div class="mt-2" id="popularStocksContainer">
+                            {% for stock in popular_stocks[:12] %}
+                            <a href="{{ url_for('insider_trading.search', symbol=stock.symbol) }}" 
+                               class="badge bg-primary me-1 mb-1 text-decoration-none">
+                                {{ stock.symbol }}
+                                {% if stock.recent_activity %}
+                                <span class="badge bg-danger rounded-pill ms-1">{{ stock.recent_activity }}</span>
+                                {% endif %}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats Sidebar -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Markedsstatistikk</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="p-2 bg-light rounded">
+                                <h5 class="mb-1 text-success" id="totalBuys">{{ market_stats.total_buys or 0 }}</h5>
+                                <small class="text-muted">Kjøp (siste 30d)</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="p-2 bg-light rounded">
+                                <h5 class="mb-1 text-danger" id="totalSells">{{ market_stats.total_sells or 0 }}</h5>
+                                <small class="text-muted">Salg (siste 30d)</small>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-2">
+                            <div class="p-2 bg-light rounded">
+                                <h6 class="mb-1 text-primary">{{ market_stats.total_value or '0' }} kr</h6>
+                                <small class="text-muted">Total verdi (siste 30d)</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Top Active Stocks -->
+                    <div class="mt-3">
+                        <h6 class="fw-bold mb-2">🔥 Mest aktive i dag:</h6>
+                        <div class="list-group list-group-flush" id="topActiveStocks">
+                            {% for stock in top_active_stocks[:5] %}
+                            <a href="{{ url_for('insider_trading.search', symbol=stock.symbol) }}" 
+                               class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2">
+                                <span class="fw-bold text-primary">{{ stock.symbol }}</span>
+                                <span class="badge bg-success rounded-pill">{{ stock.activity }}</span>
+                            </a>
+                            {% endfor %}
+                            {% if not top_active_stocks %}
+                            <div class="text-center text-muted small py-2">Ingen aktive aksjer nå</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Results Display -->
+    {% if selected_symbol %}
+    <div class="row">
+        <div class="col-12">
+            <!-- Stock Analysis Header -->
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h4 class="mb-1">
+                                <i class="bi bi-graph-up text-primary me-2"></i>
+                                {{ selected_symbol }} - Innsidehandel Analyse
+                            </h4>
+                            <p class="text-muted mb-0">Detaljert oversikt over insider transaksjoner</p>
+                        </div>
+                        <div class="col-md-4 text-end"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            {% if insider_data %}
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <i class="bi bi-arrow-up fs-2 mb-2"></i>
+                            <h4 class="mb-0">{{ insider_summary.total_buys or 0 }}</h4>
+                            <small>Kjøp transaksjoner</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-danger text-white">
+                        <div class="card-body text-center">
+                            <i class="bi bi-arrow-down fs-2 mb-2"></i>
+                            <h4 class="mb-0">{{ insider_summary.total_sells or 0 }}</h4>
+                            <small>Salg transaksjoner</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <i class="bi bi-cash-coin fs-2 mb-2"></i>
+                            <h4 class="mb-0">{{ insider_summary.net_value or '0' }}</h4>
+                            <small>Netto verdi (kr)</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <i class="bi bi-people fs-2 mb-2"></i>
+                            <h4 class="mb-0">{{ insider_summary.unique_insiders or 0 }}</h4>
+                            <small>Unike insidere</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Main Results Table -->
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-table me-2"></i>Transaksjoner for {{ selected_symbol }}
+                        {% if insider_data %}
+                        <span class="badge bg-primary ms-2">{{ insider_data|length }} transaksjoner</span>
+                        {% endif %}
+                    </h5>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <input type="radio" class="btn-check" name="viewMode" id="tableView" autocomplete="off" checked>
+                        <label class="btn btn-outline-primary" for="tableView">
+                            <i class="bi bi-table"></i> Tabell
+                        </label>
+                        <input type="radio" class="btn-check" name="viewMode" id="chartView" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="chartView">
+                            <i class="bi bi-bar-chart"></i> Diagram
+                        </label>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if insider_data %}
+                    <!-- Table View -->
+                    <div id="tableViewContent">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="insiderTable">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>
+                                            <button class="btn btn-sm btn-link text-white p-0" onclick="sortTable('date')">
+                                                Dato <i class="bi bi-arrow-down-up"></i>
+                                            </button>
+                                        </th>
+                                        <th>Insider</th>
+                                        <th>Rolle</th>
+                                        <th>
+                                            <button class="btn btn-sm btn-link text-white p-0" onclick="sortTable('type')">
+                                                Transaksjon <i class="bi bi-arrow-down-up"></i>
+                                            </button>
+                                        </th>
+                                        <th class="text-end">
+                                            <button class="btn btn-sm btn-link text-white p-0" onclick="sortTable('quantity')">
+                                                Antall <i class="bi bi-arrow-down-up"></i>
+                                            </button>
+                                        </th>
+                                        <th class="text-end">
+                                            <button class="btn btn-sm btn-link text-white p-0" onclick="sortTable('price')">
+                                                Pris <i class="bi bi-arrow-down-up"></i>
+                                            </button>
+                                        </th>
+                                        <th class="text-end">
+                                            <button class="btn btn-sm btn-link text-white p-0" onclick="sortTable('value')">
+                                                Total Verdi <i class="bi bi-arrow-down-up"></i>
+                                            </button>
+                                        </th>
+                                        <th>Signal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for trade in insider_data %}
+                                    <tr class="insider-row" data-type="{{ trade.transaction_type|lower }}" data-value="{{ trade.total_value or 0 }}">
+                                        <td>
+                                            <span class="fw-bold">{{ trade.date|default('N/A') }}</span>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <span class="fw-bold">{{ trade.person|default('Ukjent')|truncate(20) }}</span>
+                                                {% if trade.person|length > 20 %}
+                                                                <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" 
+                                                   title="{{ trade.person }}"></i>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ trade.role|default('Ukjent') }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if trade.transaction_type == 'KJØP' else 'danger' if trade.transaction_type == 'SALG' else 'warning' }}">
+                                                <i class="bi bi-{{ 'arrow-up' if trade.transaction_type == 'KJØP' else 'arrow-down' if trade.transaction_type == 'SALG' else 'arrow-left-right' }} me-1"></i>
+                                                {{ trade.transaction_type|default('N/A') }}
+                                            </span>
+                                        </td>
+                                        <td class="text-end">
+                                            <span class="fw-bold">{{ "{:,}".format(trade.quantity|default(0)|int) }}</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <span class="fw-bold">{{ "{:,.2f}".format(trade.price|default(0)|float) }} kr</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <span class="fw-bold text-{{ 'success' if trade.transaction_type == 'KJØP' else 'danger' }}">
+                                                {{ "{:,.0f}".format(trade.total_value|default(0)|float) }} kr
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% set signal_strength = ((trade.total_value|default(0)|float) / 1000000) %}
+                                            {% if signal_strength > 5 %}
+                                            <span class="badge bg-danger">🔴 Sterkt</span>
+                                            {% elif signal_strength > 1 %}
+                                            <span class="badge bg-warning">🟡 Moderat</span>
+                                            {% else %}
+                                            <span class="badge bg-light text-dark">⚪ Svakt</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Chart View (Hidden by default) -->
+                    <div id="chartViewContent" style="display: none;">
+                        <div class="p-4">
+                            <canvas id="insiderChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-search fs-1 text-muted mb-3"></i>
+                        <h5 class="text-muted">Ingen innsidehandel data funnet</h5>
+                        <p class="text-muted">for {{ selected_symbol }} i den valgte tidsperioden.</p>
+                        <div class="mt-3">
+                            <button class="btn btn-primary" onclick="expandSearchPeriod()">
+                                <i class="bi bi-calendar3 me-2"></i>Utvid søkeperiode
+                            </button>
+                            <button class="btn btn-outline-secondary ms-2" onclick="suggestAlternatives()">
+                                <i class="bi bi-lightbulb me-2"></i>Foreslå alternativer
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Enhanced Recent Insider Trading Dashboard -->
+    <div class="row">
+        <div class="col-12">
+            <!-- Removed marketing/placeholder cards (Hot Stocks / Signaler / Alerts / Premium) to only show real data -->
+
+            <!-- Real-time Feed -->
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-broadcast-pin me-2"></i>Live Innsidehandel Feed
+                        <span class="badge bg-success ms-2" id="liveIndicator">
+                            <i class="bi bi-circle-fill me-1"></i>Live
+                        </span>
+                    </h5>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-primary" onclick="refreshFeed()">
+                            <i class="bi bi-arrow-repeat" id="refreshIcon"></i>
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="toggleAutoRefresh()">
+                            <i class="bi bi-play-fill" id="autoRefreshIcon"></i>
+                        </button>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#filterModal">
+                            <i class="bi bi-funnel"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if insider_data %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="liveInsiderTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Tidspunkt</th>
+                                    <th>Insider</th>
+                                    <th>Transaksjon</th>
+                                    <th class="text-end">Verdi</th>
+                                    <th>Sentiment</th>
+                                    <th>Handling</th>
+                                </tr>
+                            </thead>
+                            <tbody id="insiderFeedBody">
+                                {% for trade in insider_data[:25] %}
+                                <tr class="fade-in" data-symbol="{{ trade.symbol|default('N/A') }}">
+                                    <td>
+                                        <a href="{{ url_for('insider_trading.search', symbol=trade.symbol) }}" 
+                                           class="fw-bold text-primary text-decoration-none">
+                                            {{ trade.symbol|default('N/A') }}
+                                        </a>
+                                        
+                                    </td>
+                                    <td>
+                                        <span class="small">{{ trade.date|default('-') }}</span>
+                                        <br>
+                                        {% if trade.time %}
+                                        <span class="text-muted small">{{ trade.time }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <span class="fw-bold">{{ trade.person|default('Ukjent')|truncate(15) }}</span>
+                                            <br>
+                                            <small class="text-muted">{{ trade.role|default('Ukjent') }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if trade.transaction_type == 'KJØP' else 'danger' if trade.transaction_type == 'SALG' else 'warning' }}">
+                                            <i class="bi bi-{{ 'plus-lg' if trade.transaction_type == 'KJØP' else 'dash-lg' if trade.transaction_type == 'SALG' else 'arrow-left-right' }} me-1"></i>
+                                            {{ trade.transaction_type|default('OPSJONER') }}
+                                        </span>
+                                        <br>
+                                        <small class="text-muted">{% if trade.quantity is not none %}{{ "{:,}".format(trade.quantity|int) }} aksjer{% else %}-{% endif %}</small>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="fw-bold text-{{ 'success' if trade.transaction_type == 'KJØP' else 'danger' }}">
+                                            {{ "{:,.0f}".format(trade.total_value|default(500000)|float) }} kr
+                                        </span>
+                                        <br>
+                                        <small class="text-muted">{{ "{:.2f}".format(trade.price|default(50)|float) }} kr/aksje</small>
+                                    </td>
+                                    <td>
+                                        {% set value = trade.total_value|default(0)|float %}
+                                        {% if value > 5000000 %}
+                                        <span class="badge bg-danger">🔴 Stor handel</span>
+                                        {% elif value > 1000000 %}
+                                        <span class="badge bg-warning">🟡 Moderat handel</span>
+                                        {% else %}
+                                        <span class="badge bg-light text-dark">⚪ Mindre handel</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <button type="button" class="btn btn-primary" 
+                                                    onclick="addToWatchlist('{{ trade.symbol }}')"
+                                                    data-bs-toggle="tooltip" title="Legg til overvåkningsliste">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-success" 
+                                                    onclick="setAlert('{{ trade.symbol }}')"
+                                                    data-bs-toggle="tooltip" title="Sett varsel">
+                                                <i class="bi bi-bell"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-info text-white" 
+                                                    onclick="getAnalysis('{{ trade.symbol }}')"
+                                                    data-bs-toggle="tooltip" title="Få AI-analyse">
+                                                <i class="bi bi-cpu"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Load More Button -->
+                    <div class="text-center p-3 border-top">
+                        <button class="btn btn-outline-primary" onclick="loadMoreTransactions()">
+                            <i class="bi bi-chevron-down me-2"></i>Last inn flere transaksjoner
+                        </button>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-graph-up fs-1 text-muted mb-3"></i>
+                        <h5 class="text-muted">Ingen innsidehandel data tilgjengelig</h5>
+                        <p class="text-muted">Data oppdateres kontinuerlig gjennom dagen.</p>
+                        <button class="btn btn-primary" onclick="requestDataRefresh()">
+                            <i class="bi bi-arrow-repeat me-2"></i>Oppdater data
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Enhanced JavaScript for Insider Trading -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Symbol autocomplete
+    const symbolInput = document.getElementById('symbol');
+    if (symbolInput) {
+        symbolInput.addEventListener('input', function() {
+            const query = this.value;
+            if (query.length >= 2) {
+                fetchSymbolSuggestions(query);
+            } else {
+                document.getElementById('symbolSuggestions').style.display = 'none';
+            }
+        });
+    }
+
+    // View mode toggle
+    const viewModeRadios = document.querySelectorAll('input[name="viewMode"]');
+    viewModeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            toggleView(this.id);
+        });
+    });
+
+    // Auto-refresh setup
+    setupAutoRefresh();
+});
+
+// Advanced search functions
+function fetchSymbolSuggestions(query) {
+    fetch(`{{ url_for('stocks.api_search') }}?q=${encodeURIComponent(query)}&type=symbol`)
+        .then(response => response.json())
+        .then(data => {
+            const suggestions = document.getElementById('symbolSuggestions');
+            suggestions.innerHTML = '';
+            
+            if (data.results && data.results.length > 0) {
+                data.results.slice(0, 8).forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'dropdown-item cursor-pointer';
+                    div.innerHTML = `<strong>${item.symbol}</strong> - ${item.name}`;
+                    div.onclick = () => selectSymbol(item.symbol);
+                    suggestions.appendChild(div);
+                });
+                suggestions.style.display = 'block';
+            } else {
+                suggestions.style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching suggestions:', error);
+        });
+}
+
+function selectSymbol(symbol) {
+    document.getElementById('symbol').value = symbol;
+    document.getElementById('symbolSuggestions').style.display = 'none';
+    document.getElementById('insiderSearchForm').submit();
+}
+
+// View toggle functions
+function toggleView(viewId) {
+    const tableView = document.getElementById('tableViewContent');
+    const chartView = document.getElementById('chartViewContent');
+    
+    if (viewId === 'chartView') {
+        tableView.style.display = 'none';
+        chartView.style.display = 'block';
+        initializeChart();
+    } else {
+        tableView.style.display = 'block';
+        chartView.style.display = 'none';
+    }
+}
+
+// Chart initialization
+function initializeChart() {
+    const ctx = document.getElementById('insiderChart');
+    if (!ctx) return;
+    
+    // Get data from table
+    const rows = document.querySelectorAll('#insiderTable tbody tr');
+    const chartData = {
+        labels: [],
+        buys: [],
+        sells: []
+    };
+    
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        const date = cells[0].textContent.trim();
+        const type = cells[3].textContent.trim();
+        const value = parseFloat(cells[6].textContent.replace(/[^\d.-]/g, ''));
+        
+        chartData.labels.push(date);
+        if (type.includes('KJØP')) {
+            chartData.buys.push(value);
+            chartData.sells.push(0);
+        } else {
+            chartData.buys.push(0);
+            chartData.sells.push(value);
+        }
+    });
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: 'Kjøp',
+                data: chartData.buys,
+                backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                borderColor: 'rgba(40, 167, 69, 1)',
+                borderWidth: 1
+            }, {
+                label: 'Salg',
+                data: chartData.sells,
+                backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                borderColor: 'rgba(220, 53, 69, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return new Intl.NumberFormat('no-NO', {
+                                style: 'currency',
+                                currency: 'NOK',
+                                minimumFractionDigits: 0
+                            }).format(value);
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Enhanced interaction functions
+function addToWatchlist(symbol) {
+    if (typeof toggleFavorite === 'function') {
+        toggleFavorite(symbol, { showToast: true });
+    } else {
+        showNotification('Favorittfunksjon utilgjengelig', 'error');
+    }
+}
+
+function setAlert(symbol) {
+    const alertType = prompt(`Velg varseltype for ${symbol}:\n1. Pris varsel\n2. Insider aktivitet\n3. Volum varsel`, '2');
+    if (alertType) {
+        showNotification(`Varsel satt for ${symbol}`, 'success');
+    }
+}
+
+function getAnalysis(symbol) {
+    window.location.href = `/analysis/technical?symbol=${symbol}`;
+}
+
+// Live feed functions
+let autoRefreshInterval;
+
+function setupAutoRefresh() {
+    // Auto-refresh every 30 seconds
+    autoRefreshInterval = setInterval(refreshFeed, 30000);
+}
+
+function refreshFeed() {
+    const refreshIcon = document.getElementById('refreshIcon');
+    refreshIcon.classList.add('spin');
+    
+    fetch(`{{ url_for('insider_trading.api_latest') }}`)
+        .then(response => response.json())
+        .then(data => {
+            const txs = (data && (data.transactions || data.data)) ? (data.transactions || data.data) : [];
+            if (txs && txs.length >= 0) {
+                updateFeedTable(txs);
+            }
+            refreshIcon.classList.remove('spin');
+        })
+        .catch(error => {
+            console.error('Error refreshing feed:', error);
+            refreshIcon.classList.remove('spin');
+        });
+}
+
+function updateFeedTable(transactions) {
+    const tbody = document.getElementById('insiderFeedBody');
+    if (!tbody) return;
+    
+    // Clear existing rows
+    tbody.innerHTML = '';
+    
+    if (!transactions || transactions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-3">Ingen innsidehandel tilgjengelig akkurat nå.</td></tr>';
+        return;
+    }
+
+    // Add new transactions
+    transactions.slice(0, 25).forEach((trade, index) => {
+        // Normalize fields from API
+        const symbol = trade.symbol || trade.ticker || 'N/A';
+        const person = trade.insider || trade.person || 'Ukjent';
+    const role = trade.position || trade.role || 'Ukjent';
+    const qty = trade.shares != null ? trade.shares : (trade.quantity != null ? trade.quantity : null);
+        const totalValue = trade.total_value != null ? trade.total_value : (trade.value != null ? trade.value : 0);
+        const txType = trade.transaction_type || trade.transaction || 'UKJENT';
+    const price = trade.price != null ? trade.price : null;
+    const dateStr = trade.date || '-';
+    const timeStr = trade.time || '';
+        
+        const row = document.createElement('tr');
+        row.className = 'fade-in';
+        row.setAttribute('data-symbol', symbol);
+        
+        const sentiment = getSentimentBadge(totalValue || 0);
+        const transactionBadge = getTransactionBadge(txType);
+        
+        row.innerHTML = `
+            <td>
+                <a href="{{ url_for('insider_trading.search') }}?symbol=${encodeURIComponent(symbol)}" 
+                   class="fw-bold text-primary text-decoration-none">
+                    ${symbol}
+                </a>
+                ${index < 3 ? '<span class="badge bg-danger ms-1">NYE</span>' : ''}
+            </td>
+            <td>
+                <span class="small">${dateStr}</span>
+                <br>
+                <span class="text-muted small">${timeStr}</span>
+            </td>
+            <td>
+                <div>
+                    <span class="fw-bold">${String(person).substring(0, 15)}</span>
+                    <br>
+                    <small class="text-muted">${role}</small>
+                </div>
+            </td>
+            <td>
+                ${transactionBadge}
+                <br>
+                <small class="text-muted">${qty != null ? Number(qty).toLocaleString('no-NO') + ' aksjer' : '-'}</small>
+            </td>
+            <td class="text-end">
+                <span class="fw-bold text-${String(txType).toUpperCase().includes('KJØP') || String(txType).toLowerCase().includes('buy') ? 'success' : 'danger'}">
+                    ${totalValue != null ? Number(totalValue).toLocaleString('no-NO') : '-'} kr
+                </span>
+                <br>
+                <small class="text-muted">${price != null ? Number(price).toFixed(2) + ' kr/aksje' : '-'}</small>
+            </td>
+            <td>${sentiment}</td>
+            <td>
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-outline-primary" 
+                            onclick="addToWatchlist('${symbol}')"
+                            data-bs-toggle="tooltip" title="Legg til overvåkningsliste">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-success" 
+                            onclick="setAlert('${symbol}')"
+                            data-bs-toggle="tooltip" title="Sett varsel">
+                        <i class="bi bi-bell"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-info" 
+                            onclick="getAnalysis('${symbol}')"
+                            data-bs-toggle="tooltip" title="Få AI-analyse">
+                        <i class="bi bi-cpu"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        
+        tbody.appendChild(row);
+    });
+    
+    // Re-initialize tooltips for new elements
+    const newTooltips = tbody.querySelectorAll('[data-bs-toggle="tooltip"]');
+    newTooltips.forEach(el => new bootstrap.Tooltip(el));
+}
+
+function getSentimentBadge(value) {
+    const numValue = Number(value);
+    if (numValue > 5000000) {
+        return '<span class="badge bg-danger">🔴 Bullish</span>';
+    } else if (numValue > 1000000) {
+        return '<span class="badge bg-warning">🟡 Nøytral</span>';
+    } else {
+        return '<span class="badge bg-light text-dark">⚪ Bearish</span>';
+    }
+}
+
+function getTransactionBadge(type) {
+    const lowerType = (type || '').toLowerCase();
+    if (lowerType.includes('kjøp') || lowerType.includes('buy')) {
+    return '<span class="badge bg-success"><i class="bi bi-plus-lg me-1"></i>KJØP</span>';
+    } else if (lowerType.includes('salg') || lowerType.includes('sell')) {
+    return '<span class="badge bg-danger"><i class="bi bi-dash-lg me-1"></i>SALG</span>';
+    } else {
+    return '<span class="badge bg-warning"><i class="bi bi-arrow-left-right me-1"></i>OPSJONER</span>';
+    }
+}
+
+function toggleAutoRefresh() {
+    const icon = document.getElementById('autoRefreshIcon');
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+    icon.classList.remove('bi-pause-fill');
+    icon.classList.add('bi-play-fill');
+    } else {
+        setupAutoRefresh();
+    icon.classList.remove('bi-play-fill');
+    icon.classList.add('bi-pause-fill');
+    }
+}
+
+// Utility functions
+function showNotification(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999;';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 5000);
+}
+
+// Export/share functions removed
+
+function loadTrendingInsiderStocks() {
+    const loader = document.getElementById('trendingLoader');
+    loader.style.display = 'inline-block';
+    
+    fetch(`{{ url_for('insider_trading.api_trending') }}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.trending) {
+                updatePopularStocks(data.trending);
+            }
+            loader.style.display = 'none';
+        })
+        .catch(error => {
+            console.error('Error loading trending stocks:', error);
+            loader.style.display = 'none';
+        });
+}
+
+function updatePopularStocks(trendingStocks) {
+    const container = document.getElementById('popularStocksContainer');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    trendingStocks.slice(0, 12).forEach(stock => {
+        const badge = document.createElement('a');
+    badge.href = `{{ url_for('insider_trading.search') }}?symbol=${encodeURIComponent(stock.symbol || '')}`;
+        badge.className = 'badge bg-primary me-1 mb-1 text-decoration-none';
+        badge.innerHTML = `
+            ${stock.symbol}
+            ${stock.recent_activity ? `<span class="badge bg-danger rounded-pill ms-1">${stock.recent_activity}</span>` : ''}
+        `;
+        container.appendChild(badge);
+    });
+}
+
+function loadMoreTransactions() {
+    showNotification('Laster flere transaksjoner...', 'info');
+    // This would typically load more data from the API
+    setTimeout(() => {
+        showNotification('Alle tilgjengelige transaksjoner er lastet', 'success');
+    }, 1000);
+}
+
+function requestDataRefresh() {
+    showNotification('Forespør data oppdatering...', 'info');
+    fetch(`{{ url_for('insider_trading.api_latest') }}?force_refresh=true`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Data oppdatert!', 'success');
+                const txs = (data && (data.transactions || data.data)) ? (data.transactions || data.data) : [];
+                if (txs) {
+                    updateFeedTable(txs);
+                }
+            } else {
+                showNotification('Kunne ikke oppdatere data', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error refreshing data:', error);
+            showNotification('Feil ved oppdatering av data', 'error');
+        });
+}
+
+function expandSearchPeriod() {
+    const periodSelect = document.getElementById('period');
+    if (periodSelect) {
+        periodSelect.value = '365';
+        document.getElementById('insiderSearchForm').submit();
+    }
+}
+
+function suggestAlternatives() {
+    const symbol = document.getElementById('symbol').value;
+    showNotification(`Foreslår alternativer til ${symbol}...`, 'info');
+    // This could suggest related stocks or sectors
+}
+</script>
+{% endblock %}

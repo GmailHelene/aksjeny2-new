@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Innstillinger</h1>
+    
+    <form id="settings-form">
+        <div class="form-group">
+            <label for="email_notifications">E-postvarsler</label>
+            <input type="checkbox" name="email_notifications" class="notification-toggle" {% if user.settings.email_notifications %}checked{% endif %}>
+        </div>
+        
+        <div class="form-group">
+            <label for="price_alerts">Prisvalideringer</label>
+            <input type="checkbox" name="price_alerts" class="notification-toggle" {% if user.settings.price_alerts %}checked{% endif %}>
+        </div>
+        
+        <div class="form-group">
+            <label for="market_news">Markedsnyheter</label>
+            <input type="checkbox" name="market_news" class="notification-toggle" {% if user.settings.market_news %}checked{% endif %}>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Lagre innstillinger</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const notificationToggles = document.querySelectorAll('.notification-toggle');
+    
+    notificationToggles.forEach(toggle => {
+        toggle.addEventListener('change', async function() {
+            const settingName = this.name;
+            const isEnabled = this.checked;
+            
+            try {
+                const response = await fetch('/settings/notifications', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        [settingName]: isEnabled,
+                        email_notifications: document.querySelector('[name="email_notifications"]')?.checked || false,
+                        price_alerts: document.querySelector('[name="price_alerts"]')?.checked || false,
+                        market_news: document.querySelector('[name="market_news"]')?.checked || false
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!data.success) {
+                    // Revert toggle if failed
+                    this.checked = !isEnabled;
+                    alert(data.message || 'Feil ved oppdatering av varselinnstillinger.');
+                } else {
+                    // Show success message
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-success alert-dismissible fade show mt-3';
+                    alertDiv.innerHTML = `
+                        ${data.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    this.closest('.card-body').appendChild(alertDiv);
+                    
+                    // Auto-remove after 3 seconds
+                    setTimeout(() => alertDiv.remove(), 3000);
+                }
+            } catch (error) {
+                // Revert toggle if error
+                this.checked = !isEnabled;
+                alert('Feil ved oppdatering av varselinnstillinger.');
+                console.error('Error:', error);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

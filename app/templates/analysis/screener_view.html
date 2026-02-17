@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Screener - Aksjeradar{% endblock %}
+
+{% block content %}
+{% include 'analysis/_menu.html' %}
+
+<div class="container py-4">ds "base.html" %}
+
+{% block title %}Aksje Screener Resultater | Aksjeradar{% endblock %}
+
+{% block content %}
+{% include 'analysis/_menu.html' %}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i class="bi bi-search text-primary"></i> Screener Resultater
+                    </h1>
+                    <p class="text-muted">Resultater fra aksje screening</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('analysis.screener') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left"></i> Tilbake til Screener
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Screening Resultater</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Ticker</th>
+                                    <th>Selskap</th>
+                                    <th>Pris</th>
+                                    <th>Endring</th>
+                                    <th>Volum</th>
+                                    <th>Handlinger</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>EQNR.OL</strong></td>
+                                    <td>Equinor ASA</td>
+                                    <td>275.50 NOK</td>
+                                    <td><span class="text-success">+2.1%</span></td>
+                                    <td>2.1M</td>
+                                    <td>
+                                        <a href="{{ url_for('stocks.details', symbol='EQNR.OL') }}" class="btn btn-sm btn-outline-primary">
+                                            Se detaljer
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>DNB.OL</strong></td>
+                                    <td>DNB Bank ASA</td>
+                                    <td>189.20 NOK</td>
+                                    <td><span class="text-danger">-0.8%</span></td>
+                                    <td>1.5M</td>
+                                    <td>
+                                        <a href="{{ url_for('stocks.details', symbol='DNB.OL') }}" class="btn btn-sm btn-outline-primary">
+                                            Se detaljer
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

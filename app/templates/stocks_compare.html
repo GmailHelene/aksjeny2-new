@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}Sammenligning - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Sammenligning av {{ symbols|join:", " }}</h1>
+            
+            <!-- Navigation Tabs -->
+            <ul class="nav nav-tabs mb-4" id="comparisonTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" 
+                            type="button" role="tab" aria-controls="overview" aria-selected="true">
+                        <i class="bi bi-graph-up me-2"></i>Oversikt
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="statistics-tab" data-bs-toggle="tab" data-bs-target="#statistics" 
+                            type="button" role="tab" aria-controls="statistics" aria-selected="false">
+                        <i class="bi bi-table me-2"></i>Statistikk
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="correlation-tab" data-bs-toggle="tab" data-bs-target="#correlation" 
+                            type="button" role="tab" aria-controls="correlation" aria-selected="false">
+                        <i class="bi bi-diagram-2 me-2"></i>Korrelasjon
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Message Containers -->
+            <div id="error-messages"></div>
+            <div id="success-messages"></div>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="comparisonTabContent">
+                
+                <!-- Overview Tab -->
+                <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Sammenligningsparametre</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="comparison-parameters-form">
+                                        <div class="mb-3">
+                                            <label for="compare-symbols" class="form-label">Aksjesymboler</label>
+                                            <input type="text" class="form-control" id="compare-symbols" 
+                                                   placeholder="f.eks. EQNR.OL, DNB.OL" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="compare-start-date" class="form-label">Startdato</label>
+                                            <input type="date" class="form-control" id="compare-start-date" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="compare-end-date" class="form-label">Sluttdato</label>
+                                            <input type="date" class="form-control" id="compare-end-date" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="bi bi-arrow-repeat me-2"></i>Oppdater Sammenligning
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-8">
+                            <div id="comparison-results">
+                                <!-- Results from backend will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Tab -->
+                <div class="tab-pane fade" id="statistics" role="tabpanel" aria-labelledby="statistics-tab">
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Statistikk</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="statistics-parameters-form">
+                                        <div class="mb-3">
+                                            <label for="stats-symbols" class="form-label">Aksjesymboler</label>
+                                            <input type="text" class="form-control" id="stats-symbols" 
+                                                   placeholder="f.eks. EQNR.OL, DNB.OL" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="stats-frequency" class="form-label">Frekvens</label>
+                                            <select class="form-select" id="stats-frequency">
+                                                <option value="daily">Daglig</option>
+                                                <option value="weekly">Ukentlig</option>
+                                                <option value="monthly" selected>Månedlig</option>
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="bi bi-bar-chart-line me-2"></i>Vis Statistikk
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-8">
+                            <div id="statistics-results">
+                                <!-- Statistics results will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Correlation Tab -->
+                <div class="tab-pane fade" id="correlation" role="tabpanel" aria-labelledby="correlation-tab">
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Korrelasjonsanalyse</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="correlation-parameters-form">
+                                        <div class="mb-3">
+                                            <label for="corr-symbols" class="form-label">Aksjesymboler</label>
+                                            <input type="text" class="form-control" id="corr-symbols" 
+                                                   placeholder="f.eks. EQNR.OL, DNB.OL" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="corr-timeframe" class="form-label">Tidsramme</label>
+                                            <select class="form-select" id="corr-timeframe">
+                                                <option value="30">30 dager</option>
+                                                <option value="90">90 dager</option>
+                                                <option value="180">180 dager</option>
+                                                <option value="365" selected>1 år</option>
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="bi bi-diagram-2 me-2"></i>Vis Korrelasjon
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-8">
+                            <div id="correlation-results">
+                                <!-- Correlation results will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Comparison Scripts -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // CSRF token setup
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    if (!csrfMeta) {
+        console.error('CSRF token meta tag not found');
+        return;
+    }
+    const csrfToken = csrfMeta.getAttribute('content');
+
+    // Comparison Parameters Form Handler (AJAX)
+    document.getElementById('comparison-parameters-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const symbols = document.getElementById('compare-symbols').value.toUpperCase();
+        const startDate = document.getElementById('compare-start-date').value;
+        const endDate = document.getElementById('compare-end-date').value;
+        const results = document.getElementById('comparison-results');
+    results.innerHTML = '<div class="alert alert-info"><span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Henter sammenligning...</div>';
+        fetch('/advanced-analytics/compare-stocks', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ symbols: symbols, start_date: startDate, end_date: endDate })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.comparison) {
+                // Render real comparison data
+                results.innerHTML = `<div class='alert alert-success'><strong>Sammenligning:</strong><br>${data.comparison}</div>`;
+            } else {
+                results.innerHTML = `<div class='alert alert-danger'><strong>Feil:</strong> ${data.error || 'Kunne ikke generere sammenligning.'}</div>`;
+            }
+        })
+        .catch(error => {
+            results.innerHTML = `<div class='alert alert-danger'><strong>Nettverksfeil:</strong> ${error.message}</div>`;
+        });
+    });
+
+    // Statistics Form Handler (AJAX)
+    document.getElementById('statistics-parameters-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const symbols = document.getElementById('stats-symbols').value.toUpperCase();
+        const frequency = document.getElementById('stats-frequency').value;
+        const results = document.getElementById('statistics-results');
+    results.innerHTML = '<div class="alert alert-info"><span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Henter statistikk...</div>';
+        fetch('/advanced-analytics/stock-statistics', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ symbols: symbols, frequency: frequency })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.statistics) {
+                // Render real statistics data
+                results.innerHTML = `<div class='alert alert-success'><strong>Statistikk:</strong><br>${data.statistics}</div>`;
+            } else {
+                results.innerHTML = `<div class='alert alert-danger'><strong>Feil:</strong> ${data.error || 'Kunne ikke hente statistikk.'}</div>`;
+            }
+        })
+        .catch(error => {
+            results.innerHTML = `<div class='alert alert-danger'><strong>Nettverksfeil:</strong> ${error.message}</div>`;
+        });
+    });
+
+    // Correlation Form Handler (AJAX)
+    document.getElementById('correlation-parameters-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const symbols = document.getElementById('corr-symbols').value.toUpperCase();
+        const timeframe = document.getElementById('corr-timeframe').value;
+        const results = document.getElementById('correlation-results');
+    results.innerHTML = '<div class="alert alert-info"><span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Henter korrelasjon...</div>';
+        fetch('/advanced-analytics/correlation-analysis', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ symbols: symbols, timeframe: timeframe })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.correlation) {
+                // Render real correlation data
+                results.innerHTML = `<div class='alert alert-success'><strong>Korrelasjon:</strong><br>${data.correlation}</div>`;
+            } else {
+                results.innerHTML = `<div class='alert alert-danger'><strong>Feil:</strong> ${data.error || 'Kunne ikke hente korrelasjon.'}</div>`;
+            }
+        })
+        .catch(error => {
+            results.innerHTML = `<div class='alert alert-danger'><strong>Nettverksfeil:</strong> ${error.message}</div>`;
+        });
+    });
+});
+</script>
+{% endblock %}

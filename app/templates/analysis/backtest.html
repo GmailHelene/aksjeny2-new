@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">
+                <i class="bi bi-graph-down-arrow"></i> Backtest Strategier
+            </h1>
+            
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i>
+                Test dine handelsstrategier mot historiske data for å se hvordan de ville prestert.
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="bi bi-gear"></i> Backtest Konfiguration</h3>
+                </div>
+                <div class="card-body">
+                    <form id="backtestForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="symbol" class="form-label">Velg Aksje</label>
+                                    <select class="form-control" id="symbol" name="symbol">
+                                        <option value="EQNR.OL">Equinor ASA (EQNR.OL)</option>
+                                        <option value="DNB.OL">DNB Bank ASA (DNB.OL)</option>
+                                        <option value="TEL.OL">Telenor ASA (TEL.OL)</option>
+                                        <option value="AAPL">Apple Inc. (AAPL)</option>
+                                        <option value="MSFT">Microsoft Corp. (MSFT)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="strategy" class="form-label">Strategi Type</label>
+                                    <select class="form-control" id="strategy" name="strategy">
+                                        <option value="sma">Simple Moving Average</option>
+                                        <option value="ema">Exponential Moving Average</option>
+                                        <option value="rsi">RSI Strategy</option>
+                                        <option value="macd">MACD Strategy</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="startDate" class="form-label">Start Dato</label>
+                                    <input type="date" class="form-control" id="startDate" name="startDate" value="2023-01-01">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="endDate" class="form-label">Slutt Dato</label>
+                                    <input type="date" class="form-control" id="endDate" name="endDate" value="2024-01-01">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="initialCapital" class="form-label">Initial Kapital (NOK)</label>
+                                    <input type="number" class="form-control" id="initialCapital" name="initialCapital" value="100000">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="commission" class="form-label">Provisjon (%)</label>
+                                    <input type="number" class="form-control" id="commission" name="commission" value="0.25" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-play-circle"></i> Start Backtest
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mt-4" id="resultsCard" style="display: none;">
+                <div class="card-header">
+                    <h3><i class="bi bi-graph-up"></i> Backtest Resultater</h3>
+                </div>
+                <div class="card-body">
+                    <div id="resultsContent">
+                        <!-- Results will be displayed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('backtestForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Show loading state
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Kjører backtest...';
+    submitBtn.disabled = true;
+    
+    // Simulate backtest (replace with actual API call)
+    setTimeout(() => {
+        const resultsCard = document.getElementById('resultsCard');
+        const resultsContent = document.getElementById('resultsContent');
+        
+        resultsContent.innerHTML = `
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <h4 class="text-success">+15.7%</h4>
+                        <small class="text-muted">Total Avkastning</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <h4 class="text-info">1.45</h4>
+                        <small class="text-muted">Sharpe Ratio</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <h4 class="text-warning">-8.2%</h4>
+                        <small class="text-muted">Max Drawdown</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <h4 class="text-primary">125</h4>
+                        <small class="text-muted">Antall Handler</small>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="alert alert-success">
+                <i class="bi bi-check-circle"></i>
+                Backtesten er fullført! Strategien viste positiv avkastning på 15.7% over den valgte perioden.
+            </div>
+        `;
+        
+        resultsCard.style.display = 'block';
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }, 3000);
+});
+</script>
+{% endblock %}

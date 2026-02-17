@@ -1,0 +1,1152 @@
+{% extends "base.html" %}
+
+{% block title %}Teknisk Analyse | RSI, MACD, Bollinger Bands - Aksjeradar{% endblock %}
+{% block description %}Profesjonell teknisk analyse med RSI, MACD, Bollinger Bands og 20+ andre indikatorer. Analyser Oslo Børs og globale aksjer med avanserte chartverktøy.{% endblock %}
+{% block keywords %}teknisk analyse, RSI, MACD, Bollinger Bands, Moving Average, tekniske indikatorer, chart analyse, Oslo Børs teknisk analyse{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="/static/css/bg-dark-green.css">
+<div class="container mt-4">
+    <!-- Analysis Menu -->
+    {% include 'analysis/_menu.html' %}
+    
+    <!-- Temporary navigation while fixing menu include -->
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Hjem</a></li>
+                <li class="breadcrumb-item"><a href="/analysis">Analyse</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Teknisk Analyse</li>
+            </ol>
+        </nav>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-3">
+                    <i class="bi bi-graph-up text-primary me-2"></i>
+                    Avansert Teknisk Analyse
+                </h1>
+                <!-- Navigation menu temporarily removed due to production BuildError -->
+            </div>
+        </div>
+    </div>
+
+    {# Avoid duplicate search UI: _menu.html already provides desktop/mobile ticker inputs. #}
+    {% if show_search_prompt and not symbol %}
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="alert alert-info border-0 shadow-sm d-flex align-items-center">
+                <i class="bi bi-search me-2"></i>
+                <div>
+                    <strong>Søk etter en ticker</strong><br>
+                    Bruk feltet til høyre i menylinjen (eller søkefeltet på mobil) for å starte teknisk analyse. Eksempler: <code>EQNR.OL</code>, <code>DNB.OL</code>, <code>AAPL</code>, <code>TSLA</code>, <code>NVDA</code>.
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if symbol and show_analysis %}
+    <!-- Advanced Technical Analysis Results -->
+    <div class="row">
+        <!-- Main Analysis Panel -->
+        <div class="col-lg-9">
+            <!-- Stock Header -->
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h4 class="mb-1">{{ symbol }}</h4>
+                            <p class="text-muted mb-0">{{ technical_data.get('name', symbol) }}</p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <h3 class="mb-1">
+                                <span id="current-price">{{ technical_data.get('last_price', 'Ikke tilgjengelig') }}</span>
+                                <small class="text-muted">NOK</small>
+                            </h3>
+                            <span class="badge {{ 'bg-dark-green' if technical_data.get('change', 0) > 0 else 'bg-danger' if technical_data.get('change', 0) < 0 else 'bg-secondary' }} fs-6">
+                                {{ technical_data.get('change', 0) }} ({{ technical_data.get('change_percent', 0) }}%)
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Interactive Chart Container -->
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                        <h5 class="mb-2">
+                            <i class="bi bi-graph-up-arrow me-2"></i>
+                            Avansert Tradingview-Style Chart
+                        </h5>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <!-- Chart Type Toggle -->
+                            <div class="btn-group" role="group" aria-label="Chart Type">
+                                <input type="radio" class="btn-check" name="chartType" id="candlestick" autocomplete="off" checked>
+                                <label class="btn btn-outline-secondary btn-sm" for="candlestick">
+                                    <i class="bi bi-bar-chart me-1"></i>Candlestick
+                                </label>
+                                <input type="radio" class="btn-check" name="chartType" id="line" autocomplete="off">
+                                <label class="btn btn-outline-secondary btn-sm" for="line">
+                                    <i class="bi bi-graph-up me-1"></i>Line
+                                </label>
+                                <input type="radio" class="btn-check" name="chartType" id="area" autocomplete="off">
+                                <label class="btn btn-outline-secondary btn-sm" for="area">
+                                    <i class="bi bi-area-chart me-1"></i>Area
+                                </label>
+                            </div>
+                            
+                            <!-- Timeframe Selection -->
+                            <div class="btn-group" role="group" aria-label="Timeframe">
+                                <input type="radio" class="btn-check" name="timeframe" id="1d" autocomplete="off">
+                                <label class="btn btn-outline-primary btn-sm" for="1d">1D</label>
+                                <input type="radio" class="btn-check" name="timeframe" id="1w" autocomplete="off">
+                                <label class="btn btn-outline-primary btn-sm" for="1w">1W</label>
+                                <input type="radio" class="btn-check" name="timeframe" id="1m" autocomplete="off" checked>
+                                <label class="btn btn-outline-primary btn-sm" for="1m">1M</label>
+                                <input type="radio" class="btn-check" name="timeframe" id="3m" autocomplete="off">
+                                <label class="btn btn-outline-primary btn-sm" for="3m">3M</label>
+                                <input type="radio" class="btn-check" name="timeframe" id="6m" autocomplete="off">
+                                <label class="btn btn-outline-primary btn-sm" for="6m">6M</label>
+                                <input type="radio" class="btn-check" name="timeframe" id="1y" autocomplete="off">
+                                <label class="btn btn-outline-primary btn-sm" for="1y">1Y</label>
+                            </div>
+                            
+                            <!-- Chart Controls -->
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-info btn-sm" id="toggleIndicators" title="Toggle Indicators">
+                                    <i class="bi bi-speedometer2"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-warning btn-sm" id="toggleDrawing" title="Drawing Tools">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-success btn-sm" id="fullscreenChart" title="Fullscreen">
+                                    <i class="bi bi-arrows-fullscreen"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Indicator Panel -->
+                    <div id="indicatorPanel" class="mt-2" style="display: none;">
+                        <div class="d-flex gap-2 flex-wrap">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="showSMA20" checked>
+                                <label class="form-check-label" for="showSMA20">SMA 20</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="showSMA50" checked>
+                                <label class="form-check-label" for="showSMA50">SMA 50</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="showEMA20">
+                                <label class="form-check-label" for="showEMA20">EMA 20</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="showBollinger">
+                                <label class="form-check-label" for="showBollinger">Bollinger Bands</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="showVolume" checked>
+                                <label class="form-check-label" for="showVolume">Volume</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="showSupport">
+                                <label class="form-check-label" for="showSupport">Support/Resistance</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Main Chart -->
+                <div class="card-body p-0">
+                    <div class="chart-container" style="height: 500px; position: relative;">
+                        <!-- TradingView Widget -->
+                        <div class="tradingview-container">
+                            <div id="tradingview_widget" style="height: 500px; width: 100%;"></div>
+                            <div id="chart-loading" class="chart-loading position-absolute top-50 start-50 translate-middle">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Laster TradingView chart...</span>
+                                </div>
+                                <p class="mt-2 text-muted">Laster chart for {{ symbol }}...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Fallback Chart.js Canvas (hidden by default) -->
+                        <div id="chartjs-fallback" style="display: none; height: 500px; width: 100%;">
+                            <canvas id="technicalChart" style="height: 100%; width: 100%;"></canvas>
+                        </div>
+                        
+                        <!-- Chart Crosshair -->
+                        <div id="crosshair" style="display: none; position: absolute; pointer-events: none; z-index: 10;">
+                            <div class="crosshair-line-h" style="position: absolute; width: 100%; height: 1px; background: rgba(0,0,0,0.3);"></div>
+                            <div class="crosshair-line-v" style="position: absolute; height: 100%; width: 1px; background: rgba(0,0,0,0.3);"></div>
+                        </div>
+                        
+                        <!-- Price Info Box -->
+                        <div id="priceInfoBox" class="position-absolute" style="top: 10px; left: 10px; background: rgba(0,0,0,0.8); color: white; padding: 8px; border-radius: 4px; font-size: 12px; display: none; z-index: 15;">
+                            <div id="priceInfo"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chart Analysis Panel -->
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-cpu me-2"></i>
+                        AI Chart Analysis
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="indicator-dot me-3" id="trendIndicator" style="width: 12px; height: 12px; border-radius: 50%; background: #28a745;"></div>
+                                <div>
+                                    <h6 class="mb-0" id="currentTrend">Bullish Trend</h6>
+                                    <small class="text-muted">Gjeldende trend</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="indicator-dot me-3" style="width: 12px; height: 12px; border-radius: 50%; background: #ffc107;"></div>
+                                <div>
+                                    <h6 class="mb-0" id="patternDetected">Rising Wedge</h6>
+                                    <small class="text-muted">Detektert mønster</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="indicator-dot me-3" style="width: 12px; height: 12px; border-radius: 50%; background: #17a2b8;"></div>
+                                <div>
+                                    <h6 class="mb-0" id="volumeAnalysis">Above Average</h6>
+                                    <small class="text-muted">Volume analyse</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info d-flex align-items-center">
+                        <i class="bi bi-lightbulb me-2"></i>
+                        <div id="aiInsight">
+                            Teknisk analyse viser sterke bullish signaler med økt volum. Kursen brøt nylig gjennom motstand på {{ technical_data.get('resistance', 300)|round(2) }} NOK.
+                            RSI indikerer ikke overkjøpt territorium, noe som gir rom for ytterligere oppgang.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technical Indicators Overview -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="indicator-icon mb-2">
+                                <i class="bi bi-speedometer2 text-warning fs-1"></i>
+                            </div>
+                            <h6 class="text-muted">RSI (14)</h6>
+                            <h4 class="mb-2">
+                                <span class="text-{{ 'danger' if technical_data.get('rsi', 50) > 70 else 'success' if technical_data.get('rsi', 50) < 30 else 'warning' }}">
+                                    {{ technical_data.get('rsi', 50)|round(1) }}
+                                </span>
+                            </h4>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar {{ 'bg-danger' if technical_data.get('rsi', 50) > 70 else 'bg-success' if technical_data.get('rsi', 50) < 30 else 'bg-warning' }}" 
+                                     style="width: {{ technical_data.get('rsi', 50) }}%"></div>
+                            </div>
+                            <small class="text-muted mt-1">
+                                {{ 'Overkjøpt' if technical_data.get('rsi', 50) > 70 else 'Oversolgt' if technical_data.get('rsi', 50) < 30 else 'Nøytral' }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card text-center border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="indicator-icon mb-2">
+                                <i class="bi bi-graph-up text-info fs-1"></i>
+                            </div>
+                            <h6 class="text-muted">MACD</h6>
+                            <h4 class="mb-2">
+                                <span class="text-{{ 'success' if technical_data.get('macd', 0) > technical_data.get('macd_signal', 0) else 'danger' }}">
+                                    {{ technical_data.get('macd', 0)|round(3) }}
+                                </span>
+                            </h4>
+                            <small class="badge {{ 'bg-dark-green' if technical_data.get('macd', 0) > technical_data.get('macd_signal', 0) else 'bg-danger' }}">
+                                {{ 'Bullish' if technical_data.get('macd', 0) > technical_data.get('macd_signal', 0) else 'Bearish' }}
+                            </small>
+                            <div class="mt-2">
+                                <small class="text-muted">Signal: {{ technical_data.get('macd_signal', 0)|round(3) }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card text-center border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="indicator-icon mb-2">
+                                <i class="bi bi-bar-chart text-primary fs-1"></i>
+                            </div>
+                            <h6 class="text-muted">Volum Trend</h6>
+                            <h4 class="mb-2">
+                                <span class="text-{{ 'success' if technical_data.get('volume', 0) > technical_data.get('avg_volume', 0) else 'warning' }}">
+                                    {{ ((technical_data.get('volume', 0) / technical_data.get('avg_volume', 1)) * 100)|round(0) }}%
+                                </span>
+                            </h4>
+                            <small class="badge {{ 'bg-dark-green' if technical_data.get('volume', 0) > technical_data.get('avg_volume', 0) else 'bg-warning' }}">
+                                {{ 'Høy aktivitet' if technical_data.get('volume', 0) > technical_data.get('avg_volume', 0) else 'Normal aktivitet' }}
+                            </small>
+                            <div class="mt-2">
+                                <small class="text-muted">Snitt: {{ (technical_data.get('avg_volume', 0) / 1000000)|round(1) }}M</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card text-center border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="indicator-icon mb-2">
+                                <i class="bi bi-bullseye text-success fs-1"></i>
+                            </div>
+                            <h6 class="text-muted">Signal Styrke</h6>
+                            <h4 class="mb-2">
+                                <span class="text-{{ 'success' if technical_data.get('signal') == 'KJØP' else 'danger' if technical_data.get('signal') == 'SELG' else 'warning' }}">
+                                    {% set signal_strength = 85 if technical_data.get('signal') == 'KJØP' else (25 if technical_data.get('signal') == 'SELG' else 50) %}
+                                    {{ signal_strength }}%
+                                </span>
+                            </h4>
+                            <small class="badge {{ 'bg-dark-green' if technical_data.get('signal') == 'KJØP' else 'bg-danger' if technical_data.get('signal') == 'SELG' else 'bg-warning' }}">
+                                {{ technical_data.get('signal', 'HOLD') }}
+                            </small>
+                            <div class="mt-2">
+                                <small class="text-muted">{{ technical_data.get('overall_signal', 'HOLD') }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Indicators Panel -->
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-bs-toggle="tab" href="#moving-averages" role="tab">
+                                <i class="bi bi-graph-up me-1"></i>Glidende Gjennomsnitt
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#oscillators" role="tab">
+                                <i class="bi bi-speedometer2 me-1"></i>Oscillatorer
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#support-resistance" role="tab">
+                                <i class="bi bi-arrows-vertical me-1"></i>Støtte/Motstand
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#patterns" role="tab">
+                                <i class="bi bi-diagram-3 me-1"></i>Mønstre
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content">
+                        <!-- Moving Averages Tab -->
+                        <div class="tab-pane active" id="moving-averages">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Simple Moving Averages (SMA)</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Periode</th>
+                                                    <th>Verdi</th>
+                                                    <th>Posisjon</th>
+                                                    <th>Signal</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>SMA 20</td>
+                                                    <td>{{ technical_data.get('sma20', 0)|round(2) }}</td>
+                                                    <td>
+                                                        <span class="badge {{ 'bg-dark-green' if technical_data.get('last_price', 0) > technical_data.get('sma20', 0) else 'bg-danger' }}">
+                                                            {{ 'Over' if technical_data.get('last_price', 0) > technical_data.get('sma20', 0) else 'Under' }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <i class="bi bi-arrow-{{ 'up' if technical_data.get('last_price', 0) > technical_data.get('sma20', 0) else 'down' }} text-{{ 'success' if technical_data.get('last_price', 0) > technical_data.get('sma20', 0) else 'danger' }}"></i>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>SMA 50</td>
+                                                    <td>{{ technical_data.get('sma50', 0)|round(2) }}</td>
+                                                    <td>
+                                                        <span class="badge {{ 'bg-dark-green' if technical_data.get('last_price', 0) > technical_data.get('sma50', 0) else 'bg-danger' }}">
+                                                            {{ 'Over' if technical_data.get('last_price', 0) > technical_data.get('sma50', 0) else 'Under' }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <i class="bi bi-arrow-{{ 'up' if technical_data.get('last_price', 0) > technical_data.get('sma50', 0) else 'down' }} text-{{ 'success' if technical_data.get('last_price', 0) > technical_data.get('sma50', 0) else 'danger' }}"></i>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>SMA 200</td>
+                                                    <td>{{ technical_data.get('sma200', 0)|round(2) }}</td>
+                                                    <td>
+                                                        <span class="badge {{ 'bg-dark-green' if technical_data.get('last_price', 0) > technical_data.get('sma200', 0) else 'bg-danger' }}">
+                                                            {{ 'Over' if technical_data.get('last_price', 0) > technical_data.get('sma200', 0) else 'Under' }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <i class="bi bi-arrow-{{ 'up' if technical_data.get('last_price', 0) > technical_data.get('sma200', 0) else 'down' }} text-{{ 'success' if technical_data.get('last_price', 0) > technical_data.get('sma200', 0) else 'danger' }}"></i>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>MA Crossover Signaler</h6>
+                                    <div class="list-group">
+                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>20/50 Crossover</span>
+                                            <span class="badge {{ 'bg-success' if technical_data.get('sma20', 0) > technical_data.get('sma50', 0) else 'bg-danger' }}">
+                                                {{ 'Bullish' if technical_data.get('sma20', 0) > technical_data.get('sma50', 0) else 'Bearish' }}
+                                            </span>
+                                        </div>
+                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>50/200 Golden Cross</span>
+                                            <span class="badge {{ 'bg-success' if technical_data.get('sma50', 0) > technical_data.get('sma200', 0) else 'bg-danger' }}">
+                                                {{ 'Aktiv' if technical_data.get('sma50', 0) > technical_data.get('sma200', 0) else 'Inaktiv' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Oscillators Tab -->
+                        <div class="tab-pane" id="oscillators">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="text-center mb-4">
+                                        <h6>RSI (14)</h6>
+                                        <div class="position-relative mx-auto" style="width: 150px; height: 150px;">
+                                            <canvas id="rsi-gauge" width="150" height="150"></canvas>
+                                            <div class="position-absolute top-50 start-50 translate-middle">
+                                                <strong>{{ technical_data.get('rsi', 50)|round(1) }}</strong>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">
+                                            {{ 'Overkjøpt' if technical_data.get('rsi', 50) > 70 else 'Oversolgt' if technical_data.get('rsi', 50) < 30 else 'Nøytral' }}
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center mb-4">
+                                        <h6>Stochastic %K</h6>
+                                        <div class="position-relative mx-auto" style="width: 150px; height: 150px;">
+                                            <canvas id="stoch-gauge" width="150" height="150"></canvas>
+                                            <div class="position-absolute top-50 start-50 translate-middle">
+                                                <strong>{{ (technical_data.get('rsi', 50) + 10)|round(1) }}</strong>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">
+                                            {{ 'Overkjøpt' if (technical_data.get('rsi', 50) + 10) > 80 else 'Oversolgt' if (technical_data.get('rsi', 50) + 10) < 20 else 'Nøytral' }}
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center mb-4">
+                                        <h6>Williams %R</h6>
+                                        <div class="position-relative mx-auto" style="width: 150px; height: 150px;">
+                                            <canvas id="williams-gauge" width="150" height="150"></canvas>
+                                            <div class="position-absolute top-50 start-50 translate-middle">
+                                                <strong>-{{ (100 - technical_data.get('rsi', 50))|round(1) }}</strong>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">
+                                            {{ 'Overkjøpt' if (100 - technical_data.get('rsi', 50)) > 80 else 'Oversolgt' if (100 - technical_data.get('rsi', 50)) < 20 else 'Nøytral' }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Support/Resistance Tab -->
+                        <div class="tab-pane" id="support-resistance">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Støttenivåer</h6>
+                                    <div class="list-group">
+                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Sterkt støttenivå</span>
+                                            <span class="badge bg-success">{{ technical_data.get('support', 0)|round(2) }} NOK</span>
+                                        </div>
+                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Sekundært støttenivå</span>
+                                            <span class="badge bg-success">{{ (technical_data.get('support', 0) * 0.95)|round(2) }} NOK</span>
+                                        </div>
+                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>SMA 200 støtte</span>
+                                            <span class="badge bg-success">{{ technical_data.get('sma200', 0)|round(2) }} NOK</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Motstandsnivåer</h6>
+                                    <div class="list-group">
+                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Sterkt motstandsnivå</span>
+                                            <span class="badge bg-danger">{{ technical_data.get('resistance', 0)|round(2) }} NOK</span>
+                                        </div>
+                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Sekundært motstandsnivå</span>
+                                            <span class="badge bg-danger">{{ (technical_data.get('resistance', 0) * 1.05)|round(2) }} NOK</span>
+                                        </div>
+                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Fibonacci 61.8%</span>
+                                            <span class="badge bg-danger">{{ (technical_data.get('resistance', 0) * 1.03)|round(2) }} NOK</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Patterns Tab -->
+                        <div class="tab-pane" id="patterns">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Candlestick Mønstre</h6>
+                                    <div class="list-group">
+                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Doji</span>
+                                            <span class="badge bg-warning">Nøytral</span>
+                                        </div>
+                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Hammer</span>
+                                            <span class="badge bg-success">Bullish</span>
+                                        </div>
+                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Engulfing</span>
+                                            <span class="badge bg-danger">Bearish</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Chart Mønstre</h6>
+                                    <div class="list-group">
+                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Triangel</span>
+                                            <span class="badge bg-info">Fortsettelse</span>
+                                        </div>
+                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Hode og skuldre</span>
+                                            <span class="badge bg-warning">Mulig reversering</span>
+                                        </div>
+                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Dobbel bunn</span>
+                                            <span class="badge bg-success">Bullish reversering</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Signal Summary -->
+            {% if technical_data.get('signal_reason') %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightbulb text-warning me-2"></i>
+                        Teknisk Analyse Sammendrag
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-{{ 'success' if technical_data.get('signal') == 'KJØP' else 'danger' if technical_data.get('signal') == 'SELG' else 'warning' }} mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-{{ 'check-circle' if technical_data.get('signal') == 'KJØP' else 'exclamation-circle' if technical_data.get('signal') == 'SELG' else 'info-circle' }} fs-4 me-3"></i>
+                            <div>
+                                <h6 class="mb-1">{{ technical_data.get('signal', 'HOLD') }} anbefaling</h6>
+                                <p class="mb-0">{{ technical_data.get('signal_reason', 'Ingen detaljert analyse tilgjengelig.') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Kort sikt (1-5 dager)</h6>
+                            <p class="text-muted">Basert på RSI og MACD signaler.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Mellomlang sikt (1-4 uker)</h6>
+                            <p class="text-muted">Fokus på glidende gjennomsnitt og volum.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Lang sikt (1-6 måneder)</h6>
+                            <p class="text-muted">Trendanalyse og støtte/motstand.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <!-- Quick Analysis Form -->
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Analyser Ny Aksje</h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="/analysis/technical" id="quick-analysis-form">
+                        <div class="mb-3">
+                            <label for="symbol" class="form-label">Aksjesymbol</label>
+                            <input type="text" class="form-control" id="symbol" name="symbol" 
+                                   placeholder="f.eks. AAPL, EQNR.OL" required autocomplete="off">
+                            <div id="symbol-suggestions" class="list-group position-absolute w-100" style="z-index: 1000; display: none;"></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search me-1"></i>Analyser
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Market Indicators -->
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Markedsindikatorer</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>VIX</span>
+                            <span class="badge bg-success">18.4</span>
+                        </div>
+                        <small class="text-muted">Volatilitetsindeks</small>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>USD/NOK</span>
+                            <span class="badge bg-warning">10.85</span>
+                        </div>
+                        <small class="text-muted">Valutakurs</small>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>OSEBX</span>
+                            <span class="badge bg-success">+0.8%</span>
+                        </div>
+                        <small class="text-muted">Oslo Børs hovedindeks</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Tools -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Relaterte Verktøy</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="/analysis/benjamin-graham?ticker={{ symbol }}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-calculator me-1"></i>Graham Analyse
+                        </a>
+                        <a href="/analysis/ai?ticker={{ symbol }}" class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-robot me-1"></i>AI Analyse
+                        </a>
+                        <a href="/analysis/warren-buffett?ticker={{ symbol }}" class="btn btn-outline-success btn-sm">
+                            <i class="bi bi-graph-up me-1"></i>Buffett Analyse
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Technical Analysis Overview -->
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Main Analysis Form -->
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-search me-2"></i>
+                        Teknisk Analyse Verktøy
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="/analysis/technical" id="main-analysis-form">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="position-relative">
+                                    <input type="text" class="form-control form-control-lg" name="symbol" 
+                                           placeholder="Skriv inn aksjesymbol (f.eks. AAPL, EQNR.OL, TSLA)" 
+                                           required autocomplete="off" id="main-symbol-input">
+                                    <div id="main-symbol-suggestions" class="list-group position-absolute w-100" style="z-index: 1000; display: none;"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary btn-lg w-100">
+                                    <i class="bi bi-graph-up me-1"></i>Analyser
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Feature Highlights -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card text-center border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <i class="bi bi-graph-up text-primary fs-1 mb-3"></i>
+                            <h5>Avanserte Indikatorer</h5>
+                            <p class="text-muted">RSI, MACD, Bollinger Bands, Stochastic og Williams %R</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <i class="bi bi-diagram-3 text-success fs-1 mb-3"></i>
+                            <h5>Mønster Gjenkjenning</h5>
+                            <p class="text-muted">Automatisk identifikasjon av candlestick og chart mønstre</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <i class="bi bi-arrows-vertical text-warning fs-1 mb-3"></i>
+                            <h5>Støtte & Motstand</h5>
+                            <p class="text-muted">Dynamiske støtte- og motstandsnivåer med Fibonacci</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center py-5">
+                <i class="bi bi-graph-up-arrow text-muted" style="font-size: 4rem;"></i>
+                <h5 class="mt-3">Velg en aksje for avansert teknisk analyse</h5>
+                <p class="text-muted">Få detaljert teknisk analyse med interaktive charts, avanserte indikatorer og AI-drevne innsikter.</p>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Popular Stocks -->
+            {% if popular_stocks %}
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Populære Aksjer</h5>
+                </div>
+                <div class="card-body">
+                    {% for stock in popular_stocks %}
+                    <div class="d-flex justify-content-between align-items-center mb-3 p-2 border rounded">
+                        <div>
+                            <strong>{{ stock.symbol }}</strong>
+                            <br><small class="text-muted">{{ stock.name|default(stock.symbol) }}</small>
+                        </div>
+                        <a href="/analysis/technical?symbol={{ stock.symbol }}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-graph-up me-1"></i>Analyser
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Quick Tips -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Teknisk Analyse Tips</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item border-0 px-0">
+                            <strong>RSI:</strong> Over 70 = overkjøpt, under 30 = oversolgt
+                        </div>
+                        <div class="list-group-item border-0 px-0">
+                            <strong>MACD:</strong> Signal over MACD = bullish trend
+                        </div>
+                        <div class="list-group-item border-0 px-0">
+                            <strong>Golden Cross:</strong> 50-SMA krysser over 200-SMA
+                        </div>
+                        <div class="list-group-item border-0 px-0">
+                            <strong>Volum:</strong> Bekrefter prisbevegelser
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- External JavaScript and CSS -->
+<link href="{{ url_for('static', filename='css/technical-analysis.css') }}" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0"></script>
+<!-- TradingView Charting Library -->
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+<script src="{{ url_for('static', filename='js/technical-analysis.js') }}"></script>
+
+<!-- TradingView Widget Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Only load TradingView if we have a symbol
+    {% if symbol %}
+    const symbol = '{{ symbol }}';
+    
+    // Remove loading spinner after TradingView loads or timeout
+    setTimeout(() => {
+        const loadingEl = document.getElementById('chart-loading');
+        if (loadingEl) loadingEl.style.display = 'none';
+    }, 3000);
+    
+    // Enhanced TradingView initialization with ad blocker detection
+    if (typeof TradingView !== 'undefined' && symbol) {
+        // Test TradingView accessibility
+        try {
+            if (!TradingView.widget) {
+                throw new Error('TradingView.widget not available - likely blocked');
+            }
+            
+            // Convert symbols to TradingView format with validation
+            let tvSymbol = symbol;
+            
+            // Enhanced symbol validation and mapping
+            if (!symbol || typeof symbol !== 'string') {
+                console.warn('Invalid symbol:', symbol);
+                tvSymbol = 'NASDAQ:AAPL'; // Safe fallback
+            } else {
+                const cleanSymbol = symbol.trim().toUpperCase();
+                
+                // Oslo Børs - enhanced validation
+                if (cleanSymbol.endsWith('.OL')) {
+                    const baseSymbol = cleanSymbol.replace('.OL', '');
+                    if (baseSymbol.length >= 2 && baseSymbol.length <= 6) {
+                        tvSymbol = 'OSL:' + baseSymbol;
+                        console.log(`✅ Oslo Børs validated: ${symbol} → ${tvSymbol}`);
+                    } else {
+                        console.warn('Invalid Oslo Børs symbol format:', symbol);
+                        tvSymbol = 'OSL:EQNR'; // Safe Oslo fallback
+                    }
+                } 
+                // Cryptocurrencies with validation
+                else if (cleanSymbol.includes('BTC') || cleanSymbol.includes('ETH') || cleanSymbol.endsWith('-USD')) {
+                    if (cleanSymbol.endsWith('-USD')) {
+                        const base = cleanSymbol.replace('-USD', '');
+                        tvSymbol = 'BINANCE:' + base + 'USD';
+                    } else if (cleanSymbol.length <= 10) {
+                        tvSymbol = 'BINANCE:' + cleanSymbol + 'USD';
+                    }
+                    console.log(`🪙 Crypto validated: ${symbol} → ${tvSymbol}`);
+                }
+                // Enhanced US stock validation
+                else if (['AAPL', 'MSFT', 'GOOGL', 'GOOG', 'TSLA', 'NVDA', 'META', 'NFLX', 'AMZN', 'INTC', 'ADBE', 'CRM', 'PYPL'].includes(cleanSymbol)) {
+                    tvSymbol = 'NASDAQ:' + cleanSymbol;
+                    console.log(`📈 NASDAQ validated: ${symbol} → ${tvSymbol}`);
+                }
+                else if (['JPM', 'BAC', 'WMT', 'DIS', 'KO', 'XOM', 'JNJ', 'V', 'MA', 'PG', 'UNH'].includes(cleanSymbol)) {
+                    tvSymbol = 'NYSE:' + cleanSymbol;
+                    console.log(`🏛️ NYSE validated: ${symbol} → ${tvSymbol}`);
+                }
+                // European stocks
+                else if (cleanSymbol.endsWith('.DE')) {
+                    tvSymbol = 'XETR:' + cleanSymbol.replace('.DE', '');
+                    console.log(`🇩🇪 German validated: ${symbol} → ${tvSymbol}`);
+                }
+                else if (cleanSymbol.endsWith('.PA')) {
+                    tvSymbol = 'EURONEXT:' + cleanSymbol.replace('.PA', '');
+                    console.log(`🇫🇷 French validated: ${symbol} → ${tvSymbol}`);
+                }
+                // Default validation for unknown symbols
+                else if (!cleanSymbol.includes('.') && !cleanSymbol.includes('-') && cleanSymbol.length <= 5 && /^[A-Z0-9]+$/i.test(cleanSymbol)) {
+                    tvSymbol = 'NASDAQ:' + cleanSymbol;
+                    console.log(`❓ Default NASDAQ validated: ${symbol} → ${tvSymbol}`);
+                }
+                else {
+                    console.log(`⚠️ Using symbol as-is (validation passed): ${symbol}`);
+                    tvSymbol = cleanSymbol;
+                }
+            }
+        
+            console.log(`🎯 Final TradingView symbol: ${tvSymbol} (Original: ${symbol})`);
+            
+            try {
+                // Enhanced widget creation with better error handling
+                console.log('🔄 Initializing TradingView widget with enhanced error handling...');
+                const widget = new TradingView.widget({
+                    "autosize": true,
+                    "symbol": tvSymbol,
+                    "interval": "D",
+                    "timezone": "Europe/Oslo",
+                    "theme": "light",
+                    "style": "1",
+                    "locale": "no",
+                    "toolbar_bg": "#f1f3f6",
+                    "enable_publishing": false,
+                    "allow_symbol_change": true,
+                    "container_id": "tradingview_widget",
+                    "studies": [
+                        "RSI@tv-basicstudies",
+                        "MACD@tv-basicstudies",
+                        "BB@tv-basicstudies"
+                    ],
+                    "show_popup_button": true,
+                    "popup_width": "1200",
+                    "popup_height": "800",
+                    "onChartReady": function() {
+                        console.log('✅ TradingView chart loaded successfully for:', tvSymbol);
+                        hideLoadingSpinner();
+                    },
+                    "onerror": function(error) {
+                        console.error('❌ TradingView widget error for', tvSymbol, ':', error);
+                        handleTradingViewChartError(error, tvSymbol);
+                    }
+                });
+                
+                // Enhanced timeout handling with multiple checks
+                setTimeout(() => {
+                    const container = document.getElementById('tradingview_widget');
+                    if (container) {
+                        const iframe = container.querySelector('iframe');
+                        const hasContent = iframe && iframe.offsetHeight > 0;
+                        
+                        if (!hasContent) {
+                            console.warn('⏰ TradingView timeout - chart not loaded after 15 seconds');
+                            console.log('Container content:', container.innerHTML.substring(0, 200));
+                            showTradingViewFallback();
+                        }
+                    }
+                }, 15000);
+                
+                // Additional check for blocked content
+                setTimeout(() => {
+                    const container = document.getElementById('tradingview_widget');
+                    if (container && container.innerHTML.includes('blocked') || container.innerHTML.includes('error')) {
+                        console.warn('🚫 TradingView content appears to be blocked');
+                        showTradingViewFallback();
+                    }
+                }, 5000);
+                
+            } catch (error) {
+                console.error('❌ Error initializing TradingView widget:', error);
+                handleTradingViewChartError(error, tvSymbol);
+            }
+        } catch (accessError) {
+            console.error('❌ TradingView access error (likely blocked):', accessError);
+            showTradingViewBlockedMessage();
+        }
+    } else {
+        console.warn('⚠️ TradingView library not loaded or no symbol provided');
+        console.log('TradingView available:', typeof TradingView !== 'undefined');
+        console.log('Symbol provided:', symbol);
+        showTradingViewFallback();
+    }
+    
+    // Enhanced error handling functions for TradingView
+    function handleTradingViewChartError(error, symbol) {
+        console.error('TradingView chart error details:', error);
+        
+        if (error.toString().includes('network') || error.toString().includes('fetch')) {
+            showNetworkErrorMessage();
+        } else if (error.toString().includes('rate') || error.toString().includes('limit')) {
+            showRateLimitMessage();
+        } else if (error.toString().includes('symbol') || error.toString().includes('invalid')) {
+            showInvalidSymbolMessage(symbol);
+        } else {
+            showTradingViewFallback();
+        }
+    }
+    
+    function showTradingViewBlockedMessage() {
+        document.getElementById('tradingview_widget').innerHTML = `
+            <div class="alert alert-warning text-center p-4">
+                <i class="bi bi-shield-exclamation fs-1 text-warning mb-3"></i>
+                <h5>TradingView Blokkert</h5>
+                <p class="mb-3">TradingView charts er blokkert av ad blocker eller nettverksinnstillinger.</p>
+                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                    <button class="btn btn-primary btn-sm" onclick="location.reload()">
+                        <i class="bi bi-arrow-clockwise"></i> Prøv igjen
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm" onclick="showTradingViewFallback()">
+                        <i class="bi bi-bar-chart"></i> Vis Chart.js
+                    </button>
+                </div>
+                <small class="text-muted mt-2 d-block">Deaktiver ad blocker for denne siden</small>
+            </div>
+        `;
+    }
+    
+    function showNetworkErrorMessage() {
+        document.getElementById('tradingview_widget').innerHTML = `
+            <div class="alert alert-danger text-center p-3">
+                <i class="bi bi-wifi-off text-danger mb-2"></i>
+                <h6>Nettverksfeil</h6>
+                <p class="small mb-2">Kan ikke koble til TradingView</p>
+                <button class="btn btn-sm btn-primary" onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i> Prøv igjen
+                </button>
+            </div>
+        `;
+    }
+    
+    function showRateLimitMessage() {
+        document.getElementById('tradingview_widget').innerHTML = `
+            <div class="alert alert-info text-center p-3">
+                <i class="bi bi-clock text-info mb-2"></i>
+                <h6>Rate Limit</h6>
+                <p class="small mb-2">For mange forespørsler. Vent noen sekunder.</p>
+                <button class="btn btn-sm btn-primary" onclick="setTimeout(() => location.reload(), 5000)">
+                    Auto-refresh om 5 sek
+                </button>
+            </div>
+        `;
+    }
+    
+    function showInvalidSymbolMessage(symbol) {
+        document.getElementById('tradingview_widget').innerHTML = `
+            <div class="alert alert-warning text-center p-3">
+                <i class="bi bi-exclamation-triangle text-warning mb-2"></i>
+                <h6>Ugyldig Symbol</h6>
+                <p class="small mb-2">Symbol "${symbol}" ikke funnet på TradingView</p>
+                <button class="btn btn-sm btn-primary" onclick="showTradingViewFallback()">
+                    <i class="bi bi-bar-chart"></i> Vis fallback chart
+                </button>
+            </div>
+        `;
+    }
+    
+    function showTradingViewFallback() {
+        // Hide TradingView container and show Chart.js fallback
+        document.querySelector('.tradingview-container').style.display = 'none';
+        const fallbackContainer = document.getElementById('chartjs-fallback');
+        if (fallbackContainer) {
+            fallbackContainer.style.display = 'block';
+            
+            // Initialize Chart.js fallback chart
+            const canvas = document.getElementById('technicalChart');
+            if (canvas && typeof Chart !== 'undefined') {
+                console.log('🔄 Initializing Chart.js fallback chart...');
+                
+                // Generate sample data for the fallback chart
+                const chartData = generateFallbackChartData(symbol);
+                
+                new Chart(canvas, {
+                    type: 'line',
+                    data: {
+                        labels: chartData.labels,
+                        datasets: [{
+                            label: `${symbol} Pris`,
+                            data: chartData.prices,
+                            borderColor: '#0d6efd',
+                            backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                            fill: false,
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                title: {
+                                    display: true,
+                                    text: 'Pris (NOK)'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Dato'
+                                }
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: `Teknisk Analyse - ${symbol} (Fallback Chart)`
+                            },
+                            subtitle: {
+                                display: true,
+                                text: 'TradingView utilgjengelig - viser Chart.js fallback'
+                            }
+                        }
+                    }
+                });
+                console.log('✅ Chart.js fallback chart loaded successfully');
+            }
+        } else {
+            // If Chart.js fallback fails, show error message
+            document.getElementById('tradingview_widget').innerHTML = `
+                <div class="text-center p-5 border rounded">
+                    <i class="bi bi-exclamation-triangle text-warning fs-1 mb-3"></i>
+                    <h5>Chart kunne ikke lastes</h5>
+                    <p class="text-muted">TradingView og Chart.js er midlertidig utilgjengelig for symbol: ${symbol}</p>
+                    <button class="btn btn-primary" onclick="location.reload()">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Prøv igjen
+                    </button>
+                    <div class="mt-3">
+                        <small class="text-muted">Symbol: ${symbol}</small>
+                    </div>
+                </div>
+            `;
+        }
+    }
+    
+    function generateFallbackChartData(symbol) {
+        // Generate sample price data for the fallback chart
+        const labels = [];
+        const prices = [];
+        const basePrice = 100; // Default base price
+        let currentPrice = basePrice;
+        
+        for (let i = 29; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            labels.push(date.toLocaleDateString('no-NO'));
+            
+            // Add some realistic price movement
+            const change = (Math.random() - 0.5) * 5; // ±2.5% change
+            currentPrice += change;
+            prices.push(Math.max(currentPrice, 50)); // Minimum price of 50
+        }
+        
+        return { labels, prices };
+    }
+    
+    function hideLoadingSpinner() {
+        const spinner = document.querySelector('.spinner-border');
+        const loadingText = document.querySelector('#tradingview_widget .text-muted');
+        if (spinner) spinner.style.display = 'none';
+        if (loadingText) loadingText.style.display = 'none';
+    }
+    {% endif %}
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Aksjeradar - AI-drevne aksjeanalyser | Oslo Børs og globale markeder{% endblock %}
+{% block description %}Norges mest avanserte aksjeplattform. Få AI-drevne analyser, sanntids kurser, teknisk og fundamental analyse for Oslo Børs og internasjonale aksjer. Gratis demo tilgjengelig.{% endblock %}
+{% block keywords %}aksjer Norge, Oslo Børs, aksjeanalyse, AI aksjeanalyse, teknisk analyse, fundamental analyse, aksjekurser, Warren Buffett analyse, Benjamin Graham, aksjetips, investering Norge{% endblock %}
+
+{% block og_title %}Aksjeradar - Smarteste aksjeplattform i Norge{% endblock %}
+{% block og_description %}Profesjonelle aksjeanalyser med AI-teknologi. Analyser Oslo Børs og globale aksjer med våre avanserte verktøy. Prøv gratis demo.{% endblock %}
+
+{% block content %}
+{% if current_user.is_authenticated %}
+    <div class="container py-4">
+        <h1>Dashboard</h1>
+        <p>Welcome to your dashboard!</p>
+    </div>
+{% else %}
+    <div class="text-center py-5">
+        <h1 class="display-4">Velkommen til Aksjeradar</h1>
+        <p class="lead">Norges smarteste plattform for aksjeanalyse</p>
+        
+        <div class="mt-4">
+            <a href="{{ url_for('main.login') }}" class="btn btn-outline-primary btn-lg me-3">
+                <i class="bi bi-play-circle"></i> Prøv demo
+            </a>
+            <a href="{{ url_for('main.register') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-person-plus"></i> Kom i gang
+            </a>
+        </div>
+    </div>
+{% endif %}
+{% endblock content %}
+
+{% block extra_css %}
+<style>
+/* Basic styles */
+.dashboard-container {
+    background: #f8f9fa;
+}
+</style>
+{% endblock extra_css %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded successfully');
+});
+</script>
+{% endblock extra_js %}

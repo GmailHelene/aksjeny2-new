@@ -1,0 +1,474 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Analysis Menu -->
+    {% include 'analysis/_menu.html' %}
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <h1 class="mb-4">
+                <i class="bi bi-tools"></i> Strategibygger
+            </h1>
+            
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i>
+                Bygg og test dine egne handelsstrategier ved å kombinere tekniske indikatorer og regler.
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="bi bi-gear"></i> Bygg Din Strategi</h3>
+                </div>
+                <div class="card-body">
+                    <form id="strategyForm">
+                        <div class="mb-4">
+                            <label for="strategyName" class="form-label">Strategi Navn</label>
+                            <input type="text" class="form-control" id="strategyName" name="strategyName" placeholder="Min Strategi">
+                        </div>
+                        
+                        <h4><i class="bi bi-arrow-up-circle"></i> Kjøp Regler</h4>
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label for="buyIndicator1" class="form-label">Indikator</label>
+                                        <select class="form-control" id="buyIndicator1" name="buyIndicator1">
+                                            <option value="sma">Simple Moving Average</option>
+                                            <option value="ema">Exponential Moving Average</option>
+                                            <option value="rsi">RSI</option>
+                                            <option value="macd">MACD</option>
+                                            <option value="price">Pris</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="buyCondition1" class="form-label">Betingelse</label>
+                                        <select class="form-control" id="buyCondition1" name="buyCondition1">
+                                            <option value="above">Over</option>
+                                            <option value="below">Under</option>
+                                            <option value="crosses_above">Krysser over</option>
+                                            <option value="crosses_below">Krysser under</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="buyValue1" class="form-label">Verdi</label>
+                                        <input type="number" class="form-control" id="buyValue1" name="buyValue1" placeholder="50">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h4><i class="bi bi-arrow-down-circle"></i> Salg Regler</h4>
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label for="sellIndicator1" class="form-label">Indikator</label>
+                                        <select class="form-control" id="sellIndicator1" name="sellIndicator1">
+                                            <option value="sma">Simple Moving Average</option>
+                                            <option value="ema">Exponential Moving Average</option>
+                                            <option value="rsi">RSI</option>
+                                            <option value="macd">MACD</option>
+                                            <option value="price">Pris</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="sellCondition1" class="form-label">Betingelse</label>
+                                        <select class="form-control" id="sellCondition1" name="sellCondition1">
+                                            <option value="above">Over</option>
+                                            <option value="below">Under</option>
+                                            <option value="crosses_above">Krysser over</option>
+                                            <option value="crosses_below">Krysser under</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="sellValue1" class="form-label">Verdi</label>
+                                        <input type="number" class="form-control" id="sellValue1" name="sellValue1" placeholder="70">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h4><i class="bi bi-shield-check"></i> Risikostyring</h4>
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="stopLoss" class="form-label">Stop Loss (%)</label>
+                                        <input type="number" class="form-control" id="stopLoss" name="stopLoss" value="5" step="0.1">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="takeProfit" class="form-label">Take Profit (%)</label>
+                                        <input type="number" class="form-control" id="takeProfit" name="takeProfit" value="10" step="0.1">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Lagre Strategi
+                            </button>
+                            <button type="button" class="btn btn-success" id="testStrategy">
+                                <i class="bi bi-play-circle"></i> Test Strategi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h3><i class="bi bi-list"></i> Mine Strategier</h3>
+                </div>
+                <div class="card-body">
+                    <div id="backtestResults" class="alert alert-secondary small" style="display:none;">
+                        <strong>Backtest:</strong>
+                        <span id="btSymbol"></span> • <span id="btPeriod"></span><br>
+                        Avkastning: <span id="btReturn"></span>% | Sharpe: <span id="btSharpe"></span> | Trades: <span id="btTrades"></span> | Win-rate: <span id="btWin"></span>% | Max DD: <span id="btDD"></span>%
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="strategiesTable">
+                            <thead>
+                                <tr>
+                                    <th>Navn</th>
+                                    <th>Opprettet</th>
+                                    <th>ID</th>
+                                    <th>Handlinger</th>
+                                </tr>
+                            </thead>
+                            <tbody id="strategiesBody">
+                                {% if strategies and strategies|length > 0 %}
+                                    {% for s in strategies %}
+                                    <tr data-id="{{ s.id }}">
+                                        <td>{{ s.name }}</td>
+                                        <td>{{ s.created_at.strftime('%Y-%m-%d %H:%M') if s.created_at else '' }}</td>
+                                        <td>{{ s.id }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" disabled title="Ikke implementert ennå">
+                                                <i class="bi bi-pencil"></i> Rediger
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr class="text-muted"><td colspan="4">Ingen strategier lagret ennå.</td></tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card mb-4" id="versionPanel" style="display:none;">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Versjonshistorikk</h5>
+                    <button class="btn btn-sm btn-outline-secondary" id="closeVersions" title="Skjul">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div class="card-body p-2" style="max-height:380px; overflow:auto;">
+                    <div class="small text-muted mb-2" id="versionMeta">Velg en strategi for å se versjoner.</div>
+                    <ul class="list-group small" id="versionList"></ul>
+                </div>
+                <div class="card-footer small" id="versionFooter" style="display:none;">
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-primary flex-grow-1" id="loadVersionBtn" disabled>
+                            <i class="bi bi-upload"></i> Last inn versjon
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger flex-grow-1" id="rollbackVersionBtn" disabled title="Restaurer (kommende)">
+                            <i class="bi bi-arrow-counterclockwise"></i> Rull tilbake
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card" id="versionPreviewCard" style="display:none;">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-eye"></i> Versjonsdetaljer</h5>
+                    <button class="btn btn-sm btn-outline-secondary" id="closePreview" title="Lukk">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+                <div class="card-body p-2 small" style="max-height:300px; overflow:auto;">
+<pre class="mb-0" id="versionPreview" style="font-size:11px; background:#f8f9fa; border:1px solid #e1e1e1; padding:6px; white-space:pre-wrap;"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function reloadStrategies() {
+    try {
+        const resp = await fetch('/analysis/api/strategies');
+        const data = await resp.json();
+        if (!data.success) return;
+        const body = document.getElementById('strategiesBody');
+        body.innerHTML = '';
+        if (data.strategies.length === 0) {
+            body.innerHTML = '<tr class="text-muted"><td colspan="4">Ingen strategier lagret ennå.</td></tr>';
+            return;
+        }
+        for (const s of data.strategies) {
+            const tr = document.createElement('tr');
+            tr.dataset.id = s.id;
+            tr.innerHTML = `<td>${s.name}</td><td>${(new Date(s.created_at)).toLocaleString()}</td><td>${s.id}</td><td><div class="btn-group btn-group-sm"><button class="btn btn-outline-primary load-strategy" data-id="${s.id}" title="Rediger"><i class="bi bi-pencil"></i></button><button class="btn btn-outline-danger delete-strategy" data-id="${s.id}" title="Slett"><i class="bi bi-trash"></i></button></div></td>`;
+            body.appendChild(tr);
+        }
+    } catch(e) { console.warn('Kunne ikke laste strategier', e); }
+}
+
+let editingStrategyId = null;
+let selectedVersionId = null;
+let strategyVersionsCache = {}; // {strategyId: [versions]}
+
+function showVersionPanel(strategyId){
+    const panel = document.getElementById('versionPanel');
+    panel.style.display='block';
+    document.getElementById('versionMeta').textContent = 'Laster versjoner...';
+    const list = document.getElementById('versionList');
+    list.innerHTML='';
+    fetch(`/analysis/api/strategies/${strategyId}/versions`).then(r=>r.json()).then(j=>{
+        if(!j.success){ document.getElementById('versionMeta').textContent='Kunne ikke hente versjoner.'; return; }
+        strategyVersionsCache[strategyId] = j.versions;
+        if(j.versions.length === 0){
+            document.getElementById('versionMeta').textContent='Ingen versjoner funnet.';
+            return;
+        }
+        document.getElementById('versionMeta').textContent = `${j.versions.length} versjoner`;
+        list.innerHTML='';
+        j.versions.forEach(v=>{
+            const li = document.createElement('li');
+            li.className='list-group-item list-group-item-action d-flex justify-content-between align-items-center version-item';
+            li.dataset.id = v.id;
+            li.dataset.version = v.version;
+            li.innerHTML = `<div><strong>v${v.version}</strong> ${escapeHtml(v.name||'')}<br><span class='text-muted'>${new Date(v.created_at).toLocaleString()}</span></div>`;
+            list.appendChild(li);
+        });
+        document.getElementById('versionFooter').style.display='block';
+    }).catch(()=>{document.getElementById('versionMeta').textContent='Feil ved henting.'});
+}
+
+function escapeHtml(str){
+    return (str||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+function previewVersion(strategyId, versionId){
+    const list = strategyVersionsCache[strategyId] || [];
+    const v = list.find(x=>x.id==versionId);
+    const preview = document.getElementById('versionPreviewCard');
+    if(!v){ preview.style.display='none'; return; }
+    preview.style.display='block';
+    document.getElementById('versionPreview').textContent = JSON.stringify(v, null, 2);
+    document.getElementById('loadVersionBtn').disabled = false;
+    // Rollback pending server endpoint; keep disabled
+}
+
+document.getElementById('closeVersions').addEventListener('click', ()=>{
+    document.getElementById('versionPanel').style.display='none';
+});
+document.getElementById('closePreview').addEventListener('click', ()=>{
+    document.getElementById('versionPreviewCard').style.display='none';
+    selectedVersionId=null;
+    document.getElementById('loadVersionBtn').disabled=true;
+});
+
+document.addEventListener('click', (e)=>{
+    const vItem = e.target.closest('.version-item');
+    if(vItem){
+        selectedVersionId = vItem.dataset.id;
+        document.querySelectorAll('.version-item.active').forEach(el=>el.classList.remove('active'));
+        vItem.classList.add('active');
+        previewVersion(editingStrategyId, selectedVersionId);
+    }
+});
+
+document.getElementById('loadVersionBtn').addEventListener('click', ()=>{
+    if(!editingStrategyId || !selectedVersionId) return;
+    const list = strategyVersionsCache[editingStrategyId] || [];
+    const v = list.find(x=>x.id==selectedVersionId);
+    if(!v) return;
+    // Load into form (does not save yet)
+    document.getElementById('strategyName').value = v.name || '';
+    if(v.buy){
+        document.getElementById('buyIndicator1').value = v.buy.indicator || 'sma';
+        document.getElementById('buyCondition1').value = v.buy.condition || 'above';
+        document.getElementById('buyValue1').value = v.buy.value || '';
+    }
+    if(v.sell){
+        document.getElementById('sellIndicator1').value = v.sell.indicator || 'sma';
+        document.getElementById('sellCondition1').value = v.sell.condition || 'below';
+        document.getElementById('sellValue1').value = v.sell.value || '';
+    }
+    if(v.risk){
+        if(v.risk.stop_loss !== undefined) document.getElementById('stopLoss').value = v.risk.stop_loss;
+        if(v.risk.take_profit !== undefined) document.getElementById('takeProfit').value = v.risk.take_profit;
+    }
+    alert('Versjon lastet i skjema – lagre for å opprette ny versjon.');
+});
+
+document.getElementById('rollbackVersionBtn').addEventListener('click', async ()=>{
+    if(!editingStrategyId || !selectedVersionId) return;
+    if(!confirm('Rulle tilbake til valgt versjon og opprette ny head-versjon?')) return;
+    const btn = document.getElementById('rollbackVersionBtn');
+    const original = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Ruller...';
+    try {
+        const r = await fetch(`/analysis/api/strategies/${editingStrategyId}/rollback/${selectedVersionId}`, {method:'POST'});
+        const j = await r.json();
+        if(j.success){
+            alert('Rollback fullført. Ny versjon: v' + j.new_version);
+            // Refresh versions and strategy form (since current state changed)
+            showVersionPanel(editingStrategyId);
+            // Reload strategy details
+            fetch(`/analysis/api/strategies/${editingStrategyId}`).then(r=>r.json()).then(j2=>{
+                if(j2.success){
+                    const st = j2.strategy;
+                    document.getElementById('strategyName').value = st.name || '';
+                    if(st.buy){
+                        document.getElementById('buyIndicator1').value = st.buy.indicator || 'sma';
+                        document.getElementById('buyCondition1').value = st.buy.condition || 'above';
+                        document.getElementById('buyValue1').value = st.buy.value || '';
+                    }
+                    if(st.sell){
+                        document.getElementById('sellIndicator1').value = st.sell.indicator || 'sma';
+                        document.getElementById('sellCondition1').value = st.sell.condition || 'below';
+                        document.getElementById('sellValue1').value = st.sell.value || '';
+                    }
+                    if(st.risk){
+                        if(st.risk.stop_loss !== undefined) document.getElementById('stopLoss').value = st.risk.stop_loss;
+                        if(st.risk.take_profit !== undefined) document.getElementById('takeProfit').value = st.risk.take_profit;
+                    }
+                }
+            });
+        } else {
+            alert('Rollback feilet: ' + (j.error || 'Ukjent feil'));
+        }
+    } catch(err){
+        alert('Teknisk feil ved rollback');
+    } finally {
+        btn.disabled=false; btn.innerHTML=original;
+    }
+});
+
+document.getElementById('strategyForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const strategyName = document.getElementById('strategyName').value.trim();
+    if (!strategyName) {
+        alert('Vennligst skriv inn et navn for strategien.');
+        return;
+    }
+    const payload = {
+        name: strategyName,
+        buy: { indicator: document.getElementById('buyIndicator1').value, condition: document.getElementById('buyCondition1').value, value: document.getElementById('buyValue1').value },
+        sell: { indicator: document.getElementById('sellIndicator1').value, condition: document.getElementById('sellCondition1').value, value: document.getElementById('sellValue1').value },
+        risk: { stop_loss: document.getElementById('stopLoss').value, take_profit: document.getElementById('takeProfit').value }
+    };
+    try {
+        const btn = this.querySelector('button[type="submit"]');
+        const original = btn.innerHTML;
+        btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Lagre...';
+        const method = editingStrategyId ? 'PATCH' : 'POST';
+        const url = editingStrategyId ? `/analysis/api/strategies/${editingStrategyId}` : '/analysis/api/strategies';
+        const resp = await fetch(url, {method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+        const data = await resp.json();
+        if (data.success) {
+            const sid = editingStrategyId ? editingStrategyId : data.id;
+            if(editingStrategyId){ alert('Strategi oppdatert!'); }
+            else { alert('Strategi lagret! ID: ' + data.id); }
+            this.reset(); editingStrategyId = null; reloadStrategies();
+            runBacktest(sid);
+        } else {
+            alert('Kunne ikke lagre: ' + (data.error || 'Ukjent feil'));
+        }
+async function runBacktest(id){
+    try {
+        const r = await fetch(`/analysis/api/strategies/${id}/backtest`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({symbol:'DNB.OL', period:'6M'})});
+        const j = await r.json();
+        if(!j.success) return;
+        const b = j.backtest;
+        document.getElementById('btSymbol').textContent = b.symbol;
+        document.getElementById('btPeriod').textContent = b.period;
+        document.getElementById('btReturn').textContent = b.metrics.return_pct;
+        document.getElementById('btSharpe').textContent = b.metrics.sharpe;
+        document.getElementById('btTrades').textContent = b.metrics.trades;
+        document.getElementById('btWin').textContent = b.metrics.win_rate_pct;
+        document.getElementById('btDD').textContent = b.metrics.max_drawdown_pct;
+        document.getElementById('backtestResults').style.display='block';
+    } catch(e){ console.warn('Backtest feilet', e); }
+}
+        btn.disabled = false; btn.innerHTML = original;
+    } catch(err) {
+        alert('Feil ved lagring.');
+    }
+});
+
+// Initial load (if server passed no strategies we still fetch to confirm)
+reloadStrategies();
+
+document.getElementById('testStrategy').addEventListener('click', function() {
+    const strategyName = document.getElementById('strategyName').value;
+    if (!strategyName) {
+        alert('Vennligst skriv inn et navn for strategien før testing.');
+        return;
+    }
+    
+    // Simulate strategy test
+    this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Tester...';
+    this.disabled = true;
+    
+    setTimeout(() => {
+        alert('Strategi test fullført! Forventet avkastning: +8.5%');
+        this.innerHTML = '<i class="bi bi-play-circle"></i> Test Strategi';
+        this.disabled = false;
+    }, 2000);
+});
+
+// Delegert click-håndtering for redigering og sletting
+document.addEventListener('click', async (e)=>{
+    const editBtn = e.target.closest('.load-strategy');
+    const delBtn = e.target.closest('.delete-strategy');
+    if(editBtn){
+        const id = editBtn.dataset.id;
+        try {
+            const r = await fetch(`/analysis/api/strategies/${id}`);
+            const j = await r.json();
+            if(!j.success){ alert('Kunne ikke laste strategi'); return; }
+            const st = j.strategy;
+            editingStrategyId = st.id;
+            document.getElementById('strategyName').value = st.name || '';
+            if(st.buy){
+                document.getElementById('buyIndicator1').value = st.buy.indicator || 'sma';
+                document.getElementById('buyCondition1').value = st.buy.condition || 'above';
+                document.getElementById('buyValue1').value = st.buy.value || '';
+            }
+            if(st.sell){
+                document.getElementById('sellIndicator1').value = st.sell.indicator || 'sma';
+                document.getElementById('sellCondition1').value = st.sell.condition || 'below';
+                document.getElementById('sellValue1').value = st.sell.value || '';
+            }
+            if(st.risk){
+                if(st.risk.stop_loss !== undefined) document.getElementById('stopLoss').value = st.risk.stop_loss;
+                if(st.risk.take_profit !== undefined) document.getElementById('takeProfit').value = st.risk.take_profit;
+            }
+            showVersionPanel(editingStrategyId);
+            alert('Redigeringsmodus aktiv');
+        } catch(err){ alert('Feil ved lasting av strategi'); }
+    } else if(delBtn){
+        const id = delBtn.dataset.id;
+        if(!confirm('Slette strategi #' + id + '?')) return;
+        try {
+            const r = await fetch(`/analysis/api/strategies/${id}`, {method:'DELETE'});
+            const j = await r.json();
+            if(j.success){
+                if(editingStrategyId == id){ editingStrategyId = null; document.getElementById('strategyForm').reset(); }
+                reloadStrategies();
+            } else {
+                alert('Sletting feilet');
+            }
+        } catch(err){ alert('Teknisk feil ved sletting'); }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('investment_guides.index') }}">Investeringsguider</a></li>
+                    <li class="breadcrumb-item active">{{ guide.title }}</li>
+                </ol>
+            </nav>
+
+            <!-- Guide Header -->
+            <div class="mb-4">
+                <span class="badge bg-{{ 'primary' if guide.category == 'technical' else 'success' if guide.category == 'fundamental' else 'warning' if guide.category == 'strategy' else 'info' }} mb-2">
+                    {% if guide.category == 'technical' %}
+                        📊 Teknisk Analyse
+                    {% elif guide.category == 'fundamental' %}
+                        📈 Fundamental Analyse
+                    {% elif guide.category == 'strategy' %}
+                        🎯 Investeringsstrategi
+                    {% else %}
+                        ⚠️ Risikohåndtering
+                    {% endif %}
+                </span>
+                <h1 class="display-6">{{ guide.title }}</h1>
+            </div>
+
+            <!-- Guide Content -->
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    {% if guide.category == 'technical' %}
+                    <div class="guide-content">
+                        <h3>Hva er teknisk analyse?</h3>
+                        <p>Teknisk analyse er studiet av prishistorikk og handelsvolum for å forutsi fremtidige prisbevegelser. Det baserer seg på antagelsen om at all relevant informasjon allerede er reflektert i aksjekursen.</p>
+                        
+                        <h4>Grunnleggende prinsipper:</h4>
+                        <ul>
+                            <li><strong>Markedet diskonterer alt:</strong> All informasjon er allerede reflektert i prisen</li>
+                            <li><strong>Priser beveger seg i trender:</strong> Aksjer har en tendens til å fortsette i samme retning</li>
+                            <li><strong>Historie gjentar seg:</strong> Mønstre fra fortiden kan hjelpe med å forutsi fremtiden</li>
+                        </ul>
+
+                        <h4>Viktige indikatorer:</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul>
+                                    <li>Glidende gjennomsnitt (MA)</li>
+                                    <li>Relative Strength Index (RSI)</li>
+                                    <li>MACD</li>
+                                    <li>Bollinger Bands</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul>
+                                    <li>Support og motstand</li>
+                                    <li>Trendlinjer</li>
+                                    <li>Volum-analyse</li>
+                                    <li>Candlestick-mønstre</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    {% elif guide.category == 'fundamental' %}
+                    <div class="guide-content">
+                        <h3>Fundamental analyse</h3>
+                        <p>Fundamental analyse innebærer å evaluere et selskaps økonomiske helse og forretningsmodell for å bestemme den sanne verdien av aksjen.</p>
+                        
+                        <h4>Nøkkeltall å analysere:</h4>
+                        <ul>
+                            <li><strong>P/E-ratio:</strong> Pris-til-inntjening forhold</li>
+                            <li><strong>P/B-ratio:</strong> Pris-til-bok verdi</li>
+                            <li><strong>ROE:</strong> Egenkapitalavkastning</li>
+                            <li><strong>Debt-to-Equity:</strong> Gjeldsgrad</li>
+                            <li><strong>Free Cash Flow:</strong> Fri kontantstrøm</li>
+                        </ul>
+
+                        <h4>Warren Buffetts favoritt-metrics:</h4>
+                        <ul>
+                            <li>Konsistent inntjeningsvekst</li>
+                            <li>Høy avkastning på egenkapital</li>
+                            <li>Lav gjeldsgrad</li>
+                            <li>Sterk konkurransefordel</li>
+                        </ul>
+                    </div>
+                    {% elif guide.category == 'strategy' %}
+                    <div class="guide-content">
+                        <h3>Warren Buffetts investeringsstrategi</h3>
+                        <p>Warren Buffett, kjent som "Oracle of Omaha", har bygget sin formue gjennom en langsiktig verdiinvesteringsstrategi.</p>
+                        
+                        <h4>Buffetts nøkkelprisipper:</h4>
+                        <ol>
+                            <li><strong>Invester i det du forstår:</strong> Hold deg til selskaper i bransjer du kjenner</li>
+                            <li><strong>Kjøp kvalitet til rimelig pris:</strong> Se etter underverdsatte selskaper med sterke fundamentale forhold</li>
+                            <li><strong>Langsiktig perspektiv:</strong> Hold aksjene i flere år, ikke måneder</li>
+                            <li><strong>Fokus på kontantstrøm:</strong> Selskaper som genererer konsekvent kontantstrøm</li>
+                        </ol>
+
+                        <h4>Buffetts favoritt-bransjer:</h4>
+                        <ul>
+                            <li>Finansielle tjenester</li>
+                            <li>Forbrukersvarer</li>
+                            <li>Forsikring</li>
+                            <li>Teknologi (i senere år)</li>
+                        </ul>
+                    </div>
+                    {% else %}
+                    <div class="guide-content">
+                        <h3>Risikohåndtering i investering</h3>
+                        <p>Risikohåndtering er like viktig som å velge riktige investeringer. Det handler om å beskytte kapitalen din mot uforutsette tap.</p>
+                        
+                        <h4>Grunnleggende risikohåndtering:</h4>
+                        <ul>
+                            <li><strong>Diversifisering:</strong> Ikke legg alle eggene i samme kurv</li>
+                            <li><strong>Posisjonsstørrelse:</strong> Aldri risiker mer enn du har råd til å tape</li>
+                            <li><strong>Stop-loss:</strong> Sett grenser for maksimalt tap</li>
+                            <li><strong>Asset allocation:</strong> Fordel kapitalen mellom ulike aktivaklasser</li>
+                        </ul>
+
+                        <h4>Typer risiko:</h4>
+                        <ul>
+                            <li><strong>Markedsrisiko:</strong> Generelle markedsbevegelser</li>
+                            <li><strong>Selskapsspesifikk risiko:</strong> Problemer med enkeltselskaper</li>
+                            <li><strong>Likviditetsrisiko:</strong> Vanskeligheter med å selge posisjoner</li>
+                            <li><strong>Valutarisiko:</strong> Svingninger i valutakurser</li>
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <!-- Call to Action -->
+                    <div class="alert alert-info mt-4">
+                        <h5><i class="bi bi-lightbulb"></i> Få mer avanserte analyser</h5>
+                        <p class="mb-3">Vil du ha tilgang til AI-drevne analyser som implementerer disse strategiene automatisk?</p>
+                        <a href="{{ url_for('main.demo') }}" class="btn btn-info me-2">Se demo</a>
+                        <a href="{{ url_for('pricing.pricing_page') }}" class="btn btn-outline-primary">Se priser</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{{ url_for('investment_guides.index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Tilbake til guider
+                </a>
+                <a href="{{ url_for('main.demo') }}" class="btn btn-primary">
+                    Prøv våre AI-analyser <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

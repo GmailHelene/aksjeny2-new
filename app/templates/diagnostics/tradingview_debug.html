@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+
+{% block title %}TradingView Diagnostic{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">TradingView Diagnostic Tool</h4>
+                </div>
+                <div class="card-body">
+                    <h5>Testing TradingView integration for: {{ symbol }}</h5>
+                    
+                    <!-- Debug Info -->
+                    <div class="alert alert-info">
+                        <h6>Debug Information:</h6>
+                        <ul>
+                            <li><strong>Symbol:</strong> {{ symbol }}</li>
+                            <li><strong>User Authenticated:</strong> {{ user_info.is_authenticated }}</li>
+                            <li><strong>User Agent:</strong> {{ user_info.user_agent }}</li>
+                            <li><strong>Remote IP:</strong> {{ user_info.remote_addr }}</li>
+                            {% if user_info.is_authenticated %}
+                                <li><strong>Email:</strong> {{ user_info.email if user_info.email else 'Not available' }}</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- TradingView Simple Widget -->
+                    <h5>Test 1: Basic TradingView Widget</h5>
+                    <div id="tradingview_widget_basic" style="height: 400px; margin-bottom: 20px;">
+                        <div class="text-center p-4" id="loading-basic">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p>Loading basic TradingView widget...</p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- TradingView Advanced Widget -->
+                    <h5>Test 2: Advanced TradingView Widget</h5>
+                    <div id="tradingview_widget_advanced" style="height: 400px; margin-bottom: 20px;">
+                        <div class="text-center p-4" id="loading-advanced">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p>Loading advanced TradingView widget...</p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Network Diagnostics -->
+                    <h5>Test 3: Network Diagnostics</h5>
+                    <div id="network-diagnostics" class="mb-3">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" type="button" id="check-network">
+                                Run Network Diagnostics
+                            </button>
+                        </div>
+                        <div class="mt-3" id="network-results"></div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Console Output -->
+                    <h5>JavaScript Console Output:</h5>
+                    <div class="bg-dark text-light p-3 rounded" style="max-height: 200px; overflow-y: auto;">
+                        <pre id="console-output">Console output will appear here...</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- TradingView Widget Script -->
+<script src="https://s3.tradingview.com/tv.js"></script>
+
+<script>
+    // Console logging capture
+    (function() {
+        const consoleOutput = document.getElementById('console-output');
+        const oldConsoleLog = console.log;
+        const oldConsoleError = console.error;
+        
+        console.log = function(...args) {
+            oldConsoleLog.apply(console, args);
+            const message = args.map(arg => {
+                if (typeof arg === 'object') return JSON.stringify(arg);
+                return arg;
+            }).join(' ');
+            
+            consoleOutput.innerHTML += `[LOG] ${message}\n`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+        
+        console.error = function(...args) {
+            oldConsoleError.apply(console, args);
+            const message = args.map(arg => {
+                if (typeof arg === 'object') return JSON.stringify(arg);
+                return arg;
+            }).join(' ');
+            
+            consoleOutput.innerHTML += `[ERROR] ${message}\n`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+    })();
+    
+    // Load basic TradingView widget
+    function loadBasicWidget() {
+        console.log('Loading basic TradingView widget');
+        
+        let symbol = "{{ symbol }}";
+        let formattedSymbol = symbol;
+        
+        // Handle Oslo Børs symbols
+        if (symbol.endsWith('.OL')) {
+            const ticker = symbol.replace('.OL', '');
+            formattedSymbol = `OSE:${ticker}`;
+        } 
+        // Handle US exchanges
+        else if (!symbol.includes(':') && symbol.match(/^[A-Z]{1,5}$/)) {
+            formattedSymbol = `NASDAQ:${symbol}`;
+        }
+        
+        console.log(`Formatted symbol for TradingView: ${formattedSymbol}`);
+        
+        try {
+            if (typeof TradingView === 'undefined') {
+                console.error('TradingView library not loaded');
+                document.getElementById('loading-basic').innerHTML = '<div class="alert alert-danger">Error: TradingView library not loaded</div>';
+                return;
+            }
+            
+            console.log('Creating basic TradingView widget');
+            new TradingView.widget({
+                "width": "100%",
+                "height": 400,
+                "symbol": formattedSymbol,
+                "interval": "D",
+                "timezone": "Europe/Oslo",
+                "theme": "light",
+                "style": "1",
+                "locale": "no",
+                "toolbar_bg": "#f1f3f6",
+                "enable_publishing": false,
+                "allow_symbol_change": true,
+                "container_id": "tradingview_widget_basic",
+                "hide_side_toolbar": false,
+                "onChartReady": function() {
+                    console.log("Basic TradingView widget loaded successfully");
+                    document.getElementById('loading-basic').style.display = 'none';
+                }
+            });
+        } catch (error) {
+            console.error('Error creating basic TradingView widget:', error);
+            document.getElementById('loading-basic').innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+        }
+    }
+    
+    // Load advanced TradingView widget
+    function loadAdvancedWidget() {
+        console.log('Loading advanced TradingView widget');
+        
+        let symbol = "{{ symbol }}";
+        let formattedSymbol = symbol;
+        
+        // Handle Oslo Børs symbols
+        if (symbol.endsWith('.OL')) {
+            const ticker = symbol.replace('.OL', '');
+            formattedSymbol = `OSE:${ticker}`;
+        } 
+        // Handle US exchanges
+        else if (!symbol.includes(':') && symbol.match(/^[A-Z]{1,5}$/)) {
+            formattedSymbol = `NASDAQ:${symbol}`;
+        }
+        
+        try {
+            if (typeof TradingView === 'undefined') {
+                console.error('TradingView library not loaded');
+                document.getElementById('loading-advanced').innerHTML = '<div class="alert alert-danger">Error: TradingView library not loaded</div>';
+                return;
+            }
+            
+            console.log('Creating advanced TradingView widget');
+            new TradingView.widget({
+                "width": "100%",
+                "height": 400,
+                "symbol": formattedSymbol,
+                "interval": "D",
+                "timezone": "Europe/Oslo",
+                "theme": "light",
+                "style": "1",
+                "locale": "no",
+                "toolbar_bg": "#f1f3f6",
+                "enable_publishing": false,
+                "allow_symbol_change": true,
+                "container_id": "tradingview_widget_advanced",
+                "hide_side_toolbar": false,
+                "studies": [
+                    "RSI@tv-basicstudies",
+                    "MACD@tv-basicstudies",
+                    "BB@tv-basicstudies"
+                ],
+                "onChartReady": function() {
+                    console.log("Advanced TradingView widget loaded successfully");
+                    document.getElementById('loading-advanced').style.display = 'none';
+                }
+            });
+        } catch (error) {
+            console.error('Error creating advanced TradingView widget:', error);
+            document.getElementById('loading-advanced').innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+        }
+    }
+    
+    // Run network diagnostics
+    document.getElementById('check-network').addEventListener('click', function() {
+        const resultsDiv = document.getElementById('network-results');
+        resultsDiv.innerHTML = '<div class="alert alert-info">Running network diagnostics...</div>';
+        
+        const resources = [
+            { url: 'https://s3.tradingview.com/tv.js', name: 'TradingView JavaScript Library' },
+            { url: 'https://www.tradingview.com/static/images/logo-tradingview.svg', name: 'TradingView Logo' },
+            { url: '/stocks/details-debug/debug-api/{{ symbol }}', name: 'Internal API' }
+        ];
+        
+        let completedChecks = 0;
+        let results = '<div class="list-group">';
+        
+        resources.forEach(resource => {
+            const startTime = new Date().getTime();
+            
+            fetch(resource.url)
+                .then(response => {
+                    const endTime = new Date().getTime();
+                    const loadTime = endTime - startTime;
+                    
+                    if (response.ok) {
+                        results += `<div class="list-group-item list-group-item-success">
+                            <strong>${resource.name}</strong>: Available (${loadTime}ms)
+                        </div>`;
+                    } else {
+                        results += `<div class="list-group-item list-group-item-warning">
+                            <strong>${resource.name}</strong>: HTTP Error ${response.status} (${loadTime}ms)
+                        </div>`;
+                    }
+                })
+                .catch(error => {
+                    results += `<div class="list-group-item list-group-item-danger">
+                        <strong>${resource.name}</strong>: ${error.message}
+                    </div>`;
+                })
+                .finally(() => {
+                    completedChecks++;
+                    if (completedChecks === resources.length) {
+                        results += '</div>';
+                        resultsDiv.innerHTML = results;
+                    }
+                });
+        });
+    });
+    
+    // Initialize widgets when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Document loaded, initializing TradingView widgets');
+        
+        // Load the widgets with a slight delay to ensure TradingView script is loaded
+        setTimeout(function() {
+            loadBasicWidget();
+            setTimeout(loadAdvancedWidget, 500); // Load advanced widget 500ms after basic widget
+        }, 500);
+    });
+</script>
+{% endblock %}

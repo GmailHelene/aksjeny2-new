@@ -1,0 +1,477 @@
+{% extends "base.html" %}
+
+{% block title %}Avansert Aksje Screener | Aksjeradar{% endblock %}
+
+{% block content %}
+{% include 'analysis/_menu.html' %}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-1"><i class="bi bi-funnel text-primary"></i> Avansert Aksje Screener</h1>
+                    <p class="text-muted mb-0">Finn aksjer basert på fundamentale og tekniske kriterier</p>
+                </div>
+                <div class="text-end">
+                    {% if current_user.is_authenticated %}
+                        <span class="badge bg-warning text-dark fs-6">PRO</span>
+                    {% else %}
+                        <span class="badge bg-info fs-6">DEMO</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Filters -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-primary text-white py-2">
+                    <strong><i class="bi bi-sliders me-2"></i>Screening Kriterier</strong>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('analysis.screener') }}">
+                        {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">🎯 Ferdigdefinerte screener</label>
+                            <select name="preset" class="form-select" onchange="this.form.submit()">
+                                <option value="">-- Velg preset --</option>
+                                {% for preset_name, filters in preset_screens.items() %}
+                                    <option value="{{ preset_name }}" {% if preset_name == request.form.get('preset') %}selected{% endif %}>
+                                        {% if preset_name == 'value_stocks' %}🎯 Verdiaksjer
+                                        {% elif preset_name == 'growth_stocks' %}📈 Vekstaksjer
+                                        {% elif preset_name == 'dividend_stocks' %}💰 Utbytteaksjer
+                                        {% else %}{{ preset_name|title }}{% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Velg et preset eller bygg din egen screening under.</small>
+                        </div>
+
+                        <hr>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">🔧 Tilpassede filtere</label>
+                            {% for category, filters in available_filters.items() %}
+                                <div class="mb-2">
+                                    <h6 class="text-primary mb-1">{{ category }}</h6>
+                                    <div class="row">
+                                        {% for filter_key in filters %}
+                                            <div class="col-12 mb-1">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="filters" id="filter_{{ filter_key }}" value="{{ filter_key }}" {% if filter_key in selected_filters %}checked{% endif %}>
+                                                    <label class="form-check-label small" for="filter_{{ filter_key }}">{{ filter_display_names[filter_key] }}</label>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Søk aksjer</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="clearFilters()"><i class="bi bi-x-circle"></i> Nullstill</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white py-2">
+                    <strong><i class="bi bi-info-circle me-2"></i>Om Screener</strong>
+                </div>
+                <div class="card-body small">
+                    <p class="mb-2 text-muted">Screeneren kombinerer mock-demodata og forhåndsdefinerte preseter. Ekte datakilder kan aktiveres for PRO-brukere.</p>
+                    <ul class="ps-3 mb-0">
+                        <li>Fundamental data (P/E, P/B, ROE)</li>
+                        <li>Tekniske indikatorer (RSI, momentum)</li>
+                        <li>Volum og Market Cap</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                    <strong>Resultater</strong>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-secondary" onclick="exportResults()" {% if not results %}disabled{% endif %}><i class="bi bi-download"></i> Export</button>
+                        <button class="btn btn-outline-secondary" onclick="saveAsWatchlist()" {% if not results %}disabled{% endif %}><i class="bi bi-eye"></i> Watchlist</button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if results %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr class="small text-uppercase">
+                                        <th>Ticker</th>
+                                        <th>Selskap</th>
+                                        <th>Sektor</th>
+                                        <th class="text-end">Pris</th>
+                                        <th class="text-end">Endring</th>
+                                        <th class="text-end">P/E</th>
+                                        <th class="text-end">P/B</th>
+                                        <th class="text-end">RSI</th>
+                                        <th>Anb.</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for stock in results %}
+                                        <tr>
+                                            <td><strong>{{ stock.get('ticker','?') }}</strong></td>
+                                            <td>
+                                                <div class="fw-semibold" title="{{ stock.get('company','') }}">{{ stock.get('company','') }}</div>
+                                                <div class="text-muted small" title="{{ stock.get('industry','') }}">{{ stock.get('industry','') }}</div>
+                                            </td>
+                                            <td><span class="badge bg-light text-dark">{{ stock.get('sector','-') }}</span></td>
+                                            <td class="text-end">{{ stock.get('price',0)|float|round(2) }}</td>
+                                            <td class="text-end">
+                                                {% set chg = stock.get('change_percent',0)|float %}
+                                                <span class="{% if chg>0 %}text-success{% elif chg<0 %}text-danger{% else %}text-muted{% endif %}">{{ chg|round(2) }}%</span>
+                                            </td>
+                                            <td class="text-end">{{ stock.get('pe_ratio','-') }}</td>
+                                            <td class="text-end">{{ stock.get('pb_ratio','-') }}</td>
+                                            <td class="text-end">{{ stock.get('rsi','-') }}</td>
+                                            <td><span class="badge bg-secondary">{{ stock.get('recommendation','-') }}</span></td>
+                                            <td class="text-end">
+                                                <button type="button" class="btn btn-sm btn-outline-success" data-ticker="{{ stock.get('ticker','') }}" onclick="window.toggleFavorite('{{ stock.get('ticker','') }}', {button: this, favoritedText: '<i class=\"bi bi-heart-fill\"></i>', unfavoritedText: '<i class=\"bi bi-heart\"></i>'})"><i class="bi bi-heart"></i></button>
+                                                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('stocks.details', symbol=stock.get('ticker','')) }}" title="Detaljer"><i class="bi bi-box-arrow-up-right"></i></a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="p-4">
+                            <div class="alert alert-info mb-0">Ingen resultater ennå. Velg et preset eller marker filtere og klikk <strong>Søk aksjer</strong>.</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<!-- Make sure Bootstrap and its dependencies are loaded -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
+<!-- Load our custom screener JS -->
+<script src="{{ url_for('static', filename='js/screener.js') }}"></script>
+
+<script>
+// Ensure Bootstrap is available
+if (typeof bootstrap === 'undefined') {
+    console.error('Bootstrap JS is not loaded. Some features may not work.');
+}
+
+// Initialize tooltips and popovers
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize all tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Initialize all popovers
+    const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+    popoverTriggerList.map(function(popoverTriggerEl) {
+        return new bootstrap.Popover(popoverTriggerEl);
+    });
+});
+
+// Filter display names mapping
+const filterDisplayNames = {
+    'cap_mega': 'Mega Cap (>$200B)',
+    'cap_large': 'Large Cap (>$10B)', 
+    'cap_mid': 'Mid Cap ($2B-$10B)',
+    'cap_small': 'Small Cap (<$2B)',
+    'nasdaq': 'NASDAQ',
+    'nyse': 'NYSE',
+    'sp500': 'S&P 500',
+    'sp400': 'S&P 400',
+    'sp600': 'S&P 600',
+    'nasdaq100': 'NASDAQ 100',
+    'russell2000': 'Russell 2000',
+    'tech': 'Teknologi',
+    'healthcare': 'Helsevesen',
+    'finance': 'Finans',
+    'energy': 'Energi',
+    'consumer': 'Forbruksvarer',
+    'industrial': 'Industri',
+    'utilities': 'Utilities',
+    'realestate': 'Eiendom',
+    'materials': 'Materialer',
+    'pe_low': 'Lav P/E (<15)',
+    'pe_profitable': 'Profitabel (P/E>0)',
+    'pe_high': 'Høy P/E (>50)',
+    'peg_low': 'Lav PEG (<1)',
+    'pb_low': 'Lav P/B (<1)',
+    'ps_low': 'Lav P/S (<1)',
+    'perf_week_up': 'Uke +',
+    'perf_month_up': 'Måned +',
+    'perf_ytd_up': 'YTD +',
+    'perf_year_up': 'År +',
+    'rsi_oversold': 'RSI Oversolgt (<30)',
+    'rsi_overbought': 'RSI Overkjøpt (>70)',
+    'price_near_high': 'Nær 52W høy',
+    'price_near_low': 'Nær 52W lav',
+    'volume_high': 'Høyt volum (>2M)',
+    'dividend_yield': 'Utbytte >0%',
+    'dividend_high': 'Høyt utbytte (>5%)',
+    'roe_high': 'ROE >0%',
+    'roa_high': 'ROA >0%',
+    'debt_low': 'Lav gjeld (<0.5)',
+    'current_ratio_high': 'Høy likviditet (>1.5)',
+    'sales_growth': 'Salgsvekst 5Y+',
+    'eps_growth': 'EPS vekst 5Y+',
+    'earnings_growth': 'Inntjeningsvekst+'
+};
+
+function getFilterDisplayName(filterKey) {
+    return filterDisplayNames[filterKey] || filterKey;
+}
+
+function exportResults() {
+    // Create CSV content
+    const table = document.querySelector('table tbody');
+    if (!table) return;
+    
+    let csv = 'Ticker,Selskap,Sektor,Pris,Endring,P/E,P/B,RSI,Anbefaling\n';
+    
+    table.querySelectorAll('tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 9) {
+            const rowData = [
+                cells[0].textContent.trim(),
+                cells[1].querySelector('.fw-bold').textContent.trim(),
+                cells[2].textContent.trim(),
+                cells[3].textContent.trim(),
+                cells[4].textContent.trim(),
+                cells[5].textContent.trim(),
+                cells[6].textContent.trim(),
+                cells[7].textContent.trim(),
+                cells[8].textContent.trim()
+            ];
+            csv += rowData.map(cell => '"' + cell + '"').join(',') + '\n';
+        }
+    });
+    
+    // Download CSV
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'screener_results.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+function saveAsWatchlist() {
+    // Collect tickers
+    const tickers = [];
+    document.querySelectorAll('table tbody tr').forEach(row => {
+        const ticker = row.querySelector('td:first-child strong')?.textContent.trim();
+        if (ticker) tickers.push(ticker);
+    });
+    
+    if (tickers.length === 0) {
+        showToast('Ingen aksjer å legge til watchlist', 'error');
+        return;
+    }
+    
+    // Create watchlist with selected tickers
+    fetch('/watchlist/api/create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        },
+        body: JSON.stringify({
+            name: 'Screener Watchlist',
+            description: `Screener resultater fra ${new Date().toLocaleString()}`,
+            symbols: tickers
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(`Opprettet watchlist med ${tickers.length} aksjer`, 'success');
+            // Redirect to the new watchlist
+            if (data.watchlist_id) {
+                window.location.href = `/watchlist/${data.watchlist_id}`;
+            }
+        } else {
+            showToast(data.message || 'Kunne ikke opprette watchlist', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error creating watchlist:', error);
+        showToast('Teknisk feil ved opprettelse av watchlist', 'error');
+    });
+}
+
+function clearFilters() {
+    try {
+        // Clear preset selection
+        const presetSelect = document.querySelector('select[name="preset"]');
+        if (presetSelect) {
+            presetSelect.value = '';
+        }
+        
+        // Clear all checkboxes
+        document.querySelectorAll('input[name="filters"]').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+
+        // Clear any applied styling classes
+        document.querySelectorAll('.filter-applied').forEach(el => {
+            el.classList.remove('filter-applied');
+        });
+        
+        // Reset any custom inputs
+        document.querySelectorAll('input[type="number"], input[type="text"]').forEach(input => {
+            if (input.name.startsWith('custom_')) {
+                input.value = '';
+            }
+        });
+        
+        // Show feedback
+        showToast('Alle filtere nullstilt', 'info');
+        
+        // Optional: Auto-submit to refresh results
+        const shouldAutoSubmit = document.querySelector('input[name="auto_submit"]')?.checked;
+        if (shouldAutoSubmit) {
+            document.querySelector('form')?.submit();
+        }
+    } catch (error) {
+        console.error('Error clearing filters:', error);
+        showToast('Feil ved nullstilling av filtere', 'error');
+    }
+}
+
+// Enhanced toast notification system
+if (typeof showToast !== 'function') {
+    const toastQueue = [];
+    let isShowingToast = false;
+    
+    function showToast(message, type = 'info', duration = 3000) {
+        if (!message) {
+            console.warn('Toast message is required');
+            return;
+        }
+        
+        // Validate type
+        const validTypes = ['info', 'success', 'warning', 'error', 'danger'];
+        if (!validTypes.includes(type)) {
+            console.warn(`Invalid toast type: ${type}. Defaulting to 'info'`);
+            type = 'info';
+        }
+        
+        // Map 'error' to bootstrap's 'danger' class
+        const bsClass = type === 'error' ? 'danger' : type;
+        
+        // Create toast container if needed
+        let container = document.querySelector('.toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            container.style.zIndex = '1050';
+            document.body.appendChild(container);
+        }
+        
+        // Queue management function
+        function showNextToast() {
+            if (toastQueue.length === 0) {
+                isShowingToast = false;
+                return;
+            }
+            
+            isShowingToast = true;
+            const { toastEl, duration } = toastQueue.shift();
+            
+            try {
+                if (typeof bootstrap === 'undefined') {
+                    console.error('Bootstrap is not loaded');
+                    toastEl.remove();
+                    showNextToast();
+                    return;
+                }
+                
+                container.appendChild(toastEl);
+                
+                const toast = new bootstrap.Toast(toastEl, {
+                    animation: true,
+                    autohide: true,
+                    delay: duration
+                });
+                
+                toastEl.addEventListener('hidden.bs.toast', () => {
+                    toastEl.remove();
+                    showNextToast();
+                });
+                
+                toast.show();
+            } catch (error) {
+                console.error('Error showing toast:', error);
+                toastEl.remove();
+                showNextToast();
+            }
+        }
+        
+        // Create toast element
+        const toastEl = document.createElement('div');
+        toastEl.className = `toast align-items-center text-white bg-${bsClass} border-0`;
+        toastEl.setAttribute('role', 'alert');
+        toastEl.setAttribute('aria-live', 'assertive');
+        toastEl.setAttribute('aria-atomic', 'true');
+        
+        // Add icons based on type
+        const icon = type === 'success' ? 'bi-check-circle' :
+                    type === 'error' || type === 'danger' ? 'bi-exclamation-triangle' :
+                    type === 'warning' ? 'bi-exclamation-circle' :
+                    'bi-info-circle';
+                    
+        toastEl.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi ${icon} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" 
+                        data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+        
+        // Queue the toast
+        toastQueue.push({ toastEl, duration });
+        
+        // Show toast if none is currently showing
+        if (!isShowingToast) {
+            showNextToast();
+        }
+    }
+    
+    // Expose queue clear function
+    window.clearToasts = function() {
+        const container = document.querySelector('.toast-container');
+        if (container) {
+            container.innerHTML = '';
+        }
+        toastQueue.length = 0;
+        isShowingToast = false;
+    };
+}
+</script>
+{% endblock %}

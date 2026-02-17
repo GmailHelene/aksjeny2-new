@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Aksjeradar{% endblock %}
+
+{% block meta_tags %}
+<meta name="description" content="Detaljert investeringsguide om {{ slug }}. Lær aksjeanalyse og investeringsstrategier.">
+<meta property="og:title" content="{{ title }} - Aksjeradar">
+<meta property="og:description" content="Detaljert investeringsguide om {{ slug }}.">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Hjem</a></li>
+                    <li class="breadcrumb-item"><a href="/investment-guides/">Investeringsguider</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ slug }}</li>
+                </ol>
+            </nav>
+            
+            <h1>📖 {{ title }}</h1>
+            <div class="alert alert-info">
+                <p><strong>Denne guiden er under utvikling.</strong></p>
+                <p>Vi jobber med å lage omfattende investeringsguider. Kom tilbake snart for detaljert innhold om {{ slug }}.</p>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5>🎯 Hva du vil lære</h5>
+                    <ul>
+                        <li>Grunnleggende prinsipper</li>
+                        <li>Praktiske eksempler</li>
+                        <li>Verktøy og ressurser</li>
+                        <li>Vanlige feil å unngå</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <a href="/investment-guides/" class="btn btn-secondary">← Tilbake til alle guider</a>
+                <a href="/" class="btn btn-primary">Utforsk Aksjeradar</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% block title %}Aksjetips{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h1>Aksjetips</h1>
+  
+  <div class="alert alert-info mb-4">
+    <p><i class="bi bi-info-circle"></i> Aksjetips er anbefalinger basert på teknisk analyse, fundamentale faktorer og markedstrender. Hver anbefaling har en konfidensgrad som indikerer hvor sikker analysen er.</p>
+    <p><strong>Merk:</strong> Alle investeringer innebærer risiko. Gjør alltid din egen research før du investerer.</p>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h2>Siste aksjetips</h2>
+          {% if current_user.is_authenticated %}
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTipModal">Legg til tips</button>
+          {% endif %}
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover m-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Ticker</th>
+                  <th>Anbefaling</th>
+                  <th>Konfidensgrad</th>
+                  <th>Analyse</th>
+                  <th>Dato</th>
+                  {% if current_user.is_authenticated %}
+                  <th>Handling</th>
+                  {% endif %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for tip in tips %}
+                <tr>
+                  <td>
+                    <a href="{{ url_for('stocks.details', symbol=tip.ticker) }}" class="text-decoration-none">
+                      <strong>{{ tip.ticker }}</strong>
+                    </a>
+                  </td>
+                  <td>
+                    <span class="badge {% if tip.tip_type == 'BUY' %}bg-success{% elif tip.tip_type == 'SELL' %}bg-danger{% else %}bg-warning{% endif %}">
+                      {{ tip.tip_type }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge bg-secondary">
+                      {{ tip.confidence }}
+                    </span>
+                  </td>
+                  <td>{{ tip.analysis|truncate(100) }}</td>
+                  <td>{{ tip.created_at.strftime('%Y-%m-%d') if tip.created_at is not string else tip.created_at }}</td>
+                  {% if current_user.is_authenticated %}
+                  <td>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#feedbackModal{{ tip.id }}">
+                      Gi tilbakemelding
+                    </button>
+                  </td>
+                  {% endif %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h3>Hva er aksjetips?</h3>
+        </div>
+        <div class="card-body">
+          <p>Aksjetips er anbefalinger om å kjøpe, holde eller selge en bestemt aksje basert på analyse av:</p>
+          <ul>
+            <li><strong>Teknisk analyse:</strong> Studerer prisbevegelser og volum for å forutsi fremtidige kursbevegelser</li>
+            <li><strong>Fundamental analyse:</strong> Vurderer selskapets økonomi, inntjening, vekst og markedsposisjon</li>
+            <li><strong>Markedstrender:</strong> Analyserer overordnede markedstrender og sektorbevegelser</li>
+          </ul>
+          <p>Hver anbefaling har en konfidensgrad (HIGH, MEDIUM, LOW) som indikerer hvor sikker analysen er.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h3>Konfidensgrader forklart</h3>
+        </div>
+        <div class="card-body">
+          <ul class="list-group">
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <strong>HIGH</strong>
+                <p class="mb-0">Sterk teknisk og fundamental støtte for anbefalingen</p>
+              </div>
+              <span class="badge bg-success rounded-pill">Høy sikkerhet</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <strong>MEDIUM</strong>
+                <p class="mb-0">Moderat støtte for anbefalingen, men noen usikkerhetsfaktorer</p>
+              </div>
+              <span class="badge bg-warning text-dark rounded-pill">Moderat sikkerhet</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <strong>LOW</strong>
+                <p class="mb-0">Svakere støtte for anbefalingen, betydelig usikkerhet</p>
+              </div>
+              <span class="badge bg-danger rounded-pill">Lav sikkerhet</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">
+      <h2>Legg til nytt tips</h2>
+    </div>
+    <div class="card-body">
+            <form method="post" action="{{ url_for('portfolio.stock_tips') }}">>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-3">
+          <label for="ticker" class="form-label">Ticker</label>
+          <input type="text" class="form-control" id="ticker" name="ticker" required>
+        </div>
+        <div class="mb-3">
+          <label for="tip_type" class="form-label">Type</label>
+          <select class="form-select" id="tip_type" name="tip_type" required>
+            <option value="BUY">KJØP</option>
+            <option value="SELL">SELG</option>
+            <option value="HOLD">HOLD</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="confidence" class="form-label">Konfidens</label>
+          <select class="form-select" id="confidence" name="confidence" required>
+            <option value="HIGH">Høy</option>
+            <option value="MEDIUM">Moderat</option>
+            <option value="LOW">Lav</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="analysis" class="form-label">Analyse/begrunnelse</label>
+          <textarea class="form-control" id="analysis" name="analysis" rows="3" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Legg til tips</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Feedback Modals -->
+{% if current_user.is_authenticated %}
+  {% for tip in tips %}
+  <div class="modal fade" id="feedbackModal{{ tip.id }}" tabindex="-1" aria-labelledby="feedbackModalLabel{{ tip.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="feedbackModalLabel{{ tip.id }}">Gi tilbakemelding på {{ tip.ticker }} tips</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form action="{{ url_for('portfolio.tip_feedback', tip_id=tip.id) }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}"/>
+            <div class="mb-3">
+              <label for="feedback{{ tip.id }}" class="form-label">Din tilbakemelding:</label>
+              <textarea class="form-control" id="feedback{{ tip.id }}" name="feedback" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Send tilbakemelding</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+{% endif %}
+{% endblock %}

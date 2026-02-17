@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}Eksport Data - Pro | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i class="bi bi-download text-success"></i> Eksport Data
+                    </h1>
+                    <p class="text-muted">Eksporter porteføljer og analysedata til ulike formater</p>
+                </div>
+                <span class="badge bg-warning text-dark fs-6">PRO</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Export Options -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5><i class="bi bi-file-earmark-excel me-2"></i>Porteføljeeksport</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('pro_tools.export_portfolio') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Velg portefølje</label>
+                            <select class="form-select" name="portfolio_id" required>
+                                <option value="">Velg portefølje</option>
+                                <option value="all">Alle porteføljer</option>
+                                <!-- Portfolio options will be populated by backend -->
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Format</label>
+                            <select class="form-select" name="format" required>
+                                <option value="excel">Excel (.xlsx)</option>
+                                <option value="csv">CSV</option>
+                                <option value="pdf">PDF Rapport</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Inkluder data</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="include_current_prices" checked>
+                                <label class="form-check-label">Gjeldende priser</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="include_performance" checked>
+                                <label class="form-check-label">Ytelsesdata</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="include_dividends">
+                                <label class="form-check-label">Utbyttehistorikk</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="include_transactions">
+                                <label class="form-check-label">Transaksjonshistorikk</label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-download"></i> Eksporter portefølje
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Watchlist Export -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5><i class="bi bi-eye me-2"></i>Overvåkningslisteeksport</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('pro_tools.export_watchlist') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Velg overvåkningsliste</label>
+                            <select class="form-select" name="watchlist_id" required>
+                                <option value="">Velg liste</option>
+                                <option value="all">Alle lister</option>
+                                <!-- Watchlist options will be populated by backend -->
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Format</label>
+                            <select class="form-select" name="format" required>
+                                <option value="excel">Excel (.xlsx)</option>
+                                <option value="csv">CSV</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Inkluder data</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="include_prices" checked>
+                                <label class="form-check-label">Gjeldende priser</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="include_ratios" checked>
+                                <label class="form-check-label">Nøkkeltall (P/E, P/B)</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="include_signals">
+                                <label class="form-check-label">Handelssignaler</label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-download"></i> Eksporter overvåkningsliste
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Export -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5><i class="bi bi-graph-up me-2"></i>Analyseeksport</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('pro_tools.export_analysis') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Analysetype</label>
+                            <select class="form-select" name="analysis_type" required>
+                                <option value="">Velg type</option>
+                                <option value="graham">Benjamin Graham</option>
+                                <option value="buffett">Warren Buffett</option>
+                                <option value="technical">Teknisk analyse</option>
+                                <option value="screener">Screener-resultater</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Tidsperiode</label>
+                            <select class="form-select" name="period">
+                                <option value="1w">Siste uke</option>
+                                <option value="1m">Siste måned</option>
+                                <option value="3m" selected>Siste 3 måneder</option>
+                                <option value="1y">Siste år</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Format</label>
+                            <select class="form-select" name="format" required>
+                                <option value="pdf">PDF Rapport</option>
+                                <option value="excel">Excel (.xlsx)</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-info w-100">
+                            <i class="bi bi-download"></i> Eksporter analyse
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Report -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5><i class="bi bi-file-text me-2"></i>Tilpasset rapport</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('pro_tools.export_custom') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Rapportnavn</label>
+                            <input type="text" class="form-control" name="report_name" placeholder="Min rapport" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Inkluder seksjoner</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="portfolio_summary" checked>
+                                <label class="form-check-label">Porteføljeoversikt</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="performance_charts" checked>
+                                <label class="form-check-label">Ytelsesdiagrammer</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="risk_analysis">
+                                <label class="form-check-label">Risikoanalyse</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="recommendations">
+                                <label class="form-check-label">Anbefalinger</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Format</label>
+                            <select class="form-select" name="format" required>
+                                <option value="pdf">PDF Rapport</option>
+                                <option value="html">HTML</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-warning w-100">
+                            <i class="bi bi-download"></i> Generer tilpasset rapport
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export History -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5><i class="bi bi-clock-history me-2"></i>Eksporthistorikk</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Rapport</th>
+                                    <th>Type</th>
+                                    <th>Format</th>
+                                    <th>Dato</th>
+                                    <th>Status</th>
+                                    <th>Last ned</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Porteføljeanalyse - Hovedportefølje</td>
+                                    <td><span class="badge bg-primary">Portefølje</span></td>
+                                    <td>PDF</td>
+                                    <td>15.01.2025</td>
+                                    <td><span class="badge bg-success">Klar</span></td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-outline-success">
+                                            <i class="bi bi-download"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Overvåkningsliste - Teknologi</td>
+                                    <td><span class="badge bg-info">Watchlist</span></td>
+                                    <td>Excel</td>
+                                    <td>10.01.2025</td>
+                                    <td><span class="badge bg-success">Klar</span></td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-outline-success">
+                                            <i class="bi bi-download"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

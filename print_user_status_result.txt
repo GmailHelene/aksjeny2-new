@@ -1,0 +1,13 @@
+User test@aksjeradar.trade: id=1, admin=True, has_subscription=True, type=lifetime
+  Portfolios: 1
+  First portfolio 'Test Portfolio' stocks: 1
+User investor@aksjeradar.trade: id=2, admin=True, has_subscription=True, type=lifetime
+  Portfolios: 1
+  First portfolio 'Test Portfolio' stocks: 1
+User testuser@aksjeradar.trade: id=3, admin=True, has_subscription=True, type=lifetime
+  Portfolios: 1
+  First portfolio 'Test Portfolio' stocks: 1
+User jarle@aksjeradar.trade: id=4, admin=False, has_subscription=True, type=lifetime
+  Portfolios: 0
+User helene721@gmail.com: NOT FOUND
+User eirik@example.com: NOT FOUND

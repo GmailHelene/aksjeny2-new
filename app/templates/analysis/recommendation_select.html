@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Velg aksje for anbefaling{% endblock %}
+{% block content %}
+{% include 'analysis/_menu.html' %}
+<div class="container mt-4">
+  <h1>Velg aksje for anbefaling</h1>
+  
+  <div class="card mb-4">
+    <div class="card-header">
+      <h2>Søk etter aksje</h2>
+    </div>
+    <div class="card-body">
+      <form method="get" action="{{ url_for('analysis.warren_buffett') }}">
+        <div class="input-group mb-3">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="text" class="form-control" name="ticker" placeholder="Skriv inn ticker (f.eks. EQNR.OL, AAPL)" required>
+          <button class="btn btn-primary" type="submit">Vis anbefaling</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h2>Oslo Børs</h2>
+        </div>
+        <div class="card-body">
+          <div class="list-group">
+            {% for ticker, data in oslo_stocks.items() %}
+              <a href="{{ url_for('analysis.warren_buffett', ticker=ticker) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <span>{{ ticker }}</span>
+                <span class="badge bg-{{ 'success' if data.signal == 'BUY' else 'danger' if data.signal == 'SELL' else 'warning' }}">
+                  {{ data.signal }}
+                </span>
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-6">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h2>Globale Aksjer</h2>
+        </div>
+        <div class="card-body">
+          <div class="list-group">
+            {% for ticker, data in global_stocks.items() %}
+            <a href="{{ url_for('analysis.warren_buffett', ticker=ticker) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <span>{{ ticker }}</span>
+                <span class="badge bg-{{ 'success' if data.signal == 'BUY' else 'danger' if data.signal == 'SELL' else 'warning' }}">
+                  {{ data.signal }}
+                </span>
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

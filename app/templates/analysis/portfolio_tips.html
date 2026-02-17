@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Porteføljetips - Aksjeradar{% endblock %}
+
+{% block content %}
+{% include 'analysis/_menu.html' %}
+
+<div class="container py-4">ds "base.html" %}
+
+{% block title %}Porteføljetips | Aksjeradar{% endblock %}
+
+{% block content %}
+{% include 'analysis/_menu.html' %}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i class="bi bi-lightbulb text-warning"></i> Porteføljetips
+                    </h1>
+                    <p class="text-muted">Eksperttips for optimalisering av din investeringsportefølje</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle"></i> {{ error }}
+    </div>
+    {% endif %}
+
+    {% if tips %}
+    <div class="row">
+        {% for tip in tips %}
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="card-title text-primary">{{ tip.title }}</h5>
+                        <span class="badge 
+                            {% if tip.importance == 'High' %}bg-danger
+                            {% elif tip.importance == 'Medium' %}bg-warning
+                            {% else %}bg-info{% endif %}">
+                            {{ tip.importance }}
+                        </span>
+                    </div>
+                    <p class="card-text">{{ tip.description }}</p>
+                    <div class="mt-auto">
+                        <small class="text-muted">
+                            <i class="bi bi-tag"></i> {{ tip.category }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-lightbulb text-muted" style="font-size: 4rem;"></i>
+        <h3 class="mt-3 text-muted">Ingen tips tilgjengelig for øyeblikket</h3>
+        <p class="text-muted">Prøv igjen senere</p>
+    </div>
+    {% endif %}
+
+    <!-- Additional Information Section -->
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <div class="card bg-light border-0">
+                <div class="card-body">
+                    <h5><i class="bi bi-info-circle text-info"></i> Viktige prinsipper for porteføljebygging</h5>
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <h6><i class="bi bi-shield-check text-success"></i> Risikostyring</h6>
+                            <p class="small">Aldri invester mer enn du har råd til å tape. Diversifiser alltid investeringene dine.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="bi bi-clock text-primary"></i> Tidshorisont</h6>
+                            <p class="small">Langsiktige investeringer gir generelt bedre avkastning enn kortsiktig handel.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="bi bi-graph-up text-warning"></i> Sammensatt rente</h6>
+                            <p class="small">La avkastningen din vokse over tid gjennom reinvestering av utbytte og gevinster.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

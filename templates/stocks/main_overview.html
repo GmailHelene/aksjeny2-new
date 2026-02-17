@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Markedsoversikt - Aksjeny{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <h1 class="h3 mb-4">Markedsoversikt</h1>
+
+  {# Quick tiles #}
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted small">Populære</div>
+              <div class="h4 mb-0">{{ (stocks or {})|length }}</div>
+            </div>
+            <span class="badge bg-primary">Aksjer</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="text-muted small">Stigende</div>
+          <div class="h4 mb-0">{{ (top_gainers or [])|length }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="text-muted small">Fallende</div>
+          <div class="h4 mb-0">{{ (top_losers or [])|length }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="text-muted small">Mest omsatt</div>
+          <div class="h4 mb-0">{{ (most_active or [])|length }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Populære aksjer</h5>
+          <div class="btn-group">
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('stocks.list_oslo') }}">Oslo</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('stocks.list_global') }}">Global</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('stocks.list_crypto') }}">Krypto</a>
+          </div>
+        </div>
+        <div class="card-body">
+          {% if stocks and stocks|length > 0 %}
+          <div class="table-responsive">
+            <table class="table table-striped table-sm align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Ticker</th>
+                  <th>Selskap</th>
+                  <th class="text-end">Pris</th>
+                  <th class="text-end">Endring</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for symbol, s in stocks.items() %}
+                  {% if loop.index0 < 10 %}
+                  <tr>
+                    <td><a href="{{ url_for('stocks.details', symbol=symbol) }}">{{ symbol }}</a></td>
+                    <td>{{ s.name or s.longName or symbol }}</td>
+                    {% set cp = (s.current_price or s.price or s.last_price or s.regularMarketPrice) %}
+                    {% set chg = (s.change_percent or s.regularMarketChangePercent or s.change or s.regularMarketChange or 0) %}
+                    <td class="text-end">{{ cp is not none and ('%.2f'|format(cp)) or '-' }}</td>
+                    <td class="text-end">
+                      <span class="badge {{ (chg|float) >= 0 and 'bg-success' or 'bg-danger' }}">
+                        {{ (chg|float) >= 0 and '+' or '' }}{{ '%.2f'|format(chg|float) }}%
+                      </span>
+                    </td>
+                  </tr>
+                  {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+            <div class="text-muted">Ingen data tilgjengelig.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card mb-3">
+        <div class="card-header"><strong>Topp stigere</strong></div>
+        <ul class="list-group list-group-flush">
+          {% for item in (top_gainers or [])[:8] %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <a href="{{ url_for('stocks.details', symbol=item.symbol or item.ticker) }}">{{ item.symbol or item.ticker }}</a>
+            <span class="badge bg-success">{{ '%.2f'|format((item.change_percent or 0)|float) }}%</span>
+          </li>
+          {% else %}
+          <li class="list-group-item text-muted">Ingen</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="card mb-3">
+        <div class="card-header"><strong>Topp fallere</strong></div>
+        <ul class="list-group list-group-flush">
+          {% for item in (top_losers or [])[:8] %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <a href="{{ url_for('stocks.details', symbol=item.symbol or item.ticker) }}">{{ item.symbol or item.ticker }}</a>
+            <span class="badge bg-danger">{{ '%.2f'|format((item.change_percent or 0)|float) }}%</span>
+          </li>
+          {% else %}
+          <li class="list-group-item text-muted">Ingen</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><strong>Mest omsatt</strong></div>
+        <ul class="list-group list-group-flush">
+          {% for item in (most_active or [])[:8] %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <a href="{{ url_for('stocks.details', symbol=item.symbol or item.ticker) }}">{{ item.symbol or item.ticker }}</a>
+            <span class="text-muted small">Vol: {{ item.volume or item.regularMarketVolume or '-' }}</span>
+          </li>
+          {% else %}
+          <li class="list-group-item text-muted">Ingen</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  {% if error %}
+    <div class="alert alert-warning mt-3">Noe gikk galt ved lasting av data. Viser begrenset oversikt.</div>
+  {% endif %}
+</div>
+{% endblock %}

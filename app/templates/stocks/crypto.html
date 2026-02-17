@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{% if title %}
+{{ title }}
+{% else %}
+Kryptovaluta
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('main.index') }}" class="text-decoration-none">
+                    <i class="bi bi-house-door me-1"></i>Hjem
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('stocks.list_oslo') }}" class="text-decoration-none">
+                    <i class="bi bi-graph-up me-1"></i>Aksjer
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <i class="bi bi-currency-bitcoin me-1"></i>{{ title or "Kryptovaluta" }}
+            </li>
+        </ol>
+    </nav>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="mb-0 text-dark">{{ title or "Kryptovaluta" }}</h1>
+                
+                <!-- Tilbake til oversikt knapp -->
+                <a href="{{ url_for('stocks.list_oslo') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left me-1"></i>Tilbake til oversikt
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body p-0">
+            {% if error %}
+            <div class="alert alert-warning" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                Det oppstod en feil ved lasting av kryptodata. Viser tilgjengelig data.
+            </div>
+            {% endif %}
+            
+            {% if not stocks %}
+            <div class="alert alert-info" role="alert">
+                <i class="bi bi-info-circle me-2"></i>
+                Ingen kryptodata tilgjengelig for øyeblikket. Prøv igjen senere.
+            </div>
+            {% else %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr class="text-dark">
+                            <th>Ticker</th>
+                            <th>Navn</th>
+                            <th>Siste</th>
+                            <th>Endring</th>
+                            <th>% Endring</th>
+                            <th>Volum</th>
+                            <th>Signal</th>
+                            <th>Handlinger</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                                                {% if stocks %}
+                                                    {% for ticker, crypto in stocks.items() %}
+                                                    <tr class="text-dark">
+                                                        <td><strong>{{ ticker }}</strong></td>
+                                                        <td>{{ crypto['name'] or ticker }}</td>
+                                                        <td>${{ "%.2f"|format((crypto.get('price') or 0)|float) }}</td>
+                                                        <td class="{% if (crypto.get('change') or 0)|float > 0 %}text-success{% elif (crypto.get('change') or 0)|float < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                                            {% set change_val = (crypto.get('change') or 0)|float %}
+                                                            {% if change_val > 0 %}+{% endif %}{{ "%.2f"|format(change_val) }}
+                                                        </td>
+                                                        <td class="{% if (crypto.get('change_percent') or 0)|float > 0 %}text-success{% elif (crypto.get('change_percent') or 0)|float < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                                            {% set change_percent_val = (crypto.get('change_percent') or 0)|float %}
+                                                            {% if change_percent_val > 0 %}+{% endif %}{{ "%.2f"|format(change_percent_val) }}%
+                                                        </td>
+                                                        <td>{{ crypto.get('volume', 'Ikke tilgjengelig') }}</td>
+                                                        <td>
+                                                            {% set change_percent_val = (crypto.get('change_percent') or 0)|float %}
+                                                            {% if change_percent_val > 2 %}
+                                                                <span class="badge bg-success">KJØP</span>
+                                                            {% elif change_percent_val < -2 %}
+                                                                <span class="badge bg-danger">SELG</span>
+                                                            {% else %}
+                                                                <span class="badge bg-warning">HOLD</span>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td>
+                                                            <div class="btn-group" role="group">
+                                                                <a href="{{ url_for('stocks.details', symbol=ticker) }}" class="btn btn-sm btn-primary">
+                                                                    <i class="bi bi-info-circle"></i> Detaljer
+                                                                </a>
+                                                                <a href="{{ url_for('analysis.technical', symbol=ticker) }}" class="btn btn-sm btn-outline-secondary">
+                                                                    <i class="bi bi-graph-up"></i> Analyse
+                                                                </a>
+                                                                    {% set exchange_url = get_exchange_url(ticker) %}
+                                                                    {% if exchange_url %}
+                                                                        <a href="{{ exchange_url }}" target="_blank" class="btn btn-sm btn-success">
+                                                                            <i class="bi bi-cart-plus"></i> Kjøp
+                                                                        </a>
+                                                                    {% endif %}
+                                                                    <button class="btn btn-sm btn-outline-warning btn-star-favorite text-white" style="background: #007bff; border: none;" title="Legg til favoritt" onclick="toggleFavorite('{{ ticker }}', this)">
+                                                                        <i class="bi bi-star"></i>
+                                                                        <!-- Ensure data-ticker is present for JS -->
+                                                                    </button>
+                                                                    </button>
+                                                                <!-- Patch: ensure color contrast and favorite button logic -->
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Favorite button logic is now handled by window.toggleFavorite from portfolio-actions-enhanced.js
+    
+    // External buy button functionality for crypto
+    document.querySelectorAll('.external-buy-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const ticker = this.dataset.ticker;
+            
+            if (!ticker) {
+                console.error('No ticker found for buy button');
+                return;
+            }
+            
+            // Update button to show loading state
+            const originalHtml = this.innerHTML;
+            this.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Åpner...';
+            this.disabled = true;
+            
+            // Construct external URL for crypto
+            let externalUrl;
+            if (ticker.includes('BTC') || ticker.includes('ETH')) {
+                // Popular crypto - use Binance
+                const cryptoSymbol = ticker.replace('-USD', '');
+                externalUrl = `https://www.binance.com/en/trade/${cryptoSymbol}_USDT`;
+            } else {
+                // General crypto search
+                externalUrl = `https://www.google.com/search?q=${ticker}+cryptocurrency+buy+exchange`;
+            }
+            
+            // Open external URL in new tab
+            try {
+                window.open(externalUrl, '_blank', 'noopener,noreferrer');
+                
+                // Reset button after short delay
+                setTimeout(() => {
+                    this.innerHTML = originalHtml;
+                    this.disabled = false;
+                }, 2000);
+                
+                showToast(`🚀 Åpner kjøpsside for ${ticker}`, 'success');
+            } catch (error) {
+                console.error('Error opening external URL:', error);
+                this.innerHTML = originalHtml;
+                this.disabled = false;
+                showToast('❌ Kunne ikke åpne kjøpsside', 'error');
+            }
+        });
+    });
+});
+
+function showToast(message, type) {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    // Add to toast container or create one
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        document.body.appendChild(container);
+    }
+    
+    container.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    
+    // Remove after hidden
+    toast.addEventListener('hidden.bs.toast', () => toast.remove());
+}
+
+// Delegate to global toggleFavorite from base.html
+window.toggleFavorite = function(ticker, btn) {
+    if (!ticker || !btn) return;
+    if (!window.toggleFavorite || typeof window.toggleFavorite !== 'function') return;
+    // call the global helper with button context and toasts
+    window.toggleFavorite(ticker, {
+        button: btn,
+        favoritedText: '<i class="bi bi-star-fill"></i>',
+        unfavoritedText: '<i class="bi bi-star"></i>',
+        onSuccess: (d)=> showToast(d.message || (d.favorited ? `${ticker} lagt til i favoritter` : `${ticker} fjernet fra favoritter`), d.favorited ? 'success' : 'info'),
+        onError: ()=> showToast('Favoritt-handling feilet', 'danger')
+    });
+}
+</script>
+
+<!-- Include portfolio actions for favorites functionality -->
+<script src="{{ url_for('static', filename='js/portfolio-actions-enhanced.js') }}"></script>
+{% endblock %}

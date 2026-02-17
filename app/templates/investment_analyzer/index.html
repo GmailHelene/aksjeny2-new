@@ -1,0 +1,548 @@
+{% extends "base.html" %}
+
+{% block title %}Investeringsanalyse - AI-drevet anbefalinger{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold text-primary mb-3">
+                    <i class="bi bi-brain me-3"></i>AI Investeringsanalyse
+                </h1>
+                <p class="lead text-muted">
+                    Få personaliserte investeringsanbefalinger basert på dine mål, risikotoleranse og tidshorisont. 
+                    Vår AI analyserer tusenvis av aksjer, kryptovalutaer og valutapar for å finne de beste mulighetene for deg.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Configuration Form -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-gear-fill me-2"></i>Konfigurer din analyse
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form id="investment-analysis-form">
+                        <div class="row">
+                            <!-- Investment Amount -->
+                            <div class="col-md-6 mb-4">
+                                <label for="investment-amount" class="form-label fw-bold">
+                                    <i class="bi bi-currency-exchange text-success me-2"></i>Investeringsbeløp (NOK)
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">NOK</span>
+                                    <input type="number" class="form-control" id="investment-amount" 
+                                           value="50000" min="1000" max="10000000" step="1000" required>
+                                </div>
+                                <small class="form-text text-muted">Hvor mye vil du investere?</small>
+                            </div>
+
+                            <!-- Time Horizon -->
+                            <div class="col-md-6 mb-4">
+                                <label for="time-horizon" class="form-label fw-bold">
+                                    <i class="bi bi-clock text-info me-2"></i>Tidshorisont
+                                </label>
+                                <select class="form-select" id="time-horizon" required>
+                                    <option value="1_day">1 dag (Daytrading)</option>
+                                    <option value="1_week">1 uke (Swing trading)</option>
+                                    <option value="1_month" selected>1 måned</option>
+                                    <option value="3_months">3 måneder</option>
+                                    <option value="6_months">6 måneder</option>
+                                    <option value="1_year">1 år</option>
+                                    <option value="1_year_plus">1+ år (Langsiktig)</option>
+                                </select>
+                                <small class="form-text text-muted">Hvor lenge planlegger du å holde investeringen?</small>
+                            </div>
+
+                            <!-- Risk Level -->
+                            <div class="col-md-6 mb-4">
+                                <label for="risk-level" class="form-label fw-bold">
+                                    <i class="bi bi-shield text-warning me-2"></i>Risikotoleranse
+                                </label>
+                                <select class="form-select" id="risk-level" required>
+                                    <option value="low">Lav risiko (Konservativ)</option>
+                                    <option value="medium" selected>Middels risiko (Balansert)</option>
+                                    <option value="high">Høy risiko (Aggressiv)</option>
+                                    <option value="very_high">Svært høy risiko (Spekulativ)</option>
+                                </select>
+                                <small class="form-text text-muted">Hvor mye risiko er du komfortabel med?</small>
+                            </div>
+
+                            <!-- Asset Types -->
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="bi bi-collection text-primary me-2"></i>Aktivatyper
+                                </label>
+                                <div class="form-check-group">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="include-stocks" 
+                                               name="asset-types" value="stocks" checked>
+                                        <label class="form-check-label" for="include-stocks">
+                                            <i class="bi bi-graph-up me-1"></i>Aksjer
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="include-crypto" 
+                                               name="asset-types" value="crypto" checked>
+                                        <label class="form-check-label" for="include-crypto">
+                                            <i class="bi bi-currency-bitcoin me-1"></i>Kryptovaluta
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="include-currency" 
+                                               name="asset-types" value="currency">
+                                        <label class="form-check-label" for="include-currency">
+                                            <i class="bi bi-currency-exchange me-1"></i>Valutapar
+                                        </label>
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted">Velg hvilke aktivatyper du vil inkludere</small>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="bi bi-search me-2"></i>Analyser investeringsmuligheter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading-state" class="text-center py-5" style="display: none;">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Analyserer...</span>
+        </div>
+        <h4 class="mt-3 text-primary">Analyserer markedet...</h4>
+        <p class="text-muted">AI-en vår scanner tusenvis av investeringsmuligheter</p>
+    </div>
+
+    <!-- Results Section -->
+    <div id="results-section" style="display: none;">
+        <!-- Analysis Summary -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm bg-light">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary mb-3">
+                            <i class="bi bi-pie-chart-fill me-2"></i>Analyse-sammendrag
+                        </h5>
+                        <div class="row" id="analysis-summary">
+                            <!-- Summary content will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-lg border-0">
+                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-star-fill me-2"></i>Anbefalte investeringer
+                        </h5>
+                        <button class="btn btn-light btn-sm" id="optimize-portfolio-btn" style="display: none;">
+                            <i class="bi bi-diagram-3 me-1"></i>Optimaliser portefølje
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="recommendations-table">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>
+                                            <input type="checkbox" id="select-all-recommendations" class="form-check-input">
+                                        </th>
+                                        <th>Symbol</th>
+                                        <th>Navn</th>
+                                        <th>Type</th>
+                                        <th>Pris</th>
+                                        <th>AI Score</th>
+                                        <th>Forventet avkastning</th>
+                                        <th>Risiko</th>
+                                        <th>Posisjonsstørrelse</th>
+                                        <th>Stop Loss</th>
+                                        <th>Take Profit</th>
+                                        <th>Begrunnelse</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recommendations-tbody">
+                                    <!-- Recommendations will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio Optimization Results -->
+        <div id="portfolio-optimization" class="row mt-4" style="display: none;">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-diagram-3-fill me-2"></i>Optimalisert portefølje
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="optimized-portfolio-content">
+                            <!-- Optimized portfolio content will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('investment-analysis-form');
+    const loadingState = document.getElementById('loading-state');
+    const resultsSection = document.getElementById('results-section');
+    const selectAllCheckbox = document.getElementById('select-all-recommendations');
+    const optimizeBtn = document.getElementById('optimize-portfolio-btn');
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        performAnalysis();
+    });
+
+    selectAllCheckbox.addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('input[name="selected-recommendation"]');
+        checkboxes.forEach(cb => cb.checked = this.checked);
+        updateOptimizeButton();
+    });
+
+    optimizeBtn.addEventListener('click', function() {
+        optimizePortfolio();
+    });
+
+    function performAnalysis() {
+        // Show loading state
+        resultsSection.style.display = 'none';
+        loadingState.style.display = 'block';
+
+        // Collect form data
+        const formData = {
+            investment_amount: parseFloat(document.getElementById('investment-amount').value),
+            time_horizon: document.getElementById('time-horizon').value,
+            risk_level: document.getElementById('risk-level').value,
+            asset_types: Array.from(document.querySelectorAll('input[name="asset-types"]:checked'))
+                              .map(cb => cb.value)
+        };
+
+        // Send analysis request
+        fetch('/investment-analyzer/analyze', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            loadingState.style.display = 'none';
+            
+            if (data.success) {
+                displayResults(data.recommendations, data.analysis_summary);
+                resultsSection.style.display = 'block';
+            } else {
+                alert('Feil ved analyse: ' + data.error);
+            }
+        })
+        .catch(error => {
+            loadingState.style.display = 'none';
+            console.error('Error:', error);
+            alert('En feil oppstod under analysen. Prøv igjen senere.');
+        });
+    }
+
+    function displayResults(recommendations, summary) {
+        // Display analysis summary
+        displayAnalysisSummary(summary);
+        
+        // Display recommendations
+        displayRecommendations(recommendations);
+        
+        // Show optimize button if there are recommendations
+        if (recommendations.length > 0) {
+            optimizeBtn.style.display = 'inline-block';
+        }
+    }
+
+    function displayAnalysisSummary(summary) {
+        const summaryElement = document.getElementById('analysis-summary');
+        summaryElement.innerHTML = `
+            <div class="col-md-3 text-center">
+                <div class="p-3">
+                    <h3 class="text-primary">${summary.total_recommendations}</h3>
+                    <small class="text-muted">Anbefalinger</small>
+                </div>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="p-3">
+                    <h3 class="text-success">${summary.avg_expected_return}%</h3>
+                    <small class="text-muted">Gj.snitt forventet avkastning</small>
+                </div>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="p-3">
+                    <h3 class="text-info">NOK ${summary.investment_amount.toLocaleString()}</h3>
+                    <small class="text-muted">Investeringsbeløp</small>
+                </div>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="p-3">
+                    <div class="small">
+                        ${Object.entries(summary.risk_distribution).map(([risk, count]) => 
+                            `<span class="badge bg-secondary me-1">${risk}: ${count}</span>`
+                        ).join('')}
+                    </div>
+                    <small class="text-muted">Risiko-fordeling</small>
+                </div>
+            </div>
+        `;
+    }
+
+    function displayRecommendations(recommendations) {
+        const tbody = document.getElementById('recommendations-tbody');
+        tbody.innerHTML = '';
+
+        recommendations.forEach((rec, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <input type="checkbox" name="selected-recommendation" value="${index}" 
+                           class="form-check-input" onchange="updateOptimizeButton()">
+                </td>
+                <td><strong>${rec.symbol}</strong></td>
+                <td>${rec.name}</td>
+                <td>
+                    <span class="badge ${getAssetTypeBadgeClass(rec.asset_type)}">
+                        ${getAssetTypeLabel(rec.asset_type)}
+                    </span>
+                </td>
+                <td>${formatPrice(rec.current_price, rec.asset_type)}</td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div class="progress me-2" style="width: 60px; height: 8px;">
+                            <div class="progress-bar bg-success" style="width: ${rec.score * 100}%"></div>
+                        </div>
+                        <small>${rec.score}</small>
+                    </div>
+                </td>
+                <td class="text-success fw-bold">+${rec.expected_return}%</td>
+                <td>
+                    <span class="badge ${getRiskBadgeClass(rec.risk_level)}">
+                        ${rec.risk_level}
+                    </span>
+                </td>
+                <td>
+                    ${rec.position_size} stk<br>
+                    <small class="text-muted">NOK ${rec.position_value.toLocaleString()}</small>
+                </td>
+                <td class="text-danger">${formatPrice(rec.stop_loss, rec.asset_type)}</td>
+                <td class="text-success">${formatPrice(rec.take_profit, rec.asset_type)}</td>
+                <td>
+                    <small class="text-muted">${rec.reasoning}</small>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function updateOptimizeButton() {
+        const selectedCount = document.querySelectorAll('input[name="selected-recommendation"]:checked').length;
+        optimizeBtn.style.display = selectedCount > 0 ? 'inline-block' : 'none';
+    }
+
+    function optimizePortfolio() {
+        const selectedIndices = Array.from(document.querySelectorAll('input[name="selected-recommendation"]:checked'))
+                                    .map(cb => parseInt(cb.value));
+        
+        if (selectedIndices.length === 0) {
+            alert('Velg minst en anbefaling for porteføljeoptimalisering.');
+            return;
+        }
+
+        // Get selected recommendations (assuming we store them globally)
+        const selectedAssets = selectedIndices.map(index => window.currentRecommendations[index]);
+        
+        const optimizationData = {
+            selected_assets: selectedAssets,
+            investment_amount: parseFloat(document.getElementById('investment-amount').value),
+            risk_level: document.getElementById('risk-level').value
+        };
+
+        fetch('/investment-analyzer/portfolio-optimization', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(optimizationData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayOptimizedPortfolio(data.optimized_portfolio);
+                document.getElementById('portfolio-optimization').style.display = 'block';
+            } else {
+                alert('Feil ved porteføljeoptimalisering: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('En feil oppstod ved porteføljeoptimalisering.');
+        });
+    }
+
+    function displayOptimizedPortfolio(portfolio) {
+        const content = document.getElementById('optimized-portfolio-content');
+        
+        let html = `
+            <div class="row">
+                <div class="col-12">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Vekt</th>
+                                    <th>Allokering</th>
+                                    <th>Aksjer å kjøpe</th>
+                                    <th>Faktisk allokering</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+        `;
+
+        portfolio.forEach(asset => {
+            html += `
+                <tr>
+                    <td><strong>${asset.symbol}</strong></td>
+                    <td>${asset.allocation_weight}%</td>
+                    <td>NOK ${asset.allocation_amount.toLocaleString()}</td>
+                    <td>${asset.shares_to_buy} stk</td>
+                    <td>NOK ${asset.actual_allocation.toLocaleString()}</td>
+                </tr>
+            `;
+        });
+
+        html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        content.innerHTML = html;
+    }
+
+    // Helper functions
+    function getAssetTypeBadgeClass(type) {
+        const classes = {
+            'stocks': 'bg-primary',
+            'crypto': 'bg-warning',
+            'currency': 'bg-info'
+        };
+        return classes[type] || 'bg-secondary';
+    }
+
+    function getAssetTypeLabel(type) {
+        const labels = {
+            'stocks': 'Aksje',
+            'crypto': 'Krypto',
+            'currency': 'Valuta'
+        };
+        return labels[type] || type;
+    }
+
+    function getRiskBadgeClass(risk) {
+        const classes = {
+            'Lav': 'bg-success',
+            'Middels': 'bg-warning',
+            'Høy': 'bg-danger',
+            'Svært høy': 'bg-dark'
+        };
+        return classes[risk] || 'bg-secondary';
+    }
+
+    function formatPrice(price, assetType) {
+        if (assetType === 'currency') {
+            return price.toFixed(4);
+        } else if (assetType === 'crypto' && price < 1) {
+            return '$' + price.toFixed(6);
+        } else if (assetType === 'crypto') {
+            return '$' + price.toLocaleString();
+        } else {
+            return 'NOK ' + price.toFixed(2);
+        }
+    }
+
+    // Store recommendations globally for portfolio optimization
+    window.currentRecommendations = [];
+    
+    // Override displayRecommendations to store recommendations
+    const originalDisplayRecommendations = displayRecommendations;
+    displayRecommendations = function(recommendations) {
+        window.currentRecommendations = recommendations;
+        originalDisplayRecommendations(recommendations);
+    };
+});
+</script>
+
+<style>
+.form-check-group .form-check {
+    margin-bottom: 0.5rem;
+}
+
+.progress {
+    background-color: #e9ecef;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+#loading-state {
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.spinner-border {
+    animation: spinner-border 0.75s linear infinite;
+}
+
+@keyframes spinner-border {
+    to { transform: rotate(360deg); }
+}
+</style>
+{% endblock %}

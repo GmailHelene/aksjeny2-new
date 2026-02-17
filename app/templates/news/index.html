@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+
+{% block title %}Finansnyheter - Aksjeradar{% endblock %}
+
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/news.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">
+        <i class="bi bi-newspaper"></i> Finansnyheter
+    </h1>
+
+    <!-- Category filter -->
+    <div class="mb-4">
+                <div class="d-flex gap-2 mb-4 flex-wrap">
+            <a href="{{ url_for('news_bp.index', category='all') }}" 
+               class="btn btn-sm {{ 'btn-primary' if current_category == 'all' else 'btn-outline-primary' }}">Alle</a>
+            <a href="{{ url_for('news_bp.index', category='norwegian') }}" 
+               class="btn btn-sm {{ 'btn-primary' if current_category == 'norwegian' else 'btn-outline-primary' }}">Norske</a>
+            <a href="{{ url_for('news_bp.index', category='international') }}" 
+               class="btn btn-sm {{ 'btn-primary' if current_category == 'international' else 'btn-outline-primary' }}">Internasjonale</a>
+            <a href="{{ url_for('news_bp.index', category='energy') }}" 
+               class="btn btn-sm {{ 'btn-primary' if current_category == 'energy' else 'btn-outline-primary' }}">Energi</a>
+            <a href="{{ url_for('news_bp.index', category='tech') }}" 
+               class="btn btn-sm {{ 'btn-primary' if current_category == 'tech' else 'btn-outline-primary' }}">Tech</a>
+            <a href="{{ url_for('news_bp.index', category='crypto') }}" 
+               class="btn btn-sm {{ 'btn-primary' if current_category == 'crypto' else 'btn-outline-primary' }}">Crypto</a>
+        </div>
+    </div>
+
+    <!-- News articles -->
+    <div class="row" id="newsContainer">
+        {% if news_articles %}
+            {% for article in news_articles %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 news-card">
+                    {% if article.thumbnail %}
+                    <div class="news-image-container">
+                        <img src="{{ article.thumbnail }}" class="card-img-top news-image" alt="{{ article.title }}">
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ article.title }}</h5>
+                        <p class="card-text">
+                            {% if article.summary %}
+                                {{ article.summary }}
+                            {% else %}
+                                Klikk for å lese mer om denne saken.
+                            {% endif %}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="bi bi-globe"></i> {{ article.publisher }}
+                            </small>
+                            <small class="text-muted">
+                                <i class="bi bi-clock"></i> 
+                                {% if article.providerPublishTime %}
+                                    {{ datetime.fromtimestamp(article.providerPublishTime).strftime('%d.%m.%Y %H:%M') }}
+                                {% else %}
+                                    Akkurat nå
+                                {% endif %}
+                            </small>
+                        </div>
+                        {% if article.relatedTickers %}
+                        <div class="mt-2">
+                            <small class="text-muted">Relaterte aksjer:</small>
+                            {% for ticker in article.relatedTickers[:3] %}
+                                <span class="badge bg-secondary me-1">{{ ticker }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <a href="{{ article.link }}" target="_blank" class="btn btn-sm btn-primary">
+                            Les mer <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
+                        <span class="float-end badge bg-info">
+                            {{ article.type }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> Ingen nyheter tilgjengelig for øyeblikket.
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Load more button -->
+    {% if news_articles and news_articles|length >= 20 %}
+    <div class="text-center mt-4">
+        <button class="btn btn-primary" onclick="loadMoreNews()">
+            <i class="bi bi-arrow-down-circle"></i> Last flere nyheter
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.news-card {
+    transition: transform 0.2s;
+    cursor: pointer;
+}
+
+.news-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.btn-group .btn {
+    font-size: 0.9rem;
+}
+
+/* News image optimization */
+.news-image-container {
+    height: 120px;
+    overflow: hidden;
+    position: relative;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.news-image {
+    width: 100% !important;
+    height: 200px !important;
+    max-height: 200px !important;
+    max-width: 100% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    transition: transform 0.3s ease;
+}
+
+/* Fix all images to prevent oversizing */
+.card img, .card-img-top {
+    width: 100% !important;
+    height: 200px !important;
+    max-height: 200px !important;
+    max-width: 100% !important;
+    object-fit: cover !important;
+}
+
+.news-image:hover {
+    transform: scale(1.05);
+}
+
+/* Fallback for missing images */
+.news-image-container::before {
+    content: "📰";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    opacity: 0.3;
+    z-index: 1;
+}
+
+.news-image {
+    position: relative;
+    z-index: 2;
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+    .news-image-container {
+        height: 180px;
+    }
+    
+    .news-image {
+        height: 180px !important;
+    }
+}
+</style>
+
+<script>
+let currentPage = 1;
+const currentCategory = '{{ selected_category }}';
+
+function loadMoreNews() {
+    currentPage++;
+    fetch(`/news/api/latest?category=${currentCategory}&limit=20&page=${currentPage}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.articles.length > 0) {
+                const container = document.getElementById('newsContainer');
+                data.articles.forEach(article => {
+                    container.innerHTML += createNewsCard(article);
+                });
+            }
+        })
+        .catch(error => console.error('Error loading news:', error));
+}
+
+function createNewsCard(article) {
+    const imageHtml = article.image_url ? 
+        `<img src="${article.image_url}" class="card-img-top" alt="${article.title}" style="height: 200px; max-height: 200px; object-fit: cover; width: 100%; max-width: 100%;">` : '';
+    
+    const relevanceHtml = article.relevance_score ? 
+        `<span class="float-end badge bg-${article.relevance_score > 0.7 ? 'success' : 'warning'}">
+            Relevans: ${(article.relevance_score * 100).toFixed(0).replace('.', ',')}%
+        </span>` : '';
+    
+    return `
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 news-card">
+                ${imageHtml}
+                <div class="card-body">
+                    <h5 class="card-title">${article.title}</h5>
+                    <p class="card-text">${article.summary}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-globe"></i> ${article.source}
+                        </small>
+                        <small class="text-muted">
+                            <i class="bi bi-clock"></i> ${article.published || 'Ukjent'}
+                        </small>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="${article.link}" target="_blank" class="btn btn-sm btn-primary">
+                        Les mer <i class="bi bi-box-arrow-up-right"></i>
+                    </a>
+                    ${relevanceHtml}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Auto-refresh news every 5 minutes
+setInterval(() => {
+    location.reload();
+}, 300000);
+</script>
+{% endblock %}
+    .news-filters {
+        position: static;
+    }
+}
+
+.news-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    line-height: 1.4;
+}
+
+.news-title a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.news-title a:hover {
+    color: #007bff;
+}
+
+.news-summary {
+    color: #6c757d;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.news-meta {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e9ecef;
+}
+
+.news-source {
+    font-weight: 600;
+    color: #495057;
+}
+
+.news-date {
+    font-style: italic;
+}
+
+.relevance-badge {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.category-tags {
+    margin-bottom: 15px;
+}
+
+.category-tag {
+    display: inline-block;
+    background: #e9ecef;
+    color: #495057;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    margin-right: 8px;
+    margin-bottom: 5px;
+    text-transform: capitalize;
+}
+
+.category-tag.oslo_bors { background: #d4edda; color: #155724; }
+.category-tag.energy { background: #fff3cd; color: #856404; }
+.category-tag.tech { background: #d1ecf1; color: #0c5460; }
+.category-tag.crypto { background: #f8d7da; color: #721c24; }
+
+.filter-btn {
+    margin-right: 10px;
+    margin-bottom: 10px;
+    border-radius: 25px;
+    padding: 8px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.filter-btn.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 40px;
+    color: #6c757d;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+</style>

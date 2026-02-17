@@ -1,0 +1,167 @@
+/* 
+ * COMPREHENSIVE NAVIGATION FIXES
+ * This file fixes all navigation styling issues with consistent #252525 background and white text
+ */
+
+/* Global Navigation Background - Apply to all navigation elements */
+.navbar,
+.navbar-collapse,
+.navbar-nav,
+.dropdown-menu {
+    background-color: #252525 !important;
+}
+
+/* Navigation Links - White color on hover and default */
+.navbar-nav .nav-link {
+    color: rgb(255, 255, 255) !important;
+    font-size: var(--bs-nav-link-font-size);
+    font-weight: var(--bs-nav-link-font-weight);
+    display: block;
+    padding: var(--bs-nav-link-padding-y) var(--bs-nav-link-padding-x);
+    transition: all 0.2s ease;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link:focus {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    text-decoration: none;
+}
+
+/* Dropdown Headers */
+.navbar-dark .dropdown-header {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+/* Dropdown Items */
+.dropdown-menu .dropdown-item {
+    color: rgba(255, 255, 255, 0.85) !important;
+    background-color: transparent !important;
+}
+
+.dropdown-menu .dropdown-item:hover,
+.dropdown-menu .dropdown-item:focus {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Mobile Navigation Specific */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        background-color: #252525 !important;
+        border-radius: 0.5rem;
+        margin-top: 0.5rem;
+        padding: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    
+    .navbar-nav .nav-item {
+        margin-bottom: 0.25rem;
+    }
+    
+    .navbar-nav .nav-link {
+        color: #ffffff !important;
+        padding: 0.75rem 1rem !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+    }
+    
+    .navbar-nav .nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.15) !important;
+    }
+    
+    .dropdown-menu {
+        background-color: #252525 !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        margin-left: 1rem;
+        margin-top: 0.25rem;
+    }
+}
+
+/* Desktop Navigation */
+@media (min-width: 992px) {
+    .navbar {
+        background-color: #252525 !important;
+        padding: 0.5rem 1rem !important;
+    }
+    
+    .navbar-nav .nav-link {
+        color: rgba(255, 255, 255, 0.9) !important;
+        font-size: 0.95rem !important;
+        font-weight: 500 !important;
+        padding: 0.5rem 1rem !important;
+        margin: 0 0.1rem !important;
+        border-radius: 4px !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    .navbar-nav .nav-link:hover {
+        color: #ffffff !important;
+        background-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    .dropdown-menu {
+        background-color: #252525 !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
+    }
+}
+
+/* Brand/Logo */
+.navbar-brand {
+    color: #ffffff !important;
+}
+
+.navbar-brand:hover {
+    color: #ffffff !important;
+}
+
+/* Navbar Toggler */
+.navbar-toggler {
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.85%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+}
+
+/* Dropdown Dividers */
+.dropdown-divider {
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Active/Current Page Links */
+.navbar-nav .nav-link.active,
+.navbar-nav .show > .nav-link {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Ensure all navigation backgrounds are consistent */
+.bg-dark,
+.navbar-dark {
+    background-color: #252525 !important;
+}
+
+/* Remove any conflicting styles */
+.navbar * {
+    text-shadow: none !important;
+    box-shadow: none !important;
+}
+
+/* Specific override for any remaining issues */
+.navbar-collapse,
+.navbar-collapse.show,
+.navbar-collapse.collapsing {
+    background-color: #252525 !important;
+}
+
+/* Dropdown menu positioning fix */
+.dropdown-menu {
+    margin-top: 0.2rem !important;
+}
+
+.dropdown-toggle::after {
+    color: #ffffff !important;
+}

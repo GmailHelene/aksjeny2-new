@@ -1,0 +1,619 @@
+{% extends "base.html" %}
+
+{% block title %}Aksjer Norge | Oslo Børs og globale aksjer - Aksjeradar{% endblock %}
+{% block description %}Komplett oversikt over Oslo Børs, globale aksjer, kryptovaluta og valutakurser. Sanntidskurser, analyser og kjøpssignaler for alle norske og internasjonale aksjer.{% endblock %}
+{% block keywords %}Oslo Børs, norske aksjer, EQNR, DNB, TEL, amerikanske aksjer, AAPL, MSFT, GOOGL, globale aksjer, aksjekurser sanntid{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Aksjeoversikt</h1>
+    
+    <!-- Search Bar -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <form action="{{ url_for('stocks.search') }}" method="GET" class="d-flex">
+                <input type="text" name="q" class="form-control me-2" placeholder="Søk etter aksjer..." required>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i> Søk
+                </button>
+            </form>
+        </div>
+        <div class="col-md-4">
+            <a href="{{ url_for('stocks.compare') }}" class="btn btn-outline-primary w-100">
+                <i class="bi bi-arrows-angle-expand"></i> Sammenlign aksjer
+            </a>
+        </div>
+    </div>
+    
+    <!-- Market Categories -->
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="bi bi-flag-fill text-danger display-4"></i>
+                    <h5 class="mt-2 text-white" style="background:#dc3545;">Oslo Børs</h5>
+                    <p class="text-white" style="background:#dc3545;">Norske aksjer</p>
+                    <a href="{{ url_for('stocks.list_oslo') }}" class="btn btn-sm btn-outline-primary text-white" style="background:#dc3545;">Se alle</a>
+                </div>
+            </div>
+            <!-- Removed stray favorite button outside table rows -->
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="bi bi-globe text-primary display-4"></i>
+                    <h5 class="mt-2 text-white" style="background:#007bff;">Globale aksjer</h5>
+                    <p class="text-white" style="background:#007bff;">Internasjonale markeder</p>
+                    <a href="{{ url_for('stocks.global_list') }}" class="btn btn-sm btn-outline-primary text-white" style="background:#007bff;">Se alle</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="bi bi-currency-bitcoin text-warning display-4"></i>
+                    <h5 class="mt-2 text-white" style="background:#ffc107;">Kryptovaluta</h5>
+                    <p class="text-white" style="background:#ffc107;">Digitale valutaer</p>
+                    <a href="{{ url_for('stocks.list_crypto') }}" class="btn btn-sm btn-outline-primary text-white" style="background:#ffc107;">Se alle</a>
+                </div>
+            </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="bi bi-currency-exchange text-success display-4"></i>
+                    <h5 class="mt-2 text-white" style="background:#28a745;">Valuta</h5>
+                    <p class="text-white" style="background:#28a745;">Valutakurser</p>
+                    <a href="{{ url_for('stocks.list_currency') }}" class="btn btn-sm btn-outline-primary text-white" style="background:#28a745;">Se alle</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Popular Stocks -->
+    <div class="card mt-4">
+    <!-- Removed stray favorite button outside table rows for AAPL -->
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Navn</th>
+                            <th>Pris</th>
+                            <th>Endring</th>
+                            <th>Handlinger</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for symbol, stock in stocks.items() %}
+                        <tr>
+                            <td>{{ symbol }}</td>
+                            <td>{{ stock.name or symbol }}</td>
+                            <td>{{ stock.price or stock.last_price }}</td>
+                            <td class="{% if (stock.change_percent or stock.change or 0)|float < 0 %}text-danger{% else %}text-success{% endif %}">{{ (stock.change_percent or stock.change or 0)|float }}%</td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{{ url_for('stocks.details', symbol=symbol) }}" class="btn btn-outline-primary btn-sm" title="Detaljer">
+                                        <i class="bi bi-info-circle"></i>
+                                    </a>
+                                    <a href="/analysis/technical?symbol={{ symbol }}" class="btn btn-outline-success btn-sm" title="Analyse">
+                                        <i class="bi bi-graph-up"></i>
+                                    </a>
+                                    <button class="btn btn-success btn-sm external-buy-btn" data-ticker="{{ symbol }}" title="Kjøp">
+                                        <i class="bi bi-cart-plus"></i>
+                                    </button>
+                                    <button class="btn btn-star-favorite text-white" style="background: #007bff; border: none;" title="Legg til favoritt" data-ticker="{{ symbol }}" data-name="{{ stock.name or symbol }}" data-exchange="{{ stock.exchange }}">
+                                        <i class="bi bi-star"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Premium Content Row -->
+    <div class="row mt-4">
+        <!-- Top Gainers -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0"><i class="bi bi-arrow-up-circle me-2"></i>Dagens vinnere</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Aksje</th>
+                                    <th>Endring</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for winner in top_gainers %}
+                                <tr>
+                                    <td><a href="{{ url_for('stocks.details', symbol=winner.symbol) }}" class="text-decoration-none">{{ winner.symbol }}</a></td>
+                                    <td class="text-success fw-bold">{{ winner.change_percent }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Losers -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="mb-0"><i class="bi bi-arrow-down-circle me-2"></i>Dagens tapere</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Aksje</th>
+                                    <th>Endring</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for loser in top_losers %}
+                                <tr>
+                                    <td><a href="{{ url_for('stocks.details', symbol=loser.symbol) }}" class="text-decoration-none">{{ loser.symbol }}</a></td>
+                                    <td class="text-danger fw-bold">{{ loser.change_percent }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Most Active Stocks -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0"><i class="bi bi-activity me-2"></i>Mest handlede</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Aksje</th>
+                                    <th>Volum</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for active in most_active %}
+                                <tr>
+                                    <td><a href="{{ url_for('stocks.details', symbol=active.symbol) }}" class="text-decoration-none">{{ active.symbol }}</a></td>
+                                    <td>{{ active.volume }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Insider Trading Activity -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="bi bi-eye me-2"></i>Innsidehandel aktivitet</h6>
+                </div>
+                // Use global showToast from base.html
+    </div>
+
+    <!-- Market Analysis Section -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-graph-up-arrow me-2"></i>Markedsanalyse & Signaler</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="border rounded p-3">
+                                <i class="bi bi-emoji-smile text-success display-6"></i>
+                                <h6 class="mt-2">Markedsstemning</h6>
+                                <span class="badge bg-success">Optimistisk</span>
+                                <p class="small text-muted mt-1">67% positive signaler</p>
+                                        // Unified favorite button logic
+                                        // Patch: Check favorite state for each stock and update button UI
+                                        const ticker = btn.getAttribute('data-ticker') || btn.getAttribute('onclick')?.match(/toggleFavorite\('([^']+)'/)?.[1];
+                                        if (!ticker) return;
+                                        fetch(`/stocks/api/favorites/check/${ticker}`)
+                                            .then(response => response.json())
+                                            .then(data => {
+                                                if (data.favorited) {
+                                                    btn.innerHTML = '<i class="bi bi-star-fill"></i>';
+                                                    btn.classList.add('btn-warning');
+                                                    btn.classList.remove('text-white');
+                                                } else {
+                                                    btn.innerHTML = '<i class="bi bi-star"></i>';
+                                                    btn.classList.remove('btn-warning');
+                                                    btn.classList.add('text-white');
+                                                }
+                                            });
+                                    });
+                    <div class="col-6">
+                        <div class="sentiment-metric">
+                            <div class="metric-value text-warning">22%</div>
+                            <div class="metric-label">Bearish</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" style="width: 78%"></div>
+                        <div class="progress-bar bg-warning" style="width: 22%"></div>
+                    </div>
+                </div>
+                <p class="text-muted mt-2 mb-0">Basert på 500+ profesjonelle analyser</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sector Performance -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-building me-2"></i>Sektoroversikt</h5>
+            </div>
+            <div class="card-body">
+                <div class="sector-performance">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Teknologi</span>
+                        <span class="text-success">+2.4%</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Energi</span>
+                        <span class="text-success">+1.8%</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Finans</span>
+                        <span class="text-danger">-0.7%</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Industri</span>
+                        <span class="text-success">+0.3%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Economic Indicators -->
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Økonomiske Indikatorer</h5>
+            </div>
+            <div class="card-body">
+                <div class="economic-indicators">
+                    <div class="indicator mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Styringsrente</span>
+                            <strong>4.5%</strong>
+                        </div>
+                        <small class="text-muted">Norges Bank</small>
+                    </div>
+                    <div class="indicator mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Inflasjon</span>
+                            <strong>3.2%</strong>
+                        </div>
+                        <small class="text-muted">Årsrate</small>
+                    </div>
+                    <div class="indicator mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>USD/NOK</span>
+                            <strong>10.85</strong>
+                        </div>
+                        <small class="text-muted">Valutakurs</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Insider Trading Activity -->
+    <div class="col-lg-8 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="bi bi-person-badge me-2"></i>Innsidehandel</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Selskap</th>
+                                <th>Navn</th>
+                                <th>Type</th>
+                                <th>Antall</th>
+                                <th>Dato</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>EQNR</strong></td>
+                                <td>Lars Hansen</td>
+                                <td><span class="badge bg-success">Kjøp</span></td>
+                                <td>15,000</td>
+                                <td>25.01.2025</td>
+                            </tr>
+                            <tr>
+                                <td><strong>TEL</strong></td>
+                                <td>Kari Olsen</td>
+                                <td><span class="badge bg-danger">Salg</span></td>
+                                <td>8,500</td>
+                                <td>24.01.2025</td>
+                            </tr>
+                            <tr>
+                                <td><strong>YAR</strong></td>
+                                <td>Erik Nordahl</td>
+                                <td><span class="badge bg-success">Kjøp</span></td>
+                                <td>5,200</td>
+                                <td>23.01.2025</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI Recommendations -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-robot me-2"></i>AI Anbefalinger</h5>
+                <small>Basert på teknisk analyse og markedsdata</small>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for rec in ai_recommendations %}
+                    <div class="col-md-3 ai-recommendation mb-3">
+                        <div class="stock-name">{{ rec.symbol }}</div>
+                        <div class="rec-reason">{{ rec.reason }}</div>
+                        <div class="price-target">Målpris: {{ rec.target_price }}</div>
+                        <span class="badge bg-{% if rec.type == 'BUY' %}success{% elif rec.type == 'SELL' %}danger{% else %}warning{% endif %}">{{ rec.type }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Patch: Check favorite state for each stock and update button UI
+    document.querySelectorAll('.btn-star-favorite').forEach(function(btn) {
+        const ticker = btn.getAttribute('data-ticker');
+        const name = btn.getAttribute('data-name');
+        const exchange = btn.getAttribute('data-exchange');
+        {% if current_user.is_authenticated %}
+    fetch(`/stocks/api/favorites/check/${ticker}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.favorited) {
+                    btn.innerHTML = '<i class="bi bi-star-fill"></i>';
+                    btn.classList.add('bg-warning');
+                    btn.classList.remove('text-white');
+                } else {
+                    btn.innerHTML = '<i class="bi bi-star"></i>';
+                    btn.classList.remove('bg-warning');
+                    btn.classList.add('text-white');
+                }
+            });
+        btn.addEventListener('click', function() {
+            if (!window.toggleFavorite) { console.error('toggleFavorite missing'); return; }
+            window.toggleFavorite(ticker, {
+                button: btn,
+                favoritedText: '<i class="bi bi-star-fill"></i>',
+                unfavoritedText: '<i class="bi bi-star"></i>',
+                onSuccess: (data) => {
+                    const fav = !!data.favorited;
+                    btn.classList.toggle('bg-warning', fav);
+                    btn.classList.toggle('text-white', !fav);
+                    if (window.showToast) showToast(`${ticker} ${fav ? 'lagt til i' : 'fjernet fra'} favoritter`, fav ? 'success' : 'info');
+                },
+                onError: () => {
+                    if (window.showToast) showToast('Kunne ikke oppdatere favoritt', 'danger');
+                }
+            });
+        });
+        {% else %}
+        btn.addEventListener('click', function() {
+            alert('ℹ️ Du må logge inn for å legge til favoritter');
+            window.location.href = '/auth/login';
+        });
+        {% endif %}
+    });
+});
+</script>
+
+<style>
+.sentiment-metric {
+    text-align: center;
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.metric-label {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.sector-performance {
+    font-size: 0.9rem;
+}
+
+.economic-indicators .indicator {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.economic-indicators .indicator:last-child {
+    border-bottom: none;
+}
+
+.ai-recommendation {
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    height: 100%;
+}
+
+.ai-recommendation .stock-name {
+    font-weight: 600;
+    margin: 0.5rem 0;
+    color: #495057;
+}
+
+.ai-recommendation .rec-reason {
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.price-target {
+    margin-top: auto;
+    padding-top: 0.5rem;
+}
+
+.bg-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+.card-header.bg-primary {
+    border: none;
+}
+
+.progress {
+    border-radius: 10px;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.table td {
+    font-size: 0.875rem;
+    vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+    .ai-recommendation {
+        margin-bottom: 1rem;
+    }
+    
+    .sector-performance {
+        font-size: 0.8rem;
+    }
+    
+    .metric-value {
+        font-size: 1.25rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // External buy button functionality - redirect to external broker
+    document.querySelectorAll('.external-buy-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const ticker = this.dataset.ticker;
+            if (!ticker) return;
+            
+            // Update button to show loading state
+            const originalHtml = this.innerHTML;
+            this.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Åpner...';
+            this.disabled = true;
+            
+            // Construct external URL - using DNB Nettmegler as example
+            let externalUrl;
+            if (ticker.endsWith('.OL')) {
+                // Norwegian stock - remove .OL suffix for DNB
+                const norwegianTicker = ticker.replace('.OL', '');
+                externalUrl = `https://www.dnb.no/portalfront/dnbinvestor/omhandler/kjopselgaksjer?searchString=${norwegianTicker}`;
+            } else {
+                // International stock - use a different broker or search
+                externalUrl = `https://www.google.com/search?q=${ticker}+stock+buy+broker`;
+            }
+            
+            // Open external URL in new tab
+            try {
+                window.open(externalUrl, '_blank', 'noopener,noreferrer');
+                
+                // Reset button after short delay
+                setTimeout(() => {
+                    this.innerHTML = originalHtml;
+                    this.disabled = false;
+                }, 2000);
+                
+                showToast(`Åpner kjøpsside for ${ticker}`, 'success');
+            } catch (error) {
+                console.error('Error opening external URL:', error);
+                this.innerHTML = originalHtml;
+                this.disabled = false;
+                showToast('Kunne ikke åpne kjøpsside', 'error');
+            }
+        });
+    });
+});
+
+function showToast(message, type) {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    // Add to toast container or create one
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        document.body.appendChild(container);
+    }
+    
+    container.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    
+    // Remove after hidden
+    toast.addEventListener('hidden.bs.toast', () => toast.remove());
+}
+</script>
+{% endblock %}

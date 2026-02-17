@@ -1,0 +1,572 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if specific_ticker %}
+        Anbefaling for {{ specific_ticker }}
+    {% else %}
+        Investeringsanbefalinger
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Analysis Menu -->
+    {% include 'analysis/_menu.html' %}
+    
+    <nav aria-label="breadcrumb" class="my-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('analysis.index') }}">Analyse</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('analysis.recommendation') }}">Anbefalinger</a></li>
+            {% if specific_ticker %}
+            <li class="breadcrumb-item active">{{ specific_ticker }}</li>
+            {% endif %}
+        </ol>
+    </nav>
+
+    {% if specific_ticker and specific_recommendation %}
+    <!-- Specific Stock Recommendation -->
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3">{{ specific_recommendation.company_name }} ({{ specific_ticker }})</h1>
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-{{ 'success' if specific_recommendation.recommendation in ['BUY', 'STRONG BUY'] else 'danger' if specific_recommendation.recommendation == 'SELL' else 'warning' }}">
+                    <h2 class="h5 mb-0 text-white">
+                        Anbefaling: {{ specific_recommendation.recommendation }}
+                        <span class="float-end">Konfidens: {{ specific_recommendation.confidence }}%</span>
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Prisinformasjon</h5>
+                            <table class="table">
+                                <tr>
+                                    <td>Nåværende kurs:</td>
+                                    <td class="text-end">{{ "%.2f"|format(specific_recommendation.current_price) }} NOK</td>
+                                </tr>
+                                <tr>
+                                    <td>Målkurs:</td>
+                                    <td class="text-end">{{ "%.2f"|format(specific_recommendation.price_target) }} NOK</td>
+                                </tr>
+                                <tr>
+                                    <td>Potensial:</td>
+                                    <td class="text-end 
+                                        {% if (specific_recommendation.price_target - specific_recommendation.current_price) > 0 %}
+                                        text-success
+                                        {% else %}
+                                        text-danger
+                                        {% endif %}">
+                                        {{ "%.1f"|format((specific_recommendation.price_target/specific_recommendation.current_price - 1) * 100) }}%
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Tekniske Indikatorer</h5>
+                            <table class="table">
+                                {% if specific_recommendation.technical_data %}
+                                    {% if specific_recommendation.technical_data.rsi %}
+                                    <tr>
+                                        <td>RSI:</td>
+                                        <td class="text-end
+                                            {% if specific_recommendation.technical_data.rsi < 30 %}
+                                            text-success
+                                            {% elif specific_recommendation.technical_data.rsi > 70 %}
+                                            text-danger
+                                            {% else %}
+                                            text-warning
+                                            {% endif %}">
+                                            {{ "%.1f"|format(specific_recommendation.technical_data.rsi) }}
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if specific_recommendation.technical_data.macd %}
+                                    <tr>
+                                        <td>MACD:</td>
+                                        <td class="text-end
+                                            {% if specific_recommendation.technical_data.macd > specific_recommendation.technical_data.macd_signal %}
+                                            text-success
+                                            {% else %}
+                                            text-danger
+                                            {% endif %}">
+                                            {{ "%.2f"|format(specific_recommendation.technical_data.macd) }}
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h5>Analyse og Begrunnelse</h5>
+                        <p>{{ specific_recommendation.analysis }}</p>
+                        <ul>
+                            {% for reason in specific_recommendation.reasons %}
+                            <li>{{ reason }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- General Recommendations View -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-6 mb-3">Investeringsanbefalinger</h1>
+            <p class="lead text-muted">Profesjonelle analyser og anbefalinger for å guide dine investeringsbeslutninger</p>
+            {% if last_updated %}
+            <small class="text-muted">Sist oppdatert: {{ last_updated.strftime('%d.%m.%Y kl. %H:%M') }}</small>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Market Insights Section -->
+    {% if market_insights %}
+    <div class="card border-0 shadow mb-4">
+        <div class="card-header bg-dark text-white">
+            <h2 class="h5 mb-0"><i class="bi bi-graph-up me-2"></i>Markedsoversikt</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Nåværende markedsmiljø</h5>
+                    <p><strong>Markedssentiment:</strong> {{ market_insights.current_environment.market_sentiment }}</p>
+                    
+                    <h6>Nøkkeldrivere:</h6>
+                    <ul>
+                        {% for driver in market_insights.current_environment.key_drivers %}
+                        <li>{{ driver }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-success">Muligheter:</h6>
+                    <ul class="list-unstyled">
+                        {% for opportunity in market_insights.current_environment.opportunities %}
+                        <li><i class="bi bi-arrow-up-circle text-success me-2"></i>{{ opportunity }}</li>
+                        {% endfor %}
+                    </ul>
+                    
+                    <h6 class="text-danger">Risikoer:</h6>
+                    <ul class="list-unstyled">
+                        {% for risk in market_insights.current_environment.risks %}
+                        <li><i class="bi bi-exclamation-triangle text-warning me-2"></i>{{ risk }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Norwegian Stocks Recommendations -->
+    {% if recommendations.norwegian_stocks %}
+    <div class="card border-0 shadow mb-4">
+        <div class="card-header bg-primary text-white">
+            <h2 class="h5 mb-0"><i class="bi bi-flag me-2"></i>Norske Aksjer - Anbefalinger</h2>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Selskap</th>
+                            <th>Sektor</th>
+                            <th>Nåværende</th>
+                            <th>Målpris</th>
+                            <th>Oppside</th>
+                            <th>Anbefaling</th>
+                            <th>Rating</th>
+                            <th>Utbytte</th>
+                            <th>Handlinger</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stock in recommendations.norwegian_stocks %}
+                        <tr>
+                            <td>
+                                <strong>{{ stock.ticker }}</strong><br>
+                                <small class="text-muted">{{ stock.company_name }}</small>
+                            </td>
+                            <td>{{ stock.sector }}</td>
+                            <td>{{ "%.2f"|format(stock.current_price) }} NOK</td>
+                            <td>{{ "%.2f"|format(stock.target_price) }} NOK</td>
+                            <td>
+                                <span class="text-{% if stock.upside_percent > 5 %}success{% elif stock.upside_percent > 0 %}warning{% else %}danger{% endif %}">
+                                    +{{ "%.1f"|format(stock.upside_percent) }}%
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if stock.recommendation == 'KJØP' %}bg-success
+                                    {% elif stock.recommendation == 'SELG' %}bg-danger
+                                    {% else %}bg-secondary
+                                    {% endif %}">
+                                    {{ stock.recommendation }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="me-2">{{ "%.1f"|format(stock.analyst_rating) }}</span>
+                                    <div class="progress" style="width: 60px; height: 8px;">
+                                        <div class="progress-bar bg-warning" style="width: {{ (stock.analyst_rating / 5 * 100)|round }}%"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ "%.1f"|format(stock.dividend_yield) }}%</td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="/stocks/details/{{ stock.ticker }}" class="btn btn-outline-primary btn-sm" title="Se detaljer">
+                                        <i class="bi bi-info-circle"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- International Stocks Recommendations -->
+    {% if recommendations.international_stocks %}
+    <div class="card border-0 shadow mb-4">
+        <div class="card-header bg-success text-white">
+            <h2 class="h5 mb-0"><i class="bi bi-globe me-2"></i>Internasjonale Aksjer - Anbefalinger</h2>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Selskap</th>
+                            <th>Sektor</th>
+                            <th>Nåværende</th>
+                            <th>Målpris</th>
+                            <th>Oppside</th>
+                            <th>Anbefaling</th>
+                            <th>Rating</th>
+                            <th>P/E</th>
+                            <th>Handlinger</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stock in recommendations.international_stocks %}
+                        <tr>
+                            <td>
+                                <strong>{{ stock.ticker }}</strong><br>
+                                <small class="text-muted">{{ stock.company_name }}</small>
+                            </td>
+                            <td>{{ stock.sector }}</td>
+                            <td>${{ "%.2f"|format(stock.current_price) }}</td>
+                            <td>${{ "%.2f"|format(stock.target_price) }}</td>
+                            <td>
+                                <span class="text-{% if stock.upside_percent > 5 %}success{% elif stock.upside_percent > 0 %}warning{% else %}danger{% endif %}">
+                                    +{{ "%.1f"|format(stock.upside_percent) }}%
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if stock.recommendation == 'KJØP' %}bg-success
+                                    {% elif stock.recommendation == 'SELG' %}bg-danger
+                                    {% else %}bg-secondary
+                                    {% endif %}">
+                                    {{ stock.recommendation }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="me-2">{{ "%.1f"|format(stock.analyst_rating) }}</span>
+                                    <div class="progress" style="width: 60px; height: 8px;">
+                                        <div class="progress-bar bg-warning" style="width: {{ (stock.analyst_rating / 5 * 100)|round }}%"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ "%.1f"|format(stock.pe_ratio) if stock.pe_ratio else 'N/A' }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="/stocks/details/{{ stock.ticker }}" class="btn btn-outline-primary btn-sm" title="Se detaljer">
+                                        <i class="bi bi-info-circle"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Detailed Stock Analysis Expandable Cards -->
+    <div class="row mb-4">
+        {% if recommendations.norwegian_stocks %}
+        {% for stock in recommendations.norwegian_stocks %}
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ stock.company_name }}</h5>
+                        <span class="badge 
+                            {% if stock.recommendation == 'KJØP' %}bg-success
+                            {% elif stock.recommendation == 'SELG' %}bg-danger
+                            {% else %}bg-secondary
+                            {% endif %}">
+                            {{ stock.recommendation }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted">Nåværende pris</small><br>
+                            <strong>{{ "%.2f"|format(stock.current_price) }} NOK</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Målpris ({{ stock.time_horizon }})</small><br>
+                            <strong class="text-success">{{ "%.2f"|format(stock.target_price) }} NOK</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Styrker:</h6>
+                        <ul class="small">
+                            {% for strength in stock.strengths %}
+                            <li>{{ strength }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Risikoer:</h6>
+                        <ul class="small text-muted">
+                            {% for risk in stock.risks %}
+                            <li>{{ risk }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    
+                    {% if stock.recent_news %}
+                    <div class="alert alert-info small">
+                        <strong>Siste nytt:</strong> {{ stock.recent_news }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between text-sm">
+                        <span><strong>Risiko:</strong> {{ stock.risk_level }}</span>
+                        <span><strong>Horisont:</strong> {{ stock.time_horizon }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Sector Themes -->
+    {% if recommendations.sector_themes %}
+    <div class="card border-0 shadow mb-4">
+        <div class="card-header bg-info text-white">
+            <h2 class="h5 mb-0"><i class="bi bi-layers me-2"></i>Investmentstemaer</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for theme in recommendations.sector_themes %}
+                <div class="col-lg-4 mb-3">
+                    <div class="card border-primary h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0">{{ theme.theme }}</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="small">{{ theme.description }}</p>
+                            <div class="mb-2">
+                                <strong>Anbefalte aksjer:</strong><br>
+                                {% for stock in theme.recommended_stocks %}
+                                <span class="badge bg-outline-primary me-1">{{ stock }}</span>
+                                {% endfor %}
+                            </div>
+                            <div class="row text-sm">
+                                <div class="col-6">
+                                    <strong>Horisont:</strong><br>{{ theme.time_horizon }}
+                                </div>
+                                <div class="col-6">
+                                    <strong>Risiko:</strong><br>{{ theme.risk_level }}
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <strong>Forventet avkastning:</strong><br>
+                                <span class="text-success">{{ theme.potential_return }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Portfolio Models -->
+    {% if recommendations.portfolio_models %}
+    <div class="card border-0 shadow mb-4">
+        <div class="card-header bg-dark text-white">
+            <h2 class="h5 mb-0"><i class="bi bi-pie-chart me-2"></i>Porteføljemodeller</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for model in recommendations.portfolio_models %}
+                <div class="col-lg-4 mb-4">
+                    <div class="card border-success h-100">
+                        <div class="card-header bg-success text-white">
+                            <h6 class="mb-0">{{ model.name }}</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="small">{{ model.description }}</p>
+                            
+                            <h6>Allokering:</h6>
+                            {% for asset, percentage in model.allocation.items() %}
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="small">{{ asset }}</span>
+                                <span class="badge bg-outline-success">{{ percentage }}%</span>
+                            </div>
+                            <div class="progress mb-2" style="height: 5px;">
+                                <div class="progress-bar bg-success" style="width: {{ percentage }}%"></div>
+                            </div>
+                            {% endfor %}
+                            
+                            <div class="mt-3">
+                                <div class="row text-sm">
+                                    <div class="col-12 mb-2">
+                                        <strong>Forventet avkastning:</strong><br>
+                                        <span class="text-success">{{ model.expected_return }}</span>
+                                    </div>
+                                    <div class="col-12 mb-2">
+                                        <strong>Volatilitet:</strong><br>
+                                        <span class="text-info">{{ model.volatility }}</span>
+                                    </div>
+                                    <div class="col-12">
+                                        <strong>Anbefalt for:</strong><br>
+                                        <small class="text-muted">{{ model.recommended_for }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Disclaimer -->
+    <div class="card border-warning">
+        <div class="card-body">
+            <div class="alert alert-warning mb-0">
+                <h6><i class="bi bi-exclamation-triangle me-2"></i>Viktig informasjon</h6>
+                <p class="small mb-0">
+                    Alle anbefalinger og analyser på denne siden er kun for informasjonsformål og utgjør ikke personlig investeringsrådgivning. 
+                    Tidligere resultater er ingen garanti for fremtidige resultater. Gjør alltid din egen research og vurder din risikotoleranse 
+                    før du foretar investeringsbeslutninger. Konsulter en finansiell rådgiver hvis du er usikker.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function addToWatchlist(symbol) {
+    if (!symbol) return;
+    
+    fetch('/api/watchlist/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({
+            symbol: symbol.toUpperCase()
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(`${symbol} lagt til i watchlist!`, 'success');
+        } else {
+            showToast(data.error || 'Kunne ikke legge til i watchlist', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Feil ved å legge til i watchlist', 'error');
+    });
+}
+
+function createPriceAlert(symbol) {
+    if (!symbol) return;
+    
+    const price = prompt(`Opprett prisvarsel for ${symbol}. Angi målpris:`);
+    if (price && !isNaN(price) && parseFloat(price) > 0) {
+        fetch('/price-alerts/api/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({
+                symbol: symbol.toUpperCase(),
+                target_price: parseFloat(price),
+                alert_type: 'above'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(`Prisvarsel opprettet for ${symbol} ved ${price}!`, 'success');
+            } else {
+                showToast(data.error || 'Kunne ikke opprette prisvarsel', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Feil ved opprettelse av prisvarsel', 'error');
+        });
+    }
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} alert-dismissible fade show position-fixed`;
+    toast.style.top = '20px';
+    toast.style.right = '20px';
+    toast.style.zIndex = '9999';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+function getCSRFToken() {
+    return document.querySelector('meta[name=csrf-token]')?.getAttribute('content') ||
+           document.querySelector('input[name=csrf_token]')?.value ||
+           '';
+}
+</script>
+{% endblock %}
+

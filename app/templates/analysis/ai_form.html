@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% block title %}Analyse (ekte data) | Aksjeradar{% endblock %}
+
+{% block head %}
+<style>
+/* Mobile responsive fixes for AI analysis search */
+@media (max-width: 768px) {
+    .input-group-lg {
+        flex-direction: column;
+    }
+    
+    .input-group-lg .input-group-text {
+        border-radius: 0.5rem 0.5rem 0 0 !important;
+        border-bottom: none;
+        justify-content: center;
+    }
+    
+    .input-group-lg .form-control {
+        border-radius: 0 !important;
+        border-top: none;
+        border-bottom: none;
+        text-align: center;
+        width: 100%;
+    }
+    
+    .input-group-lg .btn {
+        border-radius: 0 0 0.5rem 0.5rem !important;
+        border-top: none;
+        padding: 0.75rem;
+        width: 100%;
+    }
+    
+    .input-group-lg .form-control:focus {
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        border-color: #86b7fe;
+    }
+}
+
+@media (max-width: 576px) {
+    .input-group-lg .form-control {
+        font-size: 1rem;
+        padding: 0.75rem;
+        width: 100%;
+    }
+    
+    .input-group-lg .btn {
+        font-size: 1rem;
+        width: 100%;
+    }
+    
+    .form-text {
+        font-size: 0.875rem;
+        text-align: center;
+        margin-top: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav aria-label="breadcrumb" class="my-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Hjem</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('analysis.index') }}">Analyse</a></li>
+            <li class="breadcrumb-item active">Analyse</li>
+        </ol>
+    </nav>
+    
+    {% include 'analysis/_menu.html' %}
+    
+    <div class="card border-0 shadow mb-4">
+    <div class="card-header bg-primary text-white">
+            <h2 class="h5 mb-0">Analyse (ekte data)</h2>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <p class="lead">Vi viser nøktern informasjon basert på tilgjengelige, ekte datakilder. Ingen prediksjoner eller simulering.</p>
+                    <p>Du kan utforske:</p>
+                    <ul>
+                        <li>Tekniske indikatorer og trender</li>
+                        <li>Fundamental analyse</li>
+                        <li>Sentiment-analyse fra nyheter og sosiale medier</li>
+                        <li>Markedsdata og sammenlignbare selskaper</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-primary">
+                        <div class="card-body">
+                            <h5 class="card-title">Hvorfor KI-analyse?</h5>
+                            <ul class="list-unstyled mb-0">
+                                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Rask og omfattende analyse</li>
+                                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Objektiv vurdering</li>
+                                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Oppdatert i sanntid</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <form method="get" action="{{ url_for('analysis.ai') }}" class="mb-4" autocomplete="off">
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text bg-primary text-white"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" id="ticker" name="ticker" placeholder="Skriv inn ticker (f.eks. EQNR.OL, AAPL)" value="{{ request.args.get('ticker','') }}" required>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-search me-2"></i> Se analyse
+                    </button>
+                </div>
+                <div class="form-text">Skriv inn en aksjeticker. For norske aksjer, legg til .OL (f.eks. EQNR.OL)</div>
+            </form>
+            
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 bg-primary h-100 text-white">
+                        <div class="card-body">
+                            <h5><i class="bi bi-graph-up text-primary me-2"></i>Teknisk analyse</h5>
+                            <p class="mb-0 small">Analyserer prisutvikling, volum og tekniske indikatorer</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 bg-primary h-100 text-white">
+                        <div class="card-body">
+                            <h5><i class="bi bi-newspaper text-primary me-2"></i>Nyhetsanalyse</h5>
+                            <p class="mb-0 small">Vurderer nyheter og markedssentiment</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card border-0 bg-primary h-100 text-white">
+                        <div class="card-body">
+                            <h5><i class="bi bi-calculator text-primary me-2"></i>Fundamental analyse</h5>
+                            <p class="mb-0 small">Evaluerer nøkkeltall og finansielle data</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Autofokuser på søkefeltet når siden lastes
+        const input = document.getElementById('ticker');
+        input?.focus();
+        if (input) {
+            const wrap = document.createElement('div');
+            wrap.className = 'position-relative w-100';
+            input.parentNode.insertBefore(wrap, input);
+            wrap.appendChild(input);
+            const list = document.createElement('div');
+            list.className = 'list-group position-absolute w-100';
+            list.style.zIndex = 2000;
+            list.style.maxHeight = '220px';
+            list.style.overflowY = 'auto';
+            list.style.display = 'none';
+            wrap.appendChild(list);
+            let last = '';
+            input.addEventListener('input', async () => {
+                const q = input.value.trim();
+                if (q === last || q.length < 1) { list.style.display='none'; return; }
+                last = q;
+                try {
+                    const resp = await fetch(`/analysis/ticker_suggestions?q=${encodeURIComponent(q)}`);
+                    if (!resp.ok) return;
+                    const data = await resp.json();
+                    list.innerHTML='';
+                    if (!data.length) { list.style.display='none'; return; }
+                    data.forEach(t => {
+                        const item = document.createElement('button');
+                        item.type='button';
+                        item.className='list-group-item list-group-item-action py-1';
+                        item.textContent = t;
+                        item.addEventListener('click', () => { input.value = t; list.style.display='none'; input.form.submit(); });
+                        list.appendChild(item);
+                    });
+                    list.style.display='block';
+                } catch(e) { /* ignore */ }
+            });
+            document.addEventListener('click', (evt) => { if(!wrap.contains(evt.target)) list.style.display='none'; });
+        }
+    });
+</script>
+{% endblock %}

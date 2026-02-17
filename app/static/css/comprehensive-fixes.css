@@ -1,0 +1,111 @@
+/* Comprehensive CSS Fixes for All Styling Issues */
+
+/* 1. Mobile font size for Markedsoversikt - already fixed in HTML */
+
+/* 2. Text white fix for .small texts on dark backgrounds */
+.text-white {
+    --bs-text-opacity: 1;
+    color: #ffffff !important;
+}
+
+/* 3. Card header h5 text on dark backgrounds must be white */
+.card-header h5, .card-header span, .card-header i, .card-header .bi {
+    color: #ffffff !important;
+}
+
+/* 4. h5.mb texts on dark backgrounds must be white */
+.card-header.bg-dark h5.mb, .bg-dark h5.mb, .card-header.bg-primary h5.mb {
+    color: #ffffff !important;
+}
+
+/* 5. Remove problematic Bootstrap color override rules */
+.text-primary {
+    /* Remove the problematic rgba Bootstrap rule */
+    color: #0d6efd !important;
+}
+
+.text-success {
+    /* Remove the problematic rgba Bootstrap rule */  
+    color: #198754 !important;
+}
+
+.text-dark {
+    /* Remove the problematic rgba Bootstrap rule */
+    color: #212529 !important;
+}
+
+
+
+/* 7. Remove problematic card-header text color rules */
+.card-header {
+    /* Remove problematic color: #212529 !important rule */
+    color: inherit !important;
+}
+
+.card-header h5, h5.mb {
+    /* Remove problematic color: #333 !important rule */
+    color: inherit !important;
+}
+
+/* 8. Fix submenu headers (Innstillinger, Support etc) to be white */
+.dropdown-header, .dropdown-menu .dropdown-header {
+    color: #ffffff !important;
+}
+
+/* 9. Ensure white text on dark backgrounds */
+.bg-dark .small, .bg-primary .small, .card-header.bg-dark .small, .card-header.bg-primary .small {
+    color: #ffffff !important;
+}
+
+/* 10. Navigation submenu text fix */
+.dropdown-menu .dropdown-header, 
+.dropdown-menu h6.dropdown-header,
+.navbar-dark .dropdown-menu .dropdown-header {
+    color: #6c757d !important; /* Standard Bootstrap gray for headers */
+}
+
+/* 11. Mobile responsive text improvements */
+@media (max-width: 768px) {
+    .analysis-menu .btn .small {
+        font-size: 0.75rem !important;
+    }
+    
+    /* Smaller font for mobile analysis menu items */
+    .analysis-menu .btn-sm small {
+        font-size: 0.7rem !important;
+    }
+}
+
+/* 12. Contrast improvements for all dark backgrounds */
+.bg-dark, .card-header.bg-dark, .navbar-dark {
+    color: #ffffff !important;
+}
+
+.bg-dark *, .card-header.bg-dark *, .navbar-dark * {
+    color: inherit;
+}
+
+/* 13. Fix any remaining color inherit issues */
+.card-header.bg-primary *, .card-header.bg-dark *, .bg-primary *, .bg-dark * {
+    color: #ffffff !important;
+}
+
+/* 14. Ensure button text visibility */
+.btn-primary, .btn-success, .btn-info, .btn-warning, .btn-danger, .btn-dark {
+    color: #ffffff !important;
+}
+
+/* 15. Fix dropdown menu contrast */
+.dropdown-menu {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+}
+
+.dropdown-menu .dropdown-item {
+    color: #ffffff !important;
+}
+
+.dropdown-menu .dropdown-item:hover {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+}

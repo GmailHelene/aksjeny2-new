@@ -1,0 +1,113 @@
+{
+  "navigation": {
+    "home": "Home",
+    "stocks": "Stocks",
+    "analysis": "Analysis",
+    "news": "News",
+    "portfolio": "Portfolio",
+    "pricing": "Pricing",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "dashboard": "Dashboard"
+  },
+  "homepage": {
+    "welcome": "Welcome to Aksjeradar",
+    "subtitle": "Norway's most advanced stock platform",
+    "get_started": "Get Started",
+    "learn_more": "Learn More",
+    "features": "Features",
+    "ai_analysis": "AI-powered analysis",
+    "real_time_data": "Real-time data",
+    "portfolio_management": "Portfolio management"
+  },
+  "dashboard": {
+    "welcome_back": "Welcome back, {username}!",
+    "personal_overview": "Your personal investment overview",
+    "last_login": "Last login",
+    "first_time": "First time",
+    "member_since": "Member since",
+    "visit_count": "Visit no."
+  },
+  "stocks": {
+    "title": "Stocks",
+    "oslo_bors": "Oslo Stock Exchange",
+    "global_stocks": "Global Stocks",
+    "search_placeholder": "Search for stock...",
+    "price": "Price",
+    "change": "Change",
+    "volume": "Volume",
+    "market_cap": "Market Cap"
+  },
+  "analysis": {
+    "title": "Analysis",
+    "technical_analysis": "Technical Analysis",
+    "fundamental_analysis": "Fundamental Analysis",
+    "ai_recommendation": "AI Recommendation",
+    "buy_signal": "BUY",
+    "hold_signal": "HOLD",
+    "sell_signal": "SELL"
+  },
+  "portfolio": {
+    "title": "Portfolio",
+    "create_portfolio": "Create Portfolio",
+    "my_portfolios": "My Portfolios",
+    "total_value": "Total Value",
+    "daily_change": "Daily Change",
+    "add_stock": "Add Stock"
+  },
+  "pricing": {
+    "title": "Pricing",
+    "free_plan": "Free",
+    "pro_plan": "Pro",
+    "premium_plan": "Premium",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "get_started": "Get Started",
+    "most_popular": "Most Popular",
+    "annual_savings": "Annual Savings"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "search": "Search",
+    "filter": "Filter",
+    "close": "Close",
+    "unknown": "Unknown",
+    "refresh": "Refresh",
+    "view": "View overview",
+    "explore": "Explore",
+    "convert": "Convert",
+    "view_calendar": "View calendar",
+    "analyze": "Analyze"
+  },
+  "advanced_features": {
+    "title": "Advanced Features",
+    "subtitle": "Inspired by the biggest competitors in the market"
+  },
+  "features": {
+    "real_time_data": "Real-time Market Data",
+    "real_time_description": "Live data from Oslo Stock Exchange, global markets and cryptocurrency - just like E24 and DN Børs.",
+    "crypto_dashboard": "Crypto Dashboard",
+    "crypto_description": "Comprehensive cryptocurrency tracking inspired by CoinMarketCap and TradingView.",
+    "currency_converter": "Currency Converter",
+    "currency_description": "Professional currency converter with data from Norges Bank and international sources.",
+    "economic_calendar": "Economic Calendar",
+    "economic_description": "Important economic indicators and events - inspired by Bloomberg and Investing.com.",
+    "competitive_analysis": "Competitive Analysis",
+    "competitive_description": "See how we compare with E24, DN, Yahoo Finance, TradingView and others.",
+    "missing_features": "Features in development",
+    "status": "Status",
+    "in_development": "In development"
+  },
+  "translation": {
+    "active": "Translation system active",
+    "current_language": "Current language",
+    "switch_to": "Switch to"
+  }
+}

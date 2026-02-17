@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Opsjons Screener - Aksjeradar{% endblock %}
+
+{% block content %}
+{% include 'analysis/_menu.html' %}
+
+<div class="container py-4">ds "base.html" %}
+
+{% block title %}Opsjons-screener | Aksjeradar{% endblock %}
+
+{% block content %}
+{% include 'analysis/_menu.html' %}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i class="bi bi-arrow-left-right text-primary"></i> Opsjons-screener
+                    </h1>
+                    <p class="text-muted">Finn og analyser opsjoner med høy aktivitet og potensial</p>
+                </div>
+                <span class="badge bg-warning text-dark fs-6">BETA</span>
+            </div>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle"></i> {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- Filter Section -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtere</h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label class="form-label">Opsjonstype</label>
+                                <select class="form-select" name="option_type">
+                                    <option value="">Alle</option>
+                                    <option value="CALL">Call</option>
+                                    <option value="PUT">Put</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Min volum</label>
+                                <input type="number" class="form-control" name="min_volume" placeholder="100">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Utløpsdatoer</label>
+                                <select class="form-select" name="expiry_range">
+                                    <option value="">Alle</option>
+                                    <option value="1week">Innen 1 uke</option>
+                                    <option value="1month">Innen 1 måned</option>
+                                    <option value="3months">Innen 3 måneder</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary w-100" style="margin-top: 32px;">
+                                    <i class="bi bi-search"></i> Filtrer
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if options_data %}
+    <!-- Options Table -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-table"></i> Aktive opsjoner</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Type</th>
+                                    <th>Strike</th>
+                                    <th>Utløp</th>
+                                    <th>Premie</th>
+                                    <th>Volum</th>
+                                    <th>Open Interest</th>
+                                    <th>Aksjon</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for option in options_data %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ option.symbol }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if option.type == 'CALL' %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ option.type }}
+                                        </span>
+                                    </td>
+                                    <td>{{ option.strike }} NOK</td>
+                                    <td>{{ option.expiry }}</td>
+                                    <td>{{ option.premium }} NOK</td>
+                                    <td>{{ "{:,}".format(option.volume) }}</td>
+                                    <td>{{ "{:,}".format(option.open_interest) }}</td>
+                                    <td>
+                                        <button class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-eye"></i> Detaljer
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Options Education -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card bg-light border-0">
+                <div class="card-body">
+                    <h5><i class="bi bi-book text-info"></i> Om opsjonshandel</h5>
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <h6><i class="bi bi-arrow-up-circle text-success"></i> Call-opsjoner</h6>
+                            <p class="small">Gir rett til å kjøpe en aksje til en bestemt pris (strike) innen utløpsdatoen.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="bi bi-arrow-down-circle text-danger"></i> Put-opsjoner</h6>
+                            <p class="small">Gir rett til å selge en aksje til en bestemt pris (strike) innen utløpsdatoen.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="bi bi-exclamation-triangle text-warning"></i> Risiko</h6>
+                            <p class="small">Opsjonshandel innebærer høy risiko. Kun for erfarne investorer.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-arrow-left-right text-muted" style="font-size: 4rem;"></i>
+        <h3 class="mt-3 text-muted">Ingen opsjonsdata tilgjengelig</h3>
+        <p class="text-muted">Prøv igjen senere eller juster filtere</p>
+    </div>
+    {% endif %}
+
+    <!-- Disclaimer -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="alert alert-warning">
+                <strong><i class="bi bi-exclamation-triangle"></i> Viktig merknad:</strong>
+                Opsjonshandel er komplekst og høyrisiko. Denne funksjonen er kun for utdanningsformål.
+                Søk alltid profesjonell rådgivning før du handler opsjoner.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

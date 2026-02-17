@@ -1,0 +1,625 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('features.crypto_dashboard', fallback='Krypto Dashboard') }} - Aksjeradar{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Enhanced crypto dashboard styling for cleaner look */
+.crypto-dashboard-container {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    min-height: 100vh;
+    padding-top: 2rem;
+}
+
+.crypto-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    color: #2c3e50;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.crypto-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+}
+
+.crypto-card.featured {
+        background: linear-gradient(135deg, #505050 0%, #ffffff 100%);
+    color: white;
+}
+
+.crypto-card.bitcoin {
+    background: linear-gradient(135deg, #f7931e 0%, #ff6b35 100%);
+    color: white;
+}
+
+.crypto-card.ethereum {
+    background: linear-gradient(135deg, #627eea 0%, #8b5cf6 100%);
+    color: white;
+}
+
+.market-stat-card {
+    background: white;
+    color: #2c3e50;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.market-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+}
+
+.market-stat-card.positive {
+    border-left: 4px solid #27ae60;
+}
+
+.market-stat-card.negative {
+    border-left: 4px solid #e74c3c;
+}
+
+.positive { color: #27ae60; font-weight: 600; }
+.negative { color: #e74c3c; font-weight: 600; }
+.neutral { color: #f39c12; font-weight: 600; }
+
+.crypto-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.15);
+    font-weight: bold;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.crypto-card.featured .crypto-icon,
+.crypto-card.bitcoin .crypto-icon,
+.crypto-card.ethereum .crypto-icon {
+    background: rgba(255,255,255,0.2);
+}
+
+.volume-bar {
+    background: rgba(0,0,0,0.1);
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.volume-fill {
+    background: linear-gradient(90deg, #27ae60 0%, #2ecc71 100%);
+    height: 100%;
+    transition: width 0.3s ease;
+    border-radius: 4px;
+}
+
+.stats-container {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.crypto-table {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.table thead th {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    border: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    padding: 1.5rem;
+}
+
+.table td {
+    vertical-align: middle;
+    padding: 1.25rem;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(102, 126, 234, 0.05);
+}
+
+.dashboard-header {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.dashboard-title {
+        background: linear-gradient(135deg, #505050 0%, #ffffff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+    font-size: 2.5rem;
+}
+
+.section-divider {
+    height: 2px;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 1px;
+    margin: 2rem 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .crypto-card, .market-stat-card, .stats-container {
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .dashboard-title {
+        font-size: 2rem;
+    }
+    
+    .crypto-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+    }
+    
+    .table thead th, .table td {
+        padding: 1rem 0.75rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Improved grid layout */
+.crypto-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+</style>
+{% endblock %}
+    padding: 1rem;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.table tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Mobile responsive fixes */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding: 0.5rem;
+    }
+    
+    .crypto-card {
+        margin-bottom: 1rem;
+        text-align: center;
+        padding: 1rem;
+    }
+    
+    .market-stat-card {
+        margin-bottom: 1rem;
+        text-align: center;
+        padding: 1rem;
+    }
+    
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        align-items: center !important;
+        text-align: center;
+    }
+    
+    .crypto-card .d-flex.justify-content-between {
+        align-items: center !important;
+    }
+    
+    .crypto-card .row {
+        margin: 0;
+    }
+    
+    .crypto-card .col-6 {
+        padding: 0.25rem;
+        text-align: center;
+    }
+    
+    .h1, .h2, .h3, .h4, .h5, .h6 {
+        font-size: calc(1rem + 0.5vw);
+    }
+    
+    .stats-container {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .crypto-table {
+        font-size: 0.875rem;
+    }
+    
+    .table td, .table th {
+        padding: 0.5rem;
+    }
+    
+    /* Fix stacking on mobile */
+    .col-lg-3, .col-lg-4 {
+        margin-bottom: 1rem;
+    }
+    
+    /* Better button spacing on mobile */
+    .btn {
+        margin: 0.25rem;
+    }
+    
+    /* Improved header on mobile */
+    .header-section .d-flex {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .header-section .text-end {
+        text-align: center !important;
+        margin-top: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container-fluid {
+        padding: 0.25rem;
+    }
+    
+    .crypto-card, .market-stat-card {
+        margin-bottom: 0.75rem;
+        padding: 0.75rem;
+    }
+    
+    .stats-container {
+        padding: 0.75rem;
+    }
+    
+    .crypto-icon {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+    
+    .h4 {
+        font-size: 1.1rem;
+    }
+    
+    /* Stack everything vertically on very small screens */
+    .col-lg-3, .col-lg-4, .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="crypto-dashboard-container">
+    <div class="container-fluid mt-4">
+        <!-- Header Section -->
+        <div class="dashboard-header">
+            <div class="d-flex align-items-center justify-content-between header-section">
+                <div>
+                    <h1 class="dashboard-title mb-2">
+                        <i class="bi bi-currency-bitcoin me-3"></i>
+                        {{ t('features.crypto_dashboard', fallback='Kryptovaluta Dashboard') }}
+                    </h1>
+                    <p class="text-muted mb-0 h5">{{ t('features.crypto_description', fallback='Omfattende cryptocurrency tracking med sanntidsdata og markedsanalyse.') }}</p>
+                </div>
+                <div class="text-end">
+                    <div class="badge bg-success px-3 py-2 fs-6">
+                        <i class="bi bi-record-fill text-light me-2" style="font-size: 0.6rem;"></i>
+                        Live Data
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% if market_stats %}
+    <!-- Market Overview Section -->
+    <div class="stats-container mb-4">
+        <h5 class="text-dark mb-3">
+            <i class="bi bi-graph-up text-primary me-2"></i>
+            Markedsstatistikk
+        </h5>
+        <div class="row g-3">
+            <div class="col-lg-3 col-md-6 col-sm-12 mb-3">
+                <div class="market-stat-card text-center">
+                    <div class="crypto-icon mx-auto mb-2">
+                        <i class="bi bi-globe"></i>
+                    </div>
+                    <h6 class="mb-1">Total Market Cap</h6>
+                    <div class="h4 mb-1">${{ "{:,.0f}".format(market_stats.get('total_market_cap', 0) / 1000000000) }}B</div>
+                    <small class="positive">+2.4%</small>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-12 mb-3">
+                <div class="market-stat-card text-center">
+                    <div class="crypto-icon mx-auto mb-2">
+                        <i class="bi bi-arrow-left-right"></i>
+                    </div>
+                    <h6 class="mb-1">24h Volume</h6>
+                    <div class="h4 mb-1">${{ "{:,.0f}".format(market_stats.get('total_volume_24h', 0) / 1000000000) }}B</div>
+                    <small class="negative">-1.2%</small>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-12 mb-3">
+                <div class="market-stat-card text-center">
+                    <div class="crypto-icon mx-auto mb-2">
+                        <i class="bi bi-percent"></i>
+                    </div>
+                    <h6 class="mb-1">BTC Dominance</h6>
+                    <div class="h4 mb-1">{{ "{:.1f}".format(market_stats.get('btc_dominance', 0)) }}%</div>
+                    <small class="neutral">±0.0%</small>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-12 mb-3">
+                <div class="market-stat-card text-center">
+                    <div class="crypto-icon mx-auto mb-2">
+                        <i class="bi bi-thermometer-half"></i>
+                    </div>
+                    <h6 class="mb-1">Fear & Greed</h6>
+                    <div class="h4 mb-1">{{ market_stats.get('fear_greed_index', 'Ikke tilgjengelig') }}</div>
+                    <small class="positive">Greed</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if crypto_data %}
+    <!-- Cryptocurrencies Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h5 class="text-dark mb-3">
+                <i class="bi bi-coin text-warning me-2"></i>
+                Kryptovalutaer
+            </h5>
+        </div>
+        {% for name, data in crypto_data.items() %}
+        <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+            <div class="crypto-card {{ name.lower() }}">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="d-flex align-items-center">
+                        <div class="crypto-icon me-3">
+                            {% if data.get('symbol', 'Ukjent') == 'BTC' %}
+                                <i class="bi bi-currency-bitcoin"></i>
+                            {% elif data.get('symbol', 'Ukjent') == 'ETH' %}
+                                <i class="bi bi-currency-ethereum"></i>
+                            {% else %}
+                                {{ data.get('symbol', 'UK')[:2] }}
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h6 class="mb-0">{{ name }}</h6>
+                            <small class="opacity-75">{{ data.get('symbol', 'Ukjent') }}</small>
+                        </div>
+                    </div>
+                    <button class="btn btn-sm btn-outline-light add-to-watchlist" data-ticker="{{ data.get('symbol', 'Ukjent') }}-USD" title="Legg til i watchlist">
+                        <i class="bi bi-star"></i>
+                    </button>
+                </div>
+                
+                <div class="row">
+                    <div class="col-6">
+                        <div class="h4 mb-1">${{ "{:,.2f}".format(data.get('price', 0)) if data.get('price', 0) < 1000 else "{:,.0f}".format(data.get('price', 0)) }}</div>
+                        <div class="{{ 'positive' if data.get('change_percent', 0) > 0 else 'negative' if data.get('change_percent', 0) < 0 else 'neutral' }}">
+                            <i class="bi bi-{% if data.get('change_percent', 0) > 0 %}arrow-up{% elif data.get('change_percent', 0) < 0 %}arrow-down{% else %}dash{% endif %} me-1"></i>
+                            {% if data.get('change_percent', 0) > 0 %}+{% endif %}{{ "{:.2f}".format(data.get('change_percent', 0)) }}%
+                        </div>
+                    </div>
+                    <div class="col-6 text-end">
+                        <div class="small text-light mb-1">24h Endring</div>
+                        <div class="{{ 'positive' if data.get('change_24h', 0) > 0 else 'negative' if data.get('change_24h', 0) < 0 else 'neutral' }}">
+                            {% if data.get('change_24h', 0) > 0 %}+{% endif %}{{ '${:,.2f}'.format(data.get('change_24h', 0)) if data.get('change_24h', 0) < 1000 else '${:,.0f}'.format(data.get('change_24h', 0)) }}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if data.get('volume') %}
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-light">Volume (24h)</span>
+                        <span class="text-light">${{ "{:,.0f}".format(data.volume / 1000000) }}M</span>
+                    </div>
+                    <div class="volume-bar">
+                        <div class="volume-fill" style="width: {{ [100, (data.volume / 20000000000) * 100]|min }}%"></div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if data.get('market_cap') %}
+                <div class="mt-2">
+                    <div class="d-flex justify-content-between small">
+                        <span class="text-light">Market Cap</span>
+                        <span class="text-light">${{ "{:,.0f}".format(data.market_cap / 1000000000) }}B</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Loading State -->
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <div class="h5 text-muted">{{ t('common.loading', fallback='Laster kryptovaluta data...') }}</div>
+                <p class="text-muted">Henter sanntidsdata fra markedet</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Navigation -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="{{ url_for('advanced_features.index') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left me-2"></i>{{ t('common.back', fallback='Tilbake') }}
+                </a>
+                <div class="text-muted small">
+                    <i class="bi bi-clock me-1"></i>
+                    Data oppdatert: {{ moment().format('DD.MM.YYYY HH:mm') if moment else 'Live' }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+                        <div class="small mb-1">24h Change</div>
+                        <div class="{{ 'positive' if data.get('change_24h', 0) > 0 else 'negative' if data.get('change_24h', 0) < 0 else 'neutral' }}">
+                            {% if data.get('change_24h', 0) > 0 %}+{% endif %}{{ '${:,.2f}'.format(data.get('change_24h', 0)) if data.get('change_24h', 0) < 1000 else '${:,.0f}'.format(data.get('change_24h', 0)) }}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if data.get('volume') %}
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span>Volume (24h)</span>
+                        <span>${{ "{:,.0f}".format(data.volume / 1000000) }}M</span>
+                    </div>
+                    <div class="volume-bar">
+                        <div class="volume-fill" style="width: {{ [100, (data.volume / 20000000000) * 100]|min }}%"></div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if data.get('market_cap') %}
+                <div class="mt-2">
+                    <div class="d-flex justify-content-between small">
+                        <span>Market Cap</span>
+                        <span>${{ "{:,.0f}".format(data.market_cap / 1000000000) }}B</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                {{ t('common.loading', fallback='Laster kryptovaluta data...') }}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <a href="{{ url_for('advanced_features.index') }}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left me-2"></i>{{ t('common.back', fallback='Tilbake') }}
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add to watchlist functionality for crypto
+document.querySelectorAll('.add-to-watchlist').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const ticker = this.dataset.ticker;
+        
+        fetch('/api/watchlist/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                ticker: ticker,
+                type: 'crypto'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                this.innerHTML = '<i class="bi bi-star-fill"></i>';
+                this.classList.remove('btn-outline-light');
+                this.classList.add('btn-warning');
+                
+                // Show success message
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
+                alert.style.top = '20px';
+                alert.style.right = '20px';
+                alert.style.zIndex = '9999';
+                alert.innerHTML = `
+                    <i class="bi bi-check-circle me-2"></i>${ticker} lagt til i watchlist!
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.body.appendChild(alert);
+                
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.parentNode.removeChild(alert);
+                    }
+                }, 3000);
+            }
+        })
+        .catch(error => {
+            console.error('Error adding to watchlist:', error);
+            // Show error message
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+            alert.style.top = '20px';
+            alert.style.right = '20px';
+            alert.style.zIndex = '9999';
+            alert.innerHTML = `
+                <i class="bi bi-exclamation-triangle me-2"></i>Kunne ikke legge til i watchlist
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alert);
+            
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 3000);
+        });
+    });
+});
+</script>
+{% endblock %}

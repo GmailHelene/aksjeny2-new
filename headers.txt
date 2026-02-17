@@ -1,0 +1,17 @@
+HTTP/1.1 302 FOUND
+Server: Werkzeug/3.0.3 Python/3.9.23
+Date: Sat, 27 Sep 2025 22:57:37 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 199
+Location: /login
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Headers: Content-Type,Authorization
+Access-Control-Allow-Methods: GET,PUT,POST,DELETE,OPTIONS
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-XSS-Protection: 1; mode=block
+Strict-Transport-Security: max-age=0
+Vary: Cookie
+Set-Cookie: aksjeradar_session=.eJwNzEEOgjAQBdCrNLMmplhakGuYuFFCCvxCBQuZVjeEu8vq7d5OrVtsnBCpfu4k0gmBeWXK6O7nGTwhRQe_1OKBEBY_xiQ2fn2ldNVP-PGNcKHmaDJqN_DHBoRzSfxFRn1k16Z1RqCaoJRR8qqdybXUCmrQRd6ZbhhMWRYVbr21eaksHX8G5zDC.aNhr4Q.M42Hv2Isi0X7STwhwCPedZ1465E; Expires=Sun, 28 Sep 2025 02:57:37 GMT; HttpOnly; Path=/; SameSite=Lax
+Connection: close
+

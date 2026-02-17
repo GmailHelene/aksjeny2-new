@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Sentiment Analyse - {{ symbol }} - Aksjeny{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-4 mb-2">
+                <i class="fas fa-chart-line text-warning me-3"></i>Sentiment Analyse - {{ symbol }}
+            </h1>
+            <p class="lead text-muted">Analyser markedssentimentet for {{ symbol }} basert på sanntidsdata</p>
+        </div>
+    </div>
+
+    <!-- Sentiment Trend Chart -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="h5 mb-0">Sentiment Trend - {{ symbol }}</h3>
+        </div>
+        <div class="card-body">
+            <canvas id="sentimentChart" height="100"></canvas>
+        </div>
+    </div>
+    
+    <!-- Sentiment Indicators -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="h5 mb-0">Sentiment Indikatorer</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>RSI Sentiment:</strong>
+                        <span class="badge bg-info">{{ "%.1f"|format(sentiment.rsi_sentiment|default(50)) }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Volume Sentiment:</strong>
+                        <span class="badge bg-info">{{ sentiment.volume_sentiment|default('Nøytral') }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Price Action:</strong>
+                        <span class="badge bg-info">{{ sentiment.price_action|default('Stabil') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="h5 mb-0">Anbefaling</h3>
+                </div>
+                <div class="card-body">
+                    <h4 class="text-center mb-3">
+                        <span class="badge bg-{{ 'success' if sentiment.overall_sentiment == 'positive' else 'danger' if sentiment.overall_sentiment == 'negative' else 'warning' }}">
+                            {{ sentiment.recommendation }}
+                        </span>
+                    </h4>
+                    <p>{{ sentiment.detailed_recommendation|default('Basert på tekniske indikatorer og markedssentiment') }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="h5 mb-0">Nyheter & Social Media Sentiment</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Nyheter:</strong>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" style="width: {{ sentiment.news_positive|default(60) }}%">
+                                {{ sentiment.news_positive|default(60) }}%
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <strong>Sosiale medier:</strong>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" style="width: {{ sentiment.social_positive|default(55) }}%">
+                                {{ sentiment.social_positive|default(55) }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Sentiment trend chart
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('sentimentChart');
+    if (ctx) {
+        const sentimentChart = new Chart(ctx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: {{ sentiment.trend_dates|default([])|tojson }},
+                datasets: [{
+                    label: 'Sentiment Score',
+                    data: {{ sentiment.trend_values|default([])|tojson }},
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

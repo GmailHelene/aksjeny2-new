@@ -1,0 +1,32 @@
+<!-- filepath: /workspaces/aksjeradarny/app/templates/stocks/short.html -->
+<div class="container py-4">
+    <h1 class="mb-4">Short Analysis</h1>
+    <p>Data is currently being fetched...</p>
+    <div id="shortDataContainer"></div>
+</div>
+
+<script>
+// Fetch short data
+function fetchShortData(symbol) {
+    fetch(`/api/stock/${symbol}/short`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                document.getElementById('shortDataContainer').innerHTML = `<div class='alert alert-danger'>${data.error}</div>`;
+            } else {
+                // Process and display short data
+                displayShortData(data);
+            }
+        })
+        .catch(error => {
+            document.getElementById('shortDataContainer').innerHTML = `<div class='alert alert-danger'>Error fetching data: ${error}</div>`;
+        });
+}
+
+function displayShortData(data) {
+    // Implement display logic for short data
+}
+
+// Call fetchShortData with the appropriate symbol
+fetchShortData('AAPL');
+</script>

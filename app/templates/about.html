@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Om Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 class="mb-4">Om Aksjeradar</h1>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">Vår Misjon</h2>
+                    <p class="lead">
+                        Aksjeradar er Norges fremste plattform for AI-drevet aksjeanalyse og finansdata. 
+                        Vi demokratiserer tilgang til profesjonelle investeringsverktøy for private investorer.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">Hva Vi Tilbyr</h2>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check-circle-fill text-success me-2"></i>AI-drevet aksjeanalyse</li>
+                                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Teknisk analyse</li>
+                                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Porteføljeoptimalisering</li>
+                                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Markedsinsikt</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Sanntids markedsdata</li>
+                                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Personlig dashboard</li>
+                                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Ekspertanalyser</li>
+                                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Norsk fokus</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">Teknologi</h2>
+                    <p>
+                        Vår plattform kombinerer tradisjonell finansanalyse med moderne AI-teknologi for å gi 
+                        deg presise og actionable insights. Vi bruker maskinlæring for å analysere markedstrender 
+                        og identifisere investeringsmuligheter.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">Kontakt</h2>
+                    <p>
+                        Har du spørsmål eller tilbakemeldinger? Vi hører gjerne fra deg!
+                    </p>
+                    <p>
+                        <strong>E-post:</strong> kontakt@aksjeradar.trade<br>
+                        <strong>Adresse:</strong> Oslo, Norge
+                    </p>
+                    <a href="{{ url_for('main.contact') }}" class="btn btn-primary">
+                        <i class="bi bi-envelope text-white"></i> Kontakt oss
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

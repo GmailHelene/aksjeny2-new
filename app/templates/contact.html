@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Kontakt | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Kontakt oss</h1>
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">Send oss en melding</h3>
+                    <form method="post" action="{{ url_for('main.contact') }}">>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Navn</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">E-post</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Emne</label>
+                            <input type="text" class="form-control" id="subject" name="subject">
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Melding</label>
+                            <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Send melding</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">Kontaktinformasjon</h3>
+                    <p><strong>E-post:</strong> kontakt@aksjeradar.trade</p>
+                    <p><strong>Telefon:</strong> +47 XX XX XX XX</p>
+                    <p><strong>Adresse:</strong><br>
+                    Aksjeradar AS<br>
+                    Karl Johans gate 1<br>
+                    0154 Oslo<br>
+                    Norge</p>
+                    
+                    <h4 class="mt-4">Åpningstider Support</h4>
+                    <p>Mandag - Fredag: 09:00 - 16:00<br>
+                    Lørdag - Søndag: Stengt</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

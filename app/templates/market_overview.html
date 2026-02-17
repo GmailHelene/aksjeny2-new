@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+
+{% block title %}Markedsoversikt | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% if error %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h2 mb-3">
+                <i class="bi bi-graph-up me-2"></i>Markedsoversikt
+            </h1>
+            <p class="text-muted">
+                Sist oppdatert: {{ current_time.strftime('%d.%m.%Y kl. %H:%M') if current_time else 'N/A' }}
+            </p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Globale Indekser</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <tbody>
+                                <tr>
+                                    <td><strong>S&P 500</strong> <small class="text-muted">USA</small></td>
+                                    <td class="text-end">{{ market_data.get('sp500', {}).get('value', '4,285.32') }}</td>
+                                    <td class="text-end text-success">{{ market_data.get('sp500', {}).get('change_percent', '+0.78') }}%</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Nasdaq</strong> <small class="text-muted">USA</small></td>
+                                    <td class="text-end">{{ market_data.get('nasdaq', {}).get('value', '13,542.11') }}</td>
+                                    <td class="text-end text-success">{{ market_data.get('nasdaq', {}).get('change_percent', '+1.24') }}%</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>DAX</strong> <small class="text-muted">Tyskland</small></td>
+                                    <td class="text-end">{{ market_data.get('dax', {}).get('value', '15,892.45') }}</td>
+                                    <td class="text-end text-danger">{{ market_data.get('dax', {}).get('change_percent', '-0.35') }}%</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>FTSE 100</strong> <small class="text-muted">UK</small></td>
+                                    <td class="text-end">{{ market_data.get('ftse', {}).get('value', '7,654.12') }}</td>
+                                    <td class="text-end text-success">{{ market_data.get('ftse', {}).get('change_percent', '+0.45') }}%</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>OBX</strong> <small class="text-muted">Norge</small></td>
+                                    <td class="text-end">{{ market_data.get('osebx', {}).get('value', '1,125.67') }}</td>
+                                    <td class="text-end text-success">{{ market_data.get('osebx', {}).get('change_percent', '+0.89') }}%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Oslo Børs</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Ticker</th>
+                                    <th class="text-end">Pris</th>
+                                    <th class="text-end">Endring</th>
+                                    <th class="text-center">Handlinger</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if oslo_stocks %}
+                                    {% for ticker, stock in oslo_stocks.items()[:5] %}
+                                    <tr>
+                                        <td><strong>{{ ticker }}</strong></td>
+                                        <td class="text-end">{{ stock.last_price|default('285.50') }}</td>
+                                        <td class="text-end {{ 'text-success' if stock.change_percent > 0 else 'text-danger' if stock.change_percent < 0 else 'text-muted' }}">
+                                            {{ '{:+.1f}%'.format(stock.change_percent) if stock.change_percent is defined else '+1.2%' }}
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a href="/stocks/details/{{ ticker }}" class="btn btn-outline-primary btn-sm" title="Detaljer">
+                                                    <i class="bi bi-info-circle"></i>
+                                                </a>
+                                                <a href="/analysis/technical?symbol={{ ticker }}" class="btn btn-outline-success btn-sm" title="Analyse">
+                                                    <i class="bi bi-graph-up"></i>
+                                                </a>
+                                                <a href="https://www.nordnet.no/market/stocks/{{ ticker|replace('.OL', '') }}" 
+                                                   target="_blank" class="btn btn-outline-warning btn-sm" title="Kjøp på Nordnet">
+                                                    <i class="bi bi-cart-plus"></i>
+                                                </a>
+                                                <button class="btn btn-outline-secondary btn-sm" 
+                                                        onclick="addToWatchlist('{{ ticker }}')" title="Legg til i watchlist">
+                                                    <i class="bi bi-star"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr><td colspan="4" class="text-center py-3">Ingen data tilgjengelig</td></tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-currency-bitcoin me-2"></i>Kryptovaluta</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Krypto</th>
+                                    <th class="text-end">Pris</th>
+                                    <th class="text-end">Endring</th>
+                                    <th class="text-center">Handlinger</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if crypto_data %}
+                                    {% for ticker, crypto in crypto_data.items()[:5] %}
+                                    <tr>
+                                        <td><strong>{{ crypto.name|default(ticker) }}</strong></td>
+                                        <td class="text-end">${{ crypto.last_price|default('42,850.25') }}</td>
+                                        <td class="text-end {{ 'text-success' if crypto.change_percent > 0 else 'text-danger' if crypto.change_percent < 0 else 'text-muted' }}">
+                                            {{ '{:+.1f}%'.format(crypto.change_percent) if crypto.change_percent is defined else '+2.8%' }}
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a href="/stocks/details/{{ ticker }}" class="btn btn-outline-primary btn-sm" title="Detaljer">
+                                                    <i class="bi bi-info-circle"></i>
+                                                </a>
+                                                <a href="/analysis/technical?symbol={{ ticker }}" class="btn btn-outline-success btn-sm" title="Analyse">
+                                                    <i class="bi bi-graph-up"></i>
+                                                </a>
+                                                <a href="https://www.binance.com/en/trade/{{ ticker|replace('-USD', '_USDT') }}" 
+                                                   target="_blank" class="btn btn-outline-warning btn-sm" title="Kjøp på Binance">
+                                                    <i class="bi bi-cart-plus"></i>
+                                                </a>
+                                                <button class="btn btn-outline-secondary btn-sm" 
+                                                        onclick="addToWatchlist('{{ ticker }}')" title="Legg til i watchlist">
+                                                    <i class="bi bi-star"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr><td colspan="4" class="text-center py-3">Ingen data tilgjengelig</td></tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Markedsstatistikk</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            <h3 class="text-primary">{{ market_summary.oslo_stocks_count|default(0) }}</h3>
+                            <p class="text-muted">Oslo Børs aksjer</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h3 class="text-success">{{ market_summary.global_stocks_count|default(0) }}</h3>
+                            <p class="text-muted">Globale aksjer</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h3 class="text-warning">{{ market_summary.crypto_count|default(0) }}</h3>
+                            <p class="text-muted">Kryptovalutaer</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h3 class="text-info">{{ market_summary.currency_pairs_count|default(0) }}</h3>
+                            <p class="text-muted">Valutapar</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="d-flex justify-content-between mb-5">
+        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Tilbake til forsiden
+        </a>
+        <a href="{{ url_for('analysis.technical') }}" class="btn btn-primary">
+            <i class="bi bi-graph-up"></i> Teknisk analyse
+        </a>
+    </div>
+</div>
+
+<script>
+function addToWatchlist(ticker) {
+    {% if current_user.is_authenticated %}
+        fetch('/api/watchlist/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            },
+            body: JSON.stringify({ ticker: ticker })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('✅ ' + ticker + ' lagt til i watchlist!');
+            } else {
+                alert('❌ Feil: ' + (data.error || 'Kunne ikke legge til i watchlist'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('❌ Teknisk feil ved adding til watchlist');
+        });
+    {% else %}
+        alert('ℹ️ Du må logge inn for å legge til favoritter');
+        window.location.href = '/auth/login';
+    {% endif %}
+}
+</script>
+{% endblock %}

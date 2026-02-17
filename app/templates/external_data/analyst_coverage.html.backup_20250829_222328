@@ -1,0 +1,540 @@
+{% extends "base.html" %}
+
+{% block title %}Analytiker Dekning - External Data{% endblock %}
+
+{% block head %}
+{{ super() }}
+<style>
+/* Fix color contrast issues */
+.bg-danger, .bg-primary, .bg-warning, .bg-info {
+    background-color: #dc3545 !important;
+}
+
+.bg-success {
+    background-color: #198754 !important;
+}
+
+.card-header.bg-primary {
+    background-color: #0d47a1 !important;
+}
+
+.analyst-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+.analyst-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+}
+
+.rating-buy {
+    background-color: #198754 !important;
+    color: white;
+}
+
+.rating-hold {
+    background-color: #ffc107 !important;
+    color: #212529;
+}
+
+.rating-sell {
+    background-color: #dc3545 !important;
+    color: white;
+}
+
+.price-target {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.consensus-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.consensus-strong-buy {
+    background-color: #198754;
+    color: white;
+}
+
+.consensus-buy {
+    background-color: #28a745;
+    color: white;
+}
+
+.consensus-hold {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.consensus-sell {
+    background-color: #dc3545;
+    color: white;
+}
+
+.analyst-firm {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.coverage-header {
+    background: linear-gradient(135deg, #667eea 0%, #000000 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="coverage-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="h2 mb-2">
+                            <i class="bi bi-graph-up-arrow me-3"></i>Analytiker Dekning
+                        </h1>
+                        <p class="mb-0">Profesjonelle analyser og anbefalinger fra ledende investeringsbanker</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-light active" data-filter="all">Alle</button>
+                            <button type="button" class="btn btn-outline-light" data-filter="buy">Buy</button>
+                            <button type="button" class="btn btn-outline-light" data-filter="hold">Hold</button>
+                            <button type="button" class="btn btn-outline-light" data-filter="sell">Sell</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card analyst-card text-center">
+                <div class="card-body">
+                    <div class="consensus-circle consensus-buy mb-3">
+                        <span>KJØP</span>
+                    </div>
+                    <h6>Markedskonsensus</h6>
+                    <p class="text-muted">68% kjøpsanbefalinger</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card analyst-card text-center">
+                <div class="card-body">
+                    <h6>Gjennomsnittlig Kursmål</h6>
+                    <p class="price-target text-primary">₽245.50</p>
+                    <small class="text-muted">Oppside: +12.3%</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card analyst-card text-center">
+                <div class="card-body">
+                    <h6>Aktive Analytikere</h6>
+                    <p class="price-target text-success">47</p>
+                    <small class="text-muted">Dekker OSEBX</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card analyst-card text-center">
+                <div class="card-body">
+                    <h6>Siste Oppdatering</h6>
+                    <p class="price-target text-warning">2t</p>
+                    <small class="text-muted">siden sist</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analyst Coverage Data -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card analyst-card">
+                <div class="card-header" style="background-color: #0d47a1 !important; color: white;">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-lines-fill me-2"></i>Analyst Recommendations
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if analyst_coverage %}
+                        {% for symbol, coverage in analyst_coverage.items() %}
+                        <div class="analyst-card mb-3">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">{{ symbol }}</h6>
+                                <span class="badge {% if coverage.consensus.recommendation == 'Buy' %}bg-success{% elif coverage.consensus.recommendation == 'Hold' %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ coverage.consensus.recommendation }}
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Analytiker Konsensus</h6>
+                                        <p><strong>Anbefaling:</strong> {{ coverage.consensus.recommendation }}</p>
+                                        <p><strong>Kursmål:</strong> {{ coverage.ratings.target_price|round(2) if coverage.ratings.target_price else 'N/A' }}</p>
+                                        <p><strong>Antall analytikere:</strong> {{ coverage.ratings.num_analysts }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Teknisk Analyse</h6>
+                                        <p><strong>Trend:</strong> {{ coverage.technical.trend }}</p>
+                                        <p><strong>Støtte:</strong> {{ coverage.technical.support|round(2) if coverage.technical.support else 'N/A' }}</p>
+                                        <p><strong>Motstand:</strong> {{ coverage.technical.resistance|round(2) if coverage.technical.resistance else 'N/A' }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>No analyst coverage data available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Analyst Coverage -->
+    <div class="row">
+        <div class="col-12">
+            <h3 class="mb-3">
+                <i class="bi bi-star me-2"></i>Mest Dekket
+            </h3>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6 mb-3">
+            <div class="card analyst-card">
+                <div class="card-header" style="background-color: #0d47a1 !important; color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">EQNR.OL</h5>
+                            <small>Equinor ASA</small>
+                        </div>
+                        <div class="text-end">
+                            <div class="h5 mb-0">₽285.50</div>
+                            <small>+2.1% i dag</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Konsensus</h6>
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="consensus-circle consensus-buy me-3" style="width: 50px; height: 50px; font-size: 0.8rem;">
+                                    KJØP
+                                </div>
+                                <div>
+                                    <div><strong>Gjennomsnitt: ₽320.00</strong></div>
+                                    <small class="text-success">Oppside: +12.1%</small>
+                                </div>
+                            </div>
+                            
+                            <div class="row text-center small">
+                                <div class="col-4">
+                                    <span class="badge rating-buy">8</span>
+                                    <div>Kjøp</div>
+                                </div>
+                                <div class="col-4">
+                                    <span class="badge rating-hold">3</span>
+                                    <div>Hold</div>
+                                </div>
+                                <div class="col-4">
+                                    <span class="badge rating-sell">1</span>
+                                    <div>Selg</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Seneste Analyser</h6>
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>DNB Markets</strong>
+                                        <div class="analyst-firm">i går</div>
+                                    </div>
+                                    <span class="badge rating-buy">KJØP ₽340</span>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Carnegie</strong>
+                                        <div class="analyst-firm">2 dager siden</div>
+                                    </div>
+                                    <span class="badge rating-buy">KJØP ₽325</span>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Nordea</strong>
+                                        <div class="analyst-firm">1 uke siden</div>
+                                    </div>
+                                    <span class="badge rating-hold">HOLD ₽300</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-3">
+            <div class="card analyst-card">
+                <div class="card-header" style="background-color: #0d47a1 !important; color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">DNB.OL</h5>
+                            <small>DNB Bank ASA</small>
+                        </div>
+                        <div class="text-end">
+                            <div class="h5 mb-0">₽198.20</div>
+                            <small>+1.4% i dag</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Konsensus</h6>
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="consensus-circle consensus-buy me-3" style="width: 50px; height: 50px; font-size: 0.8rem;">
+                                    KJØP
+                                </div>
+                                <div>
+                                    <div><strong>Gjennomsnitt: ₽215.00</strong></div>
+                                    <small class="text-success">Oppside: +8.5%</small>
+                                </div>
+                            </div>
+                            
+                            <div class="row text-center small">
+                                <div class="col-4">
+                                    <span class="badge rating-buy">6</span>
+                                    <div>Kjøp</div>
+                                </div>
+                                <div class="col-4">
+                                    <span class="badge rating-hold">4</span>
+                                    <div>Hold</div>
+                                </div>
+                                <div class="col-4">
+                                    <span class="badge rating-sell">0</span>
+                                    <div>Selg</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Seneste Analyser</h6>
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>SEB</strong>
+                                        <div class="analyst-firm">i dag</div>
+                                    </div>
+                                    <span class="badge rating-buy">KJØP ₽225</span>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>ABG Sundal Collier</strong>
+                                        <div class="analyst-firm">3 dager siden</div>
+                                    </div>
+                                    <span class="badge rating-buy">KJØP ₽220</span>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Handelsbanken</strong>
+                                        <div class="analyst-firm">1 uke siden</div>
+                                    </div>
+                                    <span class="badge rating-hold">HOLD ₽200</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Coverage Table -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card analyst-card">
+                <div class="card-header" style="background-color: #0d47a1 !important; color: white;">
+                    <h5 class="mb-0">
+                        <i class="bi bi-table me-2"></i>Komplett Analytiker Oversikt
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="analyst-table">
+                            <thead>
+                                <tr>
+                                    <th>Aksje</th>
+                                    <th>Nåværende Pris</th>
+                                    <th>Konsensus</th>
+                                    <th>Gjennomsnitt Kursmål</th>
+                                    <th>Oppside/Nedside</th>
+                                    <th>Antall Analytikere</th>
+                                    <th>Siste Oppdatering</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <strong>EQNR.OL</strong>
+                                        <div class="small text-muted">Equinor ASA</div>
+                                    </td>
+                                    <td>₽285.50</td>
+                                    <td><span class="badge rating-buy">KJØP</span></td>
+                                    <td>₽320.00</td>
+                                    <td class="text-success">+12.1%</td>
+                                    <td>12</td>
+                                    <td>i går</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>DNB.OL</strong>
+                                        <div class="small text-muted">DNB Bank ASA</div>
+                                    </td>
+                                    <td>₽198.20</td>
+                                    <td><span class="badge rating-buy">KJØP</span></td>
+                                    <td>₽215.00</td>
+                                    <td class="text-success">+8.5%</td>
+                                    <td>10</td>
+                                    <td>i dag</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>MOWI.OL</strong>
+                                        <div class="small text-muted">Mowi ASA</div>
+                                    </td>
+                                    <td>₽198.80</td>
+                                    <td><span class="badge rating-buy">KJØP</span></td>
+                                    <td>₽225.00</td>
+                                    <td class="text-success">+13.2%</td>
+                                    <td>8</td>
+                                    <td>2 dager siden</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>TEL.OL</strong>
+                                        <div class="small text-muted">Telenor ASA</div>
+                                    </td>
+                                    <td>₽128.90</td>
+                                    <td><span class="badge rating-hold">HOLD</span></td>
+                                    <td>₽135.00</td>
+                                    <td class="text-success">+4.7%</td>
+                                    <td>9</td>
+                                    <td>1 uke siden</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>NHY.OL</strong>
+                                        <div class="small text-muted">Norsk Hydro ASA</div>
+                                    </td>
+                                    <td>₽68.45</td>
+                                    <td><span class="badge rating-hold">HOLD</span></td>
+                                    <td>₽72.00</td>
+                                    <td class="text-success">+5.2%</td>
+                                    <td>7</td>
+                                    <td>3 dager siden</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Filter functionality for analyst coverage
+    const filterButtons = document.querySelectorAll('[data-filter]');
+    const analysisCards = document.querySelectorAll('.analyst-card');
+    const tableRows = document.querySelectorAll('#analyst-table tbody tr');
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Update button states
+            filterButtons.forEach(btn => {
+                btn.classList.remove('active', 'btn-light');
+                btn.classList.add('btn-outline-light');
+            });
+            this.classList.remove('btn-outline-light');
+            this.classList.add('active', 'btn-light');
+            
+            const filter = this.getAttribute('data-filter');
+            
+            // Filter table rows
+            tableRows.forEach(row => {
+                const ratingBadge = row.querySelector('.badge');
+                if (!ratingBadge) return;
+                
+                const rating = ratingBadge.textContent.toLowerCase().trim();
+                let show = false;
+                
+                switch(filter) {
+                    case 'all':
+                        show = true;
+                        break;
+                    case 'buy':
+                        show = rating.includes('kjøp') || rating.includes('buy');
+                        break;
+                    case 'hold':
+                        show = rating.includes('hold');
+                        break;
+                    case 'sell':
+                        show = rating.includes('selg') || rating.includes('sell');
+                        break;
+                }
+                
+                row.style.display = show ? '' : 'none';
+            });
+            
+            // Show feedback message
+            const activeRows = Array.from(tableRows).filter(row => row.style.display !== 'none');
+            console.log(`Viser ${activeRows.length} analyser for filter: ${filter}`);
+        });
+    });
+    
+    // Add hover effects
+    analysisCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% endblock %}

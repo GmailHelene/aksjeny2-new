@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+
+{% block title %}Opprett Prisvarsel - Aksjeny{% endblock %}
+
+{% block head %}
+<style>
+    .create-form {
+        background: white;
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+    }
+    .alert-type-selector {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    .alert-type-option {
+        flex: 1;
+        padding: 15px;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: white;
+    }
+    .alert-type-option:hover {
+        border-color: #007bff;
+        background: #f8f9fa;
+    }
+    .alert-type-option.active {
+        border-color: #007bff;
+        background: #e3f2fd;
+        color: #007bff;
+    }
+    .alert-type-option input[type="radio"] {
+        display: none;
+    }
+    .popular-stocks {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    .stock-suggestion {
+        display: inline-block;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 20px;
+        padding: 5px 12px;
+        margin: 2px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.2s ease;
+    }
+    .stock-suggestion:hover {
+        background: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+    .price-preview {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 10px;
+        display: none;
+    }
+    .submit-btn {
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        border: none;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-weight: bold;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,123,255,0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center mb-4">
+                <h1><i class="bi bi-bell"></i> Opprett Prisvarsel</h1>
+                <p class="text-muted">Få beskjed når en aksje når ønsket pris</p>
+            </div>
+
+            <div class="create-form">
+                <form method="POST" id="alertForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <!-- Stock Symbol -->
+                    <div class="form-group">
+                        <label for="symbol" class="form-label">
+                            <i class="bi bi-graph-up"></i> Aksjesymbol *
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               placeholder="F.eks. EQNR.OL, AAPL, TSLA" 
+                               id="symbol" 
+                               name="symbol" 
+                               required>
+                        <div class="form-text">Skriv inn aksjesymbol (f.eks. EQNR.OL for norske aksjer)</div>
+                        
+                        <!-- Price Preview -->
+                        <div id="pricePreview" class="price-preview">
+                            <div class="d-flex justify-content-between">
+                                <span><strong id="previewSymbol"></strong></span>
+                                <span id="previewPrice"></span>
+                            </div>
+                            <small class="text-muted" id="previewTime"></small>
+                        </div>
+                    </div>
+
+                    <!-- Popular Stocks -->
+                    {% if popular_stocks %}
+                    <div class="popular-stocks">
+                        <div class="mb-2"><small class="text-muted"><i class="bi bi-star"></i> Populære aksjer:</small></div>
+                        {% for stock in popular_stocks %}
+                        <span class="stock-suggestion" onclick="selectStock('{{ stock.symbol }}', '{{ stock.name }}')">
+                            {{ stock.symbol }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Company Name -->
+                    <div class="form-group">
+                        <label for="company_name" class="form-label">
+                            <i class="bi bi-building"></i> Selskaps navn (valgfritt)
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="company_name" 
+                               name="company_name" 
+                               placeholder="F.eks. Equinor ASA">
+                    </div>
+
+                    <!-- Alert Type -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-arrows-vertical"></i> Varseltype *
+                        </label>
+                        <div class="alert-type-selector">
+                            <label class="alert-type-option active" for="above">
+                                <input type="radio" name="alert_type" value="above" id="above" checked>
+                                <i class="bi bi-arrow-up text-success"></i><br>
+                                <strong>Over</strong><br>
+                                <small>Varsle når prisen går over målpris</small>
+                            </label>
+                            <label class="alert-type-option" for="below">
+                                <input type="radio" name="alert_type" value="below" id="below">
+                                <i class="bi bi-arrow-down text-danger"></i><br>
+                                <strong>Under</strong><br>
+                                <small>Varsle når prisen går under målpris</small>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Target Price -->
+                    <div class="form-group">
+                        <label for="target_price" class="form-label">
+                            <i class="bi bi-currency-dollar"></i> Målpris *
+                        </label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="target_price" 
+                               name="target_price" 
+                               step="0.01" 
+                               min="0.01" 
+                               placeholder="0.00" 
+                               required>
+                        <div class="form-text">Prisen du ønsker å få varsel ved (i USD/NOK)</div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="form-group">
+                        <label for="notes" class="form-label">
+                            <i class="bi bi-stickies"></i> Notater (valgfritt)
+                        </label>
+                        <textarea class="form-control" 
+                                  id="notes" 
+                                  name="notes" 
+                                  rows="3" 
+                                  placeholder="F.eks. kjøp hvis den går over denne prisen..."></textarea>
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="form-group">
+                        <button type="submit" class="submit-btn">
+                            <i class="bi bi-bell"></i> Opprett Prisvarsel
+                        </button>
+                    </div>
+
+                    <div class="text-center">
+                        <a href="{{ url_for('price_alerts.index') }}" class="btn btn-link">
+                            <i class="bi bi-arrow-left"></i> Tilbake til varsler
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Alert type selector
+document.querySelectorAll('.alert-type-option').forEach(option => {
+    option.addEventListener('click', function() {
+        // Remove active from all
+        document.querySelectorAll('.alert-type-option').forEach(opt => opt.classList.remove('active'));
+        // Add active to clicked
+        this.classList.add('active');
+        // Check the radio button
+        this.querySelector('input[type="radio"]').checked = true;
+    });
+});
+
+// Stock suggestion selection
+function selectStock(symbol, name) {
+    document.getElementById('symbol').value = symbol;
+    document.getElementById('company_name').value = name;
+    fetchCurrentPrice(symbol);
+}
+
+// Auto-uppercase symbol input
+document.getElementById('symbol').addEventListener('input', function() {
+    this.value = this.value.toUpperCase();
+    
+    // Fetch current price if symbol is complete
+    if (this.value.length >= 3) {
+        debounce(fetchCurrentPrice, 500)(this.value);
+    }
+});
+
+// Debounce function to avoid too many API calls
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Fetch current price for preview
+function fetchCurrentPrice(symbol) {
+    if (!symbol || symbol.length < 3) {
+        document.getElementById('pricePreview').style.display = 'none';
+        return;
+    }
+    
+    fetch(`/price-alerts/api/quote/${symbol}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.quote) {
+                document.getElementById('previewSymbol').textContent = symbol;
+                document.getElementById('previewPrice').textContent = `$${data.quote.price?.toFixed(2) || 'N/A'}`;
+                document.getElementById('previewTime').textContent = `Sist oppdatert: ${new Date().toLocaleString('no-NO')}`;
+                document.getElementById('pricePreview').style.display = 'block';
+                
+                // Suggest target price based on current price
+                if (data.quote.price) {
+                    const suggestedPrice = data.quote.price * 1.05; // 5% above current
+                    document.getElementById('target_price').placeholder = suggestedPrice.toFixed(2);
+                }
+            } else {
+                document.getElementById('pricePreview').style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.log('Could not fetch price:', error);
+            document.getElementById('pricePreview').style.display = 'none';
+        });
+}
+
+// Form validation
+document.getElementById('alertForm').addEventListener('submit', function(e) {
+    const symbol = document.getElementById('symbol').value.trim();
+    const targetPrice = parseFloat(document.getElementById('target_price').value);
+    
+    if (!symbol) {
+        e.preventDefault();
+        alert('Vennligst skriv inn et aksjesymbol.');
+        return;
+    }
+    
+    if (!targetPrice || targetPrice <= 0) {
+        e.preventDefault();
+        alert('Vennligst skriv inn en gyldig målpris.');
+        return;
+    }
+});
+</script>
+{% endblock %}

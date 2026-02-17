@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+
+{% block title %}Create Watchlist - Aksjeradar{% endblock %}
+
+{% block head %}
+<style>
+.create-form {
+    background: #ffffff;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.stock-suggestion {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 5px 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.stock-suggestion:hover {
+    background: #e9ecef;
+    border-color: #007bff;
+}
+
+.stock-suggestion.selected {
+    background: #007bff;
+    color: white;
+    border-color: #0056b3;
+}
+
+.tag-input {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+    min-height: 40px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    padding: 5px;
+}
+
+.tag {
+    background: #007bff;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tag .remove {
+    cursor: pointer;
+    font-weight: bold;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="create-form">
+                <div class="text-center mb-4">
+                    <h2 class="display-5 text-primary">
+                        <i class="bi bi-star me-3"></i>Create New Watchlist
+                    </h2>
+                    <p class="text-muted">Build your personalized stock tracking list</p>
+                </div>
+
+                <form id="create-watchlist-form" method="POST">
+                    {{ csrf_token() }}
+                    
+                    <!-- Watchlist Name -->
+                    <div class="mb-4">
+                        <label for="name" class="form-label fw-bold">
+                            <i class="bi bi-bookmark me-2"></i>Watchlist Name
+                        </label>
+                        <input type="text" class="form-control form-control-lg" id="name" name="name" 
+                               placeholder="e.g., Tech Stocks, Oil & Gas, Dividend Champions" required>
+                        <div class="form-text">Choose a descriptive name for your watchlist</div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <label for="description" class="form-label fw-bold">
+                            <i class="bi bi-pencil-square me-2"></i>Description (Optional)
+                        </label>
+                        <textarea class="form-control" id="description" name="description" rows="3"
+                                  placeholder="Describe your investment strategy or criteria for this watchlist..."></textarea>
+                    </div>
+
+                    <!-- Stock Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-search me-2"></i>Add Stocks
+                        </label>
+                        <input type="text" class="form-control mb-3" id="stock-search" 
+                               placeholder="Search for stocks to add (e.g., EQNR, Apple, Microsoft)">
+                        
+                        <!-- Selected Stocks Display -->
+                        <div class="tag-input" id="selected-stocks">
+                            <input type="text" style="border: none; outline: none; flex: 1; min-width: 100px;" 
+                                   placeholder="Type to search stocks...">
+                        </div>
+                        
+                        <!-- Stock Suggestions -->
+                        <div id="stock-suggestions" class="mt-2"></div>
+                    </div>
+
+                    <!-- Popular Stock Suggestions -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-fire me-2"></i>Popular Stocks
+                        </label>
+                        <div class="row">
+                            {% set popular_stocks = [
+                                {'symbol': 'EQNR.OL', 'name': 'Equinor ASA'},
+                                {'symbol': 'DNB.OL', 'name': 'DNB Bank ASA'},
+                                {'symbol': 'NHY.OL', 'name': 'Norsk Hydro ASA'},
+                                {'symbol': 'TEL.OL', 'name': 'Telenor ASA'},
+                                {'symbol': 'YAR.OL', 'name': 'Yara International'},
+                                {'symbol': 'AAPL', 'name': 'Apple Inc.'},
+                                {'symbol': 'MSFT', 'name': 'Microsoft Corp'},
+                                {'symbol': 'GOOGL', 'name': 'Alphabet Inc.'},
+                                {'symbol': 'TSLA', 'name': 'Tesla Inc.'},
+                                {'symbol': 'AMZN', 'name': 'Amazon.com Inc.'}
+                            ] %}
+                            
+                            {% for stock in popular_stocks %}
+                            <div class="col-md-6 mb-2">
+                                <div class="stock-suggestion" data-symbol="{{ stock.symbol }}" data-name="{{ stock.name }}">
+                                    <strong>{{ stock.symbol }}</strong> - {{ stock.name }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Visibility Settings -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-eye me-2"></i>Visibility
+                        </label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="is_public" id="private" value="false" checked>
+                            <label class="form-check-label" for="private">
+                                <i class="bi bi-lock me-2"></i>Private (Only visible to you)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="is_public" id="public" value="true">
+                            <label class="form-check-label" for="public">
+                                <i class="bi bi-globe me-2"></i>Public (Visible to other users)
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Notification Settings -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-bell me-2"></i>Notifications
+                        </label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="price-alerts" name="price_alerts">
+                            <label class="form-check-label" for="price-alerts">
+                                Enable price alerts for stocks in this watchlist
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="news-alerts" name="news_alerts">
+                            <label class="form-check-label" for="news-alerts">
+                                Get news alerts for companies in this watchlist
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Hidden field for selected stocks -->
+                    <input type="hidden" id="selected-stocks-data" name="stocks" value="">
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-3 justify-content-center">
+                        <button type="submit" class="btn btn-primary btn-lg px-4">
+                            <i class="bi bi-save me-2"></i>Create Watchlist
+                        </button>
+                        <a href="{{ url_for('portfolio.watchlist') }}" class="btn btn-outline-secondary btn-lg px-4">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectedStocks = new Set();
+    const stockSuggestions = document.getElementById('stock-suggestions');
+    const selectedStocksContainer = document.getElementById('selected-stocks');
+    const stockSearch = document.getElementById('stock-search');
+    const hiddenInput = document.getElementById('selected-stocks-data');
+
+    // Popular stock suggestions
+    document.querySelectorAll('.stock-suggestion').forEach(suggestion => {
+        suggestion.addEventListener('click', function() {
+            const symbol = this.getAttribute('data-symbol');
+            const name = this.getAttribute('data-name');
+            
+            if (selectedStocks.has(symbol)) {
+                selectedStocks.delete(symbol);
+                this.classList.remove('selected');
+            } else {
+                selectedStocks.add(symbol);
+                this.classList.add('selected');
+            }
+            
+            updateSelectedStocksDisplay();
+        });
+    });
+
+    // Stock search functionality
+    stockSearch.addEventListener('input', function() {
+        const query = this.value.trim();
+        if (query.length < 2) {
+            stockSuggestions.innerHTML = '';
+            return;
+        }
+
+        // Mock search results
+        const mockResults = [
+            {symbol: 'EQNR.OL', name: 'Equinor ASA'},
+            {symbol: 'DNB.OL', name: 'DNB Bank ASA'},
+            {symbol: 'AAPL', name: 'Apple Inc.'},
+            {symbol: 'MSFT', name: 'Microsoft Corp'},
+            {symbol: 'GOOGL', name: 'Alphabet Inc.'}
+        ].filter(stock => 
+            stock.symbol.toLowerCase().includes(query.toLowerCase()) ||
+            stock.name.toLowerCase().includes(query.toLowerCase())
+        );
+
+        stockSuggestions.innerHTML = mockResults.map(stock => `
+            <div class="stock-suggestion" data-symbol="${stock.symbol}" data-name="${stock.name}">
+                <strong>${stock.symbol}</strong> - ${stock.name}
+            </div>
+        `).join('');
+
+        // Add click handlers to new suggestions
+        stockSuggestions.querySelectorAll('.stock-suggestion').forEach(suggestion => {
+            suggestion.addEventListener('click', function() {
+                const symbol = this.getAttribute('data-symbol');
+                const name = this.getAttribute('data-name');
+                
+                if (!selectedStocks.has(symbol)) {
+                    selectedStocks.add(symbol);
+                    updateSelectedStocksDisplay();
+                    stockSearch.value = '';
+                    stockSuggestions.innerHTML = '';
+                }
+            });
+        });
+    });
+
+    function updateSelectedStocksDisplay() {
+        const tags = Array.from(selectedStocks).map(symbol => `
+            <span class="tag">
+                ${symbol}
+                <span class="remove" onclick="removeStock('${symbol}')">&times;</span>
+            </span>
+        `).join('');
+        
+        selectedStocksContainer.innerHTML = tags + 
+            '<input type="text" style="border: none; outline: none; flex: 1; min-width: 100px;" placeholder="Type to search stocks...">';
+        
+        hiddenInput.value = Array.from(selectedStocks).join(',');
+    }
+
+    // Global function for removing stocks
+    window.removeStock = function(symbol) {
+        selectedStocks.delete(symbol);
+        updateSelectedStocksDisplay();
+        
+        // Update popular suggestions
+        document.querySelectorAll('.stock-suggestion').forEach(suggestion => {
+            if (suggestion.getAttribute('data-symbol') === symbol) {
+                suggestion.classList.remove('selected');
+            }
+        });
+    };
+
+    // Form submission
+    document.getElementById('create-watchlist-form').addEventListener('submit', function(e) {
+        if (selectedStocks.size === 0) {
+            e.preventDefault();
+            alert('Please add at least one stock to your watchlist.');
+            return;
+        }
+    });
+});
+</script>
+{% endblock %}

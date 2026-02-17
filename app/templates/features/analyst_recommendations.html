@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% block title %}Analytiker Anbefalinger - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0">
+                <i class="bi bi-person-badge text-primary me-2"></i>
+                Analytiker Anbefalinger
+            </h1>
+            <p class="text-muted mt-2">
+                Profesjonelle analytikeres vurderinger og kursmål
+            </p>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        {{ error }}
+    </div>
+    {% endif %}
+
+    {% if ticker %}
+        <!-- Single Stock Recommendations -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            {{ ticker }} - Analytiker Anbefalinger
+                            {% if stock_info %}
+                                <small class="text-white-50">({{ stock_info.name }})</small>
+                            {% endif %}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if analyst_data %}
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="text-center mb-4">
+                                        <h6 class="text-muted">Konsensus Anbefaling</h6>
+                                        <div class="display-4 
+                                            {% if analyst_data.consensus == 'Strong Buy' %}text-success
+                                            {% elif analyst_data.consensus == 'Buy' %}text-success
+                                            {% elif analyst_data.consensus == 'Sell' %}text-danger
+                                            {% elif analyst_data.consensus == 'Strong Sell' %}text-danger
+                                            {% else %}text-warning{% endif %}">
+                                            {{ analyst_data.consensus }}
+                                        </div>
+                                        <small class="text-muted">Basert på {{ analyst_data.analyst_count }} analytikere</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <h6>Kursmål</h6>
+                                    <div class="row text-center mb-3">
+                                        <div class="col">
+                                            <small class="text-muted d-block">Lavest</small>
+                                            <strong>${{ analyst_data.target_low }}</strong>
+                                        </div>
+                                        <div class="col">
+                                            <small class="text-muted d-block">Gjennomsnitt</small>
+                                            <strong class="text-primary">${{ analyst_data.target_mean }}</strong>
+                                        </div>
+                                        <div class="col">
+                                            <small class="text-muted d-block">Høyest</small>
+                                            <strong>${{ analyst_data.target_high }}</strong>
+                                        </div>
+                                    </div>
+                                    
+                                    <h6>Anbefalinger Fordeling</h6>
+                                    <div class="progress mb-3" style="height: 25px;">
+                                        {% if analyst_data.strong_buy > 0 %}
+                                        {% set strong_buy_pct = ((analyst_data.strong_buy / analyst_data.analyst_count * 100)|round|int) %}
+                                        <div class="progress-bar bg-success" style="width: {{ strong_buy_pct }}%">
+                                            {{ analyst_data.strong_buy }} Strong Buy
+                                        </div>
+                                        {% endif %}
+                                        {% if analyst_data.buy > 0 %}
+                                        {% set buy_pct = ((analyst_data.buy / analyst_data.analyst_count * 100)|round|int) %}
+                                        <div class="progress-bar bg-success opacity-75" style="width: {{ buy_pct }}%">
+                                            {{ analyst_data.buy }} Buy
+                                        </div>
+                                        {% endif %}
+                                        {% if analyst_data.hold > 0 %}
+                                        {% set hold_pct = ((analyst_data.hold / analyst_data.analyst_count * 100)|round|int) %}
+                                        <div class="progress-bar bg-warning" style="width: {{ hold_pct }}%">
+                                            {{ analyst_data.hold }} Hold
+                                        </div>
+                                        {% endif %}
+                                        {% if analyst_data.sell > 0 %}
+                                        {% set sell_pct = ((analyst_data.sell / analyst_data.analyst_count * 100)|round|int) %}
+                                        <div class="progress-bar bg-danger opacity-75" style="width: {{ sell_pct }}%">
+                                            {{ analyst_data.sell }} Sell
+                                        </div>
+                                        {% endif %}
+                                        {% if analyst_data.strong_sell > 0 %}
+                                        {% set strong_sell_pct = ((analyst_data.strong_sell / analyst_data.analyst_count * 100)|round|int) %}
+                                        <div class="progress-bar bg-danger" style="width: {{ strong_sell_pct }}%">
+                                            {{ analyst_data.strong_sell }} Strong Sell
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-5">
+                                <i class="bi bi-info-circle fs-1 mb-3 d-block"></i>
+                                Ingen analytiker-anbefalinger tilgjengelig for {{ ticker }}
+                            </p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer text-muted">
+                        <small>Sist oppdatert: {{ last_updated }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Recommendations Overview -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Populære Anbefalinger</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Stock Search -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <form method="get" action="{{ url_for('analysis.recommendations') }}">
+                                    <div class="input-group">
+                                        <input type="text" 
+                                               class="form-control" 
+                                               name="ticker" 
+                                               placeholder="Søk etter aksje (f.eks. AAPL, OSL:EQNR)"
+                                               required>
+                                        <button class="btn btn-primary" type="submit">
+                                            <i class="bi bi-search"></i> Søk
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        {% if recommendations %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Aksje</th>
+                                            <th>Konsensus</th>
+                                            <th>Kursmål</th>
+                                            <th>Oppside</th>
+                                            <th>Analytikere</th>
+                                            <th>Handlinger</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for rec in recommendations %}
+                                        <tr>
+                                            <td class="fw-bold">{{ rec.ticker }}</td>
+                                            <td>
+                                                <span class="badge 
+                                                    {% if 'Buy' in rec.consensus %}bg-success
+                                                    {% elif 'Sell' in rec.consensus %}bg-danger
+                                                    {% else %}bg-warning{% endif %}">
+                                                    {{ rec.consensus }}
+                                                </span>
+                                            </td>
+                                            <td>${{ rec.target_mean }}</td>
+                                            <td>
+                                                <span class="{% if rec.upside > 0 %}text-success{% else %}text-danger{% endif %}">
+                                                    {{ rec.upside }}%
+                                                </span>
+                                            </td>
+                                            <td>{{ rec.analyst_count }}</td>
+                                            <td>
+                                                <a href="{{ url_for('analysis.recommendations', ticker=rec.ticker) }}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-graph-up"></i> Detaljer
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-5">
+                                <i class="bi bi-search fs-1 mb-3 d-block"></i>
+                                Søk etter en aksje for å se analytiker-anbefalinger
+                            </p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer text-muted">
+                        <small>Sist oppdatert: {{ last_updated if last_updated else 'N/A' }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

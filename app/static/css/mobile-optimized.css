@@ -1,0 +1,1053 @@
+/* Mobile-first optimizations for Aksjeradar */
+
+/* Base mobile optimizations */
+@media (max-width: 768px) {
+    
+    /* Typography optimizations */
+    body {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    
+    .h1, h1 { font-size: 1.75rem; }
+    .h2, h2 { font-size: 1.5rem; }
+    .h3, h3 { font-size: 1.3rem; }
+    .h4, h4 { font-size: 1.1rem; }
+    .h5, h5 { font-size: 1rem; }
+    
+    /* Container adjustments */
+    .container {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    /* Card optimizations */
+    .card {
+        margin-bottom: 15px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .card-header {
+        padding: 0.75rem 1rem;
+    }
+    
+    /* Button optimizations */
+    .btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+        border-radius: 8px;
+    }
+    
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    
+    .btn-lg {
+        padding: 0.8rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    /* Form optimizations */
+    .form-control {
+        padding: 0.75rem;
+        font-size: 16px; /* Prevents zoom on iOS */
+        border-radius: 8px;
+    }
+    
+    .input-group .form-control {
+        border-radius: 8px 0 0 8px;
+    }
+    
+    .input-group .btn {
+        border-radius: 0 8px 8px 0;
+    }
+    
+    /* Table optimizations */
+    .table-responsive {
+        margin-bottom: 0;
+    }
+    
+    .table {
+        font-size: 0.85rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.5rem 0.3rem;
+        border-top: 1px solid #dee2e6;
+    }
+    
+    /* Hide less important columns on mobile */
+    .table .d-mobile-none {
+        display: none !important;
+    }
+    
+    /* Stack table content vertically for very small screens */
+    @media (max-width: 480px) {
+        .table-mobile-stack {
+            display: block;
+        }
+        
+        .table-mobile-stack thead {
+            display: none;
+        }
+        
+        .table-mobile-stack tbody,
+        .table-mobile-stack tr,
+        .table-mobile-stack td {
+            display: block;
+            width: 100%;
+        }
+        
+        .table-mobile-stack tr {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+        
+        .table-mobile-stack td {
+            border: none;
+            position: relative;
+            padding-left: 50% !important;
+            padding-top: 8px;
+            padding-bottom: 8px;
+        }
+        
+        .table-mobile-stack td:before {
+            content: attr(data-label) ": ";
+            position: absolute;
+            left: 6px;
+            width: 45%;
+            text-align: left;
+            font-weight: bold;
+            color: #666;
+        }
+    }
+    
+    /* Navigation optimizations - CLEAN MOBILE PADDING */
+    .navbar {
+        padding: 0.25rem 0 !important;
+    }
+
+    .navbar-brand {
+        font-size: 1rem !important;
+        padding: 0.25rem 0 !important;
+    }
+
+    .navbar-brand img {
+        height: 18px !important;
+    }
+
+    .navbar-toggler {
+        padding: 0.25rem 0.5rem !important;
+        border: none !important;
+        border-radius: 4px !important;
+        margin-left: 0.5rem !important;
+        font-size: 0.9rem !important;
+    }
+
+    .navbar-collapse {
+        margin-top: 0.2rem !important;
+        padding-top: 0.2rem !important;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* CLEAN MOBILE NAVIGATION - MINIMAL PADDING SOLUTION */
+    .navbar-nav .nav-link {
+        padding: 0.2rem 0.5rem !important;
+        font-size: 0.9rem !important;
+        margin-bottom: 0 !important;
+        line-height: 1.3 !important;
+    }
+
+    /* Mobile dropdown optimizations - ULTRA MINIMAL SPACING */
+    @media (max-width: 991.98px) {
+        .navbar-nav .nav-item {
+            margin: 0 !important;
+            padding: 0 !important;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .navbar-nav .nav-item:last-child {
+            border-bottom: none;
+        }
+        
+        .navbar-nav .dropdown-menu {
+            margin: 0 !important;
+            padding: 0 !important;
+            background-color: rgba(248, 249, 250, 0.98) !important;
+            border: none !important;
+        }
+        
+        .navbar-nav .nav-link {
+            padding: 0.3rem 1rem !important;
+            margin: 0 !important;
+            line-height: 1.2 !important;
+            font-size: 0.9rem !important;
+        }
+        
+        /* AGGRESSIVE SPACING REDUCTION FOR DROPDOWNS */
+        .navbar-nav .dropdown-menu .dropdown-item {
+            padding: 0.2rem 1rem !important;
+            font-size: 0.85rem !important;
+            line-height: 1.2 !important;
+            margin: 0 !important;
+            min-height: 32px !important;
+        }
+        
+        /* Minimal header and divider spacing */
+        .navbar-nav .dropdown-header {
+            padding: 0.1rem 1rem !important;
+            font-size: 0.7rem !important;
+            margin: 0 !important;
+            color: #ffffff !important; /* Change dropdown headers to white text */
+        }
+        
+        .navbar-nav .dropdown-divider {
+            margin: 0.1rem 0 !important;
+        }
+    }
+
+/* Dropdown optimizations */
+    .dropdown-menu {
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        border: 1px solid #e0e0e0;
+        margin-top: 0.5rem;
+        /* Ensure proper z-index on mobile */
+        z-index: 1050;
+        /* Prevent text selection on mobile */
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        /* Smooth transitions */
+        transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+    
+    /* Mobile-specific dropdown styles */
+    .dropdown-menu.mobile-dropdown-active {
+        opacity: 1;
+        visibility: visible;
+        /* Ensure it's above everything else */
+        z-index: 1060;
+    }
+    
+    .dropdown-item {
+        padding: 0.3rem 0.8rem;
+        font-size: 0.85rem;
+        /* Better touch targets */
+        min-height: 36px;
+        display: flex;
+        align-items: center;
+        /* Prevent double-tap zoom */
+        touch-action: manipulation;
+    }
+    
+    
+    .dropdown-item i {
+        width: 20px;
+        text-align: center;
+        margin-right: 0.5rem;
+        flex-shrink: 0;
+    }
+    
+    /* Fix for navbar dropdown on mobile - CONSISTENT WITH MAIN MOBILE STYLES */
+    .navbar-collapse .dropdown-menu {
+        position: static;
+        float: none;
+        width: 100%;
+        margin: 0 !important;
+        padding: 0.25rem 0 !important;
+        background-color: rgba(248, 249, 250, 0.98);
+        backdrop-filter: blur(10px);
+        border: none;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+    
+    /* When navbar is collapsed, make dropdowns stack properly */
+    .navbar-collapse.show .dropdown-menu,
+    .navbar-collapse.collapsing .dropdown-menu {
+        display: block;
+    }
+    
+    /* Alert optimizations */
+    .alert {
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+    
+    .alert .btn {
+        margin-top: 0.5rem;
+    }
+    
+    /* Modal optimizations */
+    .modal-dialog {
+        margin: 1rem;
+    }
+    
+    .modal-content {
+        border-radius: 16px;
+    }
+    
+    .modal-header {
+        padding: 1rem 1.5rem 0.5rem;
+    }
+    
+    .modal-body {
+        padding: 1rem 1.5rem;
+    }
+    
+    .modal-footer {
+        padding: 0.5rem 1.5rem 1rem;
+    }
+    
+    /* Toast/notification optimizations */
+    .toast {
+        border-radius: 12px;
+        margin: 0.5rem;
+        max-width: calc(100vw - 1rem);
+    }
+    
+    /* PWA install banner optimizations */
+    #pwa-install-banner {
+        margin: 0;
+        border-radius: 0;
+        padding: 1rem 0.5rem;
+        background-color: #f8f9fa; /* Light background */
+        color: #212529; /* Dark text */
+    }
+    
+    #pwa-install-banner .container {
+        padding: 0 1rem;
+    }
+    
+    #pwa-install-banner .row {
+        align-items: center;
+    }
+    
+    #pwa-install-banner .col-2 img {
+        max-width: 40px;
+        border-radius: 8px;
+    }
+    
+    #pwa-install-banner .btn {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.8rem;
+        background-color: #007bff; /* Blue button */
+        color: #ffffff; /* White text */
+    }
+    
+    /* Loading states mobile optimization */
+    .loading-overlay .loading-content {
+        padding: 2rem 1rem;
+    }
+    
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .skeleton {
+        border-radius: 6px;
+    }
+    
+    .skeleton-card {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    /* Chart optimizations */
+    .demo-chart {
+        height: 200px !important;
+        margin-bottom: 1rem;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 250px;
+        margin: 1rem 0;
+    }
+    
+    /* Statistics cards */
+    .stat-card {
+        text-align: center;
+        padding: 1rem;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-card .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #0d6efd;
+    }
+    
+    .stat-card .stat-label {
+        font-size: 0.8rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Badge optimizations */
+    .badge {
+        font-size: 0.7rem;
+        padding: 0.4rem 0.6rem;
+        border-radius: 6px;
+    }
+    
+    .badge.live-indicator {
+        animation: pulse 2s infinite;
+    }
+    
+    /* Progress bar optimizations */
+    .progress {
+        height: 6px;
+        border-radius: 3px;
+        background-color: #e9ecef;
+    }
+    
+    .progress-bar {
+        border-radius: 3px;
+    }
+    
+    /* Search bar mobile optimization */
+    .navbar .form-control {
+        font-size: 14px;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .navbar .input-group {
+        max-width: 200px;
+    }
+    
+    /* Demo page mobile optimizations */
+    .demo-timer {
+        padding: 0.75rem !important;
+        font-size: 0.8rem;
+    }
+    
+    .demo-timer .h4 {
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .btn-group .btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+    
+    .ai-prediction-box {
+        padding: 1.5rem !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    .ai-prediction-box .display-4 {
+        font-size: 2rem;
+    }
+    
+    /* Tooltip mobile optimization */
+    .tooltip {
+        font-size: 0.8rem;
+    }
+    
+    .advanced-tooltip {
+        max-width: 300px;
+    }
+    
+    .advanced-tooltip .tooltip-inner {
+        padding: 0.75rem;
+    }
+    
+    /* Onboarding mobile optimization */
+    .onboarding-popover {
+        max-width: calc(100vw - 2rem);
+        margin: 1rem;
+    }
+    
+    .onboarding-header,
+    .onboarding-body,
+    .onboarding-footer {
+        padding: 0.75rem;
+    }
+    
+    /* Footer mobile optimization */
+    footer {
+        padding: 2rem 0 !important;
+    }
+    
+    footer .col-md-2,
+    footer .col-md-4 {
+        margin-bottom: 1.5rem;
+    }
+    
+    footer h5,
+    footer h6 {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    footer .list-unstyled li {
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Performance optimizations */
+    * {
+        -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+    }
+    
+    /* Touch-friendly sizing */
+    .btn,
+    .form-control,
+    .nav-link,
+    .dropdown-item {
+        min-height: 36px; /* Reduced for more compact mobile navigation */
+    }
+    
+    /* Swipe gestures for cards */
+    .swipeable-card {
+        touch-action: pan-y;
+        transition: transform 0.2s ease-out;
+    }
+    
+    .swipeable-card.swiping {
+        transform: translateX(var(--swipe-offset, 0));
+    }
+    
+    /* Desktop Navigation Improvements - Fix hidden scrollbar issues */
+@media (min-width: 769px) {
+    /* Ensure all navigation elements are properly visible and accessible */
+    .navbar-nav {
+        overflow: visible !important;
+        position: static !important;
+    }
+    
+    .navbar-collapse {
+        overflow: visible !important;
+        position: static !important;
+    }
+    
+    .dropdown-menu {
+        overflow: visible !important;
+        position: absolute !important;
+    }
+    
+    /* Remove any hidden or problematic scrollbars */
+    .navbar-nav::-webkit-scrollbar,
+    .navbar-collapse::-webkit-scrollbar {
+        display: none !important;
+    }
+    
+    .navbar-nav {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+    }
+    
+    /* Ensure dropdown menus are easily accessible */
+    .navbar-nav .dropdown-toggle {
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .navbar-nav .dropdown-toggle:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+    }
+    
+    /* Better visual feedback for interactive elements */
+    .navbar-nav .nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+}
+
+/* Fast scroll optimization */
+    .fast-scroll {
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+    }
+    
+    /* Reduce motion for users who prefer it */
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+}
+
+/* Very small screens (iPhone SE, etc.) */
+@media (max-width: 375px) {
+    .container {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+    
+    .card-body {
+        padding: 0.75rem;
+    }
+    
+    .btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+    
+    .navbar-brand {
+        font-size: 1rem;
+    }
+    
+    .navbar-brand img {
+        height: 22px;
+    }
+    
+    .table {
+        font-size: 0.8rem;
+    }
+    
+    .demo-timer .h4 {
+        font-size: 0.9rem;
+    }
+    
+    .ai-prediction-box .display-4 {
+        font-size: 1.75rem;
+    }
+}
+
+/* Landscape orientation optimizations */
+@media (max-width: 768px) and (orientation: landscape) {
+    .navbar {
+        padding: 0.25rem 0;
+    }
+    
+    .hero-section {
+        padding: 1rem 0 !important;
+    }
+    
+    .demo-chart {
+        height: 150px !important;
+    }
+    
+    .modal-dialog {
+        max-height: 90vh;
+    }
+    
+    .modal-body {
+        max-height: 50vh;
+        overflow-y: auto;
+    }
+}
+
+/* iOS specific optimizations */
+@supports (-webkit-touch-callout: none) {
+    .form-control {
+        border-radius: 0; /* Prevents iOS styling */
+    }
+    
+    .btn {
+        border-radius: 8px;
+    }
+    
+    /* Fix for iOS viewport height issues */
+    .min-vh-100 {
+        min-height: -webkit-fill-available;
+    }
+}
+
+/* Android specific optimizations */
+@media screen and (-webkit-min-device-pixel-ratio: 1) {
+    .form-control:focus {
+        outline: 2px solid #0d6efd;
+        outline-offset: 2px;
+    }
+}
+
+/* High DPI displays */
+@media only screen and (-webkit-min-device-pixel-ratio: 2),
+       only screen and (min--moz-device-pixel-ratio: 2),
+       only screen and (-o-min-device-pixel-ratio: 2/1),
+       only screen and (min-device-pixel-ratio: 2) {
+    
+    /* Crisp icons and images */
+    .navbar-brand img,
+    .card-header img {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* Dark mode mobile optimizations */
+[data-theme="dark"] {
+    @media (max-width: 768px) {
+        .card {
+            background-color: #2c3034 !important;
+            border-color: #495057;
+        }
+        
+        .dropdown-menu {
+            background-color: #2c3034 !important;
+            border-color: #495057;
+        }
+        
+        .modal-content {
+            background-color: #2c3034;
+            color: #fff;
+        }
+        
+        .toast {
+            background-color: #2c3034 !important;
+            color: #fff;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #2c3034, #343a40);
+            color: #fff;
+        }
+        
+        .form-control {
+            background-color: #2c3034;
+            border-color: #495057;
+            color: #fff;
+        }
+        
+        .form-control:focus {
+            background-color: #2c3034;
+            border-color: #0d6efd;
+            color: #fff;
+        }
+    }
+}
+
+/* Smooth animations for mobile */
+@keyframes mobile-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mobile-animate {
+    animation: mobile-slide-up 0.3s ease-out;
+}
+
+/* Touch feedback */
+.touch-feedback {
+    transition: all 0.1s ease;
+}
+
+.touch-feedback:active {
+    transform: scale(0.98);
+    opacity: 0.8;
+}
+
+/* Additional responsive breakpoints for comprehensive mobile support */
+
+/* Extra small devices (phones, less than 576px) */
+@media (max-width: 575px) {
+    .container {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    .navbar-brand {
+        font-size: 1rem;
+    }
+    
+    .btn {
+        font-size: 0.875rem;
+        padding: 0.375rem 0.75rem;
+    }
+    
+    .card {
+        margin-bottom: 0.75rem;
+    }
+    
+    .table {
+        font-size: 0.875rem;
+    }
+}
+
+/* Medium devices (tablets, between 768px and 991px) */
+@media (max-width: 991px) and (min-width: 768px) {
+    .container {
+        max-width: 720px;
+    }
+    
+    .navbar-collapse {
+        margin-top: 1rem;
+    }
+    
+    .pricing-card {
+        margin-bottom: 2rem;
+    }
+    
+    .hero-section h1 {
+        font-size: 2.5rem;
+    }
+}
+
+/* Large tablets and small laptops (between 992px and 1199px) */
+@media (max-width: 991px) {
+    .navbar-nav {
+        padding-top: 1rem;
+        text-align: center;
+    }
+    
+    .pricing-nav .pricing-link {
+        display: block;
+        margin: 0.5rem 0;
+        text-align: center;
+    }
+    
+    .search-form {
+        position: static;
+        margin-top: 1rem;
+        min-width: 100%;
+    }
+    
+    .nav-tools {
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .hero-section {
+        padding: 3rem 0;
+    }
+    
+    .feature-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+}
+
+/* Mobile Navigation Spacing Fixes */
+@media (max-width: 991.98px) {
+    /* Main navigation improvements - MINIMAL SPACING */
+    .navbar-nav {
+        padding-top: 0.15rem !important;
+        padding-bottom: 0.15rem !important;
+    }
+    
+    .navbar-nav .nav-item {
+        margin-bottom: 0.01rem !important; /* Minimal spacing between items */
+    }
+    
+    .navbar-nav .nav-link {
+        padding: 0.25rem 0.5rem !important; /* Very compact padding */
+        font-size: 0.85rem !important;
+        margin-bottom: 0.01rem !important;
+    }
+    
+    /* CONSOLIDATED: Single consistent dropdown spacing for mobile */
+    .navbar-nav .dropdown-menu {
+        margin: 0 !important;
+        padding: 0.5rem 0 !important;
+        background-color: rgba(248, 249, 250, 0.98) !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    .navbar-nav .dropdown-menu .dropdown-item {
+        padding: 0.4rem 1rem !important;
+        font-size: 0.85rem !important;
+        line-height: 1.3 !important;
+        margin: 0 !important;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    /* Dropdown header adjustments */
+    .navbar-nav .dropdown-header {
+        padding: 0.3rem 1rem 0.2rem !important;
+        font-size: 0.7rem !important;
+        margin: 0 !important;
+        color: #ffffff !important; /* Change dropdown headers to white text */
+    }
+    
+    /* Dropdown divider adjustments */
+    .navbar-nav .dropdown-divider {
+        margin: 0.25rem 0 !important;
+    }
+    
+    /* Register button spacing fix */
+    .navbar-nav .btn-primary {
+        margin-top: 0.25rem !important;
+        margin-left: 0 !important;
+        margin-bottom: 0.1rem !important;
+    }
+    
+    /* Navbar collapse improvements */
+    .navbar-collapse {
+        margin-top: 0.5rem !important;
+        padding-top: 0.25rem !important;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    /* Badge spacing in navigation */
+    .navbar-nav .badge {
+        margin-left: 0.25rem !important;
+        font-size: 0.65rem !important;
+    }
+    
+    /* Improved touch targets for mobile */
+    .navbar-nav .nav-link,
+    .navbar-nav .dropdown-item {
+        min-height: 42px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    
+    /* Icon spacing in navigation */
+    .navbar-nav .nav-link i,
+    .navbar-nav .dropdown-item i {
+        margin-right: 0.4rem !important;
+        width: 16px !important;
+        text-align: center !important;
+    }
+    
+    /* Special handling for nested dropdowns */
+    .navbar-nav .dropdown-menu .dropdown-menu {
+        margin-left: 1rem !important;
+        margin-top: 0 !important;
+    }
+    
+    /* Fix for collapsible behavior */
+    .navbar-toggler {
+        padding: 0.25rem 0.5rem !important;
+        font-size: 1.1rem !important;
+    }
+    
+    /* Ensure proper spacing for user dropdown */
+    #userDropdown,
+    #stocksDropdown,
+    #analysisDropdown {
+        padding: 0.4rem 0.75rem !important;
+    }
+    
+    /* Mobile-specific button adjustments */
+    .navbar-nav .btn {
+        border-radius: 0.375rem !important;
+        font-size: 0.85rem !important;
+        padding: 0.4rem 0.75rem !important;
+        margin: 0.1rem 0 !important;
+    }
+    
+    /* Fix for long dropdown menus */
+    .dropdown-menu {
+        max-height: 60vh !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    /* Ensure proper z-index for mobile dropdowns */
+    .navbar-nav .dropdown-menu {
+        z-index: 1050 !important;
+    }
+    
+    /* Better visual separation - MINIMAL SPACE */
+    .navbar-nav .nav-item + .nav-item {
+        border-top: 1px solid rgba(255,255,255,0.03);
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    /* Remove excessive spacing for specific sections */
+    .navbar-nav .nav-item:first-child {
+        margin-top: 0 !important;
+    }
+    
+    .navbar-nav .nav-item:last-child {
+        margin-bottom: 0 !important;
+    }
+}
+
+/* Extra small screens (phones) - ULTRA COMPACT */
+@media (max-width: 575.98px) {
+    .navbar-nav .nav-link {
+        padding: 0.25rem 0.5rem !important;
+        font-size: 0.85rem !important;
+        margin: 0 !important;
+    }
+    
+    .navbar-nav .dropdown-menu .dropdown-item {
+        padding: 0.2rem 0.5rem !important;
+        font-size: 0.8rem !important;
+        margin: 0 !important;
+    }
+    
+    .navbar-collapse {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    .navbar-nav .dropdown-menu {
+        margin-left: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Extra tight spacing for all nav items */
+    .navbar-nav .nav-item {
+        margin-bottom: 0 !important;
+        margin-top: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Authenticated user menu specific improvements */
+    .navbar-nav .nav-item .nav-link {
+        line-height: 1.2 !important;
+        padding-top: 0.3rem !important;
+        padding-bottom: 0.3rem !important;
+        margin: 0 !important;
+    }
+    
+    /* Extra compact dropdown for authenticated users */
+    .navbar-nav .dropdown-menu .dropdown-item {
+        line-height: 1.2 !important;
+        white-space: nowrap !important;
+        padding: 0.3rem 1rem !important;
+        font-size: 0.85rem !important;
+        margin: 0 !important;
+    }
+    
+    /* Minimize icon spacing in mobile */
+    .navbar-nav .nav-link i {
+        margin-right: 0.25rem !important;
+    }
+    
+    .dropdown-item i {
+        margin-right: 0.25rem !important;
+        font-size: 0.75rem !important;
+    }
+    
+    /* Dropdown header improvements - ULTRA COMPACT */
+    .navbar-nav .dropdown-header {
+        padding: 0.02rem 0.5rem !important;
+        font-size: 0.6rem !important;
+        margin-bottom: 0 !important;
+        margin-top: 0 !important;
+        text-transform: uppercase;
+        font-weight: 600;
+        color: #ffffff !important; /* Change dropdown headers to white text */
+    }
+    
+    /* Dropdown divider improvements - MINIMAL */
+    .navbar-nav .dropdown-divider {
+        margin: 0 !important;
+    }
+}

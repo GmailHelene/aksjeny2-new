@@ -1,0 +1,8 @@
+.bg-dark-green {
+    background-color: #14532d !important; /* mørk grønn */
+    color: #ffffff !important;
+}
+
+.bg-dark-green h1, .bg-dark-green h2, .bg-dark-green h3, .bg-dark-green h4, .bg-dark-green h5, .bg-dark-green h6 {
+    color: #ffffff !important;
+}

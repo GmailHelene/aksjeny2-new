@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block title %}Prisvarsler - Aksjeny{% endblock %}
+
+{% block head %}
+<style>
+    .alert-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        border-left: 4px solid #007bff;
+    }
+    .alert-card.triggered {
+        border-left-color: #28a745;
+        background: #f8fff9;
+    }
+    .alert-card.disabled {
+        border-left-color: #6c757d;
+        background: #f8f9fa;
+        opacity: 0.7;
+    }
+    .alert-symbol {
+        font-size: 18px;
+        font-weight: bold;
+        color: #007bff;
+        margin-bottom: 5px;
+    }
+    .alert-details {
+        color: #6c757d;
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+    .price-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 15px 0;
+    }
+    .current-price {
+        font-size: 16px;
+        font-weight: bold;
+    }
+    .target-price {
+        font-size: 14px;
+        color: #6c757d;
+    }
+    .alert-status {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        text-transform: uppercase;
+        font-weight: bold;
+    }
+    .status-active {
+        background: #007bff;
+        color: white;
+    }
+    .status-triggered {
+        background: #28a745;
+        color: white;
+    }
+    .status-disabled {
+        background: #6c757d;
+        color: white;
+    }
+    .service-status {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    .status-indicator {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+    .status-active-indicator {
+        background: #28a745;
+        animation: pulse 2s infinite;
+    }
+    .status-inactive-indicator {
+        background: #dc3545;
+    }
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    .create-alert-btn {
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        border: none;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    .create-alert-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,123,255,0.3);
+    }
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #6c757d;
+    }
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 20px;
+        color: #dee2e6;
+    }
+    .alert-delete-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px !important;
+        font-size: 0.75rem;
+        line-height: 1.2;
+        border-radius: 20px;
+        background: #dc3545;
+        border: none;
+        color: #fff;
+        transition: background .2s ease, transform .15s ease;
+    }
+    .alert-delete-btn i { font-size: 0.7rem; }
+    .alert-delete-btn:hover { background:#bb2d3b; }
+    .alert-delete-btn:active { transform: scale(.95); }
+    .alert-delete-btn:focus { outline: 2px solid rgba(220,53,69,.4); outline-offset: 2px; }
+    .stale-status-warning { color:#dc3545; font-weight:500; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="bi bi-bell"></i> Prisvarsler</h1>
+                <div>
+                    <a href="{{ url_for('price_alerts.settings') }}" class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-gear"></i> Innstillinger
+                    </a>
+                    {% if not alert_limit_reached %}
+                    <a href="{{ url_for('price_alerts.create') }}" class="btn create-alert-btn">
+                        <i class="bi bi-plus"></i> Nytt Varsel
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Service Status -->
+            <div class="service-status">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                            <span class="status-indicator {{ 'status-active-indicator' if service_status.total_active_alerts > 0 else 'status-inactive-indicator' }}"></span>
+                            <strong>Overvåkningsstatus:</strong>
+                            {% if service_status.total_active_alerts > 0 %}
+                                <span class="text-success">Aktiv - Varsler overvåkes</span>
+                            {% else %}
+                                <span class="text-warning">Venter på varsler</span>
+                            {% endif %}
+                            <span class="ml-3"><strong>Siste sjekk:</strong>
+                                {% if service_status.last_check == 'Aldri sjekket' or service_status.last_check == 'Ukjent' or not service_status.last_check %}
+                                    <span class="text-muted">Aldri sjekket</span>
+                                {% else %}
+                                    {{ service_status.last_check }}
+                                {% endif %}
+                            </span>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted">
+                            {% if service_status.last_check and service_status.last_check != 'Aldri sjekket' %}
+                                Sist sjekket: {{ service_status.last_check[:19].replace('T', ' ') }} UTC
+                            {% else %}
+                                Vent mens varsler aktiveres
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-muted">
+                        Totalt {{ service_status.total_active_alerts }} aktive varsler {% if service_status.total_active_alerts > 0 %}overvåkes hver {{ service_status.check_interval_minutes }} minutt{% else %}- opprett et varsel for å starte overvåking{% endif %}.
+                    </small>
+                </div>
+            </div>
+
+            <!-- Subscription Status -->
+            {% if not has_subscription %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i>
+                <strong>Gratis konto:</strong> Du kan opprette opptil 3 aktive prisvarsler. 
+                Du har {{ active_alerts_count }}/3 aktive varsler.
+                {% if alert_limit_reached %}
+                    <a href="{{ url_for('main.pricing') }}" class="alert-link">Oppgrader til Pro for ubegrenset tilgang</a>.
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Alerts List -->
+            {% if alerts %}
+                <div class="row">
+                    {% for alert in alerts %}
+                    <div class="col-lg-6">
+                        <div class="alert-card {{ alert.status }}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <div class="alert-symbol">{{ alert.symbol }}</div>
+                                    {% if alert.company_name %}
+                                    <div class="alert-details">{{ alert.company_name }}</div>
+                                    {% endif %}
+                                    
+                                    <div class="price-info">
+                                        <div>
+                                            {% if alert.current_price %}
+                                            <div class="current-price">
+                                                Aktuell: ${{ "%.2f"|format(alert.current_price) }}
+                                            </div>
+                                            {% endif %}
+                                            <div class="target-price">
+                                                Mål: ${{ "%.2f"|format(alert.target_price) }}
+                                                ({{ 'Over' if alert.alert_type == 'above' else 'Under' }})
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <span class="alert-status status-{{ alert.status }}">
+                                                {{ alert.status|title }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            Opprettet: {{ alert.created_at[:10] }}
+                                            {% if alert.triggered_at %}
+                                            | Utløst: {{ alert.triggered_at[:10] }}
+                                            {% endif %}
+                                        </small>
+                                        
+                                        <form method="POST" action="{{ url_for('price_alerts.delete', alert_id=alert.id) }}" 
+                                              onsubmit="return confirm('Er du sikker på at du vil slette dette varselet?')" 
+                                              class="d-inline">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="alert-delete-btn" aria-label="Slett varsel" title="Slett varsel">
+                                                <i class="bi bi-trash"></i> Slett
+                                            </button>
+                                        </form>
+                                    </div>
+                                    
+                                    {% if alert.notes %}
+                                    <div class="mt-2">
+                                        <small class="text-muted"><i class="bi bi-stickies"></i> {{ alert.notes }}</small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <!-- Empty State -->
+                <div class="empty-state">
+                    <i class="bi bi-bell-slash"></i>
+                    <h3>Ingen prisvarsler ennå</h3>
+                    <p>Opprett ditt første prisvarsel for å få beskjed når aksjer når ønskede priser.</p>
+                    {% if not alert_limit_reached %}
+                    <a href="{{ url_for('price_alerts.create') }}" class="btn create-alert-btn">
+                        <i class="bi bi-plus"></i> Opprett Første Varsel
+                    </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-refresh alerts every 1 minute (60 000 ms) with focus awareness
+const ALERT_REFRESH_INTERVAL = 60000;
+let lastRefresh = Date.now();
+
+function refreshAlertsIfNeeded() {
+    if (document.visibilityState !== 'visible') return;
+    // Avoid refresh if user is interacting with a form/input
+    const activeEl = document.activeElement;
+    if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) return;
+    window.location.reload();
+}
+
+setInterval(refreshAlertsIfNeeded, ALERT_REFRESH_INTERVAL);
+
+// Highlight stale service status if last_check older than 10 minutes
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        const statusEl = document.querySelector('.service-status small.text-muted');
+        if (!statusEl) return;
+        const text = statusEl.textContent;
+        const match = text.match(/(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/);
+        if (match) {
+            const dt = new Date(match[1].replace(' ', 'T') + 'Z');
+            if (!isNaN(dt.getTime())) {
+                const ageMin = (Date.now() - dt.getTime()) / 60000;
+                if (ageMin > 10) {
+                    statusEl.classList.add('stale-status-warning');
+                    statusEl.insertAdjacentHTML('beforeend', ' • <span>(Stale >10m)</span>');
+                }
+            }
+        }
+    } catch (e) { console.warn('Status stale check failed', e); }
+});
+</script>
+{% endblock %}

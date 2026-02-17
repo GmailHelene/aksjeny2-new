@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Profil - Aksjeny{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h1 class="h3 mb-3">Min profil</h1>
+
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="card mb-3">
+        <div class="card-header">Brukerinfo</div>
+        <div class="card-body">
+          <div class="row mb-2">
+            <div class="col-sm-4 text-muted">Brukernavn</div>
+            <div class="col-sm-8">{{ user.username or user.email }}</div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-sm-4 text-muted">E-post</div>
+            <div class="col-sm-8">{{ user.email }}</div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-sm-4 text-muted">Medlem siden</div>
+            <div class="col-sm-8">{{ user_stats.member_since }}</div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-sm-4 text-muted">Sist innlogget</div>
+            <div class="col-sm-8">{{ user_stats.last_login }}</div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4 text-muted">Abonnement</div>
+            <div class="col-sm-8">
+              <span class="badge bg-{{ subscription_status == 'premium' and 'success' or 'secondary' }}">
+                {{ subscription.type|default('free')|title }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Favoritter ({{ favorites|length }})</div>
+        <div class="card-body">
+          {% if favorites %}
+          <div class="table-responsive">
+            <table class="table table-sm align-middle">
+              <thead>
+                <tr>
+                  <th>Ticker</th>
+                  <th>Navn</th>
+                  <th>Børs</th>
+                  <th class="text-end">Lagt til</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for f in favorites %}
+                <tr>
+                  <td><a href="{{ url_for('stocks.details', symbol=f.symbol) }}">{{ f.symbol }}</a></td>
+                  <td>{{ f.name or f.symbol }}</td>
+                  <td>{{ f.exchange or '-' }}</td>
+                  <td class="text-end">{{ f.created_at or '-' }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+            <div class="text-muted">Ingen favoritter enda.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-header">Hurtiginnstillinger</div>
+        <div class="card-body">
+          <form method="post" action="{{ url_for('profile.update_profile') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="mb-3">
+              <label class="form-label">Visningsnavn</label>
+              <input class="form-control" name="display_name" value="{{ user.username or '' }}">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">E-post</label>
+              <input class="form-control" type="email" name="email" value="{{ user.email or '' }}">
+            </div>
+            <button class="btn btn-primary" type="submit">Lagre</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% if error %}
+    <div class="alert alert-warning mt-3">{{ error }}</div>
+  {% endif %}
+{% endblock %}

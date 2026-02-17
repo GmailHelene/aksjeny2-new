@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}Sammenlign Aksjer - Aksjeradar{% endblock %}
+{% block description %}Sammenlign og analyser forskjellige aksjer side om side. Visualiser forskjeller i pris, volum, tekniske indikatorer og nøkkeltall.{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Page Header -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="h3 mb-0">
+                        <i class="bi bi-bar-chart-line me-2"></i>
+                        Sammenlign Aksjer
+                    </h1>
+                    <p class="mb-0 mt-1">Sammenlign og analyser forskjellige aksjer side om side</p>
+                </div>
+            </div>
+
+            <!-- Stock Selection -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-search me-2"></i>
+                        Velg aksjer å sammenligne
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="stock1" class="form-label">Første aksje:</label>
+                            <select id="stock1" class="form-select" onchange="updateComparison()">
+                                <option value="">Velg en aksje...</option>
+                                <option value="EQNR.OL">Equinor (EQNR.OL)</option>
+                                <option value="DNB.OL">DNB (DNB.OL)</option>
+                                <option value="TEL.OL">Telenor (TEL.OL)</option>
+                                <option value="MOWI.OL">Mowi (MOWI.OL)</option>
+                                <option value="NHY.OL">Norsk Hydro (NHY.OL)</option>
+                                <option value="YAR.OL">Yara (YAR.OL)</option>
+                                <option value="STL.OL">Stolt-Nielsen (STL.OL)</option>
+                                <option value="ORK.OL">Orkla (ORK.OL)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="stock2" class="form-label">Andre aksje:</label>
+                            <select id="stock2" class="form-select" onchange="updateComparison()">
+                                <option value="">Velg en aksje...</option>
+                                <option value="EQNR.OL">Equinor (EQNR.OL)</option>
+                                <option value="DNB.OL">DNB (DNB.OL)</option>
+                                <option value="TEL.OL">Telenor (TEL.OL)</option>
+                                <option value="MOWI.OL">Mowi (MOWI.OL)</option>
+                                <option value="NHY.OL">Norsk Hydro (NHY.OL)</option>
+                                <option value="YAR.OL">Yara (YAR.OL)</option>
+                                <option value="STL.OL">Stolt-Nielsen (STL.OL)</option>
+                                <option value="ORK.OL">Orkla (ORK.OL)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Results -->
+            <div id="comparisonResults" class="d-none">
+                <div class="row">
+                    <!-- Stock 1 Card -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0" id="stock1Name">Aksje 1</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="stock1Data">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <p><strong>Pris:</strong> <span id="stock1Price">-</span></p>
+                                            <p><strong>Endring:</strong> <span id="stock1Change">-</span></p>
+                                            <p><strong>Volum:</strong> <span id="stock1Volume">-</span></p>
+                                        </div>
+                                        <div class="col-6">
+                                            <p><strong>P/E:</strong> <span id="stock1PE">-</span></p>
+                                            <p><strong>Markedsverdi:</strong> <span id="stock1Cap">-</span></p>
+                                            <p><strong>52u høy:</strong> <span id="stock1High">-</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stock 2 Card -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="mb-0" id="stock2Name">Aksje 2</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="stock2Data">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <p><strong>Pris:</strong> <span id="stock2Price">-</span></p>
+                                            <p><strong>Endring:</strong> <span id="stock2Change">-</span></p>
+                                            <p><strong>Volum:</strong> <span id="stock2Volume">-</span></p>
+                                        </div>
+                                        <div class="col-6">
+                                            <p><strong>P/E:</strong> <span id="stock2PE">-</span></p>
+                                            <p><strong>Markedsverdi:</strong> <span id="stock2Cap">-</span></p>
+                                            <p><strong>52u høy:</strong> <span id="stock2High">-</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comparison Chart -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-graph-up me-2"></i>
+                            Prisutvikling sammenligning
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="comparisonChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Default state -->
+            <div id="defaultState" class="text-center py-5">
+                <i class="bi bi-bar-chart-line text-muted" style="font-size: 4rem;"></i>
+                <h4 class="mt-3 text-muted">Velg to aksjer å sammenligne</h4>
+                <p class="text-muted">Bruk dropdown-menyene ovenfor for å velge aksjer du ønsker å sammenligne</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+let comparisonChart = null;
+
+function updateComparison() {
+    const stock1 = document.getElementById('stock1').value;
+    const stock2 = document.getElementById('stock2').value;
+    
+    if (stock1 && stock2 && stock1 !== stock2) {
+        // Show comparison results
+        document.getElementById('comparisonResults').classList.remove('d-none');
+        document.getElementById('defaultState').classList.add('d-none');
+        
+        // Update stock names
+        document.getElementById('stock1Name').textContent = stock1;
+        document.getElementById('stock2Name').textContent = stock2;
+        
+        // Load comparison data
+        loadComparisonData(stock1, stock2);
+        
+        // Initialize chart
+        initializeComparisonChart(stock1, stock2);
+    } else {
+        // Hide comparison results
+        document.getElementById('comparisonResults').classList.add('d-none');
+        document.getElementById('defaultState').classList.remove('d-none');
+    }
+}
+
+function loadComparisonData(stock1, stock2) {
+    // Mock data for demonstration
+    const mockData = {
+        'EQNR.OL': {
+            price: '280.50 NOK',
+            change: '+2.3%',
+            volume: '2.1M',
+            pe: '12.5',
+            cap: '890B NOK',
+            high: '295.00 NOK'
+        },
+        'DNB.OL': {
+            price: '195.20 NOK',
+            change: '+1.8%',
+            volume: '1.5M',
+            pe: '9.2',
+            cap: '315B NOK',
+            high: '205.50 NOK'
+        },
+        'TEL.OL': {
+            price: '158.40 NOK',
+            change: '-0.5%',
+            volume: '800K',
+            pe: '15.8',
+            cap: '220B NOK',
+            high: '175.30 NOK'
+        }
+    };
+    
+    const data1 = mockData[stock1] || mockData['EQNR.OL'];
+    const data2 = mockData[stock2] || mockData['DNB.OL'];
+    
+    // Update stock 1 data
+    document.getElementById('stock1Price').textContent = data1.price;
+    document.getElementById('stock1Change').textContent = data1.change;
+    document.getElementById('stock1Volume').textContent = data1.volume;
+    document.getElementById('stock1PE').textContent = data1.pe;
+    document.getElementById('stock1Cap').textContent = data1.cap;
+    document.getElementById('stock1High').textContent = data1.high;
+    
+    // Update stock 2 data
+    document.getElementById('stock2Price').textContent = data2.price;
+    document.getElementById('stock2Change').textContent = data2.change;
+    document.getElementById('stock2Volume').textContent = data2.volume;
+    document.getElementById('stock2PE').textContent = data2.pe;
+    document.getElementById('stock2Cap').textContent = data2.cap;
+    document.getElementById('stock2High').textContent = data2.high;
+}
+
+function initializeComparisonChart(stock1, stock2) {
+    const ctx = document.getElementById('comparisonChart').getContext('2d');
+    
+    if (comparisonChart) {
+        comparisonChart.destroy();
+    }
+    
+    // Mock price data for the last 30 days
+    const labels = [];
+    const data1 = [];
+    const data2 = [];
+    
+    for (let i = 29; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        labels.push(date.toLocaleDateString('nb-NO'));
+        
+        // Generate mock price movements
+        const basePrice1 = 280;
+        const basePrice2 = 195;
+        const variation1 = Math.sin(i * 0.3) * 10 + Math.random() * 5;
+        const variation2 = Math.sin(i * 0.2) * 8 + Math.random() * 4;
+        
+        data1.push((basePrice1 + variation1).toFixed(2));
+        data2.push((basePrice2 + variation2).toFixed(2));
+    }
+    
+    comparisonChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: stock1,
+                data: data1,
+                borderColor: 'rgb(34, 197, 94)',
+                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                tension: 0.1
+            }, {
+                label: stock2,
+                data: data2,
+                borderColor: 'rgb(234, 179, 8)',
+                backgroundColor: 'rgba(234, 179, 8, 0.1)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: {
+                        callback: function(value) {
+                            return value + ' NOK';
+                        }
+                    }
+                }
+            },
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.parsed.y + ' NOK';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,1794 @@
+/* General styles */
+body {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1 0 auto;
+    padding-bottom: 2rem;
+}
+
+/* Icon size standardization */
+.bi {
+    font-size: 1rem !important;
+    width: 1em !important;
+    height: 1em !important;
+}
+
+/* Larger icons for specific contexts */
+.nav-link .bi {
+    font-size: 0.9rem !important;
+}
+
+.btn .bi {
+    font-size: 0.85rem !important;
+}
+
+/* Card icons should be slightly larger */
+.card .bi {
+    font-size: 1.1rem !important;
+}
+
+/* Hero section icons can be larger */
+.hero .bi {
+    font-size: 1.5rem !important;
+}
+
+/* Navigation fixes */
+.navbar-nav .nav-link {
+    padding: 0.5rem 1rem !important;
+}
+
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile navigation improvements */
+@media (max-width: 991px) {
+    .navbar-collapse {
+        background-color: rgba(33, 37, 41, 0.95);
+        border-radius: 0.375rem;
+        margin-top: 0.5rem;
+        padding: 1rem;
+    }
+    
+    .navbar-nav .nav-item {
+        margin-bottom: 0.25rem;
+    }
+    
+    .navbar-nav .dropdown-menu {
+        background-color: rgba(33, 37, 41, 0.98);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-left: 1rem;
+        margin-top: 0.25rem;
+    }
+    
+}
+
+/* Color overrides */
+.bg-primary {
+    background-color: #0d6efd !important;
+    color: #fff !important;
+}
+
+.bg-success {
+    background-color: #198754 !important;
+    color: #fff !important;
+}
+
+.bg-danger {
+    background-color: #dc3545 !important;
+    color: #fff !important;
+}
+
+.bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.bg-info {
+    background-color: #0dcaf0 !important;
+    color: #212529 !important;
+}
+
+.bg-secondary {
+    background-color: #6c757d !important;
+    color: #fff !important;
+}
+
+.text-success {
+    color: #198754 !important;
+    /* --bs-text-opacity: 1; */ /* Disabled Bootstrap text opacity */
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+.text-warning {
+    color: #ffc107 !important;
+}
+
+.text-info {
+    color: #0dcaf0 !important;
+}
+
+.text-dark {
+    color: #212529 !important;
+    /* --bs-text-opacity: 1; */ /* Disabled Bootstrap text opacity */
+}
+
+.text-primary {
+    color: #0d6efd !important;
+    /* --bs-text-opacity: 1; */ /* Disabled Bootstrap text opacity */
+}
+
+.text-secondary {
+    color: #6c757d !important;
+}
+
+/* Background Gradient */
+.bg-primary-gradient {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    color: #fff !important;
+}
+
+/* Header & Footer */
+.navbar-dark {
+    background-color: #212529 !important;
+    color: #fff !important;
+}
+
+.navbar-dark .nav-link {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.navbar-dark .nav-link:hover {
+    color: #fff !important;
+}
+
+.navbar-dark .navbar-brand {
+    color: #fff !important;
+}
+
+footer {
+    background-color: #212529 !important;
+    color: #fff !important;
+    padding: 1rem 0;
+    margin-top: auto;
+}
+
+footer * {
+    color: #fff !important;
+}
+
+/* Main Layout */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+/* Tables - Hvit bakgrunn med mørk tekst */
+.table-responsive {
+    margin-bottom: 0;
+}
+
+.table {
+    margin-bottom: 0;
+    background-color: #fff !important;
+    color: #212529 !important;
+}
+
+.table > :not(caption) > * > * {
+    padding: 0.75rem;
+    background-color: #fff !important;
+    color: #212529 !important;
+}
+
+.table th {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+    border-color: #dee2e6 !important;
+}
+
+.table td {
+    background-color: #fff !important;
+    color: #212529 !important;
+    border-color: #dee2e6 !important;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: #f2f2f2 !important;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) td {
+    background-color: #f2f2f2 !important;
+    color: #212529 !important;
+}
+
+.table-hover > tbody > tr:hover {
+    background-color: #e9ecef !important;
+}
+
+.table-hover > tbody > tr:hover td {
+    background-color: #e9ecef !important;
+    color: #212529 !important;
+}
+
+/* Cards - Hvit bakgrunn med mørk tekst */
+.card {
+    margin-bottom: 1.5rem;
+    background-color: #fff !important;
+    color: #212529 !important;
+    border: 1px solid #dee2e6 !important;
+}
+
+.card-body {
+    background-color: #fff !important;
+    color: #212529 !important;
+}
+
+.card-footer {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+    border-top: 1px solid #dee2e6 !important;
+}
+
+/* Navigation */
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1030; /* Bootstrap modal z-index is 1050, dropdown is 1000 */
+}
+
+/* Disable tooltips globally */
+.tooltip {
+    display: none !important;
+}
+
+/* Analysis sub-navigation - ensure it doesn't interfere with main nav */
+.analysis-menu {
+    position: relative;
+    z-index: 100; /* Much lower than main navbar */
+    margin-top: 0; /* Remove margin to prevent overlay */
+}
+
+.analysis-menu .navbar {
+    position: relative !important; /* Override sticky positioning */
+    z-index: 100 !important; /* Lower z-index than main nav */
+    backdrop-filter: none;
+    background: #f8f9fa !important; /* Light background instead of dark */
+    border: 1px solid #dee2e6;
+}
+
+/* Specific fix for analysis page button groups */
+.analysis-menu .btn-group {
+    z-index: 50 !important; /* Even lower than menu itself */
+    position: relative;
+}
+
+.analysis-menu .btn {
+    z-index: 50 !important;
+    position: relative;
+}
+
+/* Enhanced Navigation Layout - Clean & Modern */
+
+/* Main navbar styling */
+.navbar {
+    padding: 0.75rem 0;
+    backdrop-filter: blur(10px);
+    background: rgba(33, 37, 41, 0.95) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+/* Enhanced nav pills styling */
+.nav-pills-custom .nav-item {
+    margin: 0 4px;
+}
+
+.nav-pills-custom .nav-link {
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-pills-custom .nav-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.nav-pills-custom .nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.5s;
+}
+
+.nav-pills-custom .nav-link:hover::before {
+    left: 100%;
+}
+
+/* Home nav special styling */
+.home-nav .nav-link {
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.2), rgba(13, 110, 253, 0.1));
+    border-color: rgba(13, 110, 253, 0.3);
+}
+
+.home-nav .nav-link:hover {
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.3), rgba(13, 110, 253, 0.2));
+    border-color: rgba(13, 110, 253, 0.5);
+    box-shadow: 0 2px 8px rgba(13, 110, 253, 0.3);
+}
+
+/* Enhanced dropdown styling */
+.nav-dropdown-enhanced .dropdown-menu {
+    border-radius: 12px;
+    padding: 12px 0;
+    margin-top: 8px;
+    backdrop-filter: blur(15px);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.nav-dropdown-enhanced .dropdown-item {
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin: 2px 8px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.nav-dropdown-enhanced .dropdown-item:hover {
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.1), rgba(13, 110, 253, 0.05));
+    border-color: rgba(13, 110, 253, 0.2);
+    transform: translateX(4px);
+}
+
+.nav-dropdown-enhanced .dropdown-item i {
+    width: 18px;
+    text-align: center;
+    margin-right: 8px;
+    color: #6c757d;
+}
+
+.nav-dropdown-enhanced .dropdown-item:hover i {
+    color: #0d6efd;
+}
+
+/* Enhanced Pricing Navigation Link */
+.pricing-nav .pricing-link {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(255, 193, 7, 0.25));
+    border: 1px solid rgba(255, 193, 7, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.pricing-nav .pricing-link:hover {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.25), rgba(255, 193, 7, 0.35));
+    border-color: rgba(255, 193, 7, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+}
+
+.pricing-nav .pricing-link .pricing-text {
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* PWA Button Enhanced Styling */
+.pwa-btn-enhanced {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(40, 167, 69, 0.2));
+    border: 1px solid rgba(40, 167, 69, 0.4);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.pwa-btn-enhanced:hover {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.2), rgba(40, 167, 69, 0.3));
+    border-color: rgba(40, 167, 69, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+    color: white;
+}
+
+.pwa-btn-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transition: left 0.5s;
+}
+
+.pwa-btn-enhanced:hover::before {
+    left: 100%;
+}
+
+/* Navigation tools container */
+.nav-tools {
+    gap: 0.5rem;
+}
+
+/* Better search form styling */
+.search-form {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1050;
+    min-width: 350px;
+}
+
+.search-form .form-control {
+    border: 1px solid rgba(13, 110, 253, 0.3);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+}
+
+.search-form .form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    border-color: rgba(13, 110, 253, 0.5);
+}
+
+/* Language dropdown enhancement */
+#languageDropdown {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+#languageDropdown:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Responsive improvements */
+@media (min-width: 992px) {
+    .navbar-nav {
+        align-items: center;
+    }
+    
+    .navbar-collapse {
+        justify-content: space-between;
+    }
+    
+    .nav-tools {
+        margin-left: auto;
+    }
+}
+
+@media (max-width: 991px) {
+    .pwa-btn-enhanced {
+        display: none !important;
+    }
+    
+    .nav-tools {
+        flex-direction: column;
+        width: 100%;
+        margin-top: 1rem;
+        gap: 0.75rem;
+    }
+    
+    .search-form {
+        position: static;
+        min-width: 100%;
+    }
+    
+    .nav-pills-custom .nav-item {
+        margin: 2px 0;
+    }
+    
+    .nav-pills-custom .nav-link {
+        border-radius: 8px;
+    }
+    
+    /* Mobile spacing fixes */
+    .container {
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+    }
+    
+    /* Fix card overflow on mobile */
+    .card {
+        width: 100% !important;
+        overflow-x: hidden !important;
+    }
+    
+    /* Fix tables on mobile */
+    .table-responsive {
+        width: 100% !important;
+        overflow-x: auto !important;
+    }
+    
+    /* Fix navigation dropdown positioning */
+    .dropdown-menu {
+        position: static !important;
+        float: none !important;
+        width: 100% !important;
+        background-color: #3a3a3a !important;
+        border: none !important;
+        box-shadow: none !important;
+        margin-top: 0 !important;
+        padding-left: 1.5rem !important;
+    }
+    
+    /* Fix spacing between nav items */
+    .navbar-nav .nav-item {
+        margin-bottom: 5px !important;
+    }
+    
+    /* Ensure text readability on mobile */
+    h1, .h1 {
+        font-size: 1.8rem !important;
+    }
+    
+    h2, .h2 {
+        font-size: 1.5rem !important;
+    }
+    
+    /* Fix any scrolling issues */
+    body {
+        overflow-x: hidden !important;
+    }
+}
+
+/* Missing responsive display classes - Critical Fix */
+.d-none {
+    display: none !important;
+}
+
+.d-block {
+    display: block !important;
+}
+
+.d-inline {
+    display: inline !important;
+}
+
+.d-inline-block {
+    display: inline-block !important;
+}
+
+.d-flex {
+    display: flex !important;
+}
+
+/* Responsive variants */
+@media (min-width: 576px) {
+    .d-sm-none {
+        display: none !important;
+    }
+    .d-sm-block {
+        display: block !important;
+    }
+    .d-sm-inline {
+        display: inline !important;
+    }
+    .d-sm-inline-block {
+        display: inline-block !important;
+    }
+    .d-sm-flex {
+        display: flex !important;
+    }
+}
+
+@media (min-width: 768px) {
+    .d-md-none {
+        display: none !important;
+    }
+    .d-md-block {
+        display: block !important;
+    }
+    .d-md-inline {
+        display: inline !important;
+    }
+    .d-md-inline-block {
+        display: inline-block !important;
+    }
+    .d-md-flex {
+        display: flex !important;
+    }
+}
+
+@media (min-width: 992px) {
+    .d-lg-none {
+        display: none !important;
+    }
+    .d-lg-block {
+        display: block !important;
+    }
+    .d-lg-inline {
+        display: inline !important;
+    }
+    .d-lg-inline-block {
+        display: inline-block !important;
+    }
+    .d-lg-flex {
+        display: flex !important;
+    }
+}
+
+@media (min-width: 1200px) {
+    .d-xl-none {
+        display: none !important;
+    }
+    .d-xl-block {
+        display: block !important;
+    }
+    .d-xl-inline {
+        display: inline !important;
+    }
+    .d-xl-inline-block {
+        display: inline-block !important;
+    }
+    .d-xl-flex {
+        display: flex !important;
+    }
+}
+
+/* Fix navigation overflow issues */
+@media (max-width: 991px) {
+    .nav-tools {
+        flex-direction: column !important;
+        width: 100% !important;
+        margin-top: 1rem !important;
+        gap: 0.5rem !important;
+    }
+    
+    .nav-tools .dropdown {
+        width: 100% !important;
+    }
+    
+    .nav-tools .dropdown .btn {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+    
+    /* Ensure login/register buttons don't overflow */
+    #guestDropdown,
+    #userDropdown {
+        max-width: 100% !important;
+        text-overflow: ellipsis !important;
+        overflow: hidden !important;
+        white-space: nowrap !important;
+    }
+}
+
+/* Better spacing for navigation elements */
+@media (min-width: 992px) {
+    .nav-tools {
+        gap: 0.75rem !important;
+        flex-wrap: nowrap !important;
+    }
+    
+    .navbar-nav {
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+    }
+    
+    .navbar-nav::-webkit-scrollbar {
+        display: none !important;
+    }
+}
+
+/* Prevent text overflow in user dropdown */
+.navbar .dropdown-toggle {
+    max-width: 200px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    .navbar .dropdown-toggle {
+        max-width: 100%;
+    }
+    
+    .navbar .dropdown-toggle .d-none {
+        display: none !important;
+    }
+}
+
+/* Trial timer responsiveness */
+@media (max-width: 991px) {
+    .trial-timer-nav {
+        margin: 0.25rem 0 !important;
+        width: 100%;
+    }
+    
+    .trial-timer-nav .nav-link {
+        text-align: center;
+        justify-content: center;
+    }
+}
+
+/* Stock list styling */
+.stock-row:hover {
+    background-color: rgba(0, 123, 255, 0.05) !important;
+    color: #212529 !important;
+}
+
+/* Market data badges */
+.change-badge {
+    font-weight: 500;
+    padding: 0.25em 0.5em;
+}
+
+.change-positive {
+    color: #198754 !important;
+}
+
+.change-negative {
+    color: #dc3545 !important;
+}
+
+/* Tooltips and Helpers */
+.glossary {
+    cursor: help;
+    text-decoration: underline dotted;
+}
+
+.data-timestamp {
+    font-size: 0.75rem;
+    color: #6c757d !important;
+    margin-top: 0.5rem;
+}
+
+/* Stock Details */
+.stock-details-header {
+    padding: 1.5rem;
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.stock-price {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #212529 !important;
+}
+
+.stock-change {
+    font-size: 1.25rem;
+    margin-left: 0.5rem;
+}
+
+/* Charts */
+.chart-container {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #dee2e6 !important;
+}
+
+/* Analysis Indicators */
+.indicator {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 0.75rem;
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+    border: 1px solid #dee2e6 !important;
+}
+
+.indicator-positive {
+    border-left: 5px solid #198754 !important;
+}
+
+.indicator-negative {
+    border-left: 5px solid #dc3545 !important;
+}
+
+.indicator-neutral {
+    border-left: 5px solid #6c757d !important;
+}
+
+/* Alerts - Lys bakgrunn med mørk tekst */
+.alert {
+    border: 1px solid transparent;
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+}
+
+.alert-info {
+    background-color: #e7f3fe !important;
+    border-color: #b6e0fe !important;
+    color: #084298 !important;
+}
+
+.alert-success {
+    background-color: #d1e7dd !important;
+    border-color: #badbcc !important;
+    color: #0f5132 !important;
+}
+
+.alert-warning {
+    background-color: #fff3cd !important;
+    border-color: #ffecb5 !important;
+    color: #664d03 !important;
+}
+
+.alert-danger {
+    background-color: #f8d7da !important;
+    border-color: #f5c2c7 !important;
+    color: #842029 !important;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+    color: #fff !important;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7 !important;
+    border-color: #0a58ca !important;
+    color: #fff !important;
+}
+
+/* Info buttons should match primary button styling */
+.btn-info {
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+    color: #fff !important;
+}
+
+.btn-info:hover {
+    background-color: #0b5ed7 !important;
+    border-color: #0a58ca !important;
+    color: #fff !important;
+}
+
+/* Ensure buttons in subscription page have white text */
+.pricing-card .btn-primary,
+.pricing-card .btn-info,
+.pricing-card .btn-success,
+button[type="submit"].btn-primary,
+button[type="submit"].btn-info,
+button[type="submit"].btn-success {
+    color: #ffffff !important;
+}
+
+.btn-outline-primary {
+    color: #0d6efd !important;
+    border-color: #0d6efd !important;
+    background-color: #fff !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: #0d6efd !important;
+    color: #fff !important;
+    border-color: #0d6efd !important;
+}
+
+.btn-success {
+    background-color: #198754 !important;
+    border-color: #198754 !important;
+    color: #fff !important;
+}
+
+.btn-success:hover {
+    background-color: #157347 !important;
+    border-color: #146c43 !important;
+    color: #fff !important;
+}
+
+.btn-outline-success {
+    color: #198754 !important;
+    border-color: #198754 !important;
+    background-color: #fff !important;
+}
+
+.btn-outline-success:hover {
+    background-color: #198754 !important;
+    color: #fff !important;
+    border-color: #198754 !important;
+}
+
+.btn-danger {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    color: #fff !important;
+}
+
+.btn-danger:hover {
+    background-color: #c82333 !important;
+    border-color: #bd2130 !important;
+    color: #fff !important;
+}
+
+.btn-outline-danger {
+    color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    background-color: #fff !important;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc3545 !important;
+    color: #fff !important;
+    border-color: #dc3545 !important;
+}
+
+.btn-secondary {
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+    color: #fff !important;
+}
+
+.btn-secondary:hover {
+    background-color: #5c636a !important;
+    border-color: #565e64 !important;
+    color: #fff !important;
+}
+
+.btn-outline-secondary {
+    color: #6c757d !important;
+    border-color: #6c757d !important;
+    background-color: #fff !important;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d !important;
+    color: #fff !important;
+    border-color: #6c757d !important;
+}
+
+/* Skjema og input-felt: alltid mørk tekst på lys bakgrunn */
+.form-control,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+textarea,
+select {
+    background-color: #fff !important;
+    color: #212529 !important;
+    border: 1px solid #ced4da !important;
+}
+
+.form-control:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="search"]:focus,
+textarea:focus,
+select:focus {
+    background-color: #fff !important;
+    color: #212529 !important;
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 0.2rem rgba(13,110,253,.15) !important;
+}
+
+label,
+.form-label {
+    color: #212529 !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #6c757d !important;
+    opacity: 1;
+}
+
+/* List groups - Hvit bakgrunn med mørk tekst */
+.list-group-item {
+    background-color: #fff !important;
+    color: #212529 !important;
+    border-color: #dee2e6 !important;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+}
+
+.list-group-item-action:hover {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+}
+
+/* Dropdown menus */
+.dropdown-menu {
+    background-color: #fff !important;
+    color: #212529 !important;
+    border: 1px solid #dee2e6 !important;
+}
+
+.dropdown-item {
+    color: #212529 !important;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+}
+
+/* Breadcrumbs */
+.breadcrumb {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+}
+
+.breadcrumb-item a {
+    color: #0d6efd !important;
+}
+
+.breadcrumb-item.active {
+    color: #6c757d !important;
+}
+
+/* Badges */
+.badge {
+    color: #fff !important;
+}
+
+.badge.bg-primary {
+    background-color: #0d6efd !important;
+    color: #fff !important;
+}
+
+.badge.bg-success {
+    background-color: #198754 !important;
+    color: #fff !important;
+}
+
+.badge.bg-danger {
+    background-color: #dc3545 !important;
+    color: #fff !important;
+}
+
+.badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.badge.bg-info {
+    background-color: #0dcaf0 !important;
+    color: #212529 !important;
+}
+
+.badge.bg-secondary {
+    background-color: #6c757d !important;
+    color: #fff !important;
+}
+
+/* Mørke bakgrunner: alltid hvit tekst */
+.bg-dark,
+.bg-dark * {
+    background-color: #212529 !important;
+    color: #fff !important;
+}
+
+/* Spesielle klasser for mørk modus */
+.dark-bg {
+    background-color: #212529 !important;
+    color: #fff !important;
+}
+
+.dark-bg * {
+    color: #fff !important;
+}
+
+.light-bg {
+    background-color: #fff !important;
+    color: #212529 !important;
+}
+
+.light-bg * {
+    color: #212529 !important;
+}
+
+/* Enhanced PWA Install Banner Styles */
+#pwa-install-banner {
+    background-color: #f8f9fa; /* Light background */
+    color: #212529; /* Dark text */
+}
+
+#pwa-install-banner .btn-light {
+    background-color: #007bff; /* Blue button */
+    color: #ffffff; /* White text */
+}
+
+#pwa-install-banner .btn-light:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+    color: #ffffff; /* White text */
+}
+
+/* PWA Install Button in Navbar */
+#pwa-install-btn,
+.pwa-install-btn {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    font-weight: 500;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+#pwa-install-btn:hover,
+.pwa-install-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
+    border-color: rgba(13, 110, 253, 0.6);
+    background: rgba(13, 110, 253, 0.1);
+}
+
+#pwa-install-btn::before,
+.pwa-install-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+#pwa-install-btn:hover::before,
+.pwa-install-btn:hover::before {
+    left: 100%;
+}
+
+/* Enhanced animations for PWA elements */
+.pwa-banner-appear {
+    animation: pwa-slide-up 0.5s ease-out;
+}
+
+@keyframes pwa-slide-up {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.pwa-button-glow {
+    animation: pwa-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes pwa-glow {
+    from {
+        box-shadow: 0 0 5px rgba(13, 110, 253, 0.5);
+    }
+    to {
+        box-shadow: 0 0 20px rgba(13, 110, 253, 0.8);
+    }
+}
+
+/* Live indicator and pulse animation */
+.live-indicator {
+    animation: none;
+    transition: all 0.3s ease;
+}
+
+.live-indicator.pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.1);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Market status indicators */
+.market-status {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Real-time data styling */
+.price-cell {
+    font-weight: 600;
+    font-family: 'Segoe UI', monospace;
+}
+
+.change-cell {
+    font-weight: 600;
+    font-family: 'Segoe UI', monospace;
+}
+
+/* Market cards enhancements */
+.market-card-oslo .card-header,
+.market-card-global .card-header,
+.market-card-crypto .card-header,
+.market-card-currency .card-header {
+    position: relative;
+    overflow: hidden;
+}
+
+.market-card-oslo .card-header::after,
+.market-card-global .card-header::after,
+.market-card-crypto .card-header::after,
+.market-card-currency .card-header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.market-card-oslo:hover .card-header::after,
+.market-card-global:hover .card-header::after,
+.market-card-crypto:hover .card-header::after,
+.market-card-currency:hover .card-header::after {
+    left: 100%;
+}
+
+/* Market stats badges */
+.market-stats .badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Data timestamp styling */
+.data-timestamp {
+    font-size: 0.8rem;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+/* Responsive enhancements for mobile */
+@media (max-width: 768px) {
+    .market-stats {
+        margin-top: 0.5rem;
+    }
+    
+    .price-cell,
+    .change-cell {
+        font-size: 0.9rem;
+    }
+    
+    .live-indicator {
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .stock-details-header {
+        text-align: center;
+    }
+    
+    .stock-price, .stock-change {
+        display: block;
+        margin: 0.25rem 0;
+    }
+    
+    /* Improve table scrolling on mobile */
+    .table-responsive {
+        max-width: 100%;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Stack buttons on mobile */
+    .btn-group-sm .btn {
+        margin-bottom: 0.25rem;
+    }
+}
+
+/* Ensure proper contrast for all text elements */
+h1, h2, h3, h4, h5, h6, p, span, div, a {
+    color: #333; /* Changed from 'inherit' to specific dark color for better visibility */
+}
+
+/* Links */
+a {
+    color: #0d6efd !important;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #0a58ca !important;
+    text-decoration: underline;
+}
+
+/* Ensure navbar links are white */
+.navbar-dark .navbar-nav .nav-link,
+.navbar-dark .navbar-brand {
+    color: #fff !important;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+    color: #e9ecef !important;
+}
+
+/* Cookie consent styling */
+.cookie-consent {
+    background-color: #212529 !important;
+    color: #fff !important;
+}
+
+.cookie-consent * {
+    color: #fff !important;
+}
+
+.cookie-consent .btn {
+    margin: 0.25rem;
+}
+
+/* Better navigation spacing on desktop */
+@media (min-width: 992px) {
+    .navbar-nav {
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .navbar-nav .nav-item {
+        margin: 0 0.25rem;
+    }
+    
+    .pricing-nav .pricing-link {
+        padding: 0.5rem 1rem;
+        margin: 0 0.5rem;
+        border-radius: 20px;
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        color: #fff !important;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(13, 110, 253, 0.3);
+    }
+    
+    .pricing-nav .pricing-link:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(13, 110, 253, 0.4);
+        color: #fff !important;
+        text-decoration: none;
+    }
+    
+    #pwa-install-btn {
+        padding: 0.4rem 0.8rem;
+        margin-left: 1rem;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        color: #fff !important;
+        font-weight: 500;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+    }
+    
+    #pwa-install-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+    }
+    
+    #pwa-install-btn i {
+        margin-right: 0.4rem;
+    }
+    
+    .navbar-brand {
+        margin-right: 2rem;
+    }
+    
+    .navbar-collapse {
+        flex-grow: 0;
+    }
+}
+    
+    .navbar-nav .nav-item {
+        margin: 0 2px;
+    }
+    
+    .navbar-nav .dropdown-menu {
+        border: none;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        border-radius: 8px;
+        margin-top: 8px;
+    }
+    
+    .navbar .form-control {
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        backdrop-filter: blur(10px);
+    }
+    
+    .navbar .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .navbar .form-control:focus {
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        border-color: rgba(13, 110, 253, 0.5);
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+/* Desktop navigation improvements */
+@media (min-width: 992px) {
+    .navbar-nav {
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .navbar-nav .nav-item {
+        margin: 0 0.25rem;
+    }
+    
+    .pricing-nav .pricing-link {
+        padding: 0.5rem 1rem;
+        margin: 0 0.5rem;
+        border-radius: 20px;
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        color: #fff !important;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(13, 110, 253, 0.3);
+    }
+    
+    .pricing-nav .pricing-link:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(13, 110, 253, 0.4);
+        color: #fff !important;
+        text-decoration: none;
+    }
+    
+    #pwa-install-btn {
+        padding: 0.4rem 0.8rem;
+        margin-left: 1rem;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        color: #fff !important;
+        font-weight: 500;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+    }
+    
+    #pwa-install-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+    }
+    
+    #pwa-install-btn i {
+        margin-right: 0.4rem;
+    }
+    
+    .navbar-brand {
+        margin-right: 2rem;
+    }
+    
+    .navbar-collapse {
+        flex-grow: 0;
+    }
+}
+
+/* Mobile navigation improvements */
+@media (max-width: 991px) {
+    #pwa-install-btn {
+        display: none !important;
+    }
+    
+    .pricing-nav .pricing-link {
+        margin: 4px 0;
+        border-radius: 4px;
+    }
+}
+
+/* Additional responsive display utilities for navigation */
+.nav-tools .btn {
+    white-space: nowrap;
+}
+
+/* Improve navigation spacing on smaller screens */
+@media (max-width: 991px) {
+    .navbar-nav .nav-item {
+        margin: 0.2rem 0;
+    }
+    
+    .nav-tools {
+        margin-top: 0.5rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .nav-tools .dropdown {
+        min-width: 100%;
+    }
+}
+
+@media (max-width: 767px) {
+    .navbar-brand span {
+        font-size: 1.1rem;
+    }
+    
+    .nav-tools .btn {
+        font-size: 0.875rem;
+        padding: 0.375rem 0.75rem;
+    }
+}
+
+/* Ensure proper spacing for user dropdown badges */
+.navbar .badge {
+    font-size: 0.7rem;
+    padding: 0.25em 0.5em;
+}
+
+/* Mobile Navigation Fixes */
+@media (max-width: 991.98px) {
+    /* Prevent sticky/hanging dropdowns */
+    .navbar-collapse {
+        max-height: calc(100vh - 56px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Ensure dropdown items are tappable */
+    .navbar-nav .dropdown-item {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+
+    /* Last item shouldn't have border */
+    .navbar-nav .dropdown-item:last-child {
+        border-bottom: none;
+    }
+
+    /* Ensure dropdowns close properly */
+    .navbar-nav .dropdown-menu {
+        position: static !important;
+        float: none;
+        max-height: none;
+        margin-top: 0;
+        background-color: rgba(0,0,0,0.05);
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    /* Better touch targets */
+    .navbar-nav .nav-link {
+        padding: 1rem !important;
+    }
+
+    .navbar-nav .dropdown-toggle::after {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    /* Improve dropdown animations */
+    .navbar-nav .dropdown-menu {
+        transition: all 0.25s ease-out;
+        display: block;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        will-change: transform, opacity;
+    }
+
+    .navbar-nav .dropdown-menu.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    /* Prevent text selection during navigation */
+    .navbar * {
+        user-select: none;
+    }
+}
+
+/* Global Image Size Constraints - Fix for oversized images */
+img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+/* News Article Image Constraints */
+.news-content img,
+.news-article img,
+.article-content img,
+.prose img {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: 400px !important;
+    object-fit: cover !important;
+    border-radius: 8px !important;
+    margin: 1rem 0 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+}
+
+/* Mobile responsive image constraints */
+@media (max-width: 768px) {
+    .news-content img,
+    .news-article img,
+    .article-content img,
+    .prose img {
+        max-height: 250px !important;
+    }
+}
+
+/* Article hero images */
+.article-hero-image {
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: 384px !important;
+    object-fit: cover !important;
+    border-radius: 0.5rem !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+}
+
+/* Card images */
+.card-img-top,
+.card-img {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: 200px !important;
+    object-fit: cover !important;
+}
+
+/* Icon and SVG constraints */
+svg:not(.navbar-brand svg) {
+    max-width: 24px !important;
+    max-height: 24px !important;
+}
+
+/* =====================================
+   CONTRAST IMPROVEMENTS FOR LIGHT BACKGROUNDS
+   ===================================== */
+
+/* Improve contrast on light backgrounds */
+.bg-light {
+    background-color: #e9ecef !important; /* Darker than default #f8f9fa */
+}
+
+.bg-light .text-dark,
+.bg-light .text-muted {
+    color: #212529 !important; /* Ensure dark text on light background */
+    font-weight: 500 !important;
+}
+
+/* Info and warning badges/backgrounds need better contrast */
+.bg-info {
+    background-color: #0d6efd !important; /* Darker blue for better contrast */
+}
+
+.bg-warning {
+    background-color: #fd7e14 !important; /* Darker orange instead of yellow */
+}
+
+.bg-warning.text-dark {
+    color: #000 !important; /* Ensure dark text on warning background */
+    font-weight: 600 !important;
+}
+
+/* Light blue/pink backgrounds mentioned by user */
+.light-blue-bg, .bg-light-blue {
+    background-color: #b3d9ff !important; /* Darker light blue */
+    color: #000 !important;
+    font-weight: 500 !important;
+}
+
+.light-pink-bg, .bg-light-pink {
+    background-color: #ffb3d9 !important; /* Darker light pink */
+    color: #000 !important;
+    font-weight: 500 !important;
+}
+
+/* Badge contrast improvements */
+.badge.bg-light {
+    background-color: #dee2e6 !important;
+    color: #000 !important;
+    font-weight: 600 !important;
+    border: 1px solid #ced4da !important;
+}
+
+/* API docs and code blocks on light backgrounds */
+.bg-light pre,
+.bg-light code {
+    background-color: #e9ecef !important;
+    color: #212529 !important;
+    font-weight: 500 !important;
+}
+
+/* Card improvements */
+.card.bg-light {
+    background-color: #e9ecef !important;
+    border: 1px solid #ced4da !important;
+}
+
+.card.bg-light .card-body,
+.card.bg-light .card-text {
+    color: #212529 !important;
+    font-weight: 400 !important;
+}
+
+/* Analysis menu improvements */
+.analysis-menu.bg-light,
+.navbar.bg-light {
+    background-color: #e9ecef !important;
+    border-bottom: 2px solid #ced4da !important;
+}
+
+.navbar-light .navbar-nav .nav-link {
+    color: #212529 !important;
+    font-weight: 500 !important;
+}
+
+/* Ensure good contrast in chart placeholders and stats */
+.chart-placeholder.bg-light,
+.stat-card.bg-light,
+.prediction-card.bg-light {
+    background-color: #e9ecef !important;
+    color: #212529 !important;
+    border: 1px solid #ced4da !important;
+}
+
+/* Footer card improvements */
+.card-footer.bg-light {
+    background-color: #e9ecef !important;
+    border-top: 1px solid #ced4da !important;
+}
+
+/* News widget improvements */
+.badge.bg-light.text-dark {
+    background-color: #dee2e6 !important;
+    color: #000 !important;
+    font-weight: 600 !important;
+    border: 1px solid #ced4da !important;
+}
+

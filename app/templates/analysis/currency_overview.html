@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Valutaoversikt - Aksjeradar{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        {% include 'analysis/_menu.html' %}
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3">
+                <i class="fas fa-exchange-alt text-primary me-2"></i>
+                Valutaoversikt
+            </h1>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary btn-sm" onclick="location.reload()">
+                    <i class="fas fa-sync-alt"></i>
+                    Oppdater
+                </button>
+            </div>
+        </div>
+
+        <!-- Market Summary Card -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Valutamarkedet
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h6 class="text-muted">Antall valutaer</h6>
+                            <h4 class="text-primary">{{ currencies|length }}</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h6 class="text-muted">Siste oppdatering</h6>
+                            <h6 class="text-success">{{ now.strftime('%H:%M:%S') }}</h6>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h6 class="text-muted">Handelsvolum</h6>
+                            <h6 class="text-info">Høy aktivitet</h6>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h6 class="text-muted">Markedsstatus</h6>
+                            <h6 id="currency-market-status"></h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Currency Table -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-table me-2"></i>
+                    Valutakurser (mot NOK)
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Valutapar</th>
+                                <th>Kurs</th>
+                                <th>Endring</th>
+                                <th>Endring %</th>
+                                <th>Volum</th>
+                                <th>Høy</th>
+                                <th>Lav</th>
+                                <th>Signal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ticker, data in currencies.items() %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="currency-flag me-2">
+                                            {% if 'USD' in data.name %}
+                                                <span class="flag-icon">🇺🇸</span>
+                                            {% elif 'EUR' in data.name %}
+                                                <span class="flag-icon">🇪🇺</span>
+                                            {% elif 'GBP' in data.name %}
+                                                <span class="flag-icon">🇬🇧</span>
+                                            {% elif 'SEK' in data.name %}
+                                                <span class="flag-icon">🇸🇪</span>
+                                            {% elif 'DKK' in data.name %}
+                                                <span class="flag-icon">🇩🇰</span>
+                                            {% elif 'JPY' in data.name %}
+                                                <span class="flag-icon">🇯🇵</span>
+                                            {% elif 'AUD' in data.name %}
+                                                <span class="flag-icon">🇦🇺</span>
+                                            {% elif 'CAD' in data.name %}
+                                                <span class="flag-icon">🇨🇦</span>
+                                            {% elif 'CHF' in data.name %}
+                                                <span class="flag-icon">🇨🇭</span>
+                                            {% elif 'CNY' in data.name %}
+                                                <span class="flag-icon">🇨🇳</span>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <strong>{{ data.name }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ ticker }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong>{{ "{:.4f}".format(data.get('price', data.get('last_price', 1.0000))|float) if data.get('price') or data.get('last_price') else '1.0000' }}</strong>
+                                </td>
+                                <td>
+                                    <span class="{% if (data.get('change', 0)|float) > 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {{ "{:.4f}".format(data.get('change', 0)|float) if data.get('change') is not none else '0.0000' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="{% if (data.get('change_percent', 0)|float) > 0 %}text-success{% else %}text-danger{% endif %}">
+                                        <i class="fas fa-{% if (data.get('change_percent', 0)|float) > 0 %}arrow-up{% else %}arrow-down{% endif %}"></i>
+                                        {{ "{:.2f}".format(data.get('change_percent', 0)|float) if data.get('change_percent') is not none else '0.00' }}%
+                                    </span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {% set vol = data.get('volume', '0M') %}
+                                        {% if vol|string and 'M' in vol|string %}
+                                            {{ vol }}
+                                        {% else %}
+                                            {{ "{:.1f}M".format(vol|float / 1000000) if vol and vol != '0M' else '0M' }}
+                                        {% endif %}
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="text-success">{{ "{:.4f}".format(data.get('high', 0)|float) if data.get('high') is not none else '0.0000' }}</span>
+                                </td>
+                                <td>
+                                    <span class="text-danger">{{ "{:.4f}".format(data.get('low', 0)|float) if data.get('low') is not none else '0.0000' }}</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge {% if data.signal == 'BUY' %}bg-success{% elif data.signal == 'SELL' %}bg-danger{% else %}bg-warning{% endif %}">
+                                            {% if data.signal == 'BUY' %}
+                                                <i class="fas fa-arrow-up me-1"></i>
+                                            {% elif data.signal == 'SELL' %}
+                                                <i class="fas fa-arrow-down me-1"></i>
+                                            {% else %}
+                                                <i class="fas fa-minus me-1"></i>
+                                            {% endif %}
+                                            {{ data.signal }}
+                                        </span>
+                                        {% if data.get('signal_confidence') %}
+                                            <div class="progress" style="width: 60px; height: 6px;" title="Signal styrke: {{ data.signal_confidence }}%">
+                                                <div class="progress-bar {% if data.signal == 'BUY' %}bg-success{% elif data.signal == 'SELL' %}bg-danger{% else %}bg-warning{% endif %}"
+                                                     role="progressbar"
+                                                     style="width: {{ data.signal_confidence }}%"
+                                                     aria-valuenow="{{ data.signal_confidence }}"
+                                                     aria-valuemin="0"
+                                                     aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Analysis Card -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Markedsanalyse
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Sterkeste valutaer</h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>🇬🇧 GBP/NOK</span>
+                                <span class="text-success">+1.82%</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>🇦🇺 AUD/NOK</span>
+                                <span class="text-success">+1.86%</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>🇨🇭 CHF/NOK</span>
+                                <span class="text-success">+1.64%</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Svakeste valutaer</h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>🇺🇸 USD/NOK</span>
+                                <span class="text-danger">-1.42%</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>🇨🇳 CNY/NOK</span>
+                                <span class="text-danger">-1.38%</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>🇯🇵 JPY/NOK</span>
+                                <span class="text-danger">-1.14%</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Market status logic for currency markets (24/5)
+    function updateCurrencyMarketStatus() {
+        const marketStatus = document.getElementById('currency-market-status');
+        if (!marketStatus) return;
+
+        const now = new Date();
+        const weekday = now.getDay(); // 0=Sunday, 1=Monday, ..., 5=Friday, 6=Saturday
+        
+        // Forex markets are generally open 24/5 (Monday-Friday)
+        const isOpen = weekday >= 1 && weekday <= 5;
+        
+        if (isOpen) {
+            marketStatus.innerHTML = '<span class="badge bg-success">ÅPEN</span><small class="d-block text-muted">24/7 handel</small>';
+            marketStatus.className = 'text-success';
+        } else {
+            marketStatus.innerHTML = '<span class="badge bg-danger">STENGT</span><small class="d-block text-muted">Åpner mandag</small>';
+            marketStatus.className = 'text-danger';
+        }
+    }
+
+    // Update market status when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCurrencyMarketStatus();
+        // Update every minute
+        setInterval(updateCurrencyMarketStatus, 60000);
+    });
+    </script>
+
+    <style>
+        .flag-icon {
+            font-size: 1.2em;
+            margin-right: 0.5rem;
+        }
+        .table td {
+            vertical-align: middle;
+        }
+        .currency-flag {
+            width: 30px;
+            text-align: center;
+        }
+    </style>
+{% endblock %}

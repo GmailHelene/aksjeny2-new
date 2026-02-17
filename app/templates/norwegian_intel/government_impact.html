@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Government Impact Analyzer | Norwegian Stocks | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-building text-primary"></i> Government Impact Analyzer</h1>
+        <div>
+            <span class="badge bg-warning">Policy Tracker</span>
+            <small class="text-muted">Sist oppdatert: {{ current_time.strftime('%H:%M:%S') if current_time else 'Live' }}</small>
+        </div>
+    </div>
+    
+    <!-- Impact Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="text-success">Positive Announcements</h5>
+                    <h3 class="text-success">{{ announcements | selectattr('impact_score', '>', 0) | list | length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="text-danger">Negative Impact</h5>
+                    <h3 class="text-danger">{{ announcements | selectattr('impact_score', '<', 0) | list | length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="text-info">Sectors Affected</h5>
+                    <h3 class="text-info">{{ announcements | map(attribute='affected_sectors') | list | sum(start=[]) | unique | list | length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="text-warning">Avg Impact Score</h5>
+                    <h3 class="text-warning">{{ "%.2f" | format((announcements | map(attribute='impact_score') | list | sum) / (announcements | length)) }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Government Announcements -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header">
+            <h5><i class="bi bi-megaphone"></i> Recent Government Announcements</h5>
+            <small class="text-muted">Regjeringens kunngjøringer og deres påvirkning på norske aksjer</small>
+        </div>
+        <div class="card-body">
+            {% for announcement in announcements %}
+            <div class="card mb-3 border-left-{% if announcement.impact_score > 0 %}success{% else %}danger{% endif %}">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6 class="card-title">
+                                <i class="bi bi-calendar3 text-muted"></i> {{ announcement.date }}
+                                <span class="badge bg-{% if announcement.impact_score > 0.5 %}success{% elif announcement.impact_score > 0 %}warning{% else %}danger{% endif %} ms-2">
+                                    Impact: {{ "%.2f" | format(announcement.impact_score) }}
+                                </span>
+                            </h6>
+                            <h5>{{ announcement.title }}</h5>
+                            
+                            <!-- Affected Sectors -->
+                            <div class="mb-2">
+                                <strong>Berørte sektorer:</strong>
+                                {% for sector in announcement.affected_sectors %}
+                                    <span class="badge bg-secondary me-1">{{ sector }}</span>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- Affected Stocks -->
+                            <div class="mb-2">
+                                <strong>Påvirkede aksjer:</strong>
+                                {% for stock in announcement.affected_stocks %}
+                                    <span class="badge bg-{% if announcement.impact_score > 0 %}success{% else %}danger{% endif %} me-1">{{ stock }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="h2 text-{% if announcement.impact_score > 0 %}success{% else %}danger{% endif %}">
+                                    {% if announcement.impact_score > 0 %}
+                                        <i class="bi bi-arrow-up-circle-fill"></i>
+                                    {% else %}
+                                        <i class="bi bi-arrow-down-circle-fill"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="progress mt-2" style="height: 20px;">
+                                    <div class="progress-bar bg-{% if announcement.impact_score > 0 %}success{% else %}danger{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ (announcement.impact_score | abs * 100) }}%">
+                                        {{ "%.0f" | format(announcement.impact_score | abs * 100) }}%
+                                    </div>
+                                </div>
+                                <small class="text-muted">Påvirkningsstyrke</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Impact Analysis -->
+                    <div class="mt-3">
+                        <div class="alert alert-{% if announcement.impact_score > 0 %}success{% else %}warning{% endif %} mb-0">
+                            <strong>Analyse:</strong>
+                            {% if 'fornybar energi' in announcement.title.lower() %}
+                                Økt satsing på fornybar energi kan påvirke tradisjonelle energiselskaper negativt, men skape muligheter for rene energiselskaper.
+                            {% elif 'skatt' in announcement.title.lower() %}
+                                Skatteendringer kan ha direkte påvirkning på berørte selskapers lønnsomhet og aksjekurs.
+                            {% elif 'støtte' in announcement.title.lower() %}
+                                Statlig støtte til næringer kan styrke konkurranseevnen og fremtidsutsiktene for berørte selskaper.
+                            {% else %}
+                                Regjeringens beslutninger har ofte omfattende konsekvenser for berørte sektorer og enkeltselskaper.
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Sector Impact Summary -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h6><i class="bi bi-pie-chart"></i> Sektorpåvirkning</h6>
+                </div>
+                <div class="card-body">
+                    {% set all_sectors = announcements | map(attribute='affected_sectors') | list | sum(start=[]) %}
+                    {% for sector in all_sectors | unique %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>{{ sector }}</span>
+                        <span class="badge bg-primary">{{ all_sectors | select('equalto', sector) | list | length }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h6><i class="bi bi-graph-up"></i> Trading Implications</h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <strong>Kortsiktige muligheter:</strong> Store regjeringsannonsjer kan skape volatilitet og handelsmuligheter.
+                    </div>
+                    <div class="alert alert-warning">
+                        <strong>Langsiktig påvirkning:</strong> Politiske endringer kan endre bransjens konkurranseforhold permanent.
+                    </div>
+                    <div class="alert alert-success">
+                        <strong>Diversifisering:</strong> Følg politiske utviklinger for å forutse sektorrotasjon.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-refresh government data every 60 seconds
+setInterval(function() {
+    location.reload();
+}, 60000);
+</script>
+{% endblock %}

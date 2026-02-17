@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% block title %}Benjamin Graham Analyse - Aksjeradar{% endblock %}
+
+{% block content %}
+{% include 'analysis/_menu.html' %}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <h1 class="mb-4">
+                <i class="bi bi-book"></i> Benjamin Graham Verdianalyse
+            </h1>
+            
+            {% if analysis %}
+                <!-- Analysis Results -->
+                <div class="card border-0 shadow mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-check-circle"></i> Analyse for {{ ticker }}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Graham Score</h6>
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="progress flex-grow-1 me-3" style="height: 25px;">
+                                        <div class="progress-bar 
+                                            {% if analysis.graham_score >= 70 %}bg-success
+                                            {% elif analysis.graham_score >= 50 %}bg-warning
+                                            {% else %}bg-danger{% endif %}" 
+                                             style="width: {{ analysis.graham_score }}%">
+                                            {{ analysis.graham_score }}%
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Anbefaling</h6>
+                                <span class="badge 
+                                    {% if analysis.recommendation.action == 'BUY' %}bg-success
+                                    {% elif analysis.recommendation.action == 'HOLD' %}bg-warning
+                                    {% else %}bg-danger{% endif %} fs-6">
+                                    {{ analysis.recommendation.action }}
+                                </span>
+                                <p class="mt-2 small">{{ analysis.recommendation.reasoning }}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Criteria Results -->
+                        <h6 class="mt-4">Graham Kriterier</h6>
+                        <div class="row">
+                            {% for criterion_key, result in analysis.criteria_results.items() %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 border-{% if result.passed %}success{% else %}danger{% endif %}">
+                                    <div class="card-body text-center">
+                                        <h6>{{ result.criterion.name }}</h6>
+                                        <div class="h4 {% if result.passed %}text-success{% else %}text-danger{% endif %}">
+                                            {{ result.value }}
+                                        </div>
+                                        <span class="badge {% if result.passed %}bg-success{% else %}bg-danger{% endif %}">
+                                            {% if result.passed %}✓ Bestått{% else %}✗ Ikke bestått{% endif %}
+                                        </span>
+                                        <p class="small text-muted mt-2">{{ result.criterion.description }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="mt-4 d-flex gap-2">
+                            <a href="{{ url_for('stocks.details', symbol=ticker) }}" class="btn btn-primary">
+                                <i class="bi bi-graph-up"></i> Se aksjedetaljer
+                            </a>
+                            <a href="{{ url_for('analysis.technical') }}?symbol={{ ticker }}" class="btn btn-outline-info">
+                                <i class="bi bi-bar-chart"></i> Teknisk analyse
+                            </a>
+                            <button class="btn btn-outline-success" onclick="newAnalysis()">
+                                <i class="bi bi-plus-circle"></i> Analyser ny aksje
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Stock Selection -->
+                <div class="card border-0 shadow mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Velg aksje for Benjamin Graham analyse</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Manual Input -->
+                        <form method="GET" action="{{ url_for('analysis.benjamin_graham') }}" class="mb-4">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="ticker" 
+                                       placeholder="Skriv ticker (f.eks. EQNR.OL, AAPL)" required>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-search"></i> Analyser
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <!-- Popular Stocks -->
+                        <h6>Eller velg fra populære aksjer:</h6>
+                        <div class="row">
+                            {% set popular_stocks = [
+                                ('EQNR.OL', 'Equinor'),
+                                ('DNB.OL', 'DNB Bank'),
+                                ('TEL.OL', 'Telenor'),
+                                ('YAR.OL', 'Yara'),
+                                ('MOWI.OL', 'Mowi'),
+                                ('AAPL', 'Apple'),
+                                ('MSFT', 'Microsoft'),
+                                ('GOOGL', 'Alphabet'),
+                                ('BRK-B', 'Berkshire Hathaway'),
+                                ('JNJ', 'Johnson & Johnson')
+                            ] %}
+                            {% for ticker, name in popular_stocks %}
+                            <div class="col-md-6 col-lg-4 mb-2">
+                                <a href="{{ url_for('analysis.benjamin_graham') }}?ticker={{ ticker }}" 
+                                   class="btn btn-outline-success w-100 text-start">
+                                    <strong>{{ ticker }}</strong><br>
+                                    <small>{{ name }}</small>
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <h6><i class="bi bi-info-circle"></i> Om Benjamin Graham</h6>
+                </div>
+                <div class="card-body">
+                    <p>Benjamin Graham er kjent som "verdiinvesteringens far" og mentor for Warren Buffett.</p>
+                    
+                    <h6>Nøkkelkriterier:</h6>
+                    <ul class="small">
+                        <li><strong>P/E ratio:</strong> Under 15 for defensive aksjer</li>
+                        <li><strong>P/B ratio:</strong> Under 1.5 indikerer undervurdering</li>
+                        <li><strong>Graham Number:</strong> P/E × P/B under 22.5</li>
+                        <li><strong>Current Ratio:</strong> Over 2.0 for god likviditet</li>
+                        <li><strong>Sikkerhetsmargin:</strong> Kjøp eiendeler for betydelig mindre enn deres indre verdi.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function newAnalysis() {
+    window.location.href = "{{ url_for('analysis.benjamin_graham') }}";
+}
+
+// Auto-complete for ticker input
+document.addEventListener('DOMContentLoaded', function() {
+    const tickerInput = document.querySelector('input[name="ticker"]');
+    if (tickerInput) {
+        const suggestions = [
+            'EQNR.OL', 'DNB.OL', 'TEL.OL', 'YAR.OL', 'MOWI.OL', 'NHY.OL',
+            'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'BRK-B', 'JNJ', 'V'
+        ];
+        
+        tickerInput.addEventListener('input', function() {
+            const value = this.value.toUpperCase();
+            // Simple auto-complete logic could be added here
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,174 @@
+/* Mobile Navigation Styles - Enhanced */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        background-color: #343a40;
+        padding: 0.5rem; /* Reduced padding */
+        border-radius: 0.5rem;
+        margin-top: 0.5rem;
+        margin-left: 0;
+        margin-right: 0;
+        max-height: 85vh; /* Prevent overflow */
+        overflow-y: auto;
+    }
+
+    .mobile-nav-section {
+        color: #ffffff;
+        font-size: 0.8rem; /* Smaller font */
+        padding: 0.3rem 0.75rem; /* Reduced padding */
+        margin-top: 0.5rem; /* Reduced margin */
+        margin-bottom: 0.2rem; /* Reduced margin */
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        width: 100%;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+
+    .mobile-nav-section:first-child {
+        margin-top: 0.2rem; /* Reduced top margin */
+    }
+
+    .navbar-nav .nav-item {
+        padding: 0.1rem 0; /* Reduced padding */
+        margin: 0;
+    }
+
+    .navbar-nav .nav-link {
+        padding: 0.6rem 0.75rem; /* Optimized padding */
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        transition: background-color 0.2s ease;
+    }
+
+    .navbar-nav .nav-link:hover {
+        background-color: rgba(255,255,255,0.1);
+    }
+
+    .dropdown-menu {
+        background-color: #2c3136;
+        border: none;
+        padding: 0.2rem 0; /* Reduced padding */
+        margin: 0;
+        width: 100%;
+        position: static;
+        float: none;
+        display: block;
+        transform: none;
+    }
+
+    .dropdown-item {
+        background-color: #23272b;
+        color: white !important;
+        padding: 0.5rem 1.5rem; /* Optimized padding */
+        margin: 0;
+        border-bottom: 1px solid rgba(255,255,255,0.02);
+        min-height: 40px; /* Better touch targets */
+        display: flex;
+        align-items: center;
+    }
+
+    .dropdown-item:hover {
+        background-color: #23272b;
+        color: white !important;
+    }
+
+    /* Better icon spacing */
+    .navbar-nav .nav-link i,
+    .navbar-nav .dropdown-item i {
+        min-width: 1.3rem;
+    }
+
+    /* Mobile user section styling */
+    .mobile-user-section {
+        border-top: 1px solid rgba(255,255,255,0.15);
+        padding-top: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .navbar-toggler {
+        border-color: rgba(255,255,255,0.1);
+        padding: 0.25rem 0.5rem;
+    }
+
+    .navbar-dark .navbar-nav .nav-link {
+        color: rgba(255,255,255,0.8);
+        padding: 0.4rem 0.75rem;
+        margin: 0;
+    }
+
+    .navbar-nav .dropdown-menu {
+        position: static;
+        float: none;
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+
+    /* Remove excessive margins and padding from icons */
+    .bi {
+        width: 1em !important;
+        height: 1em !important;
+    }
+
+    /* Portfolio section visibility */
+    .portfolio-section {
+        display: block !important;
+    }
+    
+    /* Fix mobile dropdown link issues */
+    .dropdown-menu .dropdown-item {
+        display: block !important;
+        text-decoration: none !important;
+        background: none !important;
+        border: none !important;
+        white-space: nowrap;
+    }
+    
+    .dropdown-menu .dropdown-item:focus,
+    .dropdown-menu .dropdown-item:active {
+        background-color: #23272b !important;
+        color: white !important;
+    }
+
+    /* Fix user section spacing */
+    .mobile-user-section {
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+}
+
+/* Desktop styles */
+@media (min-width: 992px) {
+    .mobile-nav-section {
+        display: none;
+    }
+    
+    /* Improve desktop navigation profile styling */
+    .navbar-nav .nav-link {
+        color: rgba(255,255,255,0.85) !important;
+        font-size: 0.95rem;
+        font-weight: 400;
+        padding: 0.5rem 1rem !important;
+    }
+    
+    .navbar-nav .nav-link:hover {
+        color: white !important;
+    }
+    
+    /* Profile dropdown styling improvements */
+    .user-section .nav-link {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .user-section .dropdown-menu {
+        min-width: 180px;
+    }
+    
+    /* Ensure mobile menu links work properly */
+    .dropdown-toggle[aria-expanded="true"] {
+        color: white !important;
+        background-color: rgba(255,255,255,0.1) !important;
+    }
+}

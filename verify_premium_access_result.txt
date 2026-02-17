@@ -1,0 +1,25 @@
+Detected base URL: http://localhost:5000
+Step 1: Fetch login page
+  GET http://localhost:5000/auth/login -> 200
+  CSRF token extracted
+Step 2: Post login
+  POST http://localhost:5000/auth/login -> 302
+  Redirect to: /index
+  Followed redirect -> 500
+Step 3: GET /profile
+  GET http://localhost:5000/profile -> 500
+  ERROR: /profile returned server error
+  Body snippet:
+<!doctype html>
+<html lang=en>
+  <head>
+    <title>jinja2.exceptions.UndefinedError: &#39;current_app&#39; is undefined
+ // Werkzeug Debugger</title>
+    <link rel="stylesheet" href="?__debugger__=yes&amp;cmd=resource&amp;f=style.css">
+    <link rel="shortcut icon"
+        href="?__debugger__=yes&amp;cmd=resource&amp;f=console.png">
+    <script src="?__debugger__=yes&amp;cmd=resource&amp;f=debugger.js"></script>
+    <script>
+      var CONSOLE_MODE = false,
+          EVALEX = true,
+          EVAL

@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}Min portefølje{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  {# Flash / error message #}
+  {% if error_message %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+      <i class="bi bi-exclamation-triangle me-2"></i>{{ error_message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  {% endif %}
+
+  {# Primary empty state #}
+  {% if not portfolios or portfolios|length == 0 %}
+    <div class="text-center py-5">
+      <div class="mb-4">
+        <i class="bi bi-briefcase display-1 text-muted"></i>
+      </div>
+      <h3 class="text-muted">Ingen porteføljer ennå</h3>
+      <p class="text-muted">Kom i gang ved å opprette din første portefølje!</p>
+      <a href="{{ url_for('portfolio.create_portfolio') }}" class="btn btn-primary btn-lg">
+        <i class="bi bi-plus-circle me-2"></i>Opprett din første portefølje
+      </a>
+    </div>
+  {% else %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="h2 mb-0">Mine porteføljer</h1>
+      <a href="{{ url_for('portfolio.create_portfolio') }}" class="btn btn-success">
+        <i class="bi bi-plus-circle me-2"></i>Opprett ny portefølje
+      </a>
+    </div>
+
+    {# Portfolio selector if multiple #}
+    {% if portfolios|length > 1 %}
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <label for="portfolioSelect" class="form-label">Velg portefølje:</label>
+          <select class="form-select" id="portfolioSelect" onchange="switchPortfolio(this.value)">
+            {% for p in portfolios %}
+              <option value="{{ p.id }}" {% if portfolio and p.id == portfolio.id %}selected{% endif %}>{{ p.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    {% endif %}
+    
+    {# Portfolio table #}
+    {% if portfolio and stocks %}
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped table-hover">
+            <thead>
+              <tr>
+                <th><i class="bi bi-tag me-1"></i>Ticker</th>
+                <th><i class="bi bi-hash me-1"></i>Antall</th>
+                <th><i class="bi bi-currency-exchange me-1"></i>Kjøpspris</th>
+                <th><i class="bi bi-graph-up me-1"></i>Nåværende pris</th>
+                <th><i class="bi bi-wallet me-1"></i>Verdi</th>
+                <th><i class="bi bi-calculator me-1"></i>Gevinst/Tap</th>
+                <th><i class="bi bi-percent me-1"></i>%</th>
+                <th><i class="bi bi-gear me-1"></i>Handlinger</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ticker, data in stocks.items() %}
+              <tr>
+                <td><strong>{{ ticker }}</strong></td>
+                <td>{{ data.shares }}</td>
+                <td>{{ data.purchase_price|round(2) }} NOK</td>
+                <td>
+                  {% if data.last_price != 'N/A' %}
+                    {{ data.last_price|round(2) }} NOK
+                  {% else %}
+                    <span class="text-muted">N/A</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if data.last_price != 'N/A' %}
+                    {{ (data.last_price * data.shares)|round(2) }} NOK
+                  {% else %}
+                    {{ (data.shares * data.purchase_price)|round(2) }} NOK
+                  {% endif %}
+                </td>
+                <td class="{% if data.profit_loss > 0 %}text-success{% elif data.profit_loss < 0 %}text-danger{% endif %}">
+                  {% if data.profit_loss > 0 %}
+                    <i class="bi bi-arrow-up"></i> +{{ data.profit_loss|round(2) }}
+                  {% elif data.profit_loss < 0 %}
+                    <i class="bi bi-arrow-down"></i> {{ data.profit_loss|round(2) }}
+                  {% else %}
+                    <i class="bi bi-dash"></i> 0.00
+                  {% endif %}
+                  NOK
+                </td>
+                <td class="{% if data.profit_loss_percent > 0 %}text-success{% elif data.profit_loss_percent < 0 %}text-danger{% endif %}">
+                  {% if data.profit_loss_percent > 0 %}
+                    <i class="bi bi-arrow-up"></i> +{{ data.profit_loss_percent|round(2) }}%
+                  {% elif data.profit_loss_percent < 0 %}
+                    <i class="bi bi-arrow-down"></i> {{ data.profit_loss_percent|round(2) }}%
+                  {% else %}
+                    <i class="bi bi-dash"></i> 0.00%
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="btn-group" role="group">
+                    <a href="{{ url_for('stocks.details', symbol=ticker) }}" class="btn btn-sm btn-outline-primary" title="Se detaljer">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                    <a href="{{ url_for('portfolio.edit_stock', ticker=ticker) }}" class="btn btn-sm btn-outline-secondary" title="Rediger">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    <button class="btn btn-sm btn-outline-danger" onclick="PortfolioCRUD.removeStock({{ data.stock_id }}, {{ portfolio.id if portfolio else 'null' }})" title="Fjern">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Portfolio Actions -->
+    <div class="d-flex justify-content-between mb-4">
+      <div>
+        <a href="{{ url_for('portfolio.add_stock_to_portfolio', id=portfolio.id) }}" class="btn btn-primary">
+          <i class="bi bi-plus-circle me-2"></i>Legg til aksje
+        </a>
+        {# Fjernet Transaksjoner-knapp iht. krav #}
+      </div>
+      <div>
+        <button class="btn btn-outline-danger" onclick="PortfolioCRUD.deletePortfolio({{ portfolio.id }})">
+          <i class="bi bi-trash me-2"></i>Slett portefølje
+        </button>
+      </div>
+    </div>
+    
+    {% elif portfolios %}
+      <div class="alert alert-warning">
+        <h4><i class="bi bi-exclamation-triangle me-2"></i>Porteføljen er tom</h4>
+        <p>Du har opprettet porteføljer, men de inneholder ingen aksjer ennå.</p>
+        <a href="{{ url_for('portfolio.add_stock_to_portfolio', id=portfolios[0].id) }}" class="btn btn-primary">
+          <i class="bi bi-plus-circle me-2"></i>Legg til din første aksje
+        </a>
+      </div>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/portfolio-crud.js') }}?v=1"></script>
+
+<!-- Delete Portfolio Confirmation Modal -->
+<div class="modal fade" id="confirmDeletePortfolioModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Bekreft sletting</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>For å bekrefte sletting, skriv navnet på porteføljen nedenfor:</p>
+        <p class="fw-bold text-danger" id="deletePortfolioName">(navn)</p>
+  <input type="text" id="confirmPortfolioName" oninput="PortfolioCRUD.onPortfolioNameInput(event)" class="form-control" placeholder="Skriv porteføljenavnet" autocomplete="off" />
+        <div class="form-text">Denne handlingen kan ikke angres.</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Avbryt</button>
+  <button id="confirmDeleteBtn" type="button" class="btn btn-danger" onclick="PortfolioCRUD.submitPortfolioDeletion()" disabled>Slett</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Short-analyse - Velg Aksje | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-3">
+            {% include 'analysis/_menu.html' %}
+        </div>
+        
+        <div class="col-lg-9">
+            <h1 class="mb-4">Short-analyse</h1>
+            
+            <div class="alert alert-danger mb-4">
+                <h5 class="alert-heading">
+                    <i class="bi bi-exclamation-triangle"></i> Advarsel om høy risiko
+                </h5>
+                <p>Short-handel innebærer ubegrenset tapsrisiko. Prisen på en aksje kan teoretisk stige uendelig, 
+                noe som betyr at dine tap kan overskride din opprinnelige investering betydelig.</p>
+                <ul class="mb-0">
+                    <li>Kun for erfarne investorer</li>
+                    <li>Krever nøye overvåking av posisjoner</li>
+                    <li>Kan resultere i margin calls</li>
+                    <li>Ikke egnet for langsiktige investeringer</li>
+                </ul>
+            </div>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Velg en aksje for short-analyse</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('analysis.short_analysis') }}">
+                        <div class="input-group mb-3">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="text" id="stockSearch" class="form-control" 
+                                   placeholder="Søk etter aksje...">
+                            <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                                <i class="bi bi-x"></i> Tøm
+                            </button>
+                        </div>
+                        
+                        <div id="stockList" class="list-group" style="max-height: 400px; overflow-y: auto;">
+                            {% for stock in available_stocks %}
+                                <button type="submit" name="ticker" value="{{ stock.ticker }}" 
+                                        class="list-group-item list-group-item-action stock-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>{{ stock.ticker }}</strong> - {{ stock.name }}
+                                        </div>
+                                        <div>
+                                            {% if stock.change_percent %}
+                                                <span class="badge 
+                                                    {% if stock.change_percent > 0 %}bg-success
+                                                    {% else %}bg-danger{% endif %}">
+                                                    {{ "%.2f"|format(stock.change_percent) }}%
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </button>
+                            {% endfor %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Educational Content -->
+            <div class="card border-warning mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">Hva er short-handel?</h5>
+                </div>
+                <div class="card-body">
+                    <p>Short-handel (blanking) er en investeringsstrategi hvor du låner aksjer for å selge dem, 
+                    med håp om å kjøpe dem tilbake til en lavere pris senere.</p>
+                    
+                    <h6>Hvordan det fungerer:</h6>
+                    <ol>
+                        <li>Lån aksjer fra megler</li>
+                        <li>Selg aksjene umiddelbart</li>
+                        <li>Vent på at prisen skal falle</li>
+                        <li>Kjøp tilbake aksjene til lavere pris</li>
+                        <li>Returner aksjene til megler</li>
+                        <li>Profitt = Salgspris - Kjøpspris - Kostnader</li>
+                    </ol>
+                    
+                    <h6>Viktige risikoer:</h6>
+                    <ul>
+                        <li><strong>Ubegrenset tap:</strong> Hvis aksjen stiger, kan tapene være ubegrensede</li>
+                        <li><strong>Lånegebyrer:</strong> Du må betale renter for å låne aksjene</li>
+                        <li><strong>Margin calls:</strong> Megler kan kreve ekstra sikkerhet</li>
+                        <li><strong>Short squeeze:</strong> Plutselig prisøkning kan tvinge deg til å dekke posisjonen med tap</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const stockSearch = document.getElementById('stockSearch');
+    const stockItems = document.querySelectorAll('.stock-item');
+    const clearSearch = document.getElementById('clearSearch');
+
+    stockSearch.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        stockItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+
+    clearSearch.addEventListener('click', function() {
+        stockSearch.value = '';
+        stockItems.forEach(item => {
+            item.style.display = 'block';
+        });
+        stockSearch.focus();
+    });
+});
+</script>
+
+<style>
+.stock-item {
+    transition: background-color 0.2s ease;
+}
+.stock-item:hover {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}
+            </div>
+            
+            <!-- Educational Disclaimer -->
+            <div class="alert alert-light border mt-4">
+                <h6><i class="bi bi-info-circle"></i> Educational Purpose Only</h6>
+                <p class="small mb-0">
+                    This short analysis tool is provided for educational purposes only. Short selling involves significant risks including unlimited potential losses. 
+                    Please consult with a qualified financial advisor before engaging in short selling strategies. Past performance does not guarantee future results.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function analyzeStock(ticker) {
+    // Show confirmation dialog due to risks
+    if (confirm('Short selling involves high risks including unlimited potential losses. This analysis is for educational purposes only. Continue?')) {
+        window.location.href = "{{ url_for('analysis.short_analysis') }}?ticker=" + ticker;
+    }
+}
+
+// Stock search functionality
+document.getElementById('stockSearch').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const stockItems = document.querySelectorAll('.stock-item');
+    
+    stockItems.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        if (text.includes(searchTerm)) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+});
+</script>
+
+<style>
+.hover-shadow {
+    transition: all 0.2s ease;
+}
+
+.hover-shadow:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+}
+
+.stock-item {
+    transition: all 0.2s ease;
+}
+
+.stock-item:hover {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}

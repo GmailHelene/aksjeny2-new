@@ -1,0 +1,22 @@
+from flask import Flask
+
+def create_app(config_name):
+    app = Flask(__name__)
+    
+    # Load configuration
+    # ...existing config loading code...
+    
+    # Register blueprints
+    # ...existing blueprint registrations...
+    
+    # Check for duplicate blueprint registrations
+    registered_names = [bp.name for bp in app.blueprints.values()]
+    
+    # External data blueprint - check if not already registered
+    if 'external_data' not in registered_names:
+        from app.external_data import external_data_bp
+        app.register_blueprint(external_data_bp, url_prefix='/external-data')
+    
+    # ...existing code...
+    
+    return app

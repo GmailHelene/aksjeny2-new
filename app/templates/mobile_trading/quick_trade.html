@@ -1,0 +1,1009 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    /* Quick Trade Mobile Interface */
+    .trade-container {
+        max-width: 100%;
+        padding: 20px;
+        padding-bottom: 100px;
+    }
+    
+    .trade-header {
+        background:  background: #344686;
+;
+        color: white;
+        padding: 25px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .search-section {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .stock-search {
+        position: relative;
+        margin-bottom: 15px;
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 15px 50px 15px 20px;
+        border: 2px solid #dee2e6;
+        border-radius: 12px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+    }
+    
+    .search-input:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 15px rgba(0,123,255,0.3);
+        outline: none;
+    }
+    
+    .search-icon {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        font-size: 1.2rem;
+    }
+    
+    .search-results {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        max-height: 200px;
+        overflow-y: auto;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        display: none;
+    }
+    
+    .search-result-item {
+        padding: 15px;
+        border-bottom: 1px solid #f8f9fa;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+    
+    .search-result-item:hover {
+        background: #f8f9fa;
+    }
+    
+    .search-result-item:last-child {
+        border-bottom: none;
+    }
+    
+    .result-symbol {
+        font-weight: bold;
+        color: #007bff;
+    }
+    
+    .result-name {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-top: 2px;
+    }
+    
+    .selected-stock {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        display: none;
+    }
+    
+    .stock-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .stock-price {
+        font-size: 1.8rem;
+        font-weight: bold;
+    }
+    
+    .stock-change {
+        font-size: 1rem;
+        margin-top: 5px;
+    }
+    
+    .trade-form {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .trade-type-selector {
+        display: flex;
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 5px;
+        margin-bottom: 20px;
+    }
+    
+    .trade-type-btn {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        background: transparent;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .trade-type-btn.active {
+        background: white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        color: #007bff;
+    }
+    
+    .trade-type-btn.buy.active {
+        color: #28a745;
+    }
+    
+    .trade-type-btn.sell.active {
+        color: #dc3545;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+        color: #343a40;
+    }
+    
+    .form-input {
+        width: 100%;
+        padding: 15px;
+        border: 2px solid #dee2e6;
+        border-radius: 12px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+    }
+    
+    .form-input:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 15px rgba(0,123,255,0.3);
+        outline: none;
+    }
+    
+    .order-type-selector {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .order-type-btn {
+        padding: 12px;
+        border: 2px solid #dee2e6;
+        background: white;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+    
+    .order-type-btn.active {
+        border-color: #007bff;
+        background: #007bff;
+        color: white;
+    }
+    
+    .estimation-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .estimation-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 0.95rem;
+    }
+    
+    .estimation-row:last-child {
+        margin-bottom: 0;
+        font-weight: bold;
+        font-size: 1.1rem;
+        border-top: 1px solid #dee2e6;
+        padding-top: 10px;
+        margin-top: 10px;
+    }
+    
+    .place-order-btn {
+        width: 100%;
+        padding: 18px;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 15px;
+    }
+    
+    .place-order-btn.buy {
+        background: linear-gradient(135deg, #28a745, #20c997);
+    }
+    
+    .place-order-btn.sell {
+        background: linear-gradient(135deg, #dc3545, #e83e8c);
+    }
+    
+    .place-order-btn:active {
+        transform: scale(0.98);
+    }
+    
+    .place-order-btn:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .quick-amounts {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .quick-amount-btn {
+        padding: 10px;
+        border: 1px solid #dee2e6;
+        background: white;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .quick-amount-btn:hover {
+        border-color: #007bff;
+        background: #f8f9fa;
+    }
+    
+    .buying-power {
+        background: #e7f3ff;
+        border: 1px solid #007bff;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .buying-power-label {
+        font-size: 0.9rem;
+        color: #007bff;
+        margin-bottom: 5px;
+    }
+    
+    .buying-power-amount {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #007bff;
+    }
+    
+    /* Modal for order confirmation */
+    .order-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 2000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    
+    .modal-content {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        max-width: 400px;
+        width: 100%;
+        text-align: center;
+    }
+    
+    .modal-header {
+        font-size: 1.3rem;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #343a40;
+    }
+    
+    .modal-body {
+        margin-bottom: 25px;
+    }
+    
+    .modal-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+    
+    .modal-btn {
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .modal-btn-cancel {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .modal-btn-confirm {
+        background: #28a745;
+        color: white;
+    }
+    
+    /* Price alerts section */
+    .price-alerts {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .alert-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+    
+    .alert-details {
+        flex: 1;
+    }
+    
+    .alert-symbol {
+        font-weight: bold;
+        color: #007bff;
+    }
+    
+    .alert-condition {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-top: 2px;
+    }
+    
+    .alert-remove {
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 480px) {
+        .trade-container {
+            padding: 15px;
+        }
+        
+        .quick-amounts {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .order-type-selector {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="trade-container">
+    <!-- Header -->
+    <div class="trade-header">
+        <h2>⚡ Quick Trade</h2>
+        <p>Fast and secure mobile trading</p>
+    </div>
+
+    <!-- Buying Power -->
+    <div class="buying-power">
+        <div class="buying-power-label">Available Buying Power</div>
+        <div class="buying-power-amount" id="buyingPower">$15,000.00</div>
+    </div>
+
+    <!-- Stock Search -->
+    <div class="search-section">
+        <h5 class="mb-3">
+            <i class="bi bi-search text-primary"></i>
+            Search Stock
+        </h5>
+        <div class="stock-search">
+            <input type="text" 
+                   class="search-input" 
+                   id="stockSearch" 
+                   placeholder="Enter symbol or company name..."
+                   autocomplete="off">
+            <i class="bi bi-search search-icon"></i>
+            <div class="search-results" id="searchResults"></div>
+        </div>
+    </div>
+
+    <!-- Selected Stock -->
+    <div class="selected-stock" id="selectedStock">
+        <div class="stock-info">
+            <div>
+                <div class="stock-symbol" id="stockSymbol">AAPL</div>
+                <div class="stock-name" id="stockName">Apple Inc.</div>
+            </div>
+            <div>
+                <div class="stock-price" id="stockPrice">$150.25</div>
+                <div class="stock-change" id="stockChange">+$2.35 (+1.59%)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trade Form -->
+    <div class="trade-form" id="tradeForm" style="display: none;">
+        <h5 class="mb-3">
+            <i class="bi bi-graph-up text-success"></i>
+            Place Order
+        </h5>
+
+        <!-- Buy/Sell Toggle -->
+        <div class="trade-type-selector">
+            <button class="trade-type-btn buy active" id="buyBtn" onclick="setTradeType('buy')">
+                📈 Buy
+            </button>
+            <button class="trade-type-btn sell" id="sellBtn" onclick="setTradeType('sell')">
+                📉 Sell
+            </button>
+        </div>
+
+        <!-- Order Type -->
+        <div class="form-group">
+            <label class="form-label">Order Type</label>
+            <div class="order-type-selector">
+                <button class="order-type-btn active" id="marketBtn" onclick="setOrderType('market')">
+                    Market
+                </button>
+                <button class="order-type-btn" id="limitBtn" onclick="setOrderType('limit')">
+                    Limit
+                </button>
+                <button class="order-type-btn" id="stopBtn" onclick="setOrderType('stop')">
+                    Stop
+                </button>
+            </div>
+        </div>
+
+        <!-- Quantity -->
+        <div class="form-group">
+            <label class="form-label">Quantity (Shares)</label>
+            <input type="number" 
+                   class="form-input" 
+                   id="quantity" 
+                   placeholder="Enter number of shares..."
+                   min="1"
+                   step="1">
+            <div class="quick-amounts mt-2">
+                <button class="quick-amount-btn" onclick="setQuickQuantity(10)">10</button>
+                <button class="quick-amount-btn" onclick="setQuickQuantity(50)">50</button>
+                <button class="quick-amount-btn" onclick="setQuickQuantity(100)">100</button>
+                <button class="quick-amount-btn" onclick="setMaxQuantity()">Max</button>
+            </div>
+        </div>
+
+        <!-- Price (for limit/stop orders) -->
+        <div class="form-group" id="priceGroup" style="display: none;">
+            <label class="form-label" id="priceLabel">Limit Price</label>
+            <input type="number" 
+                   class="form-input" 
+                   id="price" 
+                   placeholder="Enter price..."
+                   step="0.01">
+        </div>
+
+        <!-- Order Estimation -->
+        <div class="estimation-card" id="orderEstimation">
+            <div class="estimation-row">
+                <span>Quantity:</span>
+                <span id="estQuantity">-</span>
+            </div>
+            <div class="estimation-row">
+                <span>Price per share:</span>
+                <span id="estPrice">-</span>
+            </div>
+            <div class="estimation-row">
+                <span>Commission:</span>
+                <span id="estCommission">$0.00</span>
+            </div>
+            <div class="estimation-row">
+                <span>Estimated Total:</span>
+                <span id="estTotal">$0.00</span>
+            </div>
+        </div>
+
+        <!-- Place Order Button -->
+        <button class="place-order-btn buy" id="placeOrderBtn" onclick="showOrderConfirmation()" disabled>
+            📈 Place Buy Order
+        </button>
+
+        <!-- Quick Actions -->
+        <div class="d-grid gap-2">
+            <button class="btn btn-outline-primary" onclick="addToWatchlist()">
+                👁️ Add to Watchlist
+            </button>
+        </div>
+    </div>
+
+    <!-- Price Alerts -->
+    <div class="price-alerts">
+        <h5 class="mb-3">
+            <i class="bi bi-bell text-warning"></i>
+            Price Alerts
+        </h5>
+        <div id="priceAlerts">
+            <div class="text-muted text-center py-3">
+                No price alerts set
+            </div>
+        </div>
+        <button class="btn btn-outline-primary w-100 mt-2" onclick="createPriceAlert()">
+            <i class="bi bi-plus-lg"></i> Create Alert
+        </button>
+    </div>
+</div>
+
+<!-- Order Confirmation Modal -->
+<div class="order-modal" id="orderModal">
+    <div class="modal-content">
+        <div class="modal-header">Confirm Order</div>
+        <div class="modal-body" id="modalBody">
+            <!-- Order details will be populated here -->
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn modal-btn-cancel" onclick="closeOrderModal()">
+                Cancel
+            </button>
+            <button class="modal-btn modal-btn-confirm" onclick="confirmOrder()">
+                Confirm
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Navigation -->
+<div class="mobile-bottom-nav">
+    <div class="bottom-nav-items">
+        <a href="{{ url_for('mobile_trading.mobile_dashboard') }}" class="bottom-nav-item">
+            <div class="bottom-nav-icon">🏠</div>
+            <div class="bottom-nav-label">Home</div>
+        </a>
+        <a href="{{ url_for('mobile_trading.mobile_portfolio') }}" class="bottom-nav-item">
+            <div class="bottom-nav-icon">💼</div>
+            <div class="bottom-nav-label">Portfolio</div>
+        </a>
+        <a href="{{ url_for('mobile_trading.quick_trade') }}" class="bottom-nav-item active">
+            <div class="bottom-nav-icon">⚡</div>
+            <div class="bottom-nav-label">Trade</div>
+        </a>
+        <a href="{{ url_for('mobile_trading.mobile_watchlist') }}" class="bottom-nav-item">
+            <div class="bottom-nav-icon">👁️</div>
+            <div class="bottom-nav-label">Watch</div>
+        </a>
+        <a href="{{ url_for('mobile_trading.mobile_charts') }}" class="bottom-nav-item">
+            <div class="bottom-nav-icon">📊</div>
+            <div class="bottom-nav-label">Charts</div>
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let selectedStockData = null;
+let currentTradeType = 'buy';
+let currentOrderType = 'market';
+let searchTimeout = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    setupSearchFunctionality();
+    setupFormValidation();
+    loadPriceAlerts();
+});
+
+function setupSearchFunctionality() {
+    const searchInput = document.getElementById('stockSearch');
+    const searchResults = document.getElementById('searchResults');
+    
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+        
+        if (query.length < 1) {
+            searchResults.style.display = 'none';
+            return;
+        }
+        
+        searchTimeout = setTimeout(() => {
+            searchStocks(query);
+        }, 300);
+    });
+    
+    // Hide search results when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.stock-search')) {
+            searchResults.style.display = 'none';
+        }
+    });
+}
+
+async function searchStocks(query) {
+    try {
+        const response = await fetch(`/mobile-trading/api/stock-search?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            displaySearchResults(data.results);
+        }
+    } catch (error) {
+        console.error('Search error:', error);
+    }
+}
+
+function displaySearchResults(results) {
+    const searchResults = document.getElementById('searchResults');
+    
+    if (results.length === 0) {
+        searchResults.innerHTML = '<div class="search-result-item">No results found</div>';
+    } else {
+        searchResults.innerHTML = results.map(result => `
+            <div class="search-result-item" onclick="selectStock('${result.symbol}')">
+                <div class="result-symbol">${result.symbol}</div>
+                <div class="result-name">${result.name}</div>
+            </div>
+        `).join('');
+    }
+    
+    searchResults.style.display = 'block';
+}
+
+async function selectStock(symbol) {
+    try {
+        // Hide search results
+        document.getElementById('searchResults').style.display = 'none';
+        document.getElementById('stockSearch').value = symbol;
+        
+        // Get stock quote
+        const response = await fetch(`/mobile-trading/api/quick-quote/${symbol}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            selectedStockData = data;
+            displaySelectedStock(data);
+            showTradeForm();
+        } else {
+            alert('Failed to load stock data');
+        }
+    } catch (error) {
+        console.error('Error selecting stock:', error);
+        alert('Error loading stock data');
+    }
+}
+
+function displaySelectedStock(stockData) {
+    const selectedStock = document.getElementById('selectedStock');
+    const changeClass = stockData.change >= 0 ? 'positive' : 'negative';
+    const changeSign = stockData.change >= 0 ? '+' : '';
+    
+    document.getElementById('stockSymbol').textContent = stockData.symbol;
+    document.getElementById('stockName').textContent = `${stockData.symbol} Stock`;
+    document.getElementById('stockPrice').textContent = formatCurrency(stockData.price);
+    document.getElementById('stockChange').textContent = 
+        `${changeSign}${formatCurrency(stockData.change)} (${stockData.change_percent.toFixed(2)}%)`;
+    
+    document.getElementById('stockChange').className = `stock-change ${changeClass}`;
+    selectedStock.style.display = 'block';
+}
+
+function showTradeForm() {
+    document.getElementById('tradeForm').style.display = 'block';
+    updateOrderEstimation();
+}
+
+function setTradeType(type) {
+    currentTradeType = type;
+    
+    // Update button states
+    document.getElementById('buyBtn').classList.toggle('active', type === 'buy');
+    document.getElementById('sellBtn').classList.toggle('active', type === 'sell');
+    
+    // Update place order button
+    const placeOrderBtn = document.getElementById('placeOrderBtn');
+    placeOrderBtn.className = `place-order-btn ${type}`;
+    placeOrderBtn.innerHTML = type === 'buy' ? '📈 Place Buy Order' : '📉 Place Sell Order';
+    
+    updateOrderEstimation();
+}
+
+function setOrderType(type) {
+    currentOrderType = type;
+    
+    // Update button states
+    document.querySelectorAll('.order-type-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`${type}Btn`).classList.add('active');
+    
+    // Show/hide price input
+    const priceGroup = document.getElementById('priceGroup');
+    const priceLabel = document.getElementById('priceLabel');
+    
+    if (type === 'limit') {
+        priceGroup.style.display = 'block';
+        priceLabel.textContent = 'Limit Price';
+    } else if (type === 'stop') {
+        priceGroup.style.display = 'block';
+        priceLabel.textContent = 'Stop Price';
+    } else {
+        priceGroup.style.display = 'none';
+    }
+    
+    updateOrderEstimation();
+}
+
+function setupFormValidation() {
+    const quantityInput = document.getElementById('quantity');
+    const priceInput = document.getElementById('price');
+    
+    quantityInput.addEventListener('input', updateOrderEstimation);
+    priceInput.addEventListener('input', updateOrderEstimation);
+}
+
+function updateOrderEstimation() {
+    if (!selectedStockData) return;
+    
+    const quantity = parseInt(document.getElementById('quantity').value) || 0;
+    const price = currentOrderType === 'market' ? 
+        selectedStockData.price : 
+        parseFloat(document.getElementById('price').value) || selectedStockData.price;
+    
+    const total = quantity * price;
+    const commission = 0; // No commission for demo
+    const estimatedTotal = total + commission;
+    
+    // Update estimation display
+    document.getElementById('estQuantity').textContent = quantity.toString();
+    document.getElementById('estPrice').textContent = formatCurrency(price);
+    document.getElementById('estCommission').textContent = formatCurrency(commission);
+    document.getElementById('estTotal').textContent = formatCurrency(estimatedTotal);
+    
+    // Enable/disable place order button
+    const placeOrderBtn = document.getElementById('placeOrderBtn');
+    const isValid = quantity > 0 && (currentOrderType === 'market' || price > 0);
+    placeOrderBtn.disabled = !isValid;
+}
+
+function setQuickQuantity(amount) {
+    document.getElementById('quantity').value = amount;
+    updateOrderEstimation();
+}
+
+function setMaxQuantity() {
+    if (!selectedStockData) return;
+    
+    const buyingPower = 15000; // From API
+    const price = selectedStockData.price;
+    const maxShares = Math.floor(buyingPower / price);
+    
+    document.getElementById('quantity').value = maxShares;
+    updateOrderEstimation();
+}
+
+function showOrderConfirmation() {
+    if (!selectedStockData) return;
+    
+    const quantity = parseInt(document.getElementById('quantity').value) || 0;
+    const price = currentOrderType === 'market' ? 
+        selectedStockData.price : 
+        parseFloat(document.getElementById('price').value) || selectedStockData.price;
+    
+    const total = quantity * price;
+    
+    const modalBody = document.getElementById('modalBody');
+    modalBody.innerHTML = `
+        <div style="text-align: left;">
+            <p><strong>Symbol:</strong> ${selectedStockData.symbol}</p>
+            <p><strong>Action:</strong> ${currentTradeType.toUpperCase()}</p>
+            <p><strong>Quantity:</strong> ${quantity} shares</p>
+            <p><strong>Order Type:</strong> ${currentOrderType.toUpperCase()}</p>
+            <p><strong>Price:</strong> ${formatCurrency(price)}</p>
+            <p><strong>Estimated Total:</strong> ${formatCurrency(total)}</p>
+        </div>
+    `;
+    
+    document.getElementById('orderModal').style.display = 'flex';
+}
+
+function closeOrderModal() {
+    document.getElementById('orderModal').style.display = 'none';
+}
+
+async function confirmOrder() {
+    try {
+        const orderData = {
+            symbol: selectedStockData.symbol,
+            action: currentTradeType,
+            quantity: parseInt(document.getElementById('quantity').value),
+            order_type: currentOrderType,
+            price: currentOrderType === 'market' ? null : parseFloat(document.getElementById('price').value)
+        };
+        
+        const response = await fetch('/mobile-trading/api/place-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(orderData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            closeOrderModal();
+            alert(`Order placed successfully!\nOrder ID: ${result.order_id}`);
+            
+            // Reset form
+            document.getElementById('quantity').value = '';
+            document.getElementById('price').value = '';
+            updateOrderEstimation();
+        } else {
+            alert('Failed to place order: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Error placing order:', error);
+        alert('Error placing order. Please try again.');
+    }
+}
+
+async function addToWatchlist() {
+    if (!selectedStockData) return;
+    
+    // Mock watchlist addition
+    alert(`${selectedStockData.symbol} added to watchlist!`);
+}
+
+async function loadPriceAlerts() {
+    try {
+        const response = await fetch('/mobile-trading/api/price-alerts');
+        const data = await response.json();
+        
+        if (data.success && data.alerts.length > 0) {
+            displayPriceAlerts(data.alerts);
+        }
+    } catch (error) {
+        console.error('Error loading price alerts:', error);
+    }
+}
+
+function displayPriceAlerts(alerts) {
+    const alertsContainer = document.getElementById('priceAlerts');
+    
+    const html = alerts.map(alert => `
+        <div class="alert-item">
+            <div class="alert-details">
+                <div class="alert-symbol">${alert.symbol}</div>
+                <div class="alert-condition">
+                    Alert when price ${alert.condition} ${formatCurrency(alert.target_price)}
+                </div>
+            </div>
+            <button class="alert-remove" onclick="removeAlert('${alert.alert_id}')">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+    `).join('');
+    
+    alertsContainer.innerHTML = html;
+}
+
+function createPriceAlert() {
+    if (!selectedStockData) {
+        alert('Velg en aksje først');
+        return;
+    }
+    
+    const condition = prompt('Angi betingelse (over/under):');
+    if (!condition || !['over', 'under', 'above', 'below'].includes(condition.toLowerCase())) {
+        alert('Ugyldig betingelse. Bruk "over" eller "under".');
+        return;
+    }
+    
+    const targetPrice = prompt('Angi målpris:');
+    if (!targetPrice || isNaN(parseFloat(targetPrice))) {
+        alert('Ugyldig pris. Angi et gyldig tall.');
+        return;
+    }
+    
+    if (condition && targetPrice) {
+        // Create price alert via API
+        fetch('/mobile-trading/api/price-alerts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            },
+            body: JSON.stringify({
+                symbol: selectedStockData.symbol,
+                condition: condition.toLowerCase(),
+                target_price: parseFloat(targetPrice),
+                current_price: selectedStockData.price || 0
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`Prisvarsel opprettet for ${selectedStockData.symbol} ${condition} ${formatCurrency(parseFloat(targetPrice))}`);
+                loadPriceAlerts();
+            } else {
+                alert('Kunne ikke opprette prisvarsel: ' + (data.message || 'Ukjent feil'));
+            }
+        })
+        .catch(error => {
+            console.error('Error creating price alert:', error);
+            alert('En feil oppstod ved oppretting av prisvarsel');
+        });
+    }
+}
+
+function removeAlert(alertId) {
+    // Mock alert removal
+    alert('Alert removed!');
+    loadPriceAlerts();
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2
+    }).format(amount);
+}
+</script>
+{% endblock %}

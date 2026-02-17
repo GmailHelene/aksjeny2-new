@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Sammenlign Aksjer - Aksjeny{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="h2 mb-4">Sammenlign Aksjer</h1>
+    
+    {% if comparison_data %}
+        <!-- Comparison Chart -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="h5 mb-0">Relativ Prisutvikling (% endring)</h3>
+            </div>
+            <div class="card-body">
+                <canvas id="comparisonChart" height="100"></canvas>
+            </div>
+        </div>
+        
+        <!-- Stock Details Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="h5 mb-0">Nøkkeltall</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Navn</th>
+                                <th class="text-end">Pris</th>
+                                <th class="text-end">Endring</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for symbol, data in comparison_data.items() %}
+                            <tr>
+                                <td><strong>{{ symbol }}</strong></td>
+                                <td>{{ data.name }}</td>
+                                <td class="text-end">${{ "%.2f"|format(data.current_price) }}</td>
+                                <td class="text-end">
+                                    <span class="badge {% if data.change_percent >= 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if data.change_percent >= 0 %}+{% endif %}{{ "%.2f"|format(data.change_percent) }}%
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            Ingen data tilgjengelig for sammenligning.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('comparisonChart');
+    if (ctx && {{ comparison_data|tojson }}) {
+        const datasets = [];
+        const colors = ['rgb(75, 192, 192)', 'rgb(255, 99, 132)', 'rgb(54, 162, 235)', 'rgb(255, 205, 86)'];
+        let colorIndex = 0;
+        
+        {% for symbol, data in comparison_data.items() %}
+        datasets.push({
+            label: '{{ symbol }}',
+            data: {{ data.prices|tojson }},
+            borderColor: colors[colorIndex % colors.length],
+            backgroundColor: colors[colorIndex % colors.length] + '20',
+            tension: 0.1
+        });
+        colorIndex++;
+        {% endfor %}
+        
+        new Chart(ctx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: {{ dates|tojson }},
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    title: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Endring (%)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

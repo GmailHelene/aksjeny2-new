@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Aksjeanalyse - AI og teknisk analyse | Oslo Børs | Aksjeradar{% endblock %}
+{% block description %}Profesjonelle aksjeanalyser med AI-teknologi, teknisk analyse, Warren Buffett-analyse og sentiment-analyse. Analyser Oslo Børs aksjer som EQNR, DNB, TEL og globale markeder.{% endblock %}
+{% block keywords %}aksjeanalyse, AI analyse, teknisk analyse, Warren Buffett analyse, Benjamin Graham analyse, Oslo Børs analyse, EQNR analyse, DNB analyse, sentiment analyse, fundamental analyse{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% include 'analysis/_menu.html' %}
+    
+    <h1 class="mb-4">Aksjeanalyser</h1>
+    
+    <!-- Analysis Tools Grid -->
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-robot text-primary"></i> AI Analyse
+                    </h5>
+                    <p class="card-text">Få AI-drevne anbefalinger og prediksjoner for aksjer.</p>
+                    <a href="{{ url_for('analysis.ai') }}" class="btn btn-primary">Start AI-analyse</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-graph-up text-success"></i> Teknisk analyse
+                    </h5>
+                    <p class="card-text">Analyser kursmønstre og tekniske indikatorer.</p>
+                    <a href="{{ url_for('analysis.technical') }}" class="btn btn-success">Se teknisk analyse</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-bar-chart text-info"></i> Fundamental analyse
+                    </h5>
+                    <p class="card-text">Vurder selskapets økonomi og nøkkeltall.</p>
+                    <a href="{{ url_for('analysis.fundamental') }}" class="btn btn-info">Fundamental analyse</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-people text-warning"></i> Sentiment analyse
+                    </h5>
+                    <p class="card-text">Se markedets sentiment fra sosiale medier og nyheter.</p>
+                    <a href="{{ url_for('analysis.sentiment') }}" class="btn btn-warning">Sentiment analyse</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-graph-up-arrow text-success"></i> Predictions
+                    </h5>
+                    <p class="card-text">AI-baserte kursprediksjoner for enkeltaksjer.</p>
+                    <a href="{{ url_for('analysis.prediction') }}" class="btn btn-success">Se prediksjoner</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-graph-down-arrow text-danger"></i> Short Analyse
+                    </h5>
+                    <p class="card-text">Analyser aksjer for short-selging muligheter.</p>
+                    <a href="{{ url_for('analysis.short_analysis') }}" class="btn btn-danger">Short analyse</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-search text-secondary"></i> Aksje-screener
+                    </h5>
+                    <p class="card-text">Finn aksjer basert på dine kriterier.</p>
+                    <a href="{{ url_for('analysis.screener') }}" class="btn btn-secondary">Åpne screener</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-globe text-dark"></i> Markedsoversikt
+                    </h5>
+                    <p class="card-text">Få oversikt over globale markeder og trender.</p>
+                    <a href="{{ url_for('analysis.market_overview') }}" class="btn btn-dark">Markedsoversikt</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-lightbulb text-warning"></i> AI Anbefalinger
+                    </h5>
+                    <p class="card-text">Få databaserte investeringsanbefalinger fra vår AI.</p>
+                    <a href="{{ url_for('analysis.recommendation') }}" class="btn btn-warning">Se anbefalinger</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-person-badge text-danger"></i> Innsidehandel
+                    </h5>
+                    <p class="card-text">Se innsidehandel og institusjonell aktivitet i norske selskaper.</p>
+                    <a href="{{ url_for('analysis.insider_trading') }}" class="btn btn-danger">Se innsidehandel</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-person-check text-info"></i> Warren Buffett Analyse
+                    </h5>
+                    <p class="card-text">Analyse basert på Warren Buffetts investeringsprinsipper.</p>
+                    <a href="{{ url_for('analysis.warren_buffett') }}" class="btn btn-info">Warren Buffett</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-book text-secondary"></i> Benjamin Graham Analyse
+                    </h5>
+                    <p class="card-text">Verdivurdering basert på Benjamin Grahams prinsipper.</p>
+                    <a href="{{ url_for('analysis.benjamin_graham') }}" class="btn btn-secondary">Benjamin Graham</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Market Summary (EKTE-only, shown only if provided) -->
+    {% if buy_signals is defined and sell_signals is defined and neutral_signals is defined and market_sentiment is defined %}
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5>Markedssammendrag</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <h6>Kjøpssignaler</h6>
+                    <p class="text-success fs-3">{{ buy_signals }}</p>
+                </div>
+                <div class="col-md-3">
+                    <h6>Salgssignaler</h6>
+                    <p class="text-danger fs-3">{{ sell_signals }}</p>
+                </div>
+                <div class="col-md-3">
+                    <h6>Nøytrale</h6>
+                    <p class="text-secondary fs-3">{{ neutral_signals }}</p>
+                </div>
+                <div class="col-md-3">
+                    <h6>Markedssentiment</h6>
+                    <p class="fs-3">{{ market_sentiment }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

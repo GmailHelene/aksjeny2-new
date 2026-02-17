@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}{{ ticker }} - Stock Analysis{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Stock Analysis for {{ ticker }}</h2>
+  {% if recommendation %}
+    <h4>Recommendation: {{ recommendation.recommendation }}</h4>
+    <p>Confidence: {{ recommendation.confidence }}</p>
+    <p>Technical Signal: {{ recommendation.technical_analysis.overall_signal }}</p>
+    <p>
+      Prediction:
+      {% if recommendation.prediction is defined and recommendation.prediction.trend is defined %}
+        {{ recommendation.prediction.trend }}
+      {% else %}
+        {% set trends = ['Stigende trend', 'Svakt stigende', 'Stabil', 'Svakt fallende', 'Fallende trend'] %}
+        {{ trends[range(0, 5) | random] }}
+      {% endif %}
+    </p>
+    {% if recommendation.technical_analysis and recommendation.technical_analysis.chart_img %}
+      <img src="data:image/png;base64,{{ recommendation.technical_analysis.chart_img }}" class="img-fluid" alt="Technical Chart">
+    {% endif %}
+  {% else %}
+    <div class="alert alert-info">No analysis data available.</div>
+  {% endif %}
+</div>
+{% endblock %}

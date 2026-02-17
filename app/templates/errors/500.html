@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Teknisk feil - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="error-page">
+                <h1 class="display-1 text-danger">500</h1>
+                <h2>Teknisk feil</h2>
+                <p class="lead">Det oppstod en teknisk feil. Vi jobber med å løse problemet.</p>
+                <div class="mt-4">
+                    <a href="/" class="btn btn-primary">
+                        <i class="bi bi-house"></i> Tilbake til forsiden
+                    </a>
+                    <button onclick="history.back()" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left"></i> Tilbake
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

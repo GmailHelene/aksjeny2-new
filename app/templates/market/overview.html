@@ -1,0 +1,348 @@
+<!-- Market Overview Component -->
+<!-- Market data component - designed to be included in other pages -->
+
+{% set oslo_stocks = market_data.oslo_stocks if market_data and market_data.oslo_stocks is defined else [] %}
+{% set global_stocks = market_data.global_stocks if market_data and market_data.global_stocks is defined else [] %}
+{% set crypto = market_data.crypto_stocks if market_data and market_data.crypto_stocks is defined else [] %}
+{% set currency = market_data.currency if market_data and market_data.currency is defined else {} %}
+
+    <!-- Oslo Børs Market Overview -->
+    <h2 class="h3 mb-3 text-dark">Oslo Børs Market Overview</h2>
+    <div class="card border-0 shadow mb-4">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Selskap</th>
+                            <th class="text-end">Siste pris</th>
+                            <th class="text-end">Endring %</th>
+                            <th class="text-center">Signal</th>
+                            <th class="text-center">RSI</th>
+                            <th class="text-end">Volum</th>
+                            <th class="text-center">Handlinger</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if oslo_stocks %}
+                            {% for stock in oslo_stocks %}
+                                {% if loop.index <= 18 %}
+                                <tr>
+                                    <td><strong>{{ stock.symbol }}</strong></td>
+                                    <td>{{ stock.name|default(stock.symbol) }}</td>
+                                    <td class="text-end">{{ stock.price|default('N/A') }}</td>
+                                    <td class="text-end">
+                                        <span class="{% if stock.change_percent is defined and stock.change_percent > 0 %}text-success{% elif stock.change_percent is defined and stock.change_percent < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                            {{ stock.change_percent|default('N/A') }}%
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge {% if stock.signal == 'BUY' %}bg-success{% elif stock.signal == 'SELL' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                            {% if stock.signal == 'BUY' %}KJØP{% elif stock.signal == 'SELL' %}SELG{% else %}{{ stock.signal|default('N/A') }}{% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">{{ stock.rsi|default('N/A') }}</td>
+                                    <td class="text-end">{{ stock.volume|default('N/A') }}</td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('stocks.details', symbol=stock.symbol) }}" class="btn btn-outline-primary" data-bs-toggle="tooltip" title="Se aksjeinformasjon og grafer"><i class="bi bi-graph-up"></i></a>
+                                            <a href="{{ url_for('analysis.warren_buffett') }}?ticker={{ stock.symbol }}" class="btn btn-outline-info" data-bs-toggle="tooltip" title="Se handelsanbefaling"><i class="bi bi-bar-chart"></i></a>
+                                            <a href="https://www.nordnet.no/market/stocks/{{ stock.symbol }}" target="_blank" class="btn btn-outline-success" data-bs-toggle="tooltip" title="Åpne i Nordnet (ekstern lenke)"><i class="bi bi-cart-plus"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted">Ingen data tilgjengelig for Oslo Børs.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer text-end">
+            <a href="{{ url_for('stocks.list_oslo') }}" class="btn btn-primary">
+                <i class="bi bi-list-ul"></i> Se alle Oslo Børs aksjer
+            </a>
+        </div>
+    </div>
+    
+    <!-- Global Markets -->
+    <h2 class="h3 mb-3 text-dark">Global Markets</h2>
+    <div class="card border-0 shadow mb-4">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Selskap</th>
+                            <th class="text-end">Siste pris</th>
+                            <th class="text-end">Endring %</th>
+                            <th class="text-center">Signal</th>
+                            <th class="text-center">RSI</th>
+                            <th class="text-end">Volum</th>
+                            <th class="text-center">Handlinger</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if global_stocks %}
+                            {% for stock in global_stocks %}
+                                {% if loop.index <= 15 %}
+                                <tr>
+                                    <td><strong>{{ stock.symbol }}</strong></td>
+                                    <td>
+                                        {% if stock.symbol == 'AAPL' %}Apple Inc
+                                        {% elif stock.symbol == 'MSFT' %}Microsoft Corporation
+                                        {% elif stock.symbol == 'AMZN' %}Amazon.com Inc
+                                        {% elif stock.symbol == 'GOOGL' %}Alphabet Inc
+                                        {% elif stock.symbol == 'META' %}Meta Platforms Inc
+                                        {% elif stock.symbol == 'TSLA' %}Tesla Inc
+                                        {% elif stock.symbol == 'NVDA' %}NVIDIA Corporation
+                                        {% elif stock.symbol == 'JPM' %}JPMorgan Chase & Co
+                                        {% elif stock.symbol == 'JNJ' %}Johnson & Johnson
+                                        {% elif stock.symbol == 'V' %}Visa Inc
+                                        {% else %}{{ stock.name|default(stock.symbol) }}{% endif %}
+                                    </td>
+                                    <td class="text-end">{{ stock.price|default('N/A') }}</td>
+                                    <td class="text-end">
+                                        <span class="{% if stock.change_percent is defined and stock.change_percent > 0 %}text-success{% elif stock.change_percent is defined and stock.change_percent < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                            {{ stock.change_percent|default('N/A') }}%
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge {% if stock.signal == 'BUY' %}bg-success{% elif stock.signal == 'SELL' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                            {% if stock.signal == 'BUY' %}KJØP{% elif stock.signal == 'SELL' %}SELG{% else %}{{ stock.signal|default('N/A') }}{% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">{{ stock.rsi|default('N/A') }}</td>
+                                    <td class="text-end">{{ stock.volume|default('N/A') }}</td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('stocks.details', symbol=stock.symbol) }}" class="btn btn-outline-primary" data-bs-toggle="tooltip" title="Se aksjeinformasjon og grafer"><i class="bi bi-graph-up"></i></a>
+                                            <a href="{{ url_for('analysis.warren_buffett') }}?ticker={{ stock.symbol }}" class="btn btn-outline-info" data-bs-toggle="tooltip" title="Se handelsanbefaling"><i class="bi bi-bar-chart"></i></a>
+                                            <a href="https://www.nordnet.no/market/stocks/{{ stock.symbol }}" target="_blank" class="btn btn-outline-success" data-bs-toggle="tooltip" title="Åpne i Nordnet (ekstern lenke)"><i class="bi bi-cart-plus"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted">Ingen data tilgjengelig for globale aksjer.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer text-end">
+            <a href="{{ url_for('stocks.global_list') }}" class="btn btn-success">
+                <i class="bi bi-list-ul"></i> Se alle globale aksjer
+            </a>
+        </div>
+    </div>
+    
+    <!-- Crypto Markets -->
+    <h2 class="h3 mb-3 text-dark">Kryptovaluta</h2>
+    <div class="card border-0 shadow mb-4">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Navn</th>
+                            <th class="text-end">Pris</th>
+                            <th class="text-end">Endring %</th>
+                            <th class="text-center">Signal</th>
+                            <th class="text-center">Handlinger</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if crypto %}
+                            {% for currency in crypto %}
+                                <tr>
+                                    <td><strong>{{ currency.symbol }}</strong></td>
+                                    <td>
+                                        {% if currency.symbol == 'BTC-USD' %}Bitcoin
+                                        {% elif currency.symbol == 'ETH-USD' %}Ethereum
+                                        {% elif currency.symbol == 'XRP-USD' %}Ripple
+                                        {% elif currency.symbol == 'LTC-USD' %}Litecoin
+                                        {% elif currency.symbol == 'ADA-USD' %}Cardano
+                                        {% else %}{{ currency.name|default(currency.symbol) }}{% endif %}
+                                    </td>
+                                    <td class="text-end">{{ currency.price|default('N/A') }}</td>
+                                    <td class="text-end">
+                                        <span class="{% if currency.change_percent is defined and currency.change_percent > 0 %}text-success{% elif currency.change_percent is defined and currency.change_percent < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                            {{ currency.change_percent|default('N/A') }}%
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge {% if currency.signal == 'BUY' %}bg-success{% elif currency.signal == 'SELL' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                            {% if currency.signal == 'BUY' %}KJØP{% elif currency.signal == 'SELL' %}SELG{% else %}{{ currency.signal|default('N/A') }}{% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('stocks.details', symbol=currency.symbol) }}" class="btn btn-outline-primary" data-bs-toggle="tooltip" title="Se detaljinformasjon og grafer"><i class="bi bi-graph-up"></i></a>
+                                            <a href="{{ url_for('analysis.warren_buffett') }}?ticker={{ currency.symbol }}" class="btn btn-outline-info" data-bs-toggle="tooltip" title="Se handelsanbefaling"><i class="bi bi-bar-chart"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">Ingen kryptodata tilgjengelig.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer text-end">
+            <a href="{{ url_for('stocks.list_crypto') }}" class="btn btn-warning">
+                <i class="bi bi-list-ul"></i> Se alle kryptovalutaer
+            </a>
+        </div>
+    </div>
+    
+    <!-- Valutakurser -->
+    <h2 class="h3 mb-3 text-dark">Valutakurser</h2>
+    <div class="card border-0 shadow mb-4">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Valutapar</th>
+                            <th class="text-end">Kurs</th>
+                            <th class="text-end">Endring %</th>
+                            <th class="text-center">Signal</th>
+                            <th class="text-center">Handlinger</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if currency %}
+                            {% for ticker, data in currency.items() %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ data.name|default(ticker) }}</strong>
+                                    </td>
+                                    <td class="text-end">
+                                        {% if data.last_price %}
+                                            {{ data.last_price }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="{% if data.change_percent is defined and data.change_percent > 0 %}text-success{% elif data.change_percent is defined and data.change_percent < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                            {% if data.change_percent %}
+                                                {{ data.change_percent }}%
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge {% if data.signal == 'BUY' %}bg-success{% elif data.signal == 'SELL' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                            {% if data.signal == 'BUY' %}KJØP{% elif data.signal == 'SELL' %}SELG{% else %}{{ data.signal|default('N/A') }}{% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="{{ url_for('analysis.warren_buffett') }}?ticker={{ ticker }}" class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" title="Se handelsanbefaling">
+                                            <i class="bi bi-bar-chart"></i> Analyse
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">Ingen valutadata tilgjengelig.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hjelp og forklaringer - FLYTTET NED -->
+    <div class="card border-0 shadow mb-4 mt-5">
+        <div class="card-header bg-primary text-white">
+            <h2 class="h5 mb-0">Hjelp og forklaringer</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h3 class="h6 mb-3">Tekniske indikatorer</h3>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item d-flex">
+                            <div class="me-3"><span class="badge bg-info">RSI</span></div>
+                            <div>
+                                <strong>Relative Strength Index</strong> - Teknisk indikator (0-100) som måler styrken i en prisutvikling. Verdier over 70 indikerer overkjøpt, under 30 indikerer oversolgt.
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <div class="me-3"><span class="badge bg-info">MACD</span></div>
+                            <div>
+                                <strong>Moving Average Convergence Divergence</strong> - Momentumindikator som viser forholdet mellom to glidende gjennomsnitt. Brukes for å identifisere endringer i styrke, retning, momentum og varighet av en trend.
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <div class="me-3"><span class="badge bg-info">Signal</span></div>
+                            <div>
+                                <strong>Handelssignal</strong> - En sammensatt vurdering basert på flere tekniske indikatorer, inkludert RSI, MACD, glidende gjennomsnitt og trendanalyse.
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <div class="me-3"><span class="badge bg-success">BUY</span></div>
+                            <div>
+                                <strong>Kjøpssignal</strong> - Tekniske indikatorer peker mot stigende kurser. Dette kan være basert på oversold RSI, positive MACD-krysninger, volumøkning eller støtte-/motstandsbrudd.
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <div class="me-3"><span class="badge bg-danger">SELL</span></div>
+                            <div>
+                                <strong>Salgssignal</strong> - Tekniske indikatorer peker mot fallende kurser. Dette kan være basert på overbought RSI, negative MACD-krysninger, volumreduksjon eller brudd av støttenivåer.
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <div class="me-3"><span class="badge bg-secondary">HOLD</span></div>
+                            <div>
+                                <strong>Hold-signal</strong> - Blandede eller nøytrale tekniske indikatorer som ikke gir en klar retning for kursutviklingen.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h3 class="h6 mb-3">Om dataene</h3>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <strong>Oppdateringsfrekvens:</strong> Kursdata oppdateres hvert 15-20 minutt for Oslo Børs og internasjonale markeder i åpningstid.
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Handelsanbefalinger:</strong> Basert på teknisk analyse og historiske mønstre. Ikke et tilbud om investeringsrådgivning.
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Datakilder:</strong> Markedsdata hentes fra flere finansielle API-tjenester og børser.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="d-flex justify-content-between mb-5">
+        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Tilbake til forsiden
+        </a>
+        <a href="{{ url_for('analysis.technical') }}" class="btn btn-primary">
+            <i class="bi bi-graph-up"></i> Teknisk analyse
+        </a>
+    </div>
+<!-- End of Market Overview Component -->

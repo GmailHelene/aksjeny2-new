@@ -1,0 +1,678 @@
+{% extends "base.html" %}
+
+{% block title %}{{ watchlist.name }} - Aksjeradar{% endblock %}
+
+{% block head %}
+<style>
+.watchlist-header {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    padding: 30px 0;
+    border-radius: 15px;
+    margin-bottom: 30px;
+}
+
+.stock-card {
+    background: #ffffff;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.stock-card:hover {
+    transform: translateY(-5px);
+}
+
+.price-up { color: #28a745; }
+.price-down { color: #dc3545; }
+.price-neutral { color: #6c757d; }
+
+.performance-badge {
+    font-size: 0.875rem;
+    padding: 4px 8px;
+    border-radius: 20px;
+}
+
+.performance-positive {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+}
+
+.performance-negative {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+.performance-neutral {
+    background: rgba(108, 117, 125, 0.1);
+    color: #6c757d;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.mini-chart {
+    height: 60px;
+    background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Watchlist Header -->
+    <div class="watchlist-header text-center">
+        <div class="container">
+            <h1 class="display-4 mb-2">
+                <i class="bi bi-star me-3"></i>{{ watchlist.name }}
+            </h1>
+            {% if watchlist.description %}
+            <p class="lead mb-3">{{ watchlist.description }}</p>
+            {% endif %}
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <h4>{{ stock_data|length }}</h4>
+                    <small>Aksjer fulgt</small>
+                </div>
+                <div class="col-md-3">
+                    <h4 class="price-neutral">-</h4>
+                    <small>Gjn. Ytelse</small>
+                </div>
+                <div class="col-md-3">
+                    <h4>-</h4>
+                    <small>Total Verdi</small>
+                </div>
+                <div class="col-md-3">
+                    <h4>-</h4>
+                    <small>Total Gevinst</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="d-flex gap-3 align-items-center">
+                <button class="btn btn-primary" id="addStockBtn">
+                    <i class="bi bi-plus me-2"></i>Legg til aksje
+                </button>
+                <!-- Rediger overvåkningsliste button removed for UX fix -->
+                <button class="btn btn-outline-secondary" id="exportBtn">
+                    <i class="bi bi-download me-2"></i>Eksporter
+                </button>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="notifications" {{ 'checked' if watchlist.notifications_enabled else '' }}>
+                    <label class="form-check-label" for="notifications">
+                        Varsler
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="input-group">
+                <input type="text" class="form-control" id="stockSearchInput" placeholder="Søk etter aksjer...">
+                <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stocks Grid -->
+    <div class="row">
+        {% if stock_data %}
+            {% for stock in stock_data %}
+            <div class="col-lg-6 col-xl-4">
+                <div class="stock-card" data-symbol="{{ stock.symbol }}">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="fw-bold text-primary mb-1">{{ stock.symbol }}</h5>
+                            <p class="text-muted mb-0 small">{{ stock.name }}</p>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('stocks.details', symbol=stock.symbol) }}">
+                                    <i class="bi bi-graph-up me-2"></i>Vis detaljer
+                                </a></li>
+                                <li><a class="dropdown-item" href="#">
+                                    <i class="bi bi-bell me-2"></i>Sett varsel
+                                </a></li>
+                                <li><a class="dropdown-item" href="#">
+                                    <i class="bi bi-plus me-2"></i>Legg til i portefølje
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="removeFromWatchlist('{{ stock.symbol }}', this)">
+                                    <i class="bi bi-trash me-2"></i>Fjern
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <h4 class="stock-price
+                                {% if stock.change > 0 %} price-up{% elif stock.change < 0 %} price-down{% else %} price-neutral{% endif %}">
+                                {{ "%.2f"|format(stock.price) }}
+                                {% if stock.symbol.endswith('.OL') %}NOK{% else %}${% endif %}
+                            </h4>
+                        </div>
+                        <div class="col-6 text-end">
+                            <span class="stock-change performance-badge 
+                                {% if stock.change_percent > 0 %}performance-positive{% elif stock.change_percent < 0 %}performance-negative{% else %}performance-neutral{% endif %}">
+                                {% if stock.change_percent > 0 %}+{% endif %}{{ "%.2f"|format(stock.change_percent) }}%
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted">Change</small><br>
+                            <span class="
+                                {% if stock.change > 0 %}price-up{% elif stock.change < 0 %}price-down{% else %}price-neutral{% endif %}">
+                                {% if stock.change > 0 %}+{% endif %}{{ "%.2f"|format(stock.change) }}
+                            </span>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Volume</small><br>
+                            <span>{{ stock.volume }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Mini Chart Placeholder -->
+                    <div class="mini-chart mb-3">
+                        <i class="bi bi-graph-up me-2"></i>7-day trend
+                    </div>
+
+                    <div class="action-buttons">
+                        <a href="{{ url_for('stocks.details', symbol=stock.symbol) }}" class="btn btn-sm btn-outline-primary flex-fill">
+                            <i class="bi bi-info-circle me-1"></i>Details
+                        </a>
+                        <button class="btn btn-sm btn-outline-success flex-fill">
+                            <i class="bi bi-graph-up me-1"></i>Analyze
+                        </button>
+                    </div>
+
+                    <!-- Additional Info -->
+                    <div class="row mt-3 pt-3 border-top">
+                        <div class="col-4 text-center">
+                            <small class="text-muted">High</small><br>
+                            <small class="fw-bold">{{ "%.2f"|format(stock.high|default(stock.price * 1.05)) }}</small>
+                        </div>
+                        <div class="col-4 text-center">
+                            <small class="text-muted">Low</small><br>
+                            <small class="fw-bold">{{ "%.2f"|format(stock.low|default(stock.price * 0.95)) }}</small>
+                        </div>
+                        <div class="col-4 text-center">
+                            <small class="text-muted">P/E</small><br>
+                            <small class="fw-bold">{{ stock.pe_ratio|default("N/A") }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox text-muted mb-3" style="font-size: 3rem;"></i>
+                    <h3 class="text-muted">Ingen aksjer lagt til ennå</h3>
+                    <p class="text-muted mb-4">Start med å bygge overvåkningslisten din ved å legge til aksjer du vil følge.</p>
+                    <button class="btn btn-primary btn-lg" id="addFirstStockBtn">
+                        <i class="bi bi-plus me-2"></i>Legg til din første aksje
+                    </button>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Performance Summary -->
+    {% if stock_data %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="stock-card">
+                <h4 class="mb-4">
+                    <i class="bi bi-pie-chart me-2"></i>Watchlist Performance Summary
+                </h4>
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <h5 class="price-up">+$3,245</h5>
+                        <small class="text-muted">Total Gain/Loss</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h5 class="price-up">+2.61%</h5>
+                        <small class="text-muted">Overall Return</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h5>7 of 10</h5>
+                        <small class="text-muted">Positive Performers</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h5>EQNR.OL</h5>
+                        <small class="text-muted">Best Performer</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+async function removeFromWatchlist(symbol, buttonElement) {
+    if (!confirm(`Er du sikker på at du vil fjerne ${symbol} fra denne overvåkningslisten?`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/watchlist/api/watchlist/remove', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({
+                symbol: symbol
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Remove the stock card from the DOM
+            const stockCard = buttonElement.closest('.col-lg-6');
+            if (stockCard) {
+                stockCard.style.transition = 'all 0.3s ease';
+                stockCard.style.opacity = '0';
+                stockCard.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    stockCard.remove();
+                }, 300);
+            }
+            
+            // Show success message
+            showSuccessMessage(data.message || `${symbol} fjernet fra overvåkningslisten`);
+        } else {
+            showErrorMessage(data.error || 'Kunne ikke fjerne fra overvåkningslisten');
+        }
+    } catch (error) {
+        console.error('Error removing from watchlist:', error);
+        showErrorMessage('Kunne ikke fjerne fra overvåkningslisten');
+    }
+}
+
+function getCsrfToken() {
+    // Try to get CSRF token from meta tag or form
+    const metaToken = document.querySelector('meta[name="csrf-token"]');
+    if (metaToken) return metaToken.getAttribute('content');
+    
+    const formToken = document.querySelector('input[name="csrf_token"]');
+    if (formToken) return formToken.value;
+    
+    return '';
+}
+
+function showSuccessMessage(message) {
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
+    alert.style.top = '20px';
+    alert.style.right = '20px';
+    alert.style.zIndex = '9999';
+    alert.innerHTML = `
+        <i class="bi bi-check-circle me-2"></i>${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.remove();
+        }
+    }, 5000);
+}
+
+function showErrorMessage(message) {
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+    alert.style.top = '20px';
+    alert.style.right = '20px';
+    alert.style.zIndex = '9999';
+    alert.innerHTML = `
+        <i class="bi bi-exclamation-circle me-2"></i>${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.remove();
+        }
+    }, 5000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Add Stock button handler
+    const addStockBtn = document.getElementById('addStockBtn');
+    if (addStockBtn) {
+        addStockBtn.addEventListener('click', function() {
+            showAddStockModal();
+        });
+    }
+
+    // Add First Stock button handler
+    const addFirstStockBtn = document.getElementById('addFirstStockBtn');
+    if (addFirstStockBtn) {
+        addFirstStockBtn.addEventListener('click', function() {
+            showAddStockModal();
+        });
+    }
+
+    // Edit Watchlist button handler
+    const editWatchlistBtn = document.getElementById('editWatchlistBtn');
+    if (editWatchlistBtn) {
+        editWatchlistBtn.addEventListener('click', function() {
+            showEditWatchlistModal();
+        });
+    }
+
+    // Search functionality
+    const searchBtn = document.getElementById('searchBtn');
+    const searchInput = document.getElementById('stockSearchInput');
+    
+    if (searchBtn && searchInput) {
+        searchBtn.addEventListener('click', function() {
+            performStockSearch();
+        });
+        
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performStockSearch();
+            }
+        });
+    }
+
+    // Notification toggle
+    const notificationsToggle = document.getElementById('notifications');
+    if (notificationsToggle) {
+        notificationsToggle.addEventListener('change', function() {
+            const enabled = this.checked;
+            updateNotificationSettings(enabled);
+        });
+    }
+
+    // Auto-refresh data every minute
+    setInterval(function() {
+        refreshStockData();
+    }, 60000);
+});
+
+function showAddStockModal() {
+    // Create and show modal for adding stocks
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'addStockModal';
+    modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Legg til aksje</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addStockForm">
+                        <div class="mb-3">
+                            <label for="stockSymbol" class="form-label">Aksjesymbol</label>
+                            <input type="text" class="form-control" id="stockSymbol" placeholder="F.eks. AAPL, GOOGL" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="stockName" class="form-label">Firmanavn (valgfritt)</label>
+                            <input type="text" class="form-control" id="stockName" placeholder="F.eks. Apple Inc.">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Avbryt</button>
+                    <button type="button" class="btn btn-primary" onclick="addStockToWatchlist()">Legg til aksje</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+    
+    // Remove modal from DOM when hidden
+    modal.addEventListener('hidden.bs.modal', function() {
+        modal.remove();
+    });
+}
+
+function showEditWatchlistModal() {
+    // Get current watchlist details
+    const watchlistName = document.querySelector('.watchlist-name')?.textContent || '';
+    const watchlistDescription = document.querySelector('.lead')?.textContent || '';
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'editWatchlistModal';
+    modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Rediger overvåkningsliste</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editWatchlistForm">
+                        <div class="mb-3">
+                            <label for="watchlistName" class="form-label">Navn</label>
+                            <input type="text" class="form-control" id="watchlistName" value="${watchlistName}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="watchlistDescription" class="form-label">Beskrivelse</label>
+                            <textarea class="form-control" id="watchlistDescription" rows="3">${watchlistDescription}</textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Avbryt</button>
+                    <button type="button" class="btn btn-primary" onclick="updateWatchlist()">Lagre endringer</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+    
+    modal.addEventListener('hidden.bs.modal', function() {
+        modal.remove();
+    });
+}
+
+async function addStockToWatchlist() {
+    const symbol = document.getElementById('stockSymbol').value.trim().toUpperCase();
+    const name = document.getElementById('stockName').value.trim();
+    
+    if (!symbol) {
+        showErrorMessage('Vennligst skriv inn et aksjesymbol');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/watchlist/api/watchlist/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({
+                symbol: symbol,
+                name: name
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showSuccessMessage(`${symbol} lagt til i overvåkningslisten`);
+            // Close modal and refresh page
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addStockModal'));
+            modal.hide();
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        } else {
+            showErrorMessage(data.error || 'Kunne ikke legge til aksjen');
+        }
+    } catch (error) {
+        console.error('Error adding stock:', error);
+        showErrorMessage('Kunne ikke legge til aksjen');
+    }
+}
+
+async function updateWatchlist() {
+    const name = document.getElementById('watchlistName').value.trim();
+    const description = document.getElementById('watchlistDescription').value.trim();
+    
+    if (!name) {
+        showErrorMessage('Vennligst skriv inn et navn for overvåkningslisten');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/watchlist/api/watchlist/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({
+                name: name,
+                description: description
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showSuccessMessage('Overvåkningsliste oppdatert');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editWatchlistModal'));
+            modal.hide();
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        } else {
+            showErrorMessage(data.error || 'Kunne ikke oppdatere overvåkningslisten');
+        }
+    } catch (error) {
+        console.error('Error updating watchlist:', error);
+        showErrorMessage('Kunne ikke oppdatere overvåkningslisten');
+    }
+}
+
+function performStockSearch() {
+    const query = document.getElementById('stockSearchInput').value.trim();
+    
+    if (!query) {
+        showErrorMessage('Vennligst skriv inn et søkeord');
+        return;
+    }
+    
+    // Redirect to search page or show search results
+    window.location.href = `/stocks/search?q=${encodeURIComponent(query)}`;
+}
+
+async function updateNotificationSettings(enabled) {
+    try {
+        const response = await fetch('/watchlist/api/notifications', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({
+                enabled: enabled
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showSuccessMessage(enabled ? 'Varsler aktivert' : 'Varsler deaktivert');
+        } else {
+            showErrorMessage('Kunne ikke oppdatere varslingsinnstillinger');
+        }
+    } catch (error) {
+        console.error('Error updating notifications:', error);
+        showErrorMessage('Kunne ikke oppdatere varslingsinnstillinger');
+    }
+}
+
+async function refreshStockData() {
+    try {
+        // Get current stock symbols from the page
+        const stockCards = document.querySelectorAll('[data-symbol]');
+        const symbols = Array.from(stockCards).map(card => card.getAttribute('data-symbol'));
+        if (symbols.length === 0) return;
+        const response = await fetch('/watchlist/api/refresh', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({ symbols })
+        });
+        const data = await response.json();
+        if (data.success && data.stocks) {
+            data.stocks.forEach(stock => {
+                updateStockCard(stock);
+            });
+        } else {
+            showErrorMessage(data.error || 'Kunne ikke oppdatere aksjedata.');
+            // Optionally stop spinner or show fallback UI here
+        }
+    } catch (error) {
+        console.error('Error refreshing stock data:', error);
+        showErrorMessage('Teknisk feil ved oppdatering av aksjedata.');
+        // Optionally stop spinner or show fallback UI here
+    }
+}
+
+function updateStockCard(stockData) {
+    const stockCard = document.querySelector(`[data-symbol="${stockData.symbol}"]`);
+    if (!stockCard) return;
+    
+    // Update price
+    const priceElement = stockCard.querySelector('.stock-price');
+    if (priceElement && stockData.price) {
+        priceElement.textContent = `$${stockData.price.toFixed(2)}`;
+    }
+    
+    // Update change
+    const changeElement = stockCard.querySelector('.stock-change');
+    if (changeElement && stockData.change !== undefined) {
+        const changePercent = stockData.change_percent || 0;
+        changeElement.textContent = `${stockData.change >= 0 ? '+' : ''}$${stockData.change.toFixed(2)} (${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`;
+        
+        // Update color
+        changeElement.className = 'stock-change ' + (stockData.change >= 0 ? 'text-success' : 'text-danger');
+    }
+}
+</script>
+{% endblock %}

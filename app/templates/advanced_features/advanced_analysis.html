@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}Avansert Markedsanalyse | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Error handling -->
+    {% if error %}
+    <div class="alert alert-warning" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i> {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- Market Overview Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up me-2"></i>Markedsoversikt
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if analysis.market_overview and not analysis.market_overview.error %}
+                        <div class="row">
+                            <!-- Market status -->
+                            <div class="col-md-4">
+                                <h6>Markedsstatus</h6>
+                                <p class="lead">{{ analysis.market_overview.status }}</p>
+                            </div>
+                            
+                            <!-- Key indices -->
+                            <div class="col-md-4">
+                                <h6>Hovedindekser</h6>
+                                {% for index, value in analysis.market_overview.indices.items() %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>{{ index }}</span>
+                                    <span class="{% if value.change > 0 %}text-success{% elif value.change < 0 %}text-danger{% endif %}">
+                                        {{ value.value }} ({{ value.change }}%)
+                                    </span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- Market sectors -->
+                            <div class="col-md-4">
+                                <h6>Sektorer</h6>
+                                {% for sector, value in analysis.market_overview.sectors.items() %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>{{ sector }}</span>
+                                    <span class="{% if value.change > 0 %}text-success{% elif value.change < 0 %}text-danger{% endif %}">
+                                        {{ value.change }}%
+                                    </span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Markedsoversikt er midlertidig utilgjengelig.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sector Analysis Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pie-chart me-2"></i>Sektoranalyse
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if analysis.sector_analysis and not analysis.sector_analysis.error %}
+                        <div class="row">
+                            <!-- Sector performance -->
+                            <div class="col-md-6">
+                                <h6>Sektorutvikling</h6>
+                                {% for sector, data in analysis.sector_analysis.sectors.items() %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>{{ sector }}</span>
+                                    <span class="{% if data.performance > 0 %}text-success{% elif data.performance < 0 %}text-danger{% endif %}">
+                                        {{ data.performance }}%
+                                    </span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- Sector trends -->
+                            <div class="col-md-6">
+                                <h6>Sektortrender</h6>
+                                {% for sector, trend in analysis.sector_analysis.trends.items() %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>{{ sector }}</span>
+                                    <span class="badge {% if trend == 'Positiv' %}bg-success{% elif trend == 'Negativ' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                        {{ trend }}
+                                    </span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Sektoranalyse er midlertidig utilgjengelig.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Economic Indicators Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bank me-2"></i>Økonomiske Indikatorer
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if analysis.economic_indicators and not analysis.economic_indicators.error %}
+                        <div class="row">
+                            {% for indicator, value in analysis.economic_indicators.indicators.items() %}
+                            <div class="col-md-3 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title">{{ indicator }}</h6>
+                                        <p class="card-text lead">{{ value.value }}</p>
+                                        <small class="text-muted">
+                                            {% if value.trend == 'up' %}
+                                                <i class="bi bi-arrow-up-circle text-success"></i>
+                                            {% elif value.trend == 'down' %}
+                                                <i class="bi bi-arrow-down-circle text-danger"></i>
+                                            {% else %}
+                                                <i class="bi bi-dash-circle text-warning"></i>
+                                            {% endif %}
+                                            {{ value.change }}%
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Økonomiske indikatorer er midlertidig utilgjengelig.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technical Analysis Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up-arrow me-2"></i>Teknisk Analyse
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if analysis.technical_analysis and not analysis.technical_analysis.error %}
+                        <div class="row">
+                            <!-- Technical signals -->
+                            <div class="col-md-6">
+                                <h6>Tekniske Signaler</h6>
+                                {% for signal, data in analysis.technical_analysis.signals.items() %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>{{ signal }}</span>
+                                    <span class="badge {% if data.signal == 'buy' %}bg-success{% elif data.signal == 'sell' %}bg-danger{% else %}bg-warning{% endif %}">
+                                        {{ data.signal|upper }}
+                                    </span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- Chart patterns -->
+                            <div class="col-md-6">
+                                <h6>Chartmønstre</h6>
+                                {% for pattern, data in analysis.technical_analysis.patterns.items() %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>{{ pattern }}</span>
+                                    <span class="badge {% if data.type == 'bullish' %}bg-success{% elif data.type == 'bearish' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                        {{ data.type|upper }}
+                                    </span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Teknisk analyse er midlertidig utilgjengelig.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Sentiment Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-emoji-smile me-2"></i>Markedssentiment
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if analysis.sentiment_analysis and not analysis.sentiment_analysis.error %}
+                        <div class="row">
+                            <!-- Overall sentiment -->
+                            <div class="col-md-4">
+                                <h6>Overordnet Sentiment</h6>
+                                <p class="lead">{{ analysis.sentiment_analysis.overall }}</p>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {{ analysis.sentiment_analysis.score }}%"
+                                         aria-valuenow="{{ analysis.sentiment_analysis.score }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                        {{ analysis.sentiment_analysis.score }}%
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Sentiment indicators -->
+                            <div class="col-md-8">
+                                <h6>Sentimentindikatorer</h6>
+                                <div class="row">
+                                    {% for indicator, value in analysis.sentiment_analysis.indicators.items() %}
+                                    <div class="col-md-6 mb-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>{{ indicator }}</span>
+                                            <span class="{% if value > 60 %}text-success{% elif value < 40 %}text-danger{% else %}text-warning{% endif %}">
+                                                {{ value }}%
+                                            </span>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Markedssentiment er midlertidig utilgjengelig.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

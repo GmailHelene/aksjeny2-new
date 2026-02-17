@@ -1,0 +1,804 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    /* Mobile Portfolio Styles */
+    .portfolio-container {
+        padding: 20px;
+        padding-bottom: 100px;
+    }
+    
+    .portfolio-header {
+        background: linear-gradient(135deg, #667eea 0%, #000000 100%);
+        color: white;
+        padding: 25px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .portfolio-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+    .portfolio-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #007bff;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .performance-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .performance-chart {
+        height: 200px;
+        margin: 15px 0;
+    }
+    
+    .positions-section {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .position-item {
+        padding: 15px 0;
+        border-bottom: 1px solid #f8f9fa;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .position-item:last-child {
+        border-bottom: none;
+    }
+    
+    .position-left {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .position-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+    
+    .position-info {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+    
+    .position-symbol {
+        font-weight: bold;
+        font-size: 1.1rem;
+        color: #343a40;
+    }
+    
+    .position-shares {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .position-right {
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+    
+    .position-value {
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+    
+    .position-pnl {
+        font-size: 0.9rem;
+    }
+    
+    .position-pnl.positive {
+        color: #28a745;
+    }
+    
+    .position-pnl.negative {
+        color: #dc3545;
+    }
+    
+    .allocation-chart {
+        height: 300px;
+        margin: 20px 0;
+    }
+    
+    .allocation-list {
+        margin-top: 15px;
+    }
+    
+    .allocation-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .allocation-item:last-child {
+        border-bottom: none;
+    }
+    
+    .allocation-color {
+        width: 16px;
+        height: 16px;
+        border-radius: 3px;
+        margin-right: 10px;
+    }
+    
+    .allocation-left {
+        display: flex;
+        align-items: center;
+    }
+    
+    .orders-section {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .order-item {
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .order-left {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .order-symbol {
+        font-weight: bold;
+        color: #007bff;
+    }
+    
+    .order-details {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .order-status {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    
+    .order-status.filled {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .order-status.pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .order-status.cancelled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .filter-tabs {
+        display: flex;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 4px;
+        margin-bottom: 15px;
+    }
+    
+    .filter-tab {
+        flex: 1;
+        padding: 8px;
+        text-align: center;
+        border: none;
+        background: transparent;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-tab.active {
+        background: white;
+        color: #007bff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .performance-metrics {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+        .metric-card {
+        background: darkblue;
+        border: none;
+        border-radius: 10px;
+        color: white;
+    }
+    
+    .metric-value {
+        font-size: 1.3rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .metric-value.positive {
+        color: #28a745;
+    }
+    
+    .metric-value.negative {
+        color: #dc3545;
+    }
+    
+    .metric-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+    
+    .action-buttons {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .action-btn {
+        padding: 15px;
+        border: none;
+        border-radius: 12px;
+        font-weight: bold;
+        color: white;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .action-btn:hover {
+        text-decoration: none;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .action-btn.primary {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+    }
+    
+    .action-btn.success {
+        background: linear-gradient(135deg, #28a745, #20c997);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 480px) {
+        .portfolio-container {
+            padding: 15px;
+        }
+        
+        .portfolio-value {
+            font-size: 2rem;
+        }
+        
+        .portfolio-stats {
+            grid-template-columns: 1fr;
+        }
+        
+        .performance-metrics {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="portfolio-container">
+    <!-- Portfolio Header -->
+    <div class="portfolio-header">
+        <div class="portfolio-value" id="portfolioValue">$125,432.50</div>
+        <div class="portfolio-change positive" id="portfolioChange">
+            <i class="bi bi-arrow-up"></i>
+            +$2,341.20 (+1.91%) today
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="portfolio-stats">
+        <div class="stat-card">
+            <div class="stat-value" id="totalPositions">8</div>
+            <div class="stat-label">Positions</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="buyingPower">$15,000</div>
+            <div class="stat-label">Buying Power</div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <a href="{{ url_for('mobile_trading.quick_trade') }}" class="action-btn success">
+            <i class="bi bi-plus-lg"></i>
+            Buy Stocks
+        </a>
+        <a href="{{ url_for('mobile_trading.mobile_watchlist') }}" class="action-btn primary">
+            <i class="bi bi-eye"></i>
+            Watchlist
+        </a>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="performance-card">
+        <h5 class="mb-3">
+            <i class="bi bi-graph-up text-success"></i>
+            Performance Overview
+        </h5>
+        <div class="performance-metrics">
+            <div class="metric-card">
+                <div class="metric-value positive" id="dayReturn">+1.91%</div>
+                <div class="metric-label">Day Return</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value positive" id="totalReturn">+12.45%</div>
+                <div class="metric-label">Total Return</div>
+            </div>
+        </div>
+        <div class="performance-chart">
+            <canvas id="performanceChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Holdings -->
+    <div class="positions-section">
+        <h5 class="mb-3">
+            <i class="bi bi-briefcase text-primary"></i>
+            Your Holdings
+        </h5>
+        <div class="filter-tabs">
+            <button class="filter-tab active" onclick="filterPositions('all')">All</button>
+            <button class="filter-tab" onclick="filterPositions('stocks')">Stocks</button>
+            <button class="filter-tab" onclick="filterPositions('options')">Options</button>
+        </div>
+        <div id="positionsList">
+            <!-- Positions will be loaded here -->
+            <div class="text-center py-4">
+                <div class="spinner-border" role="status" aria-label="Loading"></div>
+                Loading positions...
+            </div>
+        </div>
+    </div>
+
+    <!-- Portfolio Allocation -->
+    <div class="performance-card">
+        <h5 class="mb-3">
+            <i class="bi bi-pie-chart text-warning"></i>
+            Portfolio Allocation
+        </h5>
+        <div class="allocation-chart">
+            <canvas id="allocationChart"></canvas>
+        </div>
+        <div class="allocation-list" id="allocationList">
+            <!-- Allocation list will be populated -->
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="orders-section">
+        <h5 class="mb-3">
+            <i class="bi bi-clock text-info"></i>
+            Recent Orders
+        </h5>
+        <div id="recentOrders">
+            <!-- Orders will be loaded here -->
+            <div class="text-center py-4">
+                <div class="spinner-border" role="status" aria-label="Loading"></div>
+                Loading orders...
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Navigation -->
+<div class="mobile-bottom-nav">
+    <div class="bottom-nav-items">
+        <a href="{{ url_for('mobile_trading.mobile_dashboard') }}" class="bottom-nav-item">
+            <div class="bottom-nav-icon">🏠</div>
+            <div class="bottom-nav-label">Home</div>
+        </a>
+        <a href="{{ url_for('mobile_trading.mobile_portfolio') }}" class="bottom-nav-item active">
+            <div class="bottom-nav-icon">💼</div>
+            <div class="bottom-nav-label">Portfolio</div>
+        </a>
+        <a href="{{ url_for('mobile_trading.quick_trade') }}" class="bottom-nav-item">
+            <div class="bottom-nav-icon">⚡</div>
+            <div class="bottom-nav-label">Trade</div>
+        </a>
+        <a href="{{ url_for('mobile_trading.mobile_watchlist') }}" class="bottom-nav-item">
+            <div class="bottom-nav-icon">👁️</div>
+            <div class="bottom-nav-label">Watch</div>
+        </a>
+        <a href="{{ url_for('mobile_trading.mobile_charts') }}" class="bottom-nav-item">
+            <div class="bottom-nav-icon">📊</div>
+            <div class="bottom-nav-label">Charts</div>
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let portfolioData = null;
+let performanceChart = null;
+let allocationChart = null;
+let currentFilter = 'all';
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadPortfolioData();
+    initializeCharts();
+});
+
+async function loadPortfolioData() {
+    try {
+        const response = await fetch('/mobile-trading/api/portfolio-summary');
+        const data = await response.json();
+        
+        if (data.success) {
+            portfolioData = data;
+            updatePortfolioHeader(data);
+            updatePortfolioStats(data);
+            updatePositionsList(data.top_positions);
+            updateRecentOrders(data.recent_orders);
+            updatePerformanceChart();
+            updateAllocationChart();
+        } else {
+            showError('Failed to load portfolio data');
+        }
+    } catch (error) {
+        console.error('Error loading portfolio:', error);
+        showError('Network error loading portfolio');
+    }
+}
+
+function updatePortfolioHeader(data) {
+    document.getElementById('portfolioValue').textContent = formatCurrency(data.total_value);
+    
+    const changeElement = document.getElementById('portfolioChange');
+    const changeIcon = data.daily_change >= 0 ? 'bi-arrow-up' : 'bi-arrow-down';
+    const changeClass = data.daily_change >= 0 ? 'positive' : 'negative';
+    const changeSign = data.daily_change >= 0 ? '+' : '';
+    
+    changeElement.className = `portfolio-change ${changeClass}`;
+    changeElement.innerHTML = `
+        <i class="bi ${changeIcon}"></i>
+        ${changeSign}${formatCurrency(data.daily_change)} (${data.daily_change_percent.toFixed(2)}%) today
+    `;
+}
+
+function updatePortfolioStats(data) {
+    document.getElementById('totalPositions').textContent = data.positions_count;
+    document.getElementById('buyingPower').textContent = formatCurrency(data.buying_power);
+    
+    // Update performance metrics
+    document.getElementById('dayReturn').textContent = `${data.daily_change_percent >= 0 ? '+' : ''}${data.daily_change_percent.toFixed(2)}%`;
+    document.getElementById('dayReturn').className = `metric-value ${data.daily_change_percent >= 0 ? 'positive' : 'negative'}`;
+    
+    // Mock total return calculation
+    const totalReturn = ((data.total_value - 110000) / 110000) * 100; // Assuming initial investment of 110k
+    document.getElementById('totalReturn').textContent = `${totalReturn >= 0 ? '+' : ''}${totalReturn.toFixed(2)}%`;
+    document.getElementById('totalReturn').className = `metric-value ${totalReturn >= 0 ? 'positive' : 'negative'}`;
+}
+
+function updatePositionsList(positions) {
+    const positionsList = document.getElementById('positionsList');
+    
+    if (!positions || positions.length === 0) {
+        positionsList.innerHTML = '<div class="text-center py-4 text-muted">No positions found</div>';
+        return;
+    }
+    
+    const html = positions.map(position => {
+        const pnlClass = position.unrealized_pnl >= 0 ? 'positive' : 'negative';
+        const pnlSign = position.unrealized_pnl >= 0 ? '+' : '';
+        const symbolInitials = position.symbol.substring(0, 2);
+        
+        return `
+            <div class="position-item" onclick="viewPositionDetails('${position.symbol}')">
+                <div class="position-left">
+                    <div class="position-icon">${symbolInitials}</div>
+                    <div class="position-info">
+                        <div class="position-symbol">${position.symbol}</div>
+                        <div class="position-shares">${position.shares} shares @ ${formatCurrency(position.current_price)}</div>
+                    </div>
+                </div>
+                <div class="position-right">
+                    <div class="position-value">${formatCurrency(position.market_value)}</div>
+                    <div class="position-pnl ${pnlClass}">
+                        ${pnlSign}${formatCurrency(position.unrealized_pnl)} (${position.unrealized_pnl_percent.toFixed(2)}%)
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    positionsList.innerHTML = html;
+}
+
+function updateRecentOrders(orders) {
+    const ordersContainer = document.getElementById('recentOrders');
+    
+    if (!orders || orders.length === 0) {
+        ordersContainer.innerHTML = '<div class="text-center py-4 text-muted">No recent orders</div>';
+        return;
+    }
+    
+    const html = orders.map(order => {
+        const orderTime = new Date(order.timestamp).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        return `
+            <div class="order-item">
+                <div class="order-left">
+                    <div class="order-symbol">${order.symbol}</div>
+                    <div class="order-details">
+                        ${order.action.toUpperCase()} ${order.quantity} shares @ ${formatCurrency(order.price)}
+                    </div>
+                    <div class="order-details">${orderTime}</div>
+                </div>
+                <div class="order-status ${order.status}">${order.status}</div>
+            </div>
+        `;
+    }).join('');
+    
+    ordersContainer.innerHTML = html;
+}
+
+function initializeCharts() {
+    // Performance Chart
+    const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+    performanceChart = new Chart(performanceCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Portfolio Value',
+                data: [],
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: {
+                        callback: function(value) {
+                            return formatCurrency(value);
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    // Allocation Chart
+    const allocationCtx = document.getElementById('allocationChart').getContext('2d');
+    allocationChart = new Chart(allocationCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [],
+            datasets: [{
+                data: [],
+                backgroundColor: [
+                    '#007bff',
+                    '#28a745',
+                    '#ffc107',
+                    '#dc3545',
+                    '#6f42c1',
+                    '#fd7e14',
+                    '#20c997',
+                    '#e83e8c'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+
+function updatePerformanceChart() {
+    if (!portfolioData) return;
+    
+    // Mock historical performance data
+    const labels = [];
+    const data = [];
+    const currentValue = portfolioData.total_value;
+    
+    for (let i = 30; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+        
+        // Generate mock performance data with slight variations
+        const variation = (Math.random() - 0.5) * 2000;
+        const value = currentValue + variation - (i * 50); // Slight upward trend
+        data.push(value);
+    }
+    
+    performanceChart.data.labels = labels;
+    performanceChart.data.datasets[0].data = data;
+    performanceChart.update();
+}
+
+function updateAllocationChart() {
+    if (!portfolioData || !portfolioData.top_positions) return;
+    
+    const labels = portfolioData.top_positions.map(pos => pos.symbol);
+    const data = portfolioData.top_positions.map(pos => pos.market_value);
+    const percentages = portfolioData.top_positions.map(pos => 
+        (pos.market_value / portfolioData.total_value * 100).toFixed(1)
+    );
+    
+    allocationChart.data.labels = labels;
+    allocationChart.data.datasets[0].data = data;
+    allocationChart.update();
+    
+    // Update allocation list
+    const allocationList = document.getElementById('allocationList');
+    const colors = ['#007bff', '#28a745', '#ffc107', '#dc3545', '#6f42c1', '#fd7e14', '#20c997', '#e83e8c'];
+    
+    const html = portfolioData.top_positions.map((position, index) => `
+        <div class="allocation-item">
+            <div class="allocation-left">
+                <div class="allocation-color" style="background-color: ${colors[index]}"></div>
+                <span>${position.symbol}</span>
+            </div>
+            <span>${percentages[index]}%</span>
+        </div>
+    `).join('');
+    
+    allocationList.innerHTML = html;
+}
+
+function filterPositions(filterType) {
+    currentFilter = filterType;
+    
+    // Update active tab
+    document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // For demo, we'll just show all positions since we only have stocks
+    // In a real app, this would filter by position type
+    if (portfolioData) {
+        updatePositionsList(portfolioData.top_positions);
+    }
+}
+
+function viewPositionDetails(symbol) {
+    // Navigate to position details page
+    alert(`Viewing details for ${symbol}`);
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2
+    }).format(amount);
+}
+
+function showError(message) {
+    console.error(message);
+    alert(message);
+}
+
+// Add swipe gestures for mobile
+let startX = 0;
+let startY = 0;
+
+document.addEventListener('touchstart', function(e) {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+});
+
+document.addEventListener('touchend', function(e) {
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
+    const diffX = startX - endX;
+    const diffY = startY - endY;
+    
+    // Horizontal swipe detection
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+        if (diffX > 0) {
+            // Swipe left - next page
+            window.location.href = '{{ url_for("mobile_trading.quick_trade") }}';
+        } else {
+            // Swipe right - previous page
+            window.location.href = '{{ url_for("mobile_trading.mobile_dashboard") }}';
+        }
+    }
+});
+</script>
+{% endblock %}

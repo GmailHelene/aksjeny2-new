@@ -1,0 +1,500 @@
+{% extends "base.html" %}
+
+{% block title %}Økonomiindikatorer - Market Intelligence{% endblock %}
+
+{% block head %}
+{{ super() }}
+<style>
+/* Professional color scheme with better contrast */
+.bg-danger, .bg-primary, .bg-warning, .bg-info {
+    background-color: #2c3e50 !important; /* Professional dark blue */
+    color: #ffffff !important;
+}
+
+.bg-success {
+    background-color: #27ae60 !important; /* Professional green */
+    color: #ffffff !important;
+}
+
+.card-header.bg-primary {
+    background-color: #34495e !important; /* Elegant dark gray-blue */
+    color: #ffffff !important;
+}
+
+.indicator-card {
+    border: none;
+    border-radius: 8px; /* Less rounded for professional look */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08); /* Subtle shadow */
+    transition: all 0.2s ease;
+    margin-bottom: 1rem;
+    background: #ffffff;
+}
+
+.indicator-card:hover {
+    transform: translateY(-1px); /* Subtle hover effect */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+}
+
+.indicator-positive {
+    border-left: 3px solid #27ae60; /* Professional green */
+}
+
+.indicator-negative {
+    border-left: 3px solid #e74c3c; /* Professional red */
+}
+
+.indicator-neutral {
+    border-left: 3px solid #f39c12; /* Professional orange */
+}
+
+.metric-large {
+    font-size: 2.2rem; /* Slightly smaller for elegance */
+    font-weight: 600; /* Less bold */
+    margin: 0;
+    color: #2c3e50;
+}
+
+.metric-change {
+    font-size: 1.1rem;
+    font-weight: 500; /* Less bold */
+}
+
+.economic-dashboard {
+    background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%); /* Professional gradient */
+    color: white;
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.dashboard-metric {
+    text-align: center;
+    padding: 1rem;
+}
+
+.dashboard-value {
+    font-size: 1.8rem; /* Smaller for elegance */
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-label {
+    font-size: 0.85rem;
+    opacity: 0.85;
+}
+
+.trend-up {
+    color: #27ae60; /* Professional green */
+}
+
+.trend-down {
+    color: #e74c3c; /* Professional red */
+}
+
+.trend-neutral {
+    color: #f39c12; /* Professional orange */
+}
+
+.central-bank-card {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); /* Professional gradient */
+    color: white;
+    border-radius: 8px;
+}
+
+/* Typography improvements */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 500; /* Less bold headings */
+    color: #2c3e50;
+}
+
+.card-title {
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+/* Professional spacing */
+.card-body {
+    padding: 1.5rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">
+                    <i class="bi bi-graph-up-arrow me-3"></i>Økonomiindikatorer
+                </h1>
+                <div class="btn-group" role="group" id="timeframe-buttons" aria-label="Tidsoppløsning">
+                    <button type="button" class="btn btn-outline-primary active" data-timeframe="live" aria-pressed="true">Live</button>
+                    <button type="button" class="btn btn-outline-primary" data-timeframe="daily" aria-pressed="false">Daglig</button>
+                    <button type="button" class="btn btn-outline-primary" data-timeframe="weekly" aria-pressed="false">Ukentlig</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Economic Dashboard -->
+    <div class="economic-dashboard">
+        <div class="row">
+            <div class="col-md-3 dashboard-metric">
+                <div class="dashboard-value trend-down">2.8%</div>
+                <div class="dashboard-label">Norge Inflasjon (KPI)</div>
+                <small>↓ 0.1% fra forrige måned</small>
+            </div>
+            <div class="col-md-3 dashboard-metric">
+                <div class="dashboard-value trend-up">4.5%</div>
+                <div class="dashboard-label">Norges Bank Styringsrente</div>
+                <small>Uendret siden juni</small>
+            </div>
+            <div class="col-md-3 dashboard-metric">
+                <div class="dashboard-value trend-up">3.2%</div>
+                <div class="dashboard-label">Norge Arbeidsledighet</div>
+                <small>↑ 0.1% fra forrige måned</small>
+            </div>
+            <div class="col-md-3 dashboard-metric">
+                <div class="dashboard-value trend-up">85.2</div>
+                <div class="dashboard-label">Brent Olje (USD)</div>
+                <small>↑ $2.1 i dag</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Indicators -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card indicator-card">
+                <div class="card-header" style="background-color: #0d47a1 !important; color: white;">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bank me-2"></i>Sentralbank & Renter
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="indicator-neutral p-3 mb-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6>Norges Bank Styringsrente</h6>
+                                        <p class="metric-large text-warning">4.50%</p>
+                                        <small class="text-muted">Neste møte: 19. september 2025</small>
+                                    </div>
+                                    <div class="text-center">
+                                        <i class="bi bi-arrow-right h3 text-warning"></i>
+                                        <div class="small">Uendret</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="indicator-negative p-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6>Fed Funds Rate (USA)</h6>
+                                        <p class="metric-large text-danger">5.25%</p>
+                                        <small class="text-muted">Neste møte: 20. september 2025</small>
+                                    </div>
+                                    <div class="text-center">
+                                        <i class="bi bi-arrow-down h3 text-danger"></i>
+                                        <div class="small">Forventet kutt</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="indicator-positive p-3 mb-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6>ECB Deposit Rate</h6>
+                                        <p class="metric-large text-success">3.75%</p>
+                                        <small class="text-muted">Neste møte: 12. september 2025</small>
+                                    </div>
+                                    <div class="text-center">
+                                        <i class="bi bi-arrow-down h3 text-success"></i>
+                                        <div class="small">Mulig kutt</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="indicator-neutral p-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6>Bank of Japan Rate</h6>
+                                        <p class="metric-large text-warning">0.25%</p>
+                                        <small class="text-muted">Neste møte: 20. september 2025</small>
+                                    </div>
+                                    <div class="text-center">
+                                        <i class="bi bi-arrow-up h3 text-warning"></i>
+                                        <div class="small">Mulig økning</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card central-bank-card">
+                <div class="card-body">
+                    <h6 class="text-white">
+                        <i class="bi bi-clock me-2"></i>Kommende Rentemøter
+                    </h6>
+                    
+                    <div class="mb-3 p-2" style="background: rgba(255,255,255,0.1); border-radius: 6px;">
+                        <div class="d-flex justify-content-between">
+                            <span>ECB</span>
+                            <span>12. sep</span>
+                        </div>
+                        <small class="text-warning">Mulig kutt: 0.25%</small>
+                    </div>
+                    
+                    <div class="mb-3 p-2" style="background: rgba(255,255,255,0.1); border-radius: 6px;">
+                        <div class="d-flex justify-content-between">
+                            <span>Norges Bank</span>
+                            <span>19. sep</span>
+                        </div>
+                        <small class="text-warning">Forventet uendret</small>
+                    </div>
+                    
+                    <div class="mb-3 p-2" style="background: rgba(255,255,255,0.1); border-radius: 6px;">
+                        <div class="d-flex justify-content-between">
+                            <span>Fed</span>
+                            <span>20. sep</span>
+                        </div>
+                        <small class="text-danger">Forventet kutt: 0.5%</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Economic Data -->
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card indicator-card indicator-negative">
+                <div class="card-body">
+                    <h6>
+                        <i class="bi bi-speedometer2 me-2"></i>Inflasjon (KPI)
+                    </h6>
+                    <div class="row align-items-center">
+                        <div class="col-8">
+                            <p class="metric-large text-danger">2.8%</p>
+                            <div class="metric-change text-success">↓ 0.1%</div>
+                            <small class="text-muted">Fra forrige måned</small>
+                        </div>
+                        <div class="col-4 text-end">
+                            <i class="bi bi-arrow-down h2 text-success"></i>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row small">
+                        <div class="col-6">
+                            <div>USA: 3.2%</div>
+                            <div>EU: 2.6%</div>
+                        </div>
+                        <div class="col-6">
+                            <div>Sverige: 2.1%</div>
+                            <div>Danmark: 1.8%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card indicator-card indicator-positive">
+                <div class="card-body">
+                    <h6>
+                        <i class="bi bi-people me-2"></i>Arbeidsledighet
+                    </h6>
+                    <div class="row align-items-center">
+                        <div class="col-8">
+                            <p class="metric-large text-warning">3.2%</p>
+                            <div class="metric-change text-danger">↑ 0.1%</div>
+                            <small class="text-muted">Fra forrige måned</small>
+                        </div>
+                        <div class="col-4 text-end">
+                            <i class="bi bi-arrow-up h2 text-warning"></i>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row small">
+                        <div class="col-6">
+                            <div>USA: 4.1%</div>
+                            <div>EU: 6.5%</div>
+                        </div>
+                        <div class="col-6">
+                            <div>Sverige: 7.8%</div>
+                            <div>Danmark: 4.9%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card indicator-card indicator-positive">
+                <div class="card-body">
+                    <h6>
+                        <i class="bi bi-graph-up me-2"></i>BNP Vekst (Årlig)
+                    </h6>
+                    <div class="row align-items-center">
+                        <div class="col-8">
+                            <p class="metric-large text-success">2.1%</p>
+                            <div class="metric-change text-success">↑ 0.3%</div>
+                            <small class="text-muted">Fra forrige kvartal</small>
+                        </div>
+                        <div class="col-4 text-end">
+                            <i class="bi bi-arrow-up h2 text-success"></i>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row small">
+                        <div class="col-6">
+                            <div>USA: 2.8%</div>
+                            <div>EU: 1.2%</div>
+                        </div>
+                        <div class="col-6">
+                            <div>Sverige: 1.8%</div>
+                            <div class="text-success">↗ Trend: Opp</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Commodity Prices -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card indicator-card">
+                <div class="card-header" style="background-color: #0d47a1 !important; color: white;">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bar-chart me-2"></i>Råvarepriser
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                                <h6>Brent Olje</h6>
+                                <p class="metric-large text-success">$85.20</p>
+                                <div class="metric-change text-success">+$2.10 (+2.5%)</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                                <h6>Gull</h6>
+                                <p class="metric-large text-warning">$2,015</p>
+                                <div class="metric-change text-danger">-$12 (-0.6%)</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                                <h6>Kobber</h6>
+                                <p class="metric-large text-success">$8,845</p>
+                                <div class="metric-change text-success">+$125 (+1.4%)</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                                <h6>Aluminium</h6>
+                                <p class="metric-large text-warning">$2,180</p>
+                                <div class="metric-change text-success">+$15 (+0.7%)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Impact Analysis -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card indicator-card">
+                <div class="card-header" style="background-color: #0d47a1 !important; color: white;">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightbulb me-2"></i>Markedspåvirkning
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-success">Positive Signaler</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check-circle text-success me-2"></i>Inflasjon synker i Norge</li>
+                                <li><i class="bi bi-check-circle text-success me-2"></i>BNP vekst over forventning</li>
+                                <li><i class="bi bi-check-circle text-success me-2"></i>Høye oljepriser støtter OSEBX</li>
+                                <li><i class="bi bi-check-circle text-success me-2"></i>Fed ventes å kutte renter</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-danger">Risikoer</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-x-circle text-danger me-2"></i>Økt arbeidsledighet</li>
+                                <li><i class="bi bi-x-circle text-danger me-2"></i>Usikkerhet rundt Norges Bank policy</li>
+                                <li><i class="bi bi-x-circle text-danger me-2"></i>Global handelsspenning</li>
+                                <li><i class="bi bi-x-circle text-danger me-2"></i>Geopolitisk usikkerhet</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Economic indicators timeframe switching (progressive enhancement)
+(function(){
+    const btnGroup = document.getElementById('timeframe-buttons');
+    if(!btnGroup) return;
+    const buttons = btnGroup.querySelectorAll('button[data-timeframe]');
+    const dashboard = document.querySelector('.economic-dashboard');
+    const loadingClass = 'opacity-50';
+
+    async function fetchData(frame){
+        try {
+            if(dashboard) dashboard.classList.add(loadingClass);
+            const res = await fetch(`/market-intel/api/economic-indicators?timeframe=${frame}`);
+            if(!res.ok) throw new Error('API error');
+            return await res.json();
+        } catch(e){
+            console.warn('Economic indicators fetch failed:', e);
+            return null;
+        } finally {
+            if(dashboard) setTimeout(()=>dashboard.classList.remove(loadingClass), 200);
+        }
+    }
+
+    async function updateDashboard(frame){
+        const data = await fetchData(frame);
+        if(!data) return;
+        const dashValues = dashboard ? dashboard.querySelectorAll('.dashboard-value') : [];
+        if(dashValues[0]) dashValues[0].textContent = `${data.inflation_rate.toFixed(2)}%`;
+        if(dashValues[1]) dashValues[1].textContent = `${data.interest_rate.toFixed(2)}%`;
+        if(dashValues[2]) dashValues[2].textContent = `${data.unemployment_rate.toFixed(2)}%`;
+        if(dashValues[3]) dashValues[3].textContent = data.oil_price.toFixed(2);
+        dashboard.setAttribute('data-timeframe-active', frame);
+    }
+
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const frame = btn.getAttribute('data-timeframe');
+            buttons.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed','false'); });
+            btn.classList.add('active');
+            btn.setAttribute('aria-pressed','true');
+            updateDashboard(frame);
+        });
+    });
+
+    // initial load
+    updateDashboard('live');
+})();
+</script>
+{% endblock %}

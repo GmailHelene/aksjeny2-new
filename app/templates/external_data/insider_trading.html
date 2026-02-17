@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Innsidehandel Oversikt - Aksjeradar{% endblock %}
+
+{% block meta_tags %}
+<meta name="description" content="Følg innsidehandel på Oslo Børs. Data fra Aksje.io og Innsideanalyse.no.">
+<meta property="og:title" content="Innsidehandel Oversikt - Aksjeradar">
+{% endblock %}
+
+{% block styles %}
+<style>
+.insider-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.trade-item {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-left: 3px solid #28a745;
+    display: flex;
+    justify-content: between;
+    align-items: center;
+}
+
+.trade-buy { border-left-color: #28a745; }
+.trade-sell { border-left-color: #dc3545; }
+
+.stock-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.activity-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.summary-item {
+    text-align: center;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.summary-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #007bff;
+}
+
+.summary-label {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1>🏢 Innsidehandel Oversikt</h1>
+            <p class="text-muted">Følg innsidehandel på Oslo Børs med data fra Aksje.io og Innsideanalyse.no</p>
+        </div>
+    </div>
+
+    <!-- Activity Summary -->
+    <div class="insider-card">
+        <h3>📊 Aktivitetssammendrag</h3>
+        <div class="activity-summary">
+            <div class="summary-item">
+                <div class="summary-value">{{ insider_activity|length }}</div>
+                <div class="summary-label">Aktive aksjer</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value">
+                    {% set total_trades = 0 %}
+                    {% for stock, trades in insider_activity.items() %}
+                        {% set total_trades = total_trades + trades|length %}
+                    {% endfor %}
+                    {{ total_trades }}
+                </div>
+                <div class="summary-label">Nylige handler</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value">
+                    {% set buy_trades = 0 %}
+                    {% for stock, trades in insider_activity.items() %}
+                        {% for trade in trades %}
+                            {% if trade.transaction_type in ['Kjøp', 'Buy'] %}
+                                {% set buy_trades = buy_trades + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                    {{ "%.0f"|format((buy_trades / total_trades * 100) if total_trades > 0 else 0) }}%
+                </div>
+                <div class="summary-label">Kjøp vs Salg</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock-specific Insider Activity -->
+    {% for stock, trades in insider_activity.items() %}
+    <div class="insider-card">
+        <div class="stock-header">
+            <div>
+                <h3>{{ stock }}</h3>
+                <span class="badge bg-primary">{{ trades|length }} transaksjoner</span>
+            </div>
+            <div>
+                <a href="{{ url_for('external_data.external_analysis', symbol=stock) }}" class="btn btn-outline-primary btn-sm">
+                    Detaljert analyse
+                </a>
+            </div>
+        </div>
+
+        {% for trade in trades %}
+        <div class="trade-item {% if trade.transaction_type in ['Kjøp', 'Buy'] %}trade-buy{% else %}trade-sell{% endif %}">
+            <div class="row w-100">
+                <div class="col-md-3">
+                    <strong>{{ trade.insider_name }}</strong><br>
+                    <small class="text-muted">{{ trade.position }}</small>
+                </div>
+                <div class="col-md-2">
+                    <span class="badge {% if trade.transaction_type in ['Kjøp', 'Buy'] %}bg-success{% else %}bg-danger{% endif %}">
+                        {{ trade.transaction_type }}
+                    </span>
+                </div>
+                <div class="col-md-2">
+                    <strong>{{ "{:,}".format(trade.shares) }}</strong><br>
+                    <small class="text-muted">aksjer</small>
+                </div>
+                <div class="col-md-2">
+                    <strong>{{ "%.2f"|format(trade.price) }}</strong><br>
+                    <small class="text-muted">NOK/aksje</small>
+                </div>
+                <div class="col-md-2">
+                    <strong>{{ "{:,.0f}".format(trade.value) }}</strong><br>
+                    <small class="text-muted">NOK totalt</small>
+                </div>
+                <div class="col-md-1">
+                    <strong>{{ trade.date.strftime('%d.%m') }}</strong><br>
+                    <small class="text-muted">{{ trade.date.strftime('%Y') }}</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+
+    {% if not insider_activity %}
+    <div class="insider-card text-center">
+        <h3>Ingen innsidehandel funnet</h3>
+        <p class="text-muted">Ingen nylige innsidehandler tilgjengelig for de overvåkede aksjene.</p>
+    </div>
+    {% endif %}
+
+    <!-- Information Section -->
+    <div class="insider-card">
+        <h3>ℹ️ Om Innsidehandel</h3>
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Hva er innsidehandel?</h5>
+                <p>Innsidehandel refererer til kjøp eller salg av aksjer av personer med tilgang til ikke-offentlig informasjon om selskapet, som ledelsen, styremedlemmer og større aksjonærer.</p>
+                
+                <h5>Hvorfor følge innsidehandel?</h5>
+                <ul>
+                    <li>Innsidere har ofte bedre innsikt i selskapets fremtidsutsikter</li>
+                    <li>Kjøp fra innsidere kan signalisere optimisme</li>
+                    <li>Salg kan indikere behov for likviditet eller bekymringer</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h5>Datakilder</h5>
+                <ul>
+                    <li><strong>Aksje.io:</strong> Spesialisert på Oslo Børs innsidehandel</li>
+                    <li><strong>Innsideanalyse.no:</strong> Strukturerte og kategoriserte data</li>
+                    <li><strong>Oslo Børs:</strong> Offisielle meldinger</li>
+                </ul>
+                
+                <h5>Viktig merknad</h5>
+                <p class="text-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Innsidehandel alene bør ikke være grunnlag for investeringsbeslutninger. 
+                    Bruk det som én del av en bredere analyse.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-refresh every 10 minutes
+setInterval(() => {
+    console.log('Checking for new insider trading data...');
+    // In production, you might want to check for updates via AJAX
+}, 600000);
+</script>
+{% endblock %}

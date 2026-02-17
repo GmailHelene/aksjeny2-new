@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Sentiment Tracker{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-10">
+      <div class="card">
+        <div class="card-header">
+          <h4>Sentiment Tracker</h4>
+        </div>
+        <div class="card-body">
+          {% if error %}
+            <div class="alert alert-danger">Kunne ikke laste sentiment data akkurat nå.</div>
+          {% endif %}
+          <p>Denne siden vil snart vise markeds- og sosialt sentiment basert på ekte data.</p>
+          <ul>
+            <li>Markedsbreddemål</li>
+            <li>Relative sektortrender</li>
+            <li>Nyhets- og sosiale signaler</li>
+            <li>Historisk sentimentutvikling</li>
+          </ul>
+          <p class="text-muted mb-0">Foreløpig plassholder – ingen falske data genereres.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

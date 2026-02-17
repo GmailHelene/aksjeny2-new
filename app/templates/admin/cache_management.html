@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Cache Management - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1><i class="bi bi-arrow-clockwise"></i> Cache Management</h1>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Cache Control Panel</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6>Current Cache Status</h6>
+                        <div id="cache-status">
+                            <span class="badge bg-secondary">Loading...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-warning" onclick="bustServerCache()">
+                            <i class="bi bi-server"></i> Bust Server Cache
+                        </button>
+                        <button class="btn btn-info" onclick="refreshClientCache()">
+                            <i class="bi bi-browser-chrome"></i> Refresh Client Cache
+                        </button>
+                        <button class="btn btn-danger" onclick="fullCacheRefresh()">
+                            <i class="bi bi-arrow-repeat"></i> Full Cache Refresh (Server + Client)
+                        </button>
+                    </div>
+                    
+                    <div id="cache-results" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6>Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-sm btn-outline-primary" onclick="checkCacheStatus()">
+                            Check Status
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="window.location.reload(true)">
+                            Hard Reload
+                        </button>
+                        <button class="btn btn-sm btn-outline-dark" onclick="clearBrowserStorage()">
+                            Clear Browser Storage
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6>Cache Info</h6>
+                </div>
+                <div class="card-body small">
+                    <p><strong>Last Deploy:</strong> <span id="deploy-time">{{ g.current_time }}</span></p>
+                    <p><strong>Cache Version:</strong> <span id="cache-version">Loading...</span></p>
+                    <p><strong>Environment:</strong> Production</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function checkCacheStatus() {
+    try {
+        const response = await fetch('/api/cache/status');
+        const data = await response.json();
+        
+        document.getElementById('cache-status').innerHTML = 
+            `<span class="badge bg-success">${data.cache_version}</span>`;
+        document.getElementById('cache-version').textContent = data.cache_version;
+    } catch (error) {
+        document.getElementById('cache-status').innerHTML = 
+            `<span class="badge bg-danger">Error: ${error.message}</span>`;
+    }
+}
+
+async function bustServerCache() {
+    const resultsDiv = document.getElementById('cache-results');
+    resultsDiv.innerHTML = '<div class="alert alert-info">Busting server cache...</div>';
+    
+    const newVersion = await window.cacheBuster.triggerServerCacheBust();
+    
+    if (newVersion) {
+        resultsDiv.innerHTML = 
+            `<div class="alert alert-success">✅ Server cache busted! New version: ${newVersion}</div>`;
+        checkCacheStatus();
+    } else {
+        resultsDiv.innerHTML = 
+            '<div class="alert alert-danger">❌ Failed to bust server cache</div>';
+    }
+}
+
+async function refreshClientCache() {
+    const resultsDiv = document.getElementById('cache-results');
+    resultsDiv.innerHTML = '<div class="alert alert-info">Refreshing client cache...</div>';
+    
+    window.cacheBuster.clearBrowserCache();
+    window.cacheBuster.refreshStaticAssets();
+    
+    resultsDiv.innerHTML = 
+        '<div class="alert alert-success">✅ Client cache refreshed!</div>';
+}
+
+async function fullCacheRefresh() {
+    const resultsDiv = document.getElementById('cache-results');
+    resultsDiv.innerHTML = '<div class="alert alert-warning">🚀 Starting full cache refresh...</div>';
+    
+    await window.cacheBuster.fullCacheRefresh();
+}
+
+function clearBrowserStorage() {
+    window.cacheBuster.clearBrowserCache();
+    document.getElementById('cache-results').innerHTML = 
+        '<div class="alert alert-success">✅ Browser storage cleared!</div>';
+}
+
+// Load cache status on page load
+document.addEventListener('DOMContentLoaded', checkCacheStatus);
+</script>
+{% endblock %}

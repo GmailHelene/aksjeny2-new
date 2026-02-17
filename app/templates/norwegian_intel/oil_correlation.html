@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Oil Price Correlation | Norwegian Stocks | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-droplet-fill text-warning"></i> Oil Price Correlation Matrix</h1>
+        <div>
+            <span class="badge bg-success">Live Data</span>
+            <small class="text-muted">Sist oppdatert: {{ current_time.strftime('%H:%M:%S') if current_time else 'Live' }}</small>
+        </div>
+    </div>
+    
+    <!-- Oil Price Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="text-warning">Brent Crude</h5>
+                    <h3 class="text-warning">${{ oil_data.current_price }}</h3>
+                    <small class="text-{% if oil_data.change_24h > 0 %}success{% else %}danger{% endif %}">
+                        {% if oil_data.change_24h > 0 %}+{% endif %}{{ oil_data.change_24h }} ({{ oil_data.change_percent }}%)
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="text-info">Weekly Trend</h5>
+                    <h3 class="text-{% if oil_data.weekly_trend == 'bullish' %}success{% else %}danger{% endif %}">
+                        {{ oil_data.weekly_trend.title() }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="text-primary">High Correlation</h5>
+                    <h3 class="text-primary">{{ correlations | selectattr('oil_sensitivity', 'equalto', 'High') | list | length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="text-secondary">Low Sensitivity</h5>
+                    <h3 class="text-secondary">{{ correlations | selectattr('oil_sensitivity', 'equalto', 'Low') | list | length }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Correlation Analysis -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5><i class="bi bi-graph-up"></i> Oil Price Correlation Analysis</h5>
+                    <small class="text-muted">Korrelasjon mellom norske aksjer og oljeprisen (Brent Crude)</small>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Ticker</th>
+                                    <th>Korrelasjon</th>
+                                    <th>Styrke</th>
+                                    <th>Oljefølsomhet</th>
+                                    <th>Korrelasjonsmeter</th>
+                                    <th>Volatilitet</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stock in correlations %}
+                                <tr>
+                                    <td><strong>{{ stock.ticker }}</strong></td>
+                                    <td>
+                                        <span class="badge bg-{% if stock.correlation >= 0.7 %}success{% elif stock.correlation >= 0.4 %}warning{% elif stock.correlation >= 0 %}info{% else %}danger{% endif %}">
+                                            {{ "%.2f" | format(stock.correlation) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="text-{% if stock.strength == 'Very Strong' %}success{% elif stock.strength == 'Strong' %}primary{% elif stock.strength == 'Moderate' %}warning{% else %}secondary{% endif %}">
+                                            {{ stock.strength }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if stock.oil_sensitivity == 'High' %}danger{% elif stock.oil_sensitivity == 'Medium' %}warning{% else %}success{% endif %}">
+                                            {{ stock.oil_sensitivity }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-{% if stock.correlation >= 0.7 %}success{% elif stock.correlation >= 0.4 %}warning{% elif stock.correlation >= 0 %}info{% else %}danger{% endif %}" 
+                                                 role="progressbar" 
+                                                 style="width: {{ (stock.correlation | abs * 100) | round }}%">
+                                                {{ "%.0f" | format(stock.correlation | abs * 100) }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-activity text-{% if stock.oil_sensitivity == 'High' %}danger{% elif stock.oil_sensitivity == 'Medium' %}warning{% else %}success{% endif %}"></i>
+                                        {{ stock.oil_sensitivity }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Trading Insights -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h6><i class="bi bi-lightbulb"></i> Trading Insights</h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <strong>Høy korrelasjon (>0.7):</strong> EQNR og AKER følger oljeprisen tett. 
+                        Ideelle for olje-trading strategier.
+                    </div>
+                    <div class="alert alert-warning">
+                        <strong>Moderat korrelasjon (0.3-0.7):</strong> DNB og NHY påvirkes indirekte 
+                        av oljeprisen gjennom økonomiske faktorer.
+                    </div>
+                    <div class="alert alert-success">
+                        <strong>Lav korrelasjon (<0.3):</strong> TEL og MOWI er mer uavhengige 
+                        av oljeprisbevegelser.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h6><i class="bi bi-graph-up-arrow"></i> Markedsanalyse</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Oljeprisen:</strong> {{ oil_data.weekly_trend.title() }} trend denne uken.</p>
+                    <p><strong>Sektorimpakt:</strong> 
+                        {% if oil_data.change_percent > 2 %}
+                            Store bevegelser i oljeprisen påvirker norske oljeaksjer betydelig.
+                        {% elif oil_data.change_percent > 0 %}
+                            Positiv oljeprisutvikling støtter energisektoren.
+                        {% else %}
+                            Fallende oljepris skaper usikkerhet i energisektoren.
+                        {% endif %}
+                    </p>
+                    <p><strong>Diversifisering:</strong> Kombiner høy- og lavkorrelerte aksjer for balansert risiko.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-refresh correlation data every 30 seconds
+setInterval(function() {
+    location.reload();
+}, 30000);
+</script>
+{% endblock %}

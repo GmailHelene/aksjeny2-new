@@ -1,0 +1,517 @@
+{% extends "base.html" %}
+
+{% block title %}Markedsoversikt - Aksjeradar{% endblock %}
+
+{% block head %}
+<style>
+/* Remove overlay issues specific to this page */
+.market-overview-page .navbar-overlay,
+.duplicate-nav-overlay {
+    display: none !important;
+}
+
+.market-summary-card {
+    border-left: 4px solid #007bff;
+}
+
+.market-summary-card.positive {
+    border-left-color: #28a745;
+}
+
+.market-summary-card.negative {
+    border-left-color: #dc3545;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 market-overview-page">
+    {% include 'analysis/_menu.html' %}
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Markedsoversikt</h1>
+                <div class="d-flex gap-2 align-items-center">
+                    {% if errors %}
+                        <span class="badge bg-warning text-dark" title="Det oppstod problemer ved lasting av alle datasett">Delvis data</span>
+                    {% endif %}
+                    <button id="refreshMarketOverview" class="btn btn-sm btn-outline-primary" type="button">
+                        <i class="bi bi-arrow-clockwise"></i> Oppdater
+                    </button>
+                </div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('analysis.index') }}">Analyse</a></li>
+                        <li class="breadcrumb-item active">Markedsoversikt</li>
+                    </ol>
+                </nav>
+            </div>
+            <!-- Market status & last updated info -->
+            <div class="d-flex flex-wrap align-items-center gap-3 mb-3 small text-muted">
+                <div>
+                    Oslo: <span id="oslo-market-status" class="ms-1"></span>
+                </div>
+                <div>
+                    USA: <span id="us-market-status" class="ms-1"></span>
+                </div>
+                <div id="last-updated" class="ms-auto"></div>
+            </div>
+        </div>
+    </div>
+
+    {% if errors %}
+    <div class="alert alert-warning py-2">
+        <strong>Noen datasett manglet:</strong>
+        <ul class="mb-0 small">
+            {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- Market Summaries -->
+    <div class="row mb-4">
+        {# Safely derive local variables for readability #}
+        {% set oslo = market_summaries.oslo %}
+        {% set global_m = market_summaries.global_market %}
+        {% set crypto = market_summaries.crypto %}
+        {% set fx = market_summaries.currency %}
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            {% set oslo_change = oslo.change if oslo.change is not none else None %}
+            {% set oslo_change_pct = oslo.change_percent if oslo.change_percent is not none else None %}
+            <div class="card market-summary-card {{ 'positive' if oslo_change is not none and oslo_change >= 0 else 'negative' if oslo_change is not none else '' }}">
+                <div class="card-body">
+                    <h6 class="card-title">Oslo Børs</h6>
+                    <h4>{{ oslo.index_value if oslo.index_value is not none else 'Ikke tilgjengelig' }}</h4>
+                    <small class="{{ 'text-success' if oslo_change is not none and oslo_change >= 0 else 'text-danger' if oslo_change is not none else 'text-muted' }}">
+                        {% if oslo_change is not none and oslo_change_pct is not none %}
+                            {{ "%+.2f"|format(oslo_change) }} ({{ "%+.1f"|format(oslo_change_pct) }}%)
+                        {% else %}Ingen data{% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            {% set g_change = global_m.change if global_m.change is not none else None %}
+            {% set g_change_pct = global_m.change_percent if global_m.change_percent is not none else None %}
+            <div class="card market-summary-card {{ 'positive' if g_change is not none and g_change >= 0 else 'negative' if g_change is not none else '' }}">
+                <div class="card-body">
+                    <h6 class="card-title">Globale Markeder</h6>
+                    <h4>{{ global_m.index_value if global_m.index_value is not none else 'Ikke tilgjengelig' }}</h4>
+                    <small class="{{ 'text-success' if g_change is not none and g_change >= 0 else 'text-danger' if g_change is not none else 'text-muted' }}">
+                        {% if g_change is not none and g_change_pct is not none %}
+                            {{ "%+.2f"|format(g_change) }} ({{ "%+.1f"|format(g_change_pct) }}%)
+                        {% else %}Ingen data{% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            {% set c_change = crypto.change if crypto.change is not none else None %}
+            {% set c_change_pct = crypto.change_percent if crypto.change_percent is not none else None %}
+            <div class="card market-summary-card {{ 'positive' if c_change is not none and c_change >= 0 else 'negative' if c_change is not none else '' }}">
+                <div class="card-body">
+                    <h6 class="card-title">Kryptovaluta</h6>
+                    <h4>{% if crypto.index_value is not none %}${{ "{:,}".format(crypto.index_value|int) }}{% else %}Ikke tilgjengelig{% endif %}</h4>
+                    <small class="{{ 'text-success' if c_change is not none and c_change >= 0 else 'text-danger' if c_change is not none else 'text-muted' }}">
+                        {% if c_change_pct is not none %}{{ "%+.1f"|format(c_change_pct) }}%{% else %}Ingen data{% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            {% set usd = fx.usd_nok if fx.usd_nok is not none else None %}
+            {% set usd_chg = fx.usd_nok_change if fx.usd_nok_change is not none else None %}
+            <div class="card market-summary-card {{ 'positive' if usd_chg is not none and usd_chg >= 0 else 'negative' if usd_chg is not none else '' }}">
+                <div class="card-body">
+                    <h6 class="card-title">USD/NOK</h6>
+                    <h4>{{ usd if usd is not none else 'Ikke tilgjengelig' }}</h4>
+                    <small class="{{ 'text-success' if usd_chg is not none and usd_chg >= 0 else 'text-danger' if usd_chg is not none else 'text-muted' }}">
+                        {% if usd_chg is not none %}{{ "%+.4f"|format(usd_chg) }}{% else %}Ingen data{% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Oslo Børs Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Oslo Børs</h5>
+                        <div class="small text-muted">
+                            {% if market_summary.oslo_simulated_count %}
+                                <span class="badge bg-secondary" title="Antall simulert fallback">Simulert: {{ market_summary.oslo_simulated_count }}</span>
+                            {% endif %}
+                            {% if market_summary.oslo_real_count %}
+                                <span class="badge bg-success ms-1" title="Antall ekte datapunkter">Ekte: {{ market_summary.oslo_real_count }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if oslo_stocks %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Navn</th>
+                                    <th>Pris</th>
+                                    <th>Endring</th>
+                                    <th>Endring %</th>
+                                    <th>Volum</th>
+                                    <th>Handlinger</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for symbol, data in oslo_stocks.items() %}
+                                <tr data-symbol="{{ symbol }}" data-source="{{ data.get('source','') }}" class="{{ 'table-secondary' if data.get('is_simulated') else '' }}">
+                                    <td><strong>{{ symbol }}</strong>{% if data.get('is_simulated') %} <span class="badge bg-secondary ms-1" title="Simulert fallback">Simulert</span>{% endif %}</td>
+                                    <td>{{ data.get('name', symbol) }}</td>
+                                    <td>{{ data.get('last_price', 'N/A') }} kr</td>
+                                    <td class="{{ 'text-success' if data.get('change', 0) >= 0 else 'text-danger' }}">
+                                        {{ "{:+.2f}".format(data.get('change', 0)) }} kr
+                                    </td>
+                                    <td class="{{ 'text-success' if data.get('change_percent', 0) >= 0 else 'text-danger' }}">
+                                        {{ "{:+.1f}".format(data.get('change_percent', 0)) }}%
+                                    </td>
+                                    <td>{{ data.get('volume', 'N/A') }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('stocks.details', symbol=symbol) }}" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-info-circle"></i> Detaljer
+                                            </a>
+                                            <a href="{{ url_for('analysis.technical', symbol=symbol) }}" class="btn btn-sm btn-outline-secondary">
+                                                <i class="bi bi-graph-up"></i> Analyse
+                                            </a>
+                                            <button class="btn btn-sm btn-success external-buy-btn" data-ticker="{{ symbol }}" data-market="oslo">
+                                                <i class="bi bi-cart-plus"></i> Kjøp
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-warning add-to-watchlist" data-ticker="{{ symbol }}">
+                                                <i class="bi bi-star"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-line fa-2x text-muted mb-2"></i>
+                        <p class="text-muted">Ingen Oslo Børs data tilgjengelig for øyeblikket.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Stocks Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Globale Aksjer Markedsoversikt</h5>
+                        <div class="small text-muted">
+                            {% if market_summary.global_simulated_count %}
+                                <span class="badge bg-secondary" title="Antall simulert fallback">Simulert: {{ market_summary.global_simulated_count }}</span>
+                            {% endif %}
+                            {% if market_summary.global_real_count %}
+                                <span class="badge bg-success ms-1" title="Antall ekte datapunkter">Ekte: {{ market_summary.global_real_count }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if global_stocks %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Navn</th>
+                                    <th>Pris</th>
+                                    <th>Endring</th>
+                                    <th>Endring %</th>
+                                    <th>Handlinger</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for symbol, data in global_stocks.items() %}
+                                <tr data-symbol="{{ symbol }}" data-source="{{ data.get('source','') }}" class="{{ 'table-secondary' if data.get('is_simulated') else '' }}">
+                                    <td><strong>{{ symbol }}</strong>{% if data.get('is_simulated') %} <span class="badge bg-secondary ms-1" title="Simulert fallback">Simulert</span>{% endif %}</td>
+                                    <td>{{ data.get('name', symbol) }}</td>
+                                    <td>${{ data.get('last_price', 'N/A') }}</td>
+                                    <td class="{{ 'text-success' if data.get('change', 0) >= 0 else 'text-danger' }}">
+                                        {{ "{:+.2f}".format(data.get('change', 0)) }}
+                                    </td>
+                                    <td class="{{ 'text-success' if data.get('change_percent', 0) >= 0 else 'text-danger' }}">
+                                        {{ "{:+.1f}".format(data.get('change_percent', 0)) }}%
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('stocks.details', symbol=symbol) }}" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-info-circle"></i> Detaljer
+                                            </a>
+                                            <a href="{{ url_for('analysis.technical', symbol=symbol) }}" class="btn btn-sm btn-outline-secondary">
+                                                <i class="bi bi-graph-up"></i> Analyse
+                                            </a>
+                                            <button class="btn btn-sm btn-success external-buy-btn" data-ticker="{{ symbol }}" data-market="global">
+                                                <i class="bi bi-cart-plus"></i> Kjøp
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-warning add-to-watchlist" data-ticker="{{ symbol }}">
+                                                <i class="bi bi-star"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-globe fa-2x text-muted mb-2"></i>
+                        <p class="text-muted">Ingen globale aksjedata tilgjengelig for øyeblikket.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Crypto and Currency Row -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Kryptovaluta</h5>
+                </div>
+                <div class="card-body">
+                    {% if crypto_data %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Pris</th>
+                                    <th>24h %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for symbol, data in crypto_data.items() %}
+                                <tr>
+                                    <td><strong>{{ symbol }}</strong></td>
+                                    <td>${{ data.get('price', 'N/A') }}</td>
+                                    <td class="{{ 'text-success' if data.get('change_24h', 0) >= 0 else 'text-danger' }}">
+                                        {{ "{:+.1f}".format(data.get('change_24h', 0)) }}%
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fab fa-bitcoin fa-2x text-muted mb-2"></i>
+                        <p class="text-muted">Ingen kryptovaluta data tilgjengelig.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0 text-dark fw-bold">Valutakurser</h5>
+                </div>
+                <div class="card-body">
+                    {% if currency_data %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Valutapar</th>
+                                    <th>Kurs</th>
+                                    <th>Endring</th>
+                                    <th>Endring %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for symbol, data in currency_data.items() %}
+                                <tr>
+                                    <td><strong>{{ symbol }}</strong></td>
+                                    <td>{{ "{:.4f}".format(data.get('last_price', 0)) }}</td>
+                                    <td class="{{ 'text-success' if data.get('change', 0) >= 0 else 'text-danger' }}">
+                                        {{ "{:+.4f}".format(data.get('change', 0)) }}
+                                    </td>
+                                    <td class="{{ 'text-success' if data.get('change_percent', 0) >= 0 else 'text-danger' }}">
+                                        {{ "{:+.2f}".format(data.get('change_percent', 0)) }}%
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-exchange-alt fa-2x text-muted mb-2"></i>
+                        <p class="text-muted">Ingen valutadata tilgjengelig.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between mb-5">
+        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Tilbake til forsiden
+        </a>
+        <a href="{{ url_for('analysis.technical') }}" class="btn btn-primary">
+            <i class="bi bi-graph-up"></i> Teknisk analyse
+        </a>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    updateMarketStatus();
+    setInterval(updateMarketStatus, 60000); // Update every minute
+});
+
+function updateMarketStatus() {
+    const now = new Date();
+    const norwegianTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Oslo"}));
+    const usTime = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
+    
+    // Oslo market (09:00 - 16:30 CET)
+    const osloOpen = norwegianTime.getHours() >= 9 && norwegianTime.getHours() < 16 ||
+                    (norwegianTime.getHours() === 16 && norwegianTime.getMinutes() <= 30);
+    const osloWeekday = norwegianTime.getDay() >= 1 && norwegianTime.getDay() <= 5;
+    const osloMarketOpen = osloOpen && osloWeekday;
+    
+    // US market (9:30 - 16:00 EST)
+    const usOpen = usTime.getHours() >= 9 && usTime.getHours() < 16 ||
+                  (usTime.getHours() === 9 && usTime.getMinutes() >= 30);
+    const usWeekday = usTime.getDay() >= 1 && usTime.getDay() <= 5;
+    const usMarketOpen = usOpen && usWeekday;
+    
+    // Update Oslo status
+    const osloStatus = document.getElementById('oslo-market-status');
+    if (osloStatus) {
+        if (osloMarketOpen) {
+            osloStatus.innerHTML = '<span class="badge bg-success">ÅPEN</span><small class="ms-1">09:00 - 16:30</small>';
+        } else {
+            osloStatus.innerHTML = '<span class="badge bg-danger">STENGT</span><small class="ms-1">09:00 - 16:30</small>';
+        }
+    }
+    
+    // Update US status
+    const usStatus = document.getElementById('us-market-status');
+    if (usStatus) {
+        if (usMarketOpen) {
+            usStatus.innerHTML = '<span class="badge bg-success">ÅPEN</span><small class="ms-1">15:30 - 22:00</small>';
+        } else {
+            usStatus.innerHTML = '<span class="badge bg-danger">STENGT</span><small class="ms-1">15:30 - 22:00</small>';
+        }
+    }
+    
+    // Update last updated time
+    const lastUpdated = document.getElementById('last-updated');
+    if (lastUpdated) {
+        lastUpdated.textContent = 'Sist oppdatert: ' + now.toLocaleString('no-NO', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+        });
+    }
+}
+
+// Add to watchlist functionality
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.add-to-watchlist').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const symbol = this.dataset.ticker;
+            try {
+                // Sjekk om aksjen er favoritt
+                    if (!window.toggleFavorite) { console.error('toggleFavorite missing'); return; }
+                    toggleFavorite(symbol, {
+                        button: this,
+                        favoritedText: '<i class="bi bi-star-fill"></i>',
+                        unfavoritedText: '<i class="bi bi-star"></i>',
+                        onSuccess: (data) => {
+                            showToast(data.message || (data.favorited ? `${symbol} lagt til i favoritter` : `${symbol} fjernet fra favoritter`), data.favorited ? 'success' : 'info');
+                        },
+                        onError: () => showToast('Favoritt-handling feilet', 'danger')
+                    });
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Kunne ikke oppdatere favoritt', 'error');
+            }
+        });
+    });
+    
+    // External buy buttons handled by centralized JS (portfolio-actions-enhanced.js)
+});
+
+function showToast(message, type) {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    // Add to toast container or create one
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        document.body.appendChild(container);
+    }
+    
+    container.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    
+    // Remove after hidden
+    toast.addEventListener('hidden.bs.toast', () => toast.remove());
+}
+</script>
+<script>
+// Refresh button triggers a hard reload without cached values
+document.getElementById('refreshMarketOverview')?.addEventListener('click', () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('ts', Date.now()); // cache buster
+    window.location.replace(url.toString());
+});
+</script>
+{% endblock %}

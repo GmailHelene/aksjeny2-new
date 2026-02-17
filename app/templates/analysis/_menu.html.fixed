@@ -1,0 +1,131 @@
+<div class="analysis-menu mb-4">
+    <div class="card">
+        <div class="card-body py-2">
+            <!-- Desktop Navigation -->
+            <div class="d-none d-lg-flex flex-wrap align-items-center gap-2">
+                <a href="/analysis" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.index' else 'btn-outline-primary' }}">
+                    <i class="bi bi-house me-1"></i>Oversikt
+                </a>
+                <a href="/analysis/market-overview" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.market_overview' else 'btn-outline-primary' }}">
+                    <i class="bi bi-globe me-1"></i>Markedsoversikt
+                </a>
+                <a href="/analysis/technical" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.technical' else 'btn-outline-primary' }}">
+                    <i class="bi bi-graph-up me-1"></i>Teknisk
+                </a>
+                <a href="/analysis/fundamental" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.fundamental' else 'btn-outline-primary' }}">
+                    <i class="bi bi-calculator me-1"></i>Fundamental
+                </a>
+                <a href="/analysis/warren-buffett" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.warren_buffett' else 'btn-outline-primary' }}">
+                    <i class="bi bi-person-check me-1"></i>Warren Buffett
+                </a>
+                <a href="/analysis/benjamin-graham" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.benjamin_graham' else 'btn-outline-primary' }}">
+                    <i class="bi bi-book me-1"></i>Benjamin Graham
+                </a>
+                <a href="/analysis/ai" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.ai' else 'btn-outline-primary' }}">
+                    <i class="bi bi-cpu me-1"></i>AI-Analyse
+                </a>
+                <a href="/analysis/short-analysis" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.short_analysis' else 'btn-outline-primary' }}">
+                    <i class="bi bi-graph-down me-1"></i>Short
+                </a>
+                <a href="/analysis/sentiment" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.sentiment' else 'btn-outline-primary' }}">
+                    <i class="bi bi-heart me-1"></i>Sentiment
+                </a>
+                <a href="/analysis/prediction" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.prediction' else 'btn-outline-primary' }}">
+                    <i class="bi bi-crystal-ball me-1"></i>AI Prediksjoner
+                </a>
+                <a href="/analysis/recommendation{% if ticker %}/{{ ticker }}{% endif %}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.recommendation' else 'btn-outline-primary' }}">
+                    <i class="bi bi-star me-1"></i>Anbefalinger
+                </a>
+                <a href="/analysis/screener" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.screener' else 'btn-outline-primary' }}">
+                    <i class="bi bi-funnel me-1"></i>Screener
+                </a>
+            </div>
+
+            <!-- Mobile Navigation -->
+            <div class="d-lg-none">
+                <div class="row g-2">
+                    <div class="col-6">
+                        <a href="/analysis" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.index' else 'btn-outline-primary' }}" style="padding: 0.6rem 0.5rem; font-size: 0.8rem;">
+                            <i class="bi bi-house d-block"></i>
+                            <span style="font-size: 0.7rem;">Oversikt</span>
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="/analysis/technical" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.technical' else 'btn-outline-primary' }}" style="padding: 0.6rem 0.5rem; font-size: 0.8rem;">
+                            <i class="bi bi-graph-up d-block"></i>
+                            <span style="font-size: 0.7rem;">Teknisk</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="row g-2 mt-2">
+                    <div class="col-4">
+                        <a href="/analysis/fundamental" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.fundamental' else 'btn-outline-primary' }}" style="padding: 0.5rem 0.3rem; font-size: 0.75rem;">
+                            <i class="bi bi-calculator d-block" style="font-size: 0.9rem;"></i>
+                            <span style="font-size: 0.65rem;">Fundamental</span>
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <a href="/analysis/warren-buffett" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.warren_buffett' else 'btn-outline-primary' }}" style="padding: 0.5rem 0.3rem; font-size: 0.75rem;">
+                            <i class="bi bi-person-check d-block" style="font-size: 0.9rem;"></i>
+                            <span style="font-size: 0.65rem;">Buffett</span>
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <a href="/analysis/benjamin-graham" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.benjamin_graham' else 'btn-outline-primary' }}" style="padding: 0.5rem 0.3rem; font-size: 0.75rem;">
+                            <i class="bi bi-book d-block" style="font-size: 0.9rem;"></i>
+                            <span style="font-size: 0.65rem;">Graham</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="row g-2 mt-2">
+                    <div class="col-4">
+                        <a href="/analysis/ai" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.ai' else 'btn-outline-primary' }}" style="padding: 0.5rem 0.3rem; font-size: 0.75rem;">
+                            <i class="bi bi-cpu d-block" style="font-size: 0.9rem;"></i>
+                            <span style="font-size: 0.65rem;">AI</span>
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <a href="/analysis/short-analysis" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.short_analysis' else 'btn-outline-primary' }}" style="padding: 0.5rem 0.3rem; font-size: 0.75rem;">
+                            <i class="bi bi-graph-down d-block" style="font-size: 0.9rem;"></i>
+                            <span style="font-size: 0.65rem;">Short</span>
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <a href="/analysis/sentiment" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.sentiment' else 'btn-outline-primary' }}" style="padding: 0.5rem 0.3rem; font-size: 0.75rem;">
+                            <i class="bi bi-heart d-block" style="font-size: 0.9rem;"></i>
+                            <span style="font-size: 0.65rem;">Sentiment</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="row g-2 mt-2">
+                    <div class="col-4">
+                        <a href="/analysis/market-overview" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.market_overview' else 'btn-outline-primary' }}" style="padding: 0.5rem 0.3rem; font-size: 0.75rem;">
+                            <i class="bi bi-globe d-block" style="font-size: 0.9rem;"></i>
+                            <span style="font-size: 0.65rem;">Marked</span>
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <a href="/analysis/screener" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.screener' else 'btn-outline-primary' }}" style="padding: 0.5rem 0.3rem; font-size: 0.75rem;">
+                            <i class="bi bi-funnel d-block" style="font-size: 0.9rem;"></i>
+                            <span style="font-size: 0.65rem;">Screener</span>
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <a href="/analysis/prediction" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.prediction' else 'btn-outline-primary' }}" style="padding: 0.5rem 0.3rem; font-size: 0.75rem;">
+                            <i class="bi bi-crystal-ball d-block" style="font-size: 0.9rem;"></i>
+                            <span style="font-size: 0.65rem;">Prediksjoner</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="row g-2 mt-2">
+                    <div class="col-12">
+                        <a href="/analysis/recommendation{% if ticker %}/{{ ticker }}{% endif %}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.recommendation' else 'btn-outline-primary' }}" style="padding: 0.5rem 0.3rem; font-size: 0.75rem;">
+                            <i class="bi bi-star d-block" style="font-size: 0.9rem;"></i>
+                            <span style="font-size: 0.65rem;">Anbefalinger</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

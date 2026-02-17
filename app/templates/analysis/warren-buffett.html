@@ -1,0 +1,326 @@
+{% extends 'base.html' %}
+
+{% block title %}Warren Buffett Analyse - Aksjeradar{% endblock %}
+
+{% block head %}
+<meta name="description" content="Analyser aksjer med Warren Buffetts investeringsprinsipper og verdimetricsm">
+<style>
+    .search-container {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .search-form {
+        display: flex;
+        gap: 1rem;
+        align-items: end;
+    }
+    
+    .search-input {
+        flex: 1;
+        min-width: 250px;
+    }
+    
+    .btn-analyze {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-analyze:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(40,167,69,0.3);
+        color: white;
+    }
+    
+    .analysis-results {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        margin-top: 2rem;
+    }
+    
+    .metric-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid #28a745;
+    }
+    
+    .loading-spinner {
+        display: none;
+        text-align: center;
+        padding: 2rem;
+    }
+    
+    .example-stocks {
+        margin-top: 1rem;
+    }
+    
+    .example-stocks .btn {
+        margin: 0.25rem;
+        border-radius: 20px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <h1 class="text-center mb-4">
+                <i class="bi bi-graph-up-arrow"></i> Warren Buffett Analyse
+            </h1>
+            <p class="text-center text-muted mb-4">
+                Analyser aksjer basert på Warren Buffetts investeringsprinsipper
+            </p>
+            
+            <!-- Search Container -->
+            <div class="search-container">
+                <form id="buffett-search-form" class="search-form">
+                    <div class="search-input">
+                        <label for="ticker" class="form-label">
+                            <strong>Aksjesymbol:</strong>
+                        </label>
+                               id="ticker" 
+                               name="ticker" 
+                               class="form-control form-control-lg" 
+                               value="{{ ticker if ticker else '' }}" 
+                               placeholder="F.eks. EQNR.OL, AAPL, MSFT"
+                               autocomplete="off"
+                               required>
+                        <div class="form-text">
+                            Skriv aksjesymbol for å få en Buffett-analyse
+                        </div>
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-analyze btn-lg">
+                            <i class="bi bi-search"></i> Analyser
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Example stocks -->
+                <div class="example-stocks">
+                    <small class="text-muted">Eksempler:</small>
+                    <button type="button" class="btn btn-outline-secondary btn-sm example-btn" data-ticker="EQNR.OL">EQNR.OL</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm example-btn" data-ticker="DNB.OL">DNB.OL</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm example-btn" data-ticker="AAPL">AAPL</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm example-btn" data-ticker="Ikke tilgjengelig">Ikke tilgjengelig</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm example-btn" data-ticker="BRK-B">BRK-B</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm example-btn" data-ticker="KO">KO</button>
+                </div>
+            </div>
+            
+            <!-- Loading Spinner -->
+            <div id="loading-spinner" class="loading-spinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Analyserer...</span>
+                </div>
+                <p class="mt-3 text-muted">Analyserer aksjen med Buffetts prinsipper...</p>
+            </div>
+            
+            <!-- Results Container -->
+            <div id="buffett-analysis-results"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    const form = $('#buffett-search-form');
+    const tickerInput = $('#ticker');
+    const loadingSpinner = $('#loading-spinner');
+    const resultsContainer = $('#buffett-analysis-results');
+    
+    // Example button clicks
+    $('.example-btn').click(function() {
+        const ticker = $(this).data('ticker');
+        tickerInput.val(ticker);
+        form.submit();
+    });
+    
+    // Form submission
+    form.on('submit', function(e) {
+        e.preventDefault();
+        
+        const ticker = tickerInput.val().trim().toUpperCase();
+        if (!ticker) {
+            alert('Vennligst skriv inn et aksjesymbol');
+            return;
+        }
+        
+        // Show loading
+        loadingSpinner.show();
+        resultsContainer.empty();
+        
+        // Make API call
+        $.ajax({
+            url: `/analysis/api/warren-buffett?ticker=${encodeURIComponent(ticker)}`,
+            method: 'GET',
+            timeout: 30000,
+            headers: {
+                'X-CSRFToken': $('meta[name=csrf-token]').attr('content')
+            },
+            success: function(data) {
+                loadingSpinner.hide();
+                
+                if (data.success && data.analysis) {
+                    displayAnalysis(data.analysis);
+                } else {
+                    displayError(data.error || 'Kunne ikke hente analysedata');
+                }
+            },
+            error: function(xhr, status, error) {
+                loadingSpinner.hide();
+                let errorMsg = 'En feil oppstod under analysen. Prøv igjen senere.';
+                
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.error) {
+                        errorMsg = response.error;
+                    }
+                } catch (e) {
+                    // Use default error message
+                }
+                
+                if (xhr.status === 404) {
+                    errorMsg = 'Aksjen ble ikke funnet';
+                } else if (xhr.status === 400) {
+                    errorMsg = 'Ugyldig aksjesymbol';
+                } else if (status === 'timeout') {
+                    errorMsg = 'Forespørselen tok for lang tid';
+                }
+                
+                displayError(errorMsg);
+            }
+        });
+    });
+    
+    function displayAnalysis(analysis) {
+        const metrics = analysis.metrics || {};
+        const recommendation = analysis.recommendation || {};
+        
+        const html = `
+            <div class="analysis-results">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h3>${analysis.company_name || analysis.ticker}</h3>
+                        <p class="text-muted">Ticker: ${analysis.ticker}</p>
+                        ${analysis.is_fallback ? '<small class="text-warning"><i class="bi bi-exclamation-triangle"></i> Demo data</small>' : ''}
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="badge bg-${getScoreColor(analysis.buffett_score)} fs-6 p-2">
+                            Buffett Score: ${analysis.buffett_score}/10
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5><i class="bi bi-graph-up"></i> Finansielle Nøkkeltall</h5>
+                        ${createMetricCard('P/E Ratio', metrics.pe_ratio, 'Lavere er bedre (under 15 ideelt)')}
+                        ${createMetricCard('P/B Ratio', metrics.pb_ratio, 'Lavere er bedre (under 1.5 ideelt)')}
+                        ${createMetricCard('ROE', metrics.roe, 'Høyere er bedre (over 15% ideelt)', '%')}
+                        ${createMetricCard('Debt to Equity', metrics.debt_to_equity, 'Lavere er bedre (under 0.5 ideelt)')}
+                    </div>
+                    <div class="col-md-6">
+                        <h5><i class="bi bi-award"></i> Buffett Kvalitet</h5>
+                        ${createMetricCard('Earnings Growth', metrics.earnings_growth, 'Konsistent vekst ønsket', '%')}
+                        ${createMetricCard('Revenue Growth', metrics.revenue_growth, 'Stabil inntektsvekst', '%')}
+                        ${createMetricCard('Free Cash Flow', metrics.free_cash_flow, 'Positiv kontantstrøm viktig', 'M')}
+                        ${createMetricCard('Dividend Yield', metrics.dividend_yield, 'Stabil utbytte foretrukket', '%')}
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-12">
+                        <h5><i class="bi bi-lightbulb"></i> Buffett Anbefaling</h5>
+                        <div class="alert alert-${getRecommendationColor(recommendation.action)} border-0">
+                            <h6>${recommendation.action || 'HOLD'}</h6>
+                            <p class="mb-2">${recommendation.reasoning || 'Basert på Buffetts investeringsprinsipper'}</p>
+                            <small><strong>Konfidensgrad:</strong> ${recommendation.confidence || 'Medium'}</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <small class="text-muted">
+                            <i class="bi bi-clock"></i> Sist oppdatert: ${analysis.last_updated || 'Ukjent'}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        resultsContainer.html(html);
+    }
+    
+    function createMetricCard(title, value, description, suffix = '') {
+        const displayValue = value !== undefined && value !== null ? 
+            (typeof value === 'number' ? value.toFixed(2) : value) + suffix : 'N/A';
+            
+        return `
+            <div class="metric-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">${title}</h6>
+                        <small class="text-muted">${description}</small>
+                    </div>
+                    <div class="text-end">
+                        <span class="fw-bold fs-5">${displayValue}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    function displayError(message) {
+        const html = `
+            <div class="analysis-results">
+                <div class="alert alert-danger border-0">
+                    <h5 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> Feil</h5>
+                    <p class="mb-0">${message}</p>
+                </div>
+            </div>
+        `;
+        resultsContainer.html(html);
+    }
+    
+    function getScoreColor(score) {
+        if (score >= 8) return 'success';
+        if (score >= 6) return 'warning';
+        return 'danger';
+    }
+    
+    function getRecommendationColor(action) {
+        if (action === 'BUY' || action === 'STRONG BUY') return 'success';
+        if (action === 'SELL' || action === 'STRONG SELL') return 'danger';
+        return 'info';
+    }
+    
+    // Auto-analyze if ticker is provided
+    {% if ticker %}
+    form.submit();
+    {% endif %}
+});
+</script>
+{% endblock %}

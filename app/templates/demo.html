@@ -1,0 +1,1531 @@
+{% extends "base.html" %}
+
+{% block title %}Gratis Demo | Prøv Aksjeradar uten registrering{% endblock %}
+{% block description %}Test alle Aksjeradars funksjoner gratis! AI-analyse, teknisk analyse, Warren Buffett screening, porteføljeoptimalisering og mer. Ingen registrering nødvendig.{% endblock %}
+{% block keywords %}gratis aksjeanalyse, demo aksjer, prøv gratis, AI analyse demo, Oslo Børs demo, teknisk analyse gratis, aksjeanalyse uten registrering{% endblock %}
+
+{% block head %}
+{{ super() }}
+<style>
+/* Demo Page Styles */
+.demo-btn {
+    transition: all 0.3s ease;
+    border-width: 2px;
+    font-weight: 500;
+}
+
+.demo-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.demo-btn i {
+    margin-right: 0.5rem;
+}
+
+.demo-result-container {
+    transition: all 0.3s ease;
+    min-height: 100px;
+}
+
+.demo-progress {
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.demo-progress .progress-bar {
+    transition: width 0.6s ease;
+}
+
+.feature-card {
+    border: none;
+    transition: all 0.3s ease;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 768px) {
+    .demo-btn {
+        margin-bottom: 0.5rem;
+        width: 100%;
+    }
+    
+    .feature-card {
+        margin-bottom: 1rem;
+    }
+}
+
+.demo-result-animate {
+    animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Fix hover background colors to match non-hover states */
+.btn-outline-primary:hover {
+    background-color: var(--bs-primary) !important;
+    border-color: var(--bs-primary) !important;
+}
+
+.btn-outline-success:hover {
+    background-color: var(--bs-success) !important;
+    border-color: var(--bs-success) !important;
+}
+
+.btn-outline-warning:hover {
+    background-color: var(--bs-warning) !important;
+    border-color: var(--bs-warning) !important;
+}
+
+.btn-outline-danger:hover {
+    background-color: var(--bs-danger) !important;
+    border-color: var(--bs-danger) !important;
+}
+
+.btn-outline-info:hover {
+    background-color: var(--bs-info) !important;
+    border-color: var(--bs-info) !important;
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--bs-secondary) !important;
+    border-color: var(--bs-secondary) !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Demo Header -->
+    <div class="alert border-0 shadow-sm" style="background: linear-gradient(135deg, #007bff, #0056b3); color: #ffffff !important;">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-play-circle-fill fs-3 me-3" style="color: #ffffff !important;"></i>
+            <div>
+                <h5 class="mb-1" style="color: #ffffff !important; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);"><strong>Demo-modus aktivert!</strong></h5>
+                <p class="mb-0" style="color: #ffffff !important; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Utforsk alle premium funksjoner gratis. Klikk deg rundt og test alt!</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <h1 class="mb-4">🚀 Prøv alle Aksjeradar funksjoner gratis</h1>
+            
+            <!-- Interactive Feature Preview -->
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">🎯 Interaktive AI-analyser</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <button class="btn btn-outline-primary w-100 demo-btn" onclick="demoAIAnalysis('EQNR.OL')">
+                                                            <i class="bi bi-robot"></i> AI Prisprediksjoner
+                                                        </button>
+                                                        <button class="btn btn-outline-primary w-100 demo-btn" onclick="demoAIAnalysis('EQNR.OL')" aria-label="AI Prisprediksjoner demo">
+                            </button>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <button class="btn btn-outline-success w-100 demo-btn" onclick="demoGrahamAnalysis()">
+                                                            <i class="bi bi-graph-up-arrow"></i> Benjamin Graham Analyse
+                                                        </button>
+                                                        <button class="btn btn-outline-success w-100 demo-btn" onclick="demoGrahamAnalysis()" aria-label="Benjamin Graham Analyse demo">
+                            </button>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <button class="btn btn-outline-warning w-100 demo-btn" onclick="demoWarrenBuffett()">
+                                                            <i class="bi bi-trophy"></i> Warren Buffett Strategi
+                                                        </button>
+                                                        <button class="btn btn-outline-warning w-100 demo-btn" onclick="demoWarrenBuffett()" aria-label="Warren Buffett Strategi demo">
+                            </button>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <button class="btn btn-outline-danger w-100 demo-btn" onclick="demoShortAnalysis()">
+                                                            <i class="bi bi-graph-down"></i> Short Analyse
+                                                        </button>
+                                                        <button class="btn btn-outline-danger w-100 demo-btn" onclick="demoShortAnalysis()" aria-label="Short Analyse demo">
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Enhanced Demo Results Area -->
+                    <div id="demo-result-container" class="mt-4">
+                        <!-- Dynamic content will be inserted here by JavaScript -->
+                        <div id="demoResult" class="alert alert-success" style="display: none;">
+                            <h6><i class="bi bi-check-circle"></i> Demo Resultat:</h6>
+                            <p id="demoResultText" class="mb-0"></p>
+                            <button class="btn btn-sm btn-outline-success mt-2" onclick="resetDemo()">
+                                <i class="bi bi-arrow-clockwise"></i> Prøv igjen
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Interactive Demo Progress -->
+                    <div class="mt-4">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <h6><i class="bi bi-lightbulb"></i> Prøv flere funksjoner:</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <button class="btn btn-outline-info btn-sm w-100 mb-2" onclick="demoScreener()">
+                                                                                    <i class="bi bi-funnel"></i> Avansert Screener
+                                                                                </button>
+                                                                                <button class="btn btn-outline-info btn-sm w-100 mb-2" onclick="demoScreener()" aria-label="Avansert Screener demo">
+                                        </button>
+                                        <button class="btn btn-outline-warning btn-sm w-100 mb-2" onclick="demoInsiderTrading()">
+                                                                                    <i class="bi bi-person-badge"></i> Insider Trading
+                                                                                </button>
+                                                                                <button class="btn btn-outline-warning btn-sm w-100 mb-2" onclick="demoInsiderTrading()" aria-label="Insider Trading demo">
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <button class="btn btn-outline-success btn-sm w-100 mb-2" onclick="demoPortfolioOptimization()">
+                                                                                    <i class="bi bi-pie-chart"></i> Portfolio Optimering
+                                                                                </button>
+                                                                                <button class="btn btn-outline-success btn-sm w-100 mb-2" onclick="demoPortfolioOptimization()" aria-label="Portfolio Optimering demo">
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm w-100 mb-2" onclick="demoRealTimeAlerts()">
+                                                                                    <i class="bi bi-bell"></i> Sanntids Varsler
+                                                                                </button>
+                                                                                <button class="btn btn-outline-danger btn-sm w-100 mb-2" onclick="demoRealTimeAlerts()" aria-label="Sanntids Varsler demo">
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Interactive Feature Showcase -->
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">🔥 Populære Premium Funksjoner</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary text-white rounded-circle p-2 me-3">
+                                    <i class="bi bi-graph-up"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Sanntids Markedsdata</h6>
+                                    <small class="text-muted">Oppdateres hvert sekund</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-success text-white rounded-circle p-2 me-3">
+                                    <i class="bi bi-robot"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">AI-drevne Prediksjoner</h6>
+                                    <small class="text-muted">Machine learning analyser</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-warning text-dark rounded-circle p-2 me-3">
+                                    <i class="bi bi-funnel"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Avanserte Screenere</h6>
+                                    <small class="text-muted">50+ filterkriterier</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-danger text-white rounded-circle p-2 me-3">
+                                    <i class="bi bi-bell"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Smart Varsler</h6>
+                                    <small class="text-muted">Personaliserte notifikasjoner</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Enhanced CTA Card -->
+            <div class="card border-0 shadow-lg bg-primary text-white mb-4">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-crown fs-1 text-warning"></i>
+                    </div>
+                    <h4 class="text-white">⭐ Start ditt abonnement nå</h4>
+                    <p class="mb-3 text-white">Få tilgang til alle funksjoner og sanntidsdata</p>
+                    <div class="mb-3">
+                        <div class="fs-2 fw-bold text-white">249,-</div>
+                        <div class="small text-light">per måned</div>
+                        <div class="small text-light opacity-75">eller 2499,- per år (spar 17%)</div>
+                    </div>
+                    {% if current_user.is_authenticated %}
+                    <!-- For innloggede brukere: Direkte til Stripe kjøp -->
+                    <a href="https://buy.stripe.com/5kQcN503z30z2oL35wfYY03" class="btn btn-warning btn-lg w-100 mb-3" target="_blank">
+                        <i class="bi bi-rocket"></i> Start abonnement nå
+                    </a>
+                    {% else %}
+                    <!-- For uinnloggede brukere: Gå til pricing side -->
+                    <a href="{{ url_for('main.subscription') }}" class="btn btn-warning btn-lg w-100 mb-3">
+                        <i class="bi bi-rocket"></i> Start abonnement nå
+                    </a>
+                    {% endif %}
+                    <div class="row text-start small">
+                        <div class="col-6">
+                            <i class="bi bi-check2"></i> Alle AI-analyser<br>
+                            <i class="bi bi-check2"></i> Sanntids data<br>
+                            <i class="bi bi-check2"></i> Avanserte screenere
+                        </div>
+                        <div class="col-6">
+                            <i class="bi bi-check2"></i> Portfolio tracking<br>
+                            <i class="bi bi-check2"></i> Price alerts<br>
+                            <i class="bi bi-check2"></i> Insider data
+                        </div>
+                    </div>
+                    <hr class="opacity-50">
+                    <small class="d-block opacity-75">Ingen bindingstid • Avbryt når som helst</small>
+                </div>
+            </div>
+            
+            <!-- Demo Progress Tracker -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6><i class="bi bi-trophy"></i> Demo Fremgang</h6>
+                    <div id="demo-progress-bar" class="progress mb-3">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <div id="demo-achievements" class="small">
+                        <div class="text-muted">Fullfør 3 analyser for å låse opp bonusinnhold!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Enhanced Market Overview -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">📊 Live Markedsoversikt</h5>
+                    <span class="badge bg-success">Demo Data</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>OSEBX</h6>
+                                <p class="text-success fs-4 mb-1">1,234.56 <i class="bi bi-arrow-up"></i></p>
+                                <small class="text-success">+1.2% (+14.52)</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>S&P 500</h6>
+                                <p class="text-danger fs-4 mb-1">4,567.89 <i class="bi bi-arrow-down"></i></p>
+                                <small class="text-danger">-0.5% (-22.84)</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Bitcoin</h6>
+                                <p class="text-success fs-4 mb-1">$65,432 <i class="bi bi-arrow-up"></i></p>
+                                <small class="text-success">+2.3% (+1,470)</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>USD/NOK</h6>
+                                <p class="text-success fs-4 mb-1">10.45 <i class="bi bi-arrow-up"></i></p>
+                                <small class="text-success">+0.3% (+0.03)</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-center">
+                        <button class="btn btn-outline-primary btn-sm" onclick="demoMarketAnalysis()">
+                            <i class="bi bi-graph-up"></i> Analyser markedstrends
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stock Cards -->
+    <h2 class="mb-3">Populære aksjer</h2>
+    <div class="row mb-4">
+        {% for stock in stocks %}
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ stock.symbol }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ stock.name }}</h6>
+                    <p class="fs-4 mb-1">{{ stock.price }} NOK</p>
+                    <p class="text-success">{{ stock.change }}</p>
+                    <div class="mt-3">
+                        <span class="badge bg-{{ 'success' if stock.signal == 'KJØP' else 'secondary' }}">
+                            {{ stock.signal }}
+                        </span>
+                    </div>
+                    <p class="text-muted small mt-2">{{ stock.analysis }}</p>
+                    <button class="btn btn-primary btn-sm mt-2" onclick="showAnalysis('{{ stock.symbol }}')">
+                        <i class="bi bi-graph-up"></i> Se analyse
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- AI Analysis Section -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>AI-drevet analyse</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Anbefaling: <span class="badge bg-success">{{ analysis.recommendation }}</span></h6>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <p><strong>Konfidensnivå:</strong> {{ analysis.confidence }}</p>
+                            <p><strong>Kursmål:</strong> {{ analysis.target_price }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Risiko:</strong> {{ analysis.risk_level }}</p>
+                            <p><strong>Tidshorisont:</strong> {{ analysis.time_horizon }}</p>
+                        </div>
+                    </div>
+                    <h6 class="mt-3">Nøkkelsignaler:</h6>
+                    <ul>
+                        {% for signal in analysis.signals %}
+                        <li>{{ signal }}</li>
+                        {% endfor %}
+                    </ul>
+                    <button class="btn btn-success mt-3">
+                        <i class="bi bi-download"></i> Last ned full rapport
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Portfolio Preview -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Demo portefølje</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Total verdi</h6>
+                    <p class="fs-4">
+                        {% if portfolio.total_value is number %}
+                            {{ "{:,.0f}".format(portfolio.total_value) }} NOK
+                        {% else %}
+                            {{ portfolio.total_value }}
+                        {% endif %}
+                    </p>
+                    <p class="text-success">
+                        <i class="bi bi-arrow-up"></i> 
+                        {% if portfolio.daily_change is number %}
+                            +{{ "{:,.0f}".format(portfolio.daily_change) }}
+                        {% else %}
+                            {{ portfolio.daily_change }}
+                        {% endif %}
+                        (+{{ portfolio.daily_change_percent }}%)
+                    </p>
+                    <h6 class="mt-3">Beholdninger</h6>
+                    <ul class="list-unstyled">
+                        {% for holding in portfolio.holdings %}
+                        <li>
+                            <strong>{{ holding.symbol }}:</strong> 
+                            {% if holding.value is number %}
+                                {{ "{:,.0f}".format(holding.value) }} NOK 
+                            {% else %}
+                                {{ holding.value }} NOK
+                            {% endif %}
+                            ({{ holding.weight }}%)
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- CTA Section with proper styling -->
+    <div class="text-center mt-5 mb-5" style="background: linear-gradient(135deg, #28a745, #20c997) !important; color: #ffffff !important; padding: 3rem 2rem !important; border-radius: 12px !important; box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3) !important;">
+        <h3 style="color: #ffffff !important; text-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;">Klar for å komme i gang?</h3>
+        <p class="lead" style="color: #ffffff !important; text-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;">Opprett en gratis konto og få tilgang til alle funksjoner</p>
+        <a href="{{ url_for('main.register') }}" class="btn btn-light btn-lg" style="background: #ffffff !important; color: #28a745 !important; border: none !important; font-weight: 600 !important; padding: 0.75rem 2rem !important; border-radius: 25px !important; box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;">
+            <i class="bi bi-person-plus" style="color: #28a745 !important;"></i> Opprett konto nå
+        </a>
+        <p class="mt-3" style="color: #ffffff !important; text-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;">
+            <small style="color: #ffffff !important; opacity: 0.9;">Ingen kredittkort påkrevd • Ubegrenset demo-tilgang</small>
+        </p>
+    </div>
+</div>
+
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Globale Aksjer - Live Data</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Aksje</th>
+                                        <th>Pris</th>
+                                        <th>Endring</th>
+                                        <th>Signal</th>
+                                        <th>Handlinger</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <strong>AAPL</strong><br>
+                                            <small class="text-muted">Apple Inc.</small>
+                                        </td>
+                                        <td>$185.70</td>
+                                        <td class="text-success">+1.5%</td>
+                                        <td><span class="badge bg-success">KJØP</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary me-1" onclick="demoAnalyze('AAPL')">
+                                                <i class="bi bi-search me-1"></i>Analyser
+                                            </button>
+                                            <button class="btn btn-sm btn-success me-1" onclick="demoBuyStock('AAPL')">
+                                                <i class="bi bi-cart me-1"></i>Kjøp
+                                            </button>
+                                            <button class="btn btn-sm btn-warning" onclick="demoAddToWatchlist('AAPL')">
+                                                <i class="bi bi-star me-1"></i>Overvåk
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>GOOGL</strong><br>
+                                            <small class="text-muted">Alphabet Inc.</small>
+                                        </td>
+                                        <td>$142.30</td>
+                                        <td class="text-success">+0.8%</td>
+                                        <td><span class="badge bg-success">KJØP</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary me-1" onclick="demoAnalyze('GOOGL')">
+                                                <i class="bi bi-search me-1"></i>Analyser
+                                            </button>
+                                            <button class="btn btn-sm btn-success me-1" onclick="demoBuyStock('GOOGL')">
+                                                <i class="bi bi-cart me-1"></i>Kjøp
+                                            </button>
+                                            <button class="btn btn-sm btn-warning" onclick="demoAddToWatchlist('GOOGL')">
+                                                <i class="bi bi-star me-1"></i>Overvåk
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>TSLA</strong><br>
+                                            <small class="text-muted">Tesla Inc.</small>
+                                        </td>
+                                        <td>$245.80</td>
+                                        <td class="text-danger">-2.1%</td>
+                                        <td><span class="badge bg-warning">HOLD</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary me-1" onclick="demoAnalyze('TSLA')">
+                                                <i class="bi bi-search me-1"></i>Analyser
+                                            </button>
+                                            <button class="btn btn-sm btn-success me-1" onclick="demoBuyStock('TSLA')">
+                                                <i class="bi bi-cart me-1"></i>Kjøp
+                                            </button>
+                                            <button class="btn btn-sm btn-warning" onclick="demoAddToWatchlist('TSLA')">
+                                                <i class="bi bi-star me-1"></i>Overvåk
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="analysis-demo" class="demo-section" style="display: none;">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Teknisk Analyse - EQNR.OL</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <h6>Tekniske Indikatorer</h6>
+                                <div class="analysis-metrics">
+                                    <div class="metric-item d-flex justify-content-between py-2 border-bottom">
+                                        <span>RSI (14):</span>
+                                        <span class="fw-bold text-warning">58.2</span>
+                                    </div>
+                                    <div class="metric-item d-flex justify-content-between py-2 border-bottom">
+                                        <span>MACD:</span>
+                                        <span class="fw-bold text-success">+2.34</span>
+                                    </div>
+                                    <div class="metric-item d-flex justify-content-between py-2 border-bottom">
+                                        <span>SMA (50):</span>
+                                        <span class="fw-bold text-info">338.45 NOK</span>
+                                    </div>
+                                    <div class="metric-item d-flex justify-content-between py-2 border-bottom">
+                                        <span>Støtte:</span>
+                                        <span class="fw-bold text-danger">330.00 NOK</span>
+                                    </div>
+                                    <div class="metric-item d-flex justify-content-between py-2">
+                                        <span>Motstand:</span>
+                                        <span class="fw-bold text-success">350.00 NOK</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Analyse Sammendrag</h6>
+                                <div class="analysis-summary">
+                                    <div class="alert alert-success">
+                                        <h6 class="alert-heading">KJØP Anbefaling</h6>
+                                        <p class="mb-0">Tekniske indikatorer viser bullish trend med RSI i nøytral sone og positiv MACD. Kursen er over 50-dagers glidende gjennomsnitt.</p>
+                                    </div>
+                                    <div class="key-points">
+                                        <small class="text-muted">Nøkkelpunkter:</small>
+                                        <ul class="small mt-2">
+                                            <li>RSI indikerer ikke overkjøpt</li>
+                                            <li>MACD viser positiv momentum</li>
+                                            <li>Volum støtter opptrenden</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Prisdiagram</h6>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="chart-placeholder bg-light rounded p-4" style="min-height: 250px;">
+                            <i class="bi bi-graph-up fs-1 text-muted mb-3"></i>
+                            <p class="text-muted">Interaktivt prisdiagram</p>
+                            <small class="text-muted">Tilgjengelig i full versjon</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ai-demo" class="demo-section" style="display: none;">
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">🤖 AI-Drevne Markedsprediksjoner</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-lg-6">
+                                <h6>Prisprediksjon - EQNR.OL</h6>
+                                <div class="prediction-card bg-light p-3 rounded">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span>Nåværende pris:</span>
+                                        <span class="h5 mb-0">342.55 NOK</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span>Predikert pris (30 dager):</span>
+                                        <span class="h5 mb-0 text-success">358.20 NOK</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span>Forventet avkastning:</span>
+                                        <span class="h6 mb-0 text-success">+4.57%</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" style="width: 87%"></div>
+                                    </div>
+                                    <small class="text-muted mt-1 d-block">Konfidensintervall: 87%</small>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <h6>AI-Analyse Faktorer</h6>
+                                <div class="factors-list">
+                                    <div class="factor-item d-flex justify-content-between py-2 border-bottom">
+                                        <span>Fundamental analyse:</span>
+                                        <span class="badge bg-success">Positiv</span>
+                                    </div>
+                                    <div class="factor-item d-flex justify-content-between py-2 border-bottom">
+                                        <span>Markedssentiment:</span>
+                                        <span class="badge bg-success">Bullish</span>
+                                    </div>
+                                    <div class="factor-item d-flex justify-content-between py-2 border-bottom">
+                                        <span>Sektortrend:</span>
+                                        <span class="badge bg-warning">Nøytral</span>
+                                    </div>
+                                    <div class="factor-item d-flex justify-content-between py-2 border-bottom">
+                                        <span>Volatilitet:</span>
+                                        <span class="badge bg-info">Moderat</span>
+                                    </div>
+                                    <div class="factor-item d-flex justify-content-between py-2">
+                                        <span>Risiko-score:</span>
+                                        <span class="badge bg-warning">Medium</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="portfolio-demo" class="demo-section" style="display: none;">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Demo Portefølje</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="portfolio-stats mb-4">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <div class="stat-card bg-light p-3 rounded text-center">
+                                        <div class="h4 text-success mb-1">1,250,000</div>
+                                        <small class="text-muted">Total verdi (NOK)</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="stat-card bg-light p-3 rounded text-center">
+                                        <div class="h4 text-success mb-1">+2.3%</div>
+                                        <small class="text-muted">Daglig endring</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="stat-card bg-light p-3 rounded text-center">
+                                        <div class="h4 text-primary mb-1">+15.7%</div>
+                                        <small class="text-muted">YTD avkastning</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="stat-card bg-light p-3 rounded text-center">
+                                        <div class="h4 text-warning mb-1">8</div>
+                                        <small class="text-muted">Posisjoner</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Aksje</th>
+                                        <th>Antall</th>
+                                        <th>Verdi</th>
+                                        <th>Endring</th>
+                                        <th>Vekt</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>EQNR.OL</strong></td>
+                                        <td>150</td>
+                                        <td>51,382 NOK</td>
+                                        <td class="text-success">+2.1%</td>
+                                        <td>32.1%</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>AAPL</strong></td>
+                                        <td>75</td>
+                                        <td>47,250 NOK</td>
+                                        <td class="text-success">+1.5%</td>
+                                        <td>28.9%</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>DNB.OL</strong></td>
+                                        <td>100</td>
+                                        <td>23,410 NOK</td>
+                                        <td class="text-danger">-0.8%</td>
+                                        <td>18.7%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Portefølje Analyse</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="analysis-metrics">
+                            <div class="metric-item d-flex justify-content-between py-2 border-bottom">
+                                <span>Sharpe Ratio:</span>
+                                <span class="fw-bold text-success">1.24</span>
+                            </div>
+                            <div class="metric-item d-flex justify-content-between py-2 border-bottom">
+                                <span>Beta:</span>
+                                <span class="fw-bold text-info">0.89</span>
+                            </div>
+                            <div class="metric-item d-flex justify-content-between py-2 border-bottom">
+                                <span>Volatilitet:</span>
+                                <span class="fw-bold text-warning">18.5%</span>
+                            </div>
+                            <div class="metric-item d-flex justify-content-between py-2">
+                                <span>Max Drawdown:</span>
+                                <span class="fw-bold text-danger">-8.2%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h6>Sektorfordeling</h6>
+                            <div class="sector-breakdown">
+                                <div class="d-flex justify-content-between py-1">
+                                    <span>Energi:</span>
+                                    <span>32.1%</span>
+                                </div>
+                                <div class="d-flex justify-content-between py-1">
+                                    <span>Teknologi:</span>
+                                    <span>28.9%</span>
+                                </div>
+                                <div class="d-flex justify-content-between py-1">
+                                    <span>Finans:</span>
+                                    <span>18.7%</span>
+                                </div>
+                                <div class="d-flex justify-content-between py-1">
+                                    <span>Øvrige:</span>
+                                    <span>20.3%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demo Actions -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg bg-success text-white">
+                <div class="card-body text-center py-5">
+                    <h2 class="mb-3">🎯 Imponert av det du ser?</h2>
+                    <p class="lead mb-4">Dette er bare en liten smakebit! Få tilgang til 50+ premium funksjoner, real-time data og ubegrensede analyser.</p>
+                    
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="d-flex flex-wrap justify-content-center gap-3 mb-4">
+                                <span class="badge bg-light text-dark px-3 py-2" style="color: #000 !important; font-weight: bold;">📊 Real-time kurser</span>
+                                <span class="badge bg-light text-dark px-3 py-2" style="color: #000 !important; font-weight: bold;">🤖 AI-analyser</span>
+                                <span class="badge bg-light text-dark px-3 py-2" style="color: #000 !important; font-weight: bold;">📈 Porteføljesporing</span>
+                                <span class="badge bg-light text-dark px-3 py-2" style="color: #000 !important; font-weight: bold;">🔔 Smart varsling</span>
+                                <span class="badge bg-light text-dark px-3 py-2" style="color: #000 !important; font-weight: bold;">📱 Mobil app</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex flex-wrap justify-content-center gap-3">
+                        {% if current_user.is_authenticated %}
+                        <!-- For innloggede brukere: Direkte til Stripe kjøp -->
+                        <form action="{{ url_for('stripe.create_checkout_session') }}" method="post" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="subscription_type" value="monthly">
+                            <button type="submit" class="btn btn-warning btn-lg px-4">
+                                <i class="bi bi-crown"></i> Start ditt abonnement nå
+                            </button>
+                        </form>
+                        {% else %}
+                        <!-- For uinnloggede brukere: Gå til pricing side -->
+                        <a href="{{ url_for('main.subscription') }}" class="btn btn-warning btn-lg px-4">
+                            <i class="bi bi-crown"></i> Start ditt abonnement nå
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('main.register') }}" class="btn btn-light btn-lg px-4">
+                            <i class="bi bi-person-plus"></i> Opprett gratis konto
+                        </a>
+                    </div>
+                    
+                    <p class="mt-4 mb-0 opacity-75">
+                        <small>✅ 30 dagers pengene-tilbake-garanti • ✅ Avbryt når som helst • ✅ Ingen bindingstid</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Showcase -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3 class="text-center mb-4">🚀 Hva får du med premium?</h3>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-lightning-charge-fill text-warning fs-1"></i>
+                    <h5>Real-time Data</h5>
+                    <p>Live kurser, instant varsler og øyeblikkelig oppdateringer fra alle markeder</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-robot text-primary fs-1"></i>
+                    <h5>AI-Powered Analyser</h5>
+                    <p>Avanserte algoritmer som analyserer tusenvis av datapunkter for deg</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-shield-check text-success fs-1"></i>
+                    <h5>Profesjonell Support</h5>
+                    <p>Direkte tilgang til våre eksperter og prioritert kundesupport</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upgrade Modal -->
+<div class="modal fade" id="upgradeModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">💎 Premium Abonnement</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <h3 class="text-primary">Premium tilgang til alt!</h3>
+                <p class="lead">Velg det abonnementet som passer deg best</p>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card border-primary">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0">Premium Månedlig</h6>
+                            </div>
+                            <div class="card-body">
+                                <h4><span class="text-primary">249,-</span></h4>
+                                <p>per måned</p>
+                                {% if current_user.is_authenticated %}
+                                <form action="{{ url_for('stripe.create_checkout_session') }}" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="subscription_type" value="monthly">
+                                    <button type="submit" class="btn btn-primary">Velg Månedlig</button>
+                                </form>
+                                {% else %}
+                                <a href="{{ url_for('main.subscription') }}" class="btn btn-primary">Velg Månedlig</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-success">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0">Premium Årlig <span class="badge bg-warning">Spare 50%</span></h6>
+                            </div>
+                            <div class="card-body">
+                                <h4><span class="text-success">2.999,-</span></h4>
+                                <p>per år</p>
+                                {% if current_user.is_authenticated %}
+                                <form action="{{ url_for('stripe.create_checkout_session') }}" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="subscription_type" value="yearly">
+                                    <button type="submit" class="btn btn-success">Velg Årlig</button>
+                                </form>
+                                {% else %}
+                                <a href="{{ url_for('main.subscription') }}" class="btn btn-success">Velg Årlig</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Demo notification system
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'info' ? 'primary' : type} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 3000);
+}
+
+function showUpgradeModal() {
+    new bootstrap.Modal(document.getElementById('upgradeModal')).show();
+}
+
+window.showAnalysis = function(symbol) {
+    // Show realistic demo popup
+    const modal = `
+        <div class="alert alert-success alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+            <h6><i class="bi bi-graph-up"></i> Demo Analyse - ${symbol}</h6>
+            <p class="mb-2 small">Viser preview av full analyse...</p>
+            <button class="btn btn-success btn-sm" onclick="showUpgradeModal()">Se full rapport</button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modal);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) alert.remove();
+    }, 5000);
+}
+
+// Add animation CSS
+const style = document.createElement('style');
+style.textContent = `
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .demo-btn {
+        transition: all 0.3s ease;
+    }
+    
+    .demo-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .bg-primary {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+    }
+    
+    .bg-success {
+        background: linear-gradient(135deg, #28a745, #1e7e34);
+    }
+`;
+document.head.appendChild(style);
+
+function showDemo(section) {
+    // Hide all demo sections
+    document.querySelectorAll('.demo-section').forEach(el => {
+        el.style.display = 'none';
+    });
+    
+    // Show selected section
+    document.getElementById(section + '-demo').style.display = 'block';
+    
+    // Update active button - reset all buttons
+    document.querySelectorAll('#stocks-btn, #analysis-btn, #ai-btn, #portfolio-btn').forEach(btn => {
+        btn.className = btn.className.replace('btn-primary', 'btn-outline-primary')
+                                     .replace('btn-success', 'btn-outline-success')
+                                     .replace('btn-warning', 'btn-outline-warning')
+                                     .replace('btn-info', 'btn-outline-info');
+    });
+    
+    // Make clicked button active
+    const activeBtn = document.getElementById(section + '-btn');
+    if (section === 'stocks') {
+        activeBtn.className = activeBtn.className.replace('btn-outline-primary', 'btn-primary');
+    } else if (section === 'analysis') {
+        activeBtn.className = activeBtn.className.replace('btn-outline-success', 'btn-success');
+    } else if (section === 'ai') {
+        activeBtn.className = activeBtn.className.replace('btn-outline-warning', 'btn-warning');
+    } else if (section === 'portfolio') {
+        activeBtn.className = activeBtn.className.replace('btn-outline-info', 'btn-info');
+    }
+}
+
+function demoAnalyze(symbol) {
+    // Simulate analysis action
+    showNotification(`Analyserer ${symbol}...`, 'info');
+    setTimeout(() => {
+        showNotification(`Analyse av ${symbol} fullført! Se resultatet i analyse-seksjonen.`, 'success');
+        showDemo('analysis');
+    }, 1500);
+}
+
+function demoAddToWatchlist(symbol) {
+    // Simulate add to watchlist
+    showNotification(`${symbol} lagt til i overvåkningsliste!`, 'success');
+}
+
+function demoBuyStock(symbol) {
+    // Simulate external buy action for demo
+    showNotification(`Omdirigerer til DNB for kjøp av ${symbol}...`, 'info');
+    setTimeout(() => {
+        showNotification(`Demo: Dette ville åpnet DNB sin handelsplattform for ${symbol}`, 'warning');
+    }, 1000);
+}
+
+function demoScreener() {
+    // Simulate advanced screener functionality
+    showNotification('Laster avansert screener...', 'info');
+    
+    const resultHTML = `
+        <div class="card mt-3">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0"><i class="bi bi-funnel"></i> Screening Resultater - Demo</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Ticker</th>
+                                <th>Selskap</th>
+                                <th>P/E</th>
+                                <th>ROE</th>
+                                <th>Anbefaling</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>EQNR.OL</strong></td>
+                                <td>Equinor ASA</td>
+                                <td>7.5</td>
+                                <td>22.1%</td>
+                                <td><span class="badge bg-success">KJØP</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>DNB.OL</strong></td>
+                                <td>DNB Bank ASA</td>
+                                <td>8.2</td>
+                                <td>15.8%</td>
+                                <td><span class="badge bg-warning">HOLD</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-muted mt-3"><i class="bi bi-info-circle"></i> Demo data - oppgrader for ekte screening av 2000+ aksjer!</p>
+            </div>
+        </div>
+    `;
+    
+    setTimeout(() => {
+        document.getElementById('demo-result-container').innerHTML = resultHTML;
+        showNotification('Avansert screener fullført! Fant 2 aksjer som matcher kriteriene.', 'success');
+    }, 1500);
+}
+
+// First insider trading demo function (keeping this one)
+function demoInsiderTrading() {
+    // Simulate insider trading analysis
+    showNotification('Henter innsidehandel data...', 'info');
+    
+    const resultHTML = `
+        <div class="card mt-3">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0"><i class="bi bi-person-badge"></i> Nylige Innsidehandler - Demo</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="border-start border-success border-3 ps-3 mb-3">
+                            <strong>EQNR.OL</strong> - Anders Opedal (CEO)<br>
+                            <small class="text-muted">Kjøpte 10,000 aksjer for 2.8M NOK</small><br>
+                            <span class="badge bg-success">KJØP</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="border-start border-danger border-3 ps-3 mb-3">
+                            <strong>NHY.OL</strong> - Hilde Merete Aasheim (CFO)<br>
+                            <small class="text-muted">Solgte 5,000 aksjer for 1.2M NOK</small><br>
+                            <span class="badge bg-danger">SALG</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-muted mt-3"><i class="bi bi-info-circle"></i> Demo data - oppgrader for sanntids innsidehandel overvåkning!</p>
+            </div>
+        </div>
+    `;
+    
+    setTimeout(() => {
+        document.getElementById('demo-result-container').innerHTML = resultHTML;
+        showNotification('Innsidehandel analyse fullført! Fant 12 nye transaksjoner.', 'success');
+    }, 1500);
+}
+
+window.demoPortfolioOptimization = function() {
+    // Simulate portfolio optimization
+    showNotification('Optimerer portefølje...', 'info');
+    
+    const resultHTML = `
+        <div class="card mt-3">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0"><i class="bi bi-pie-chart"></i> Portefølje Optimering - Demo</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h5 class="text-success">+18.5%</h5>
+                            <small class="text-muted">Forventet avkastning</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h5 class="text-warning">12.3%</h5>
+                            <small class="text-muted">Risiko (volatilitet)</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h5 class="text-info">1.51</h5>
+                            <small class="text-muted">Sharpe ratio</small>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <h6>Anbefalte Justeringer:</h6>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-arrow-up text-success"></i> Øk EQNR til 25% (+5%)</li>
+                    <li><i class="bi bi-arrow-down text-danger"></i> Reduser DNB til 15% (-3%)</li>
+                    <li><i class="bi bi-plus-circle text-info"></i> Legg til NHY 10%</li>
+                </ul>
+                <p class="text-muted mt-3"><i class="bi bi-info-circle"></i> Demo optimering - oppgrader for Monte Carlo simuleringer!</p>
+            </div>
+        </div>
+    `;
+    
+    setTimeout(() => {
+        document.getElementById('demo-result-container').innerHTML = resultHTML;
+        showNotification('Portefølje optimering fullført! Sharpe ratio forbedret med 0.23.', 'success');
+    }, 2000);
+}
+
+function demoRealTimeAlerts() {
+    // Simulate real-time alerts
+    showNotification('Setter opp sanntids varsler...', 'info');
+    
+    const resultHTML = `
+        <div class="card mt-3">
+            <div class="card-header bg-danger text-white">
+                <h6 class="mb-0"><i class="bi bi-bell"></i> Aktive Varsler - Demo</h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i> <strong>EQNR.OL</strong> har falt 3.2% på 15 minutter
+                </div>
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle"></i> <strong>DNB.OL</strong> har nådd kursmål på 220 NOK
+                </div>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> <strong>NHY.OL</strong> volum er 400% over normalt
+                </div>
+                <hr>
+                <h6>Dine Varsel-innstillinger:</h6>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-bell-fill text-primary"></i> Prisvarsel: ±5% endring</li>
+                    <li><i class="bi bi-bell-fill text-warning"></i> Volumvarsel: 200% over snitt</li>
+                    <li><i class="bi bi-bell-fill text-success"></i> Innsidehandel: Alle transaksjoner</li>
+                </ul>
+                <p class="text-muted mt-3"><i class="bi bi-info-circle"></i> Demo varsler - oppgrader for SMS og e-post varsler!</p>
+            </div>
+        </div>
+    `;
+    
+    setTimeout(() => {
+        document.getElementById('demo-result-container').innerHTML = resultHTML;
+        showNotification('Sanntids varsler aktivert! Du vil få 3 varsler de neste 24 timer.', 'success');
+    }, 1500);
+}
+
+function demoMarketAnalysis() {
+    // Simulate market analysis
+    showNotification('Analyserer markedstrends...', 'info');
+    
+    const resultHTML = `
+        <div class="card mt-3">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="bi bi-graph-up"></i> Markedsanalyse - Demo</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-arrow-up-circle text-success"></i> Bullish Signaler</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check-circle text-success"></i> RSI under 30 på 8 aksjer</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Moving Average crossover på 12 aksjer</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Høyt volum på 5 blue-chip aksjer</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-arrow-down-circle text-danger"></i> Bearish Signaler</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-x-circle text-danger"></i> RSI over 70 på 3 aksjer</li>
+                            <li><i class="bi bi-x-circle text-danger"></i> Negativ divergens på 2 teknologi-aksjer</li>
+                            <li><i class="bi bi-x-circle text-danger"></i> Lavt volum på energi-sektoren</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <h6>Markedssentiment: <span class="badge bg-success">Moderat Bullish</span></h6>
+                    <div class="progress">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 68%" aria-valuenow="68" aria-valuemin="0" aria-valuemax="100">68%</div>
+                    </div>
+                </div>
+                <p class="text-muted mt-3"><i class="bi bi-info-circle"></i> Demo analyse - oppgrader for sanntids markedsanalyse med AI!</p>
+            </div>
+        </div>
+    `;
+    
+    setTimeout(() => {
+        document.getElementById('demo-result-container').innerHTML = resultHTML;
+        showNotification('Markedsanalyse fullført! Fant 23 handelssignaler.', 'success');
+    }, 1500);
+}
+
+// Demo functions are now loaded from external demo.js file
+
+function demoGrahamAnalysis() {
+    showNotification('Utfører Benjamin Graham analyse...', 'info');
+    
+    setTimeout(() => {
+        const resultHTML = `
+            <div class="card mt-3">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0"><i class="bi bi-graph-up-arrow"></i> Benjamin Graham Analyse</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h5 class="text-success">8.5/10</h5>
+                                <small class="text-muted">Graham Score</small>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <h6>Verdivurdering</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check-circle text-success"></i> P/E ratio: Akseptabel (12.4)</li>
+                                <li><i class="bi bi-check-circle text-success"></i> Debt/Equity: Sunn (0.3)</li>
+                                <li><i class="bi bi-check-circle text-success"></i> Current ratio: God (2.1)</li>
+                                <li><i class="bi bi-x-circle text-warning"></i> Dividend yield: Lav (2.8%)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p class="text-muted mt-3"><i class="bi bi-info-circle"></i> Demo analyse - oppgrader for full fundamental analyse!</p>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('demo-result-container').innerHTML = resultHTML;
+        showNotification('Benjamin Graham analyse fullført!', 'success');
+    }, 1800);
+}
+
+function demoWarrenBuffett() {
+    showNotification('Analyserer etter Warren Buffett prinsipper...', 'info');
+    
+    setTimeout(() => {
+        const resultHTML = `
+            <div class="card mt-3">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="bi bi-trophy"></i> Warren Buffett Analyse</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Konkurranse fortrinn</h6>
+                            <div class="progress mb-2">
+                                <div class="progress-bar bg-success" style="width: 85%">85%</div>
+                            </div>
+                            <small class="text-success">Sterkt økonomisk festningsverk</small>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Ledelseskvalitet</h6>
+                            <div class="progress mb-2">
+                                <div class="progress-bar bg-info" style="width: 78%">78%</div>
+                            </div>
+                            <small class="text-info">Kompetent og pålitelig ledelse</small>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h6>Buffett Score: <span class="badge bg-success">82/100</span></h6>
+                        <p class="mb-1"><strong>Anbefaling:</strong> Høy kvalitet selskap</p>
+                        <p class="text-muted">Oppfyller 7 av 10 Buffett-kriterier</p>
+                    </div>
+                    <p class="text-muted mt-3"><i class="bi bi-info-circle"></i> Demo analyse - oppgrader for detaljert Buffett-screening!</p>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('demo-result-container').innerHTML = resultHTML;
+        showNotification('Warren Buffett analyse fullført!', 'success');
+    }, 2200);
+}
+
+function demoShortAnalysis() {
+    showNotification('Analyserer short-muligheter...', 'info');
+    
+    setTimeout(() => {
+        const resultHTML = `
+            <div class="card mt-3">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="mb-0"><i class="bi bi-arrow-down-circle"></i> Short Analyse</h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> <strong>Moderat short-kandidat</strong>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Risikofaktorer</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check-circle text-danger"></i> Høy verdsettelse (P/E: 28)</li>
+                                <li><i class="bi bi-check-circle text-danger"></i> Økt konkurranse</li>
+                                <li><i class="bi bi-x-circle text-success"></i> Sterk balanse</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Short Interest</h6>
+                            <p>Current: <strong>8.2%</strong></p>
+                            <p>7-day change: <span class="text-success">+1.1%</span></p>
+                        </div>
+                    </div>
+                    <p class="text-muted mt-3"><i class="bi bi-info-circle"></i> Demo analyse - oppgrader for avansert short-screening!</p>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('demo-result-container').innerHTML = resultHTML;
+        showNotification('Short analyse fullført!', 'success');
+    }, 1600);
+}
+
+function demoScreener() {
+    showNotification('Kjører aksje-screener...', 'info');
+    
+    setTimeout(() => {
+        const resultHTML = `
+            <div class="card mt-3">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-filter"></i> Aksje Screener Resultater</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Fant 23 aksjer som matcher kriteriene:</strong></p>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Pris</th>
+                                    <th>P/E</th>
+                                    <th>Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>DNB.OL</strong></td>
+                                    <td>215.5</td>
+                                    <td>9.2</td>
+                                    <td><span class="badge bg-success">8.7</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>TEL.OL</strong></td>
+                                    <td>145.8</td>
+                                    <td>11.5</td>
+                                    <td><span class="badge bg-success">8.1</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>MOWI.OL</strong></td>
+                                    <td>195.2</td>
+                                    <td>15.3</td>
+                                    <td><span class="badge bg-warning">7.4</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-muted mt-3"><i class="bi bi-info-circle"></i> Demo resultater - oppgrader for avansert screening!</p>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('demo-result-container').innerHTML = resultHTML;
+        showNotification('Screener fullført! Fant 23 aksjer.', 'success');
+    }, 2500);
+}
+
+// Reset demo function
+function resetDemo() {
+    document.getElementById('demo-result-container').innerHTML = '';
+    showNotification('Demo tilbakestilt!', 'info');
+}
+
+// Global error handling for missing functions
+window.addEventListener('error', function(e) {
+    if (e.message.includes('is not defined')) {
+        const functionName = e.message.split(' ')[0];
+        console.warn(`Missing function: ${functionName} - showing fallback message`);
+        showNotification(`Funksjon "${functionName}" er ikke tilgjengelig i demo-modus.`, 'warning');
+        return true; // Prevent default error handling
+    }
+});
+
+// Show stocks demo by default
+document.addEventListener('DOMContentLoaded', function() {
+    showDemo('stocks');
+});
+</script>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- Load demo functionality -->
+<script src="{{ url_for('static', filename='js/demo_clean.js') }}"></script>
+{% endblock %}

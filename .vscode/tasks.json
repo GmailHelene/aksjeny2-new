@@ -1,0 +1,79 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "Restart Flask dev server",
+			"command": "python3 main.py",
+			"group": "build",
+			"isBackground": true,
+			"problemMatcher": [],
+			"options": {
+				"env": {
+					"SOCKETIO_FORCE_THREADING": "1",
+					"APP_ENV": "development"
+				}
+			}
+		},
+		{
+			"label": "Run print_user_status.py",
+			"type": "shell",
+			"command": "python3 print_user_status.py",
+			"isBackground": false,
+			"group": "build",
+			"options": {
+				"env": {
+					"SOCKETIO_FORCE_THREADING": "1",
+					"APP_ENV": "development",
+					"DISABLE_RELOADER": "1",
+					"DATABASE_URL": "sqlite:///app.db"
+				}
+			}
+		},
+		{
+			"label": "Run scripts to produce results",
+			"type": "shell",
+			"command": "python3 print_user_status.py && python3 verify_premium_access.py",
+			"isBackground": false,
+			"group": "build",
+			"options": {
+				"env": {
+					"SOCKETIO_FORCE_THREADING": "1",
+					"APP_ENV": "development",
+					"DISABLE_RELOADER": "1",
+					"DATABASE_URL": "sqlite:///app.db"
+				}
+			}
+		},
+		{
+			"label": "Run verification scripts",
+			"type": "shell",
+			"command": "python3 print_user_status.py && python3 verify_premium_access.py",
+			"isBackground": false,
+			"group": "build",
+			"options": {
+				"env": {
+					"SOCKETIO_FORCE_THREADING": "1",
+					"APP_ENV": "development",
+					"DISABLE_RELOADER": "1",
+					"DATABASE_URL": "sqlite:///app.db"
+				}
+			}
+		},
+		{
+			"label": "Seed and verify users",
+			"type": "shell",
+			"command": "python3 test_admin_login.py && python3 print_user_status.py && python3 verify_premium_access.py",
+			"isBackground": false,
+			"group": "build",
+			"options": {
+				"env": {
+					"SOCKETIO_FORCE_THREADING": "1",
+					"APP_ENV": "development",
+					"DISABLE_RELOADER": "1",
+					"DATABASE_URL": "sqlite:///app.db"
+				}
+			}
+		}
+	]
+}

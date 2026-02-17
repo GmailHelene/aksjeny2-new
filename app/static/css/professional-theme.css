@@ -1,0 +1,430 @@
+/* 
+PROFESSIONAL THEME INSPIRED BY CMC MARKETS
+Sophisticated, trustworthy, and modern design for Aksjeradar.trade
+*/
+
+:root {
+    /* Professional Color Palette inspired by CMC Markets */
+    --primary-navy: #1B365D;           /* Primary dark blue */
+    --primary-teal: #00A3A3;           /* Accent teal */
+    --primary-light: #F8FAFB;          /* Light background */
+    --secondary-gray: #6B7280;         /* Secondary text */
+    --success-green: #10B981;          /* Success/gains */
+    --danger-red: #EF4444;             /* Danger/losses */
+    --warning-orange: #F59E0B;         /* Warnings */
+    --info-blue: #3B82F6;              /* Information */
+    
+    /* Professional Typography */
+    --font-primary: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    
+    /* Professional Spacing */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+    
+    /* Professional Borders & Shadows */
+    --border-radius: 8px;
+    --border-radius-lg: 12px;
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Global Professional Styling */
+body {
+    font-family: var(--font-primary);
+    background-color: var(--primary-light);
+    color: var(--primary-navy);
+    line-height: 1.6;
+    font-size: 16px;
+}
+
+/* Professional Navigation */
+.navbar-professional {
+    background: linear-gradient(135deg, var(--primary-navy) 0%, #243B53 100%);
+    box-shadow: var(--shadow-md);
+    padding: var(--space-md) 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.navbar-professional .navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: white;
+    text-decoration: none;
+}
+
+.navbar-professional .nav-link {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
+}
+
+.navbar-professional .nav-link:hover {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-professional .nav-link.active {
+    color: white;
+    background-color: var(--primary-teal);
+}
+
+/* Professional Buttons */
+.btn-professional-primary {
+    background: linear-gradient(135deg, var(--primary-teal) 0%, #008B8B 100%);
+    border: none;
+    color: white;
+    padding: var(--space-sm) var(--space-lg);
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-professional-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    background: linear-gradient(135deg, #008B8B 0%, var(--primary-teal) 100%);
+}
+
+.btn-professional-secondary {
+    background: white;
+    border: 2px solid var(--primary-navy);
+    color: var(--primary-navy);
+    padding: var(--space-sm) var(--space-lg);
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-professional-secondary:hover {
+    background: var(--primary-navy);
+    color: white;
+}
+
+/* Professional Cards */
+.card-professional {
+    background: white;
+    border: none;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: var(--space-xl);
+    margin-bottom: var(--space-lg);
+    transition: all 0.3s ease;
+}
+
+.card-professional:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.card-professional .card-header {
+    background: none;
+    border: none;
+    padding: 0 0 var(--space-md) 0;
+    margin-bottom: var(--space-md);
+}
+
+.card-professional .card-title {
+    color: var(--primary-navy);
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin: 0;
+}
+
+.card-professional .card-subtitle {
+    color: var(--secondary-gray);
+    font-size: 0.875rem;
+    margin-top: var(--space-xs);
+}
+
+/* Professional Statistics Display */
+.stat-professional {
+    text-align: center;
+    padding: var(--space-lg);
+    background: white;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-professional .stat-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary-navy);
+    line-height: 1;
+}
+
+.stat-professional .stat-label {
+    font-size: 0.875rem;
+    color: var(--secondary-gray);
+    font-weight: 500;
+    margin-top: var(--space-xs);
+}
+
+.stat-professional.positive .stat-value {
+    color: var(--success-green);
+}
+
+.stat-professional.negative .stat-value {
+    color: var(--danger-red);
+}
+
+/* Professional Tables */
+.table-professional {
+    background: white;
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.table-professional th {
+    background: var(--primary-light);
+    color: var(--primary-navy);
+    font-weight: 600;
+    padding: var(--space-md);
+    border: none;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.table-professional td {
+    padding: var(--space-md);
+    border-top: 1px solid #E5E7EB;
+    vertical-align: middle;
+}
+
+.table-professional tbody tr:hover {
+    background-color: var(--primary-light);
+}
+
+/* Professional Forms */
+.form-professional .form-control {
+    border: 2px solid #E5E7EB;
+    border-radius: var(--border-radius);
+    padding: var(--space-sm) var(--space-md);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-professional .form-control:focus {
+    border-color: var(--primary-teal);
+    box-shadow: 0 0 0 3px rgba(0, 163, 163, 0.1);
+    outline: none;
+}
+
+.form-professional .form-label {
+    font-weight: 600;
+    color: var(--primary-navy);
+    margin-bottom: var(--space-xs);
+}
+
+/* Professional Alerts & Badges */
+.alert-professional {
+    border: none;
+    border-radius: var(--border-radius);
+    padding: var(--space-md);
+    font-weight: 500;
+}
+
+.alert-professional.alert-success {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #065F46;
+    border-left: 4px solid var(--success-green);
+}
+
+.alert-professional.alert-danger {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #991B1B;
+    border-left: 4px solid var(--danger-red);
+}
+
+.alert-professional.alert-info {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #1E40AF;
+    border-left: 4px solid var(--info-blue);
+}
+
+/* Professional Badge */
+.badge-professional {
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.badge-professional.badge-success {
+    background-color: var(--success-green);
+    color: white;
+}
+
+.badge-professional.badge-danger {
+    background-color: var(--danger-red);
+    color: white;
+}
+
+.badge-professional.badge-warning {
+    background-color: var(--warning-orange);
+    color: white;
+}
+
+.badge-professional.badge-info {
+    background-color: var(--info-blue);
+    color: white;
+}
+
+/* Professional Hero Section */
+.hero-professional {
+    background: linear-gradient(135deg, var(--primary-navy) 0%, #243B53 50%, var(--primary-teal) 100%);
+    color: white;
+    padding: var(--space-2xl) 0;
+    text-align: center;
+}
+
+.hero-professional h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: var(--space-md);
+    line-height: 1.2;
+}
+
+.hero-professional .lead {
+    font-size: 1.25rem;
+    margin-bottom: var(--space-xl);
+    opacity: 0.9;
+}
+
+.hero-professional .cta-buttons {
+    margin-top: var(--space-xl);
+}
+
+.hero-professional .cta-buttons .btn {
+    margin: 0 var(--space-sm);
+    padding: var(--space-md) var(--space-xl);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* Professional Features Grid */
+.features-professional {
+    padding: var(--space-2xl) 0;
+    background: white;
+}
+
+.feature-professional {
+    text-align: center;
+    padding: var(--space-xl);
+}
+
+.feature-professional .feature-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto var(--space-md);
+    background: linear-gradient(135deg, var(--primary-teal) 0%, #008B8B 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.feature-professional h3 {
+    color: var(--primary-navy);
+    font-weight: 700;
+    margin-bottom: var(--space-sm);
+}
+
+.feature-professional p {
+    color: var(--secondary-gray);
+    line-height: 1.6;
+}
+
+/* Professional Trust Indicators */
+.trust-indicators {
+    background: var(--primary-light);
+    padding: var(--space-lg) 0;
+    text-align: center;
+}
+
+.trust-indicator {
+    display: inline-flex;
+    align-items: center;
+    margin: 0 var(--space-lg);
+    color: var(--secondary-gray);
+    font-weight: 500;
+}
+
+.trust-indicator i {
+    color: var(--success-green);
+    margin-right: var(--space-xs);
+}
+
+/* Professional Responsive Design */
+@media (max-width: 768px) {
+    .hero-professional h1 {
+        font-size: 2rem;
+    }
+    
+    .hero-professional .lead {
+        font-size: 1rem;
+    }
+    
+    .trust-indicator {
+        display: block;
+        margin: var(--space-sm) 0;
+    }
+    
+    .cta-buttons .btn {
+        display: block;
+        margin: var(--space-sm) 0;
+        width: 100%;
+    }
+}
+
+/* Professional Loading States */
+.loading-professional {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0, 163, 163, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--primary-teal);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Professional Utility Classes */
+.text-professional-primary { color: var(--primary-navy); }
+.text-professional-secondary { color: var(--secondary-gray); }
+.text-professional-success { color: var(--success-green); }
+.text-professional-danger { color: var(--danger-red); }
+.text-professional-warning { color: var(--warning-orange); }
+.text-professional-info { color: var(--info-blue); }
+
+.bg-professional-primary { background-color: var(--primary-navy); }
+.bg-professional-light { background-color: var(--primary-light); }
+.bg-professional-teal { background-color: var(--primary-teal); }
+
+.border-professional { border: 2px solid #E5E7EB; }
+.border-professional-primary { border: 2px solid var(--primary-navy); }
+.border-professional-teal { border: 2px solid var(--primary-teal); }
+
+.rounded-professional { border-radius: var(--border-radius); }
+.rounded-professional-lg { border-radius: var(--border-radius-lg); }
+
+.shadow-professional-sm { box-shadow: var(--shadow-sm); }
+.shadow-professional-md { box-shadow: var(--shadow-md); }
+.shadow-professional-lg { box-shadow: var(--shadow-lg); }

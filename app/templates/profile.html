@@ -1,0 +1,636 @@
+{% extends "base.html" %}
+
+{% block title %}Min Profil - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="mb-4">Min Profil</h1>
+            
+            {% if errors %}
+            <div class="alert alert-warning">
+                <h4 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> Noen data kunne ikke lastes</h4>
+                <p class="mb-0">Deler av profilinformasjonen er ikke tilgjengelig akkurat nå:</p>
+                <ul class="mb-0 mt-2">
+                    {% if 'subscription_check_failed' in errors %}
+                    <li>Abonnementsstatus kunne ikke verifiseres</li>
+                    {% endif %}
+                    {% if 'referral_stats_failed' in errors %}
+                    <li>Referral-statistikk er midlertidig utilgjengelig</li>
+                    {% endif %}
+                    {% if 'preferences_failed' in errors %}
+                    <li>Brukerpreferanser kunne ikke lastes</li>
+                    {% endif %}
+                    {% if 'favorites_failed' in errors %}
+                    <li>Favoritter kunne ikke lastes</li>
+                    {% endif %}
+                    {% if 'subscription_info_failed' in errors %}
+                    <li>Abonnementsdetaljer er utilgjengelige</li>
+                    {% endif %}
+                </ul>
+                <hr>
+                <p class="mb-0">
+                    <small>Prøv å laste siden på nytt eller kom tilbake senere.</small>
+                </p>
+            </div>
+            {% endif %}
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0 text-dark fw-bold">Brukerinformasjon</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <strong>Brukernavn:</strong>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ user.username if user and user.username else 'Ukjent' }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <strong>E-post:</strong>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ user.email if user and user.email else 'Ukjent' }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <strong>Medlemskap:</strong>
+                        </div>
+                        <div class="col-sm-9">
+                            {% if subscription_status == 'premium' %}
+                                {% if subscription and subscription.type == 'yearly' %}
+                                    <span class="badge bg-success">Premium Årlig (2499,- /år)</span>
+                                {% elif subscription and subscription.type == 'monthly' %}
+                                    <span class="badge bg-success">Premium Månedlig (249,- /måned)</span>
+                                {% elif subscription and subscription.type == 'lifetime' %}
+                                    <span class="badge bg-warning text-dark">Premium Livstid</span>
+                                {% else %}
+                                    <span class="badge bg-success">Premium Abonnement</span>
+                                {% endif %}
+                            {% elif subscription_status == 'trial' %}
+                                <span class="badge bg-info">Prøveperiode</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Gratis</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if subscription_status == 'active' %}
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <strong>Gyldig til:</strong>
+                        </div>
+                        <div class="col-sm-9">
+                            {% if subscription and subscription.get('end_date') %}
+                                {{ subscription.end_date.strftime('%d.%m.%Y') }}
+                            {% else %}
+                                Livstid
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-star-fill me-1"></i> Mine favoritter</h5>
+                    <small class="text-muted">{{ favorites|length if favorites else 0 }} stk</small>
+                </div>
+                <div class="card-body">
+                    {% if favorites and favorites|length > 0 %}
+                        <ul class="list-group">
+                            {% for fav in favorites %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div class="flex-grow-1">
+                                    <a href="{{ url_for('stocks.details', symbol=fav.symbol) }}" class="text-decoration-none">
+                                        <strong>{{ fav.symbol }}</strong>
+                                        {% if fav.name %}<span class="text-muted ms-2">{{ fav.name }}</span>{% endif %}
+                                        {% if fav.exchange %}<span class="badge bg-light text-dark ms-2">{{ fav.exchange }}</span>{% endif %}
+                                    </a>
+                                </div>
+                                <form method="POST" action="{{ url_for('profile.remove_favorite', symbol=fav.symbol) }}" class="m-0 p-0">
+                                    <button class="btn btn-sm btn-outline-danger" title="Fjern" onclick="return confirm('Fjern {{ fav.symbol }} fra favoritter?')">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </form>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            Du har ingen favoritter ennå. Trykk på stjerneknappen ved en aksje for å legge til favoritt.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0 text-dark fw-bold">Abonnement</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Abonnement:</strong> 
+                                {% if current_user.has_active_subscription() %}
+                                    <span class="badge bg-success">Aktiv</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Ingen</span>
+                                {% endif %}
+                            </p>
+                            <p><strong>Registrert:</strong> {{ current_user.created_at.strftime('%d.%m.%Y') if current_user.created_at else 'N/A' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Referral System Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-people-fill"></i> Venneverving - Få 20% rabatt!</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Referral Stats -->
+                    <div class="row mb-4">
+                        <div class="col-md-4 text-center">
+                            <div class="card border-primary">
+                                <div class="card-body">
+                                    <h3 class="text-primary">{{ referrals_made }}</h3>
+                                    <p class="mb-0">Venner invitert</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="card border-success">
+                                <div class="card-body">
+                                    <h3 class="text-success">{{ referral_earnings }}%</h3>
+                                    <p class="mb-0">Rabatt opptjent</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="card border-warning">
+                                <div class="card-body">
+                                    <h3 class="text-warning">20%</h3>
+                                    <p class="mb-0">Per venn som tegner årlig</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- How it works -->
+                    <div class="alert alert-info mb-4">
+                        <h6 class="mb-2"><i class="bi bi-lightbulb"></i> Slik fungerer det:</h6>
+                        <ul class="mb-0">
+                            <li>Del din invitasjonskode eller lenke med venner</li>
+                            <li>Når en venn registrerer seg og tegner <strong>årlig abonnement</strong> får du <strong>20% rabatt</strong> på ditt neste abonnement</li>
+                            <li>Ingen grense på hvor mange venner du kan invitere!</li>
+                            <li>Rabatten gjelder kun på årlige abonnementer (ikke månedlige)</li>
+                        </ul>
+                    </div>
+
+                    <!-- Referral Code -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Din invitasjonskode:</h6>
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" value="{{ referral_code or current_user.username }}" id="referralCode" readonly>
+                                <button class="btn btn-outline-secondary" type="button" onclick="copyReferralCode()">
+                                    <i class="bi bi-clipboard"></i> Kopier
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Din invitasjonslenke:</h6>
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" value="{{ url_for('main.register', ref=referral_code or current_user.username, _external=True) }}" id="referralLink" readonly>
+                                <button class="btn btn-outline-secondary" type="button" onclick="copyReferralLink()">
+                                    <i class="bi bi-clipboard"></i> Kopier
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Invite Friend Form -->
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <h6 class="mb-3"><i class="bi bi-envelope"></i> Inviter en venn direkte:</h6>
+                            <form method="POST" action="{{ url_for('main.invite_friend', next=url_for('main.profile')) }}" id="inviteForm">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="email" class="form-control" name="email" placeholder="Vennens e-postadresse" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="submit" class="btn btn-success w-100">
+                                            <i class="bi bi-send"></i> Send invitasjon
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="includeMessage" name="include_message">
+                                        <label class="form-check-label" for="includeMessage">
+                                            Inkluder personlig melding
+                                        </label>
+                                    </div>
+                                    <div id="personalMessage" style="display: none;" class="mt-2">
+                                        <textarea class="form-control" name="message" rows="3" placeholder="Skriv en personlig melding til vennen din..."></textarea>
+                                    </div>
+                                </div>
+                            </form>
+                            <small class="text-muted">Vi sender en invitasjon med din spesielle lenke til vennen din. De får 20% rabatt på sitt første abonnement!</small>
+                        </div>
+                    </div>
+
+                    <!-- Social Sharing -->
+                    <div class="mt-4">
+                        <h6>Del på sosiale medier:</h6>
+                        <div class="btn-group" role="group">
+                            <a href="https://www.facebook.com/sharer/sharer.php?u={{ url_for('main.register', ref=referral_code or current_user.username, _external=True) }}" 
+                               target="_blank" class="btn btn-outline-primary">
+                                <i class="bi bi-facebook"></i> Facebook
+                            </a>
+                            <a href="https://twitter.com/intent/tweet?text=Sjekk ut Aksjeradar - Norges smarteste aksjeplattform!&url={{ url_for('main.register', ref=referral_code or current_user.username, _external=True) }}" 
+                               target="_blank" class="btn btn-outline-info">
+                                <i class="bi bi-twitter"></i> Twitter
+                            </a>
+                            <a href="mailto:?subject=Invitasjon til Aksjeradar&body=Hei! Jeg vil invitere deg til Aksjeradar - Norges smarteste aksjeplattform. Registrer deg her: {{ url_for('main.register', ref=referral_code or current_user.username, _external=True) }}" 
+                               class="btn btn-outline-secondary">
+                                <i class="bi bi-envelope"></i> E-post
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Preferences Card -->
+            <div class="card mb-4">
+                <div class="card-header" style="background-color: #0d47a1 !important; color: white;">
+                    <h5 class="mb-0"><i class="bi bi-sliders"></i> Brukerpreferanser</h5>
+                </div>
+                <div class="card-body">
+                    <form id="preferencesForm" method="POST" action="{{ url_for('main.update_preferences') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="language" class="form-label">Språk</label>
+                                <select class="form-select" id="language" name="language">
+                                    <option value="nb" {% if user_language == 'nb' %}selected{% endif %}>Norsk</option>
+                                    <option value="en" {% if user_language == 'en' %}selected{% endif %}>English</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="display_mode" class="form-label">Visningsmodus</label>
+                                <select class="form-select" id="display_mode" name="display_mode">
+                                    <option value="auto" {% if user_display_mode == 'auto' %}selected{% endif %}>Auto</option>
+                                    <option value="light" {% if user_display_mode == 'light' %}selected{% endif %}>Lyst</option>
+                                    <option value="dark" {% if user_display_mode == 'dark' %}selected{% endif %}>Mørkt</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="number_format" class="form-label">Tallformat</label>
+                                <select class="form-select" id="number_format" name="number_format">
+                                    <option value="norwegian" {% if user_number_format == 'norwegian' %}selected{% endif %}>Norsk (1 234,56)</option>
+                                    <option value="us" {% if user_number_format == 'us' %}selected{% endif %}>US (1,234.56)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-info">Lagre preferanser</button>
+                        <span id="prefStatus" class="ms-3"></span>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Notification Settings Card -->
+            <div class="card mb-4">
+                <div class="card-header" style="background-color: #1b5e20 !important; color: white;">
+                    <h5 class="mb-0"><i class="bi bi-bell"></i> Varsler og Notifikasjoner</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="emailNotifications" 
+                                       {% if user.email_notifications_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="emailNotifications">
+                                    <i class="bi bi-envelope me-2"></i>E-post varsler
+                                </label>
+                                <small class="form-text text-muted d-block">Få viktige oppdateringer på e-post</small>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="priceAlerts" 
+                                       {% if user.price_alerts_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="priceAlerts">
+                                    <i class="bi bi-bell me-2"></i>Prisalarmer
+                                </label>
+                                <small class="form-text text-muted d-block">Varsler når aksjer når målpriser</small>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="marketNews" 
+                                       {% if user.market_news_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="marketNews">
+                                    <i class="bi bi-newspaper me-2"></i>Markedsnyheter
+                                </label>
+                                <small class="form-text text-muted d-block">Viktige markedsoppdateringer</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="portfolioUpdates" 
+                                       {% if user.portfolio_updates_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="portfolioUpdates">
+                                    <i class="bi bi-briefcase me-2"></i>Portefølje oppdateringer
+                                </label>
+                                <small class="form-text text-muted d-block">Daglige portefølje-sammendrag</small>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="aiInsights" 
+                                       {% if user.ai_insights_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="aiInsights">
+                                    <i class="bi bi-robot me-2"></i>AI Innsikt
+                                </label>
+                                <small class="form-text text-muted d-block">Personlige AI-anbefalinger</small>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="weeklyReports" 
+                                       {% if user.weekly_reports_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="weeklyReports">
+                                    <i class="bi bi-calendar-week me-2"></i>Ukentlige rapporter
+                                </label>
+                                <small class="form-text text-muted d-block">Sammendrag av uken</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-info mt-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <span id="notificationStatus">Endringer lagres automatisk</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0 text-dark fw-bold"><i class="bi bi-gear"></i> Kontohandlinger</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <a href="{{ url_for('main.my_subscription') }}" class="btn btn-primary w-100 mb-2">
+                                <i class="bi bi-credit-card"></i> Administrer abonnement
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger w-100 mb-2">
+                                <i class="bi bi-box-arrow-right"></i> Logg ut
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyReferralCode() {
+    const codeInput = document.getElementById('referralCode');
+    codeInput.select();
+    document.execCommand('copy');
+    
+    // Show feedback
+    const btn = event.target.closest('button');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="bi bi-check"></i> Kopiert!';
+    btn.classList.add('btn-success');
+    btn.classList.remove('btn-outline-secondary');
+    
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-outline-secondary');
+    }, 2000);
+}
+
+function copyReferralLink() {
+    const linkInput = document.getElementById('referralLink');
+    linkInput.select();
+    document.execCommand('copy');
+    
+    // Show feedback
+    const btn = event.target.closest('button');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="bi bi-check"></i> Kopiert!';
+    btn.classList.add('btn-success');
+    btn.classList.remove('btn-outline-secondary');
+    
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-outline-secondary');
+    }, 2000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // Handle personal message checkbox
+    const includeMessageCheckbox = document.getElementById('includeMessage');
+    const personalMessageDiv = document.getElementById('personalMessage');
+    
+    if (includeMessageCheckbox && personalMessageDiv) {
+        includeMessageCheckbox.addEventListener('change', function() {
+            personalMessageDiv.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+
+    // Handle favorite removal
+    document.querySelectorAll('.remove-favorite-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const symbol = this.getAttribute('data-symbol');
+            
+            if (!confirm(`Er du sikker på at du vil fjerne ${symbol} fra favorittene?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/stocks/api/favorites/remove', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
+                    },
+                    body: JSON.stringify({ symbol: symbol })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Remove the list item from the DOM
+                    const listItem = this.closest('li');
+                    if (listItem) {
+                        listItem.style.transition = 'all 0.3s ease';
+                        listItem.style.opacity = '0';
+                        listItem.style.transform = 'translateX(-100%)';
+                        setTimeout(() => {
+                            listItem.remove();
+                            
+                            // Check if no favorites left and show message
+                            const favoritesList = document.querySelector('.list-group');
+                            if (favoritesList && favoritesList.children.length === 0) {
+                                favoritesList.parentNode.innerHTML = '<div class="alert alert-info mb-0">Du har ingen favoritter ennå. Trykk på stjerneknappen ved en aksje for å legge til favoritt.</div>';
+                            }
+                        }, 300);
+                    }
+                    
+                    // Show success message
+                    showSuccessToast(data.message || `${symbol} fjernet fra favoritter`);
+                } else {
+                    showErrorToast(data.error || 'Kunne ikke fjerne fra favoritter');
+                }
+            } catch (error) {
+                console.error('Error removing favorite:', error);
+                showErrorToast('Kunne ikke fjerne fra favoritter');
+            }
+        });
+    });
+});
+
+// Notification Settings Handling
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all notification toggle switches
+    const notificationSwitches = document.querySelectorAll('#emailNotifications, #priceAlerts, #marketNews, #portfolioUpdates, #aiInsights, #weeklyReports');
+    
+    notificationSwitches.forEach(function(toggle) {
+        toggle.addEventListener('change', function() {
+            updateNotificationSetting(this.id, this.checked);
+        });
+    });
+});
+
+async function updateNotificationSetting(settingName, isEnabled) {
+    const statusElement = document.getElementById('notificationStatus');
+    statusElement.innerHTML = '<i class="bi bi-clock me-2"></i>Lagrer...';
+    statusElement.className = 'text-info';
+    
+    try {
+        const response = await fetch('/update-notification-settings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({
+                setting: settingName,
+                enabled: isEnabled
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            statusElement.innerHTML = '<i class="bi bi-check-circle me-2"></i>Varselinnstilling oppdatert!';
+            statusElement.className = 'text-success';
+            
+            // Reset to default after 3 seconds
+            setTimeout(() => {
+                statusElement.innerHTML = '<i class="bi bi-info-circle me-2"></i>Endringer lagres automatisk';
+                statusElement.className = 'text-info';
+            }, 3000);
+        } else {
+            throw new Error(data.error || 'Kunne ikke oppdatere innstilling');
+        }
+    } catch (error) {
+        console.error('Error updating notification setting:', error);
+        statusElement.innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i>Kunne ikke lagre innstilling';
+        statusElement.className = 'text-danger';
+        
+        // Reset toggle to previous state
+        const toggle = document.getElementById(settingName);
+        if (toggle) {
+            toggle.checked = !isEnabled;
+        }
+    }
+}
+
+function getCsrfToken() {
+    // Try to get CSRF token from meta tag or form
+    const metaToken = document.querySelector('meta[name="csrf-token"]');
+    if (metaToken) return metaToken.getAttribute('content');
+    
+    const formToken = document.querySelector('input[name="csrf_token"]');
+    if (formToken) return formToken.value;
+    
+    return '';
+}
+
+function showSuccessToast(message) {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = 'toast align-items-center text-white bg-success border-0 position-fixed';
+    toast.style.top = '20px';
+    toast.style.right = '20px';
+    toast.style.zIndex = '9999';
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-check-circle me-2"></i>${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Initialize and show toast
+    const bootstrapToast = new bootstrap.Toast(toast);
+    bootstrapToast.show();
+    
+    // Remove from DOM after hiding
+    toast.addEventListener('hidden.bs.toast', function() {
+        toast.remove();
+    });
+}
+
+function showErrorToast(message) {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = 'toast align-items-center text-white bg-danger border-0 position-fixed';
+    toast.style.top = '20px';
+    toast.style.right = '20px';
+    toast.style.zIndex = '9999';
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-exclamation-circle me-2"></i>${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Initialize and show toast
+    const bootstrapToast = new bootstrap.Toast(toast);
+    bootstrapToast.show();
+    
+    // Remove from DOM after hiding
+    toast.addEventListener('hidden.bs.toast', function() {
+        toast.remove();
+    });
+}
+</script>
+{% endblock %}
+

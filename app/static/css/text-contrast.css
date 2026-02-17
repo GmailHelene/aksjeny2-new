@@ -1,0 +1,225 @@
+/* Fix text contrast on colored backgrounds, but exclude menus and dropdowns */
+.bg-primary:not(.dropdown-menu):not(.nav-item),
+.bg-secondary:not(.dropdown-menu):not(.nav-item),
+.bg-success:not(.dropdown-menu):not(.nav-item),
+.bg-danger:not(.dropdown-menu):not(.nav-item),
+.bg-info:not(.dropdown-menu):not(.nav-item),
+.bg-dark:not(.dropdown-menu):not(.nav-item) {
+    color: #ffffff;
+}
+
+/* Only apply to direct content within colored backgrounds */
+.bg-primary > *:not(.btn):not(.alert):not(.badge):not(.dropdown-menu):not(.nav-link),
+.bg-secondary > *:not(.btn):not(.alert):not(.badge):not(.dropdown-menu):not(.nav-link),
+.bg-success > *:not(.btn):not(.alert):not(.badge):not(.dropdown-menu):not(.nav-link),
+.bg-danger > *:not(.btn):not(.alert):not(.badge):not(.dropdown-menu):not(.nav-link),
+.bg-info > *:not(.btn):not(.alert):not(.badge):not(.dropdown-menu):not(.nav-link),
+.bg-dark > *:not(.btn):not(.alert):not(.badge):not(.dropdown-menu):not(.nav-link) {
+    color: #ffffff;
+}
+
+/* Links within colored backgrounds (excluding navigation) */
+.bg-primary a:not(.btn):not(.nav-link):not(.dropdown-item),
+.bg-secondary a:not(.btn):not(.nav-link):not(.dropdown-item),
+.bg-success a:not(.btn):not(.nav-link):not(.dropdown-item),
+.bg-danger a:not(.btn):not(.nav-link):not(.dropdown-item),
+.bg-info a:not(.btn):not(.nav-link):not(.dropdown-item),
+.bg-dark a:not(.btn):not(.nav-link):not(.dropdown-item) {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+/* Special rule for light/white backgrounds - text should be black */
+.bg-light > *:not(.btn):not(.alert):not(.badge):not(.dropdown-menu):not(.nav-linku):not(.nav-link),
+.bg-white > *:not(.btn):not(.alert):not(.badge):not(.dropdown-menu):not(.nav-linku):not(.nav-link),
+.bg-primary.bg-light > *:not(.btn):not(.alert):not(.badge):not(.dropdown-menu):not(.nav-linku):not(.nav-link),
+.bg-primary.bg-white > *:not(.btn):not(.alert):not(.badge):not(.dropdown-menu):not(.nav-linku):not(.nav-link) {
+    color: #000000 !important;
+}
+
+/* Card headers on light/white backgrounds should have black text */
+.card-header.bg-primary,
+.card-header.bg-light,
+.card-header.bg-white,
+.bg-light .card-header,
+.bg-white .card-header {
+    color: #000000 !important;
+}
+
+.card-header.bg-primary h1,
+.card-header.bg-primary h2,
+.card-header.bg-primary h3,
+.card-header.bg-primary h4,
+.card-header.bg-primary h5,
+.card-header.bg-primary h6,
+.card-header.bg-light h1,
+.card-header.bg-light h2,
+.card-header.bg-light h3,
+.card-header.bg-light h4,
+.card-header.bg-light h5,
+.card-header.bg-light h6,
+.card-header.bg-white h1,
+.card-header.bg-white h2,
+.card-header.bg-white h3,
+.card-header.bg-white h4,
+.card-header.bg-white h5,
+.card-header.bg-white h6 {
+    color: #000000 !important;
+}
+
+/* Muted text within colored backgrounds */
+.bg-primary .text-muted:not(.nav-link):not(.dropdown-item),
+.bg-secondary .text-muted:not(.nav-link):not(.dropdown-item),
+.bg-success .text-muted:not(.nav-link):not(.dropdown-item),
+.bg-danger .text-muted:not(.nav-link):not(.dropdown-item),
+.bg-info .text-muted:not(.nav-link):not(.dropdown-item),
+.bg-dark .text-muted:not(.nav-link):not(.dropdown-item) {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Navigation and dropdown styles - Mobile menu with black background and white text */
+.dropdown-menu {
+    background-color: #000000 !important;
+    border: 1px solid #252525 !important;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background-color: #252525 !important;
+    color: #ffffff !important;
+}
+
+/* Navigation link styles removed per requirements */
+
+/* Mobile navigation specific styles */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        background-color: #000000 !important;
+        border: 1px solid #252525 !important;
+        border-radius: 8px;
+        margin-top: 0.5rem;
+        padding: 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+    
+    .navbar-nav .nav-item {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 0.25rem;
+    }
+    
+    .navbar-nav .nav-item:last-child {
+        border-bottom: none;
+    }
+    
+    .navbar-nav .nav-link {
+        /* Color rules removed - controlled elsewhere */
+        padding: 0.75rem 1rem !important;
+        font-weight: 500;
+    }
+    
+    .navbar-nav .nav-link:hover,
+    .navbar-nav .nav-link:focus {
+        /* Color rules removed - controlled elsewhere */
+        background-color: #252525 !important;
+        border-radius: 4px;
+    }
+    
+    .navbar-nav .dropdown-menu {
+        background-color: #000000 !important;
+        border: 1px solid #252525!important;
+        margin-left: 1rem;
+        margin-top: 0.25rem;
+        position: static;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .navbar-nav .dropdown-item {
+        color: #ffffff !important;
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .navbar-nav .dropdown-item:hover,
+    .navbar-nav .dropdown-item:focus {
+        background-color: #252525 !important;
+        color: #ffffff !important;
+    }
+    
+    .navbar-nav .dropdown-item i {
+        color: #ffffff !important;
+    }
+    
+    .navbar-nav .dropdown-divider {
+        border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+}
+
+/* Small text and headings */
+.bg-primary small:not(.dropdown-item):not(.nav-link),
+.bg-secondary small:not(.dropdown-item):not(.nav-link),
+.bg-success small:not(.dropdown-item):not(.nav-link),
+.bg-danger small:not(.dropdown-item):not(.nav-link),
+.bg-info small:not(.dropdown-item):not(.nav-link),
+.bg-dark small:not(.dropdown-item):not(.nav-link),
+.bg-primary .h5:not(.dropdown-item):not(.nav-link),
+.bg-secondary .h5:not(.dropdown-item):not(.nav-link),
+.bg-success .h5:not(.dropdown-item):not(.nav-link),
+.bg-danger .h5:not(.dropdown-item):not(.nav-link),
+.bg-info .h5:not(.dropdown-item):not(.nav-link),
+.bg-dark .h5,
+.bg-primary .h6,
+.bg-secondary .h6,
+.bg-success .h6,
+.bg-danger .h6,
+.bg-info .h6,
+.bg-dark .h6 {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+
+
+/* Stats boxes */
+.stats-box.bg-primary,
+.stats-box.bg-secondary,
+.stats-box.bg-success,
+.stats-box.bg-danger,
+.stats-box.bg-info,
+.stats-box.bg-dark {
+    color: #ffffff !important;
+}
+
+.stats-box.bg-primary .stats-number,
+.stats-box.bg-secondary .stats-number,
+.stats-box.bg-success .stats-number,
+.stats-box.bg-danger .stats-number,
+.stats-box.bg-info .stats-number,
+.stats-box.bg-dark .stats-number {
+    color: #ffffff !important;
+}
+
+
+.border-0 {
+    border: 0 !important;
+}
+
+/* Card header styles moved to card-header-override.css */
+
+/* Fix for small.text-muted to be white on dark backgrounds */
+.bg-dark small.text-muted,
+.bg-primary small.text-muted,
+.bg-secondary small.text-muted,
+.bg-success small.text-muted,
+.bg-danger small.text-muted,
+.bg-info small.text-muted,
+small.text-muted {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Navbar fixes for dark background */
+.navbar-collapse {
+    background-color: #252525 !important;
+}
+
+.navbar-nav .dropdown-menu {
+    background-color: #252525 !important;
+}

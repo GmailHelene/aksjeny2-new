@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('features.currency_converter', fallback='Valutakonverter') }} - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5 mb-3">
+                <i class="bi bi-arrows-angle-expand me-2"></i>
+                {{ t('features.currency_converter', fallback='Valutakonverter') }}
+            </h1>
+            <p class="text-muted">{{ t('features.currency_description', fallback='Profesjonell valutakonverter med data fra Norges Bank og internasjonale kilder.') }}</p>
+        </div>
+    </div>
+
+    {% if rates %}
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">{{ t('currency.current_rates', fallback='Gjeldende kurser') }}</h5>
+                    
+                    <div class="row">
+                        {% for pair, rate in rates.items() %}
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                <span class="fw-bold">{{ pair }}</span>
+                                <span class="h5 mb-0 text-primary">{{ rate }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                {{ t('currency.loading_error', fallback='Kunne ikke laste valutakurser. Prøv igjen senere.') }}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <a href="{{ url_for('advanced_features.index') }}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left me-2"></i>{{ t('common.back', fallback='Tilbake') }}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

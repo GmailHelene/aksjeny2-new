@@ -1,0 +1,81 @@
+<!-- Analysis Navigation Bar -->
+<div class="bg-light border-bottom mb-4 analysis-menu">
+    <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <span class="navbar-brand mb-0 h5 text-dark">
+                    <i class="bi bi-graph-up-arrow"></i> Analyse
+                </span>
+                
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#analysisNav" aria-controls="analysisNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="analysisNav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if request.endpoint == 'analysis.index' else '' }}" 
+                               href="{{ url_for('analysis.index') }}">
+                                <i class="bi bi-grid"></i> Oversikt
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if 'technical' in request.endpoint else '' }}" 
+                               href="{{ url_for('analysis.technical') }}">
+                                <i class="bi bi-graph-down"></i> Teknisk
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if request.endpoint == 'analysis.ai' else '' }}" 
+                               href="{{ url_for('analysis.ai') }}">
+                                <i class="bi bi-robot"></i> AI-Analyse
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {{ 'active' if request.endpoint in ['analysis.warren_buffett', 'analysis.benjamin_graham'] else '' }}" 
+                               href="#" id="fundamentalDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-book"></i> Fundamental
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="fundamentalDropdown">
+                                <li><a class="dropdown-item" href="{{ url_for('analysis.warren_buffett') }}">
+                                    <i class="bi bi-lightbulb"></i> Warren Buffett
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('analysis.benjamin_graham') }}">
+                                    <i class="bi bi-book"></i> Benjamin Graham
+                                </a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if request.endpoint == 'analysis.short_analysis' else '' }}" 
+                               href="{{ url_for('analysis.short_analysis') }}">
+                                <i class="bi bi-arrow-down-circle"></i> Short
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if request.endpoint == 'analysis.sentiment' else '' }}" 
+                               href="{{ url_for('analysis.sentiment') }}">
+                                <i class="bi bi-emoji-smile"></i> Sentiment
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if request.endpoint == 'analysis.screener' else '' }}" 
+                               href="{{ url_for('analysis.screener') }}">
+                                <i class="bi bi-funnel"></i> Screener
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <!-- Ticker Search -->
+                    <form class="d-flex" action="{{ url_for('analysis.technical') }}" method="GET">
+                        <div class="input-group">
+                            <input class="form-control form-control-sm" type="search" name="ticker" placeholder="Ticker (f.eks. AAPL)" aria-label="Search" value="{{ request.args.get('ticker', '') }}">
+                            <button class="btn btn-outline-primary btn-sm" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </nav>
+    </div>
+</div>

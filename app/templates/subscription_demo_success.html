@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Demo Modus - Abonnement Success{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Demo Modus - Betalingssystem
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5>🎯 Dette er en demonstrasjon</h5>
+                        <p class="mb-0">
+                            Betalingssystemet er konfigurert i demo modus. I en reell implementering ville:
+                        </p>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-check-circle text-success"></i> Hva som ville skje:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-arrow-right text-primary"></i> Ekte betaling via Stripe</li>
+                                <li><i class="bi bi-arrow-right text-primary"></i> Automatisk abonnement aktivering</li>
+                                <li><i class="bi bi-arrow-right text-primary"></i> Betalingsbekreftelse via e-post</li>
+                                <li><i class="bi bi-arrow-right text-primary"></i> Tilgang til alle Pro-funksjoner</li>
+                                <li><i class="bi bi-arrow-right text-primary"></i> Månedlig/årlig fakturering</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-gear text-info"></i> Teknisk konfigurasjon:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-arrow-right text-info"></i> Stripe production API keys</li>
+                                <li><i class="bi bi-arrow-right text-info"></i> Webhook endpoints</li>
+                                <li><i class="bi bi-arrow-right text-info"></i> SSL-sertifikater</li>
+                                <li><i class="bi bi-arrow-right text-info"></i> PCI compliance</li>
+                                <li><i class="bi bi-arrow-right text-info"></i> Europay compliance</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning mt-4">
+                        <h6><i class="bi bi-exclamation-triangle"></i> For produksjonsbruk:</h6>
+                        <p class="mb-0">
+                            For å aktivere ekte betalinger, må produksjons Stripe API-nøkler konfigureres i miljøvariablene.
+                            Dette inkluderer <code>STRIPE_SECRET_KEY</code>, <code>STRIPE_PUBLISHABLE_KEY</code> og webhook secrets.
+                        </p>
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+                            <i class="bi bi-house"></i> Tilbake til forsiden
+                        </a>
+                        <a href="{{ url_for('main.pricing') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-credit-card"></i> Se abonnementer
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

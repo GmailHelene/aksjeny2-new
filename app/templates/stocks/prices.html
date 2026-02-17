@@ -1,0 +1,491 @@
+{% extends "base.html" %}
+
+{% block title %}Alle Priser - Aksjer, Krypto og Valuta | Aksjeradar{% endblock %}
+
+{% block content %}
+{% set oslo_has_signal = market_data.oslo_stocks and market_data.oslo_stocks|length > 0 and market_data.oslo_stocks.values()|map(attribute='signal')|select('string')|list|length > 0 %}
+{% set oslo_has_open = market_data.oslo_stocks and market_data.oslo_stocks|length > 0 and market_data.oslo_stocks.values()|map(attribute='open')|select('number')|list|length > 0 %}
+{% set global_has_signal = market_data.global_stocks and market_data.global_stocks|length > 0 and market_data.global_stocks.values()|map(attribute='signal')|select('string')|list|length > 0 %}
+{% set global_has_open = market_data.global_stocks and market_data.global_stocks|length > 0 and market_data.global_stocks.values()|map(attribute='open')|select('number')|list|length > 0 %}
+{% set crypto_has_signal = market_data.crypto and market_data.crypto|length > 0 and market_data.crypto.values()|map(attribute='signal')|select('string')|list|length > 0 %}
+{% set currency_has_signal = market_data.currency and market_data.currency|length > 0 and market_data.currency.values()|map(attribute='signal')|select('string')|list|length > 0 %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h2 mb-3">Alle Priser</h1>
+            <p class="text-muted">Komplett oversikt over alle priser på tvers av markeder</p>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-warning" role="alert">
+        <i class="bi bi-exclamation-triangle"></i>
+        Det oppstod en feil ved henting av prisdata. Prøv igjen senere.
+    </div>
+    {% else %}
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3 class="card-title">{{ stats.total_stocks|default(0) }}</h3>
+                    <p class="card-text">Aksjer</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h3 class="card-title">{{ stats.total_crypto|default(0) }}</h3>
+                    <p class="card-text">Kryptovaluta</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3 class="card-title">{{ stats.total_currency|default(0) }}</h3>
+                    <p class="card-text">Valutapar</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3 class="card-title">{{ stats.total_instruments|default(0) }}</h3>
+                    <p class="card-text">Totalt</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs" id="pricesTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="oslo-tab" data-bs-toggle="tab" data-bs-target="#oslo" type="button" role="tab">
+                <i class="bi bi-building"></i> Oslo Børs
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="global-tab" data-bs-toggle="tab" data-bs-target="#global" type="button" role="tab">
+                <i class="bi bi-globe"></i> Globale Aksjer
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="crypto-tab" data-bs-toggle="tab" data-bs-target="#crypto" type="button" role="tab">
+                <i class="bi bi-currency-bitcoin"></i> Kryptovaluta
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="currency-tab" data-bs-toggle="tab" data-bs-target="#currency" type="button" role="tab">
+                <i class="bi bi-currency-exchange"></i> Valuta
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="pricesTabContent">
+        <!-- Oslo Børs -->
+        <div class="tab-pane fade show active" id="oslo" role="tabpanel">
+            <div class="card mt-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-building"></i> Oslo Børs</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Ticker</th>
+                                    <th>Siste Pris</th>
+                                    <th>Endring</th>
+                                    <th>Endring %</th>
+                                    {% if not restricted and oslo_has_signal %}
+                                    <th>Signal</th>
+                                    {% endif %}
+                                    {% if oslo_has_open %}
+                                    <th>Åpning</th>
+                                    {% endif %}
+                                    <th>Høyeste</th>
+                                    <th>Laveste</th>
+                                    <th>Handlinger</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ticker, stock in market_data.oslo_stocks.items() %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('stocks.details', symbol=ticker) }}" class="text-decoration-none fw-bold">
+                                            {{ ticker }}
+                                        </a>
+                                    </td>
+                                    <td class="fw-bold">
+                                        {% if stock.last_price is not none %}
+                                            {{ "%.2f"|format(stock.last_price) }} NOK
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td class="{% if stock.change|default(0) > 0 %}text-success{% elif stock.change|default(0) < 0 %}text-danger{% endif %}">
+                                        {{ "+%.2f"|format(stock.change|default(0)) if stock.change|default(0) > 0 else "%.2f"|format(stock.change|default(0)) }}
+                                    </td>
+                                    <td class="{% if stock.change_percent|default(0) > 0 %}text-success{% elif stock.change_percent|default(0) < 0 %}text-danger{% endif %}">
+                                        {{ "+%.2f"|format(stock.change_percent|default(0)) if stock.change_percent|default(0) > 0 else "%.2f"|format(stock.change_percent|default(0)) }}%
+                                    </td>
+                                    {% if not restricted %}
+                                    <td>
+                                        {% set sig = stock.signal or '' %}
+                                        <span class="badge {% if sig in ['BUY','STRONG BUY'] %}bg-success{% elif sig in ['SELL','STRONG SELL'] %}bg-danger{% elif sig %}bg-secondary{% else %}bg-secondary{% endif %}">
+                                            {{ sig if sig else '—' }}
+                                        </span>
+                                    </td>
+                                    {% endif %}
+                                    <td>
+                                        {% if stock.open is not none %}
+                                            {{ "%.2f"|format(stock.open) }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if stock.high is not none %}
+                                            {{ "%.2f"|format(stock.high) }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if stock.low is not none %}
+                                            {{ "%.2f"|format(stock.low) }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('stocks.details', symbol=ticker) }}" class="btn btn-sm btn-outline-primary" title="Vis detaljer">
+                                                <i class="bi bi-info-circle"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-outline-warning add-to-watchlist" data-ticker="{{ ticker }}" title="Legg til i favoritter">
+                                                <i class="bi bi-star"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Global Stocks -->
+        <div class="tab-pane fade" id="global" role="tabpanel">
+            <div class="card mt-3">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-globe"></i> Globale Aksjer</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Ticker</th>
+                                    <th>Siste Pris</th>
+                                    <th>Endring</th>
+                                    <th>Endring %</th>
+                                    {% if not restricted and global_has_signal %}
+                                    <th>Signal</th>
+                                    {% endif %}
+                                    {% if global_has_open %}
+                                    <th>Åpning</th>
+                                    {% endif %}
+                                    <th>Høyeste</th>
+                                    <th>Laveste</th>
+                                    <th>Handlinger</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ticker, stock in market_data.global_stocks.items() %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('stocks.details', symbol=ticker) }}" class="text-decoration-none fw-bold">
+                                            {{ ticker }}
+                                        </a>
+                                    </td>
+                                    <td class="fw-bold">
+                                        {% if stock.last_price is not none %}
+                                            ${{ "%.2f"|format(stock.last_price) }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td class="{% if stock.change|default(0) > 0 %}text-success{% elif stock.change|default(0) < 0 %}text-danger{% endif %}">
+                                        {{ "+%.2f"|format(stock.change|default(0)) if stock.change|default(0) > 0 else "%.2f"|format(stock.change|default(0)) }}
+                                    </td>
+                                    <td class="{% if stock.change_percent|default(0) > 0 %}text-success{% elif stock.change_percent|default(0) < 0 %}text-danger{% endif %}">
+                                        {{ "+%.2f"|format(stock.change_percent|default(0)) if stock.change_percent|default(0) > 0 else "%.2f"|format(stock.change_percent|default(0)) }}%
+                                    </td>
+                                    {% if not restricted %}
+                                    <td>
+                                        {% set sig = stock.signal or '' %}
+                                        <span class="badge {% if sig in ['BUY','STRONG BUY'] %}bg-success{% elif sig in ['SELL','STRONG SELL'] %}bg-danger{% elif sig %}bg-secondary{% else %}bg-secondary{% endif %}">
+                                            {{ sig if sig else '—' }}
+                                        </span>
+                                    </td>
+                                    {% endif %}
+                                    <td>
+                                        {% if stock.open is not none %}
+                                            ${{ "%.2f"|format(stock.open) }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if stock.high is not none %}
+                                            ${{ "%.2f"|format(stock.high) }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if stock.low is not none %}
+                                            ${{ "%.2f"|format(stock.low) }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('stocks.details', symbol=ticker) }}" class="btn btn-sm btn-outline-primary" title="Vis detaljer">
+                                                <i class="bi bi-info-circle"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-outline-warning add-to-watchlist" data-ticker="{{ ticker }}" title="Legg til i favoritter">
+                                                <i class="bi bi-star"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crypto -->
+        <div class="tab-pane fade" id="crypto" role="tabpanel">
+            <div class="card mt-3">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-currency-bitcoin"></i> Kryptovaluta</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Siste Pris</th>
+                                    <th>Endring</th>
+                                    <th>Endring %</th>
+                                    {% if not restricted and crypto_has_signal %}
+                                    <th>Signal</th>
+                                    {% endif %}
+                                    <th>Markedsverdi</th>
+                                    <th>Handlinger</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ticker, coin in market_data.crypto.items() %}
+                                <tr>
+                                    <td class="fw-bold">{{ ticker }}</td>
+                                    <td class="fw-bold">
+                                        {% if coin.last_price is not none %}
+                                            ${{ "%.2f"|format(coin.last_price) }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td class="{% if coin.change|default(0) > 0 %}text-success{% elif coin.change|default(0) < 0 %}text-danger{% endif %}">
+                                        {{ "+%.2f"|format(coin.change|default(0)) if coin.change|default(0) > 0 else "%.2f"|format(coin.change|default(0)) }}
+                                    </td>
+                                    <td class="{% if coin.change_percent|default(0) > 0 %}text-success{% elif coin.change_percent|default(0) < 0 %}text-danger{% endif %}">
+                                        {{ "+%.2f"|format(coin.change_percent|default(0)) if coin.change_percent|default(0) > 0 else "%.2f"|format(coin.change_percent|default(0)) }}%
+                                    </td>
+                                    {% if not restricted %}
+                                    <td>
+                                        {% set sig = coin.signal or '' %}
+                                        <span class="badge {% if sig in ['BUY','STRONG BUY'] %}bg-success{% elif sig in ['SELL','STRONG SELL'] %}bg-danger{% elif sig %}bg-secondary{% else %}bg-secondary{% endif %}">
+                                            {{ sig if sig else '—' }}
+                                        </span>
+                                    </td>
+                                    {% endif %}
+                                    <td>
+                                        {# Prefer normalized millions if available; hide when zero/none; otherwise render raw string if it's a formatted value #}
+                                        {% if coin.market_cap_m is defined and coin.market_cap_m is not none and coin.market_cap_m > 0 %}
+                                            ${{ "%.0f"|format(coin.market_cap_m) }}M
+                                        {% elif coin.market_cap is string %}
+                                            {{ coin.market_cap if coin.market_cap not in ['0', '0M', '0.0M'] else '—' }}
+                                        {% elif coin.market_cap is not none and coin.market_cap|float > 0 %}
+                                            ${{ "%.0f"|format(coin.market_cap|float / 1000000) }}M
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('stocks.details', symbol=ticker) }}" class="btn btn-sm btn-outline-primary" title="Vis detaljer">
+                                                <i class="bi bi-info-circle"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-outline-warning add-to-watchlist" data-ticker="{{ ticker }}" title="Legg til i favoritter">
+                                                <i class="bi bi-star"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Currency -->
+        <div class="tab-pane fade" id="currency" role="tabpanel">
+            <div class="card mt-3">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-currency-exchange"></i> Valutakurser</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Valutapar</th>
+                                    <th>Kurs</th>
+                                    <th>Endring</th>
+                                    <th>Endring %</th>
+                                    {% if not restricted and currency_has_signal %}
+                                    <th>Signal</th>
+                                    {% endif %}
+                                    <th>Bid</th>
+                                    <th>Ask</th>
+                                    <th>Volum</th>
+                                    <th>Handlinger</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ticker, curr in market_data.currency.items() %}
+                                <tr>
+                                    <td class="fw-bold">{{ ticker }}</td>
+                                    <td class="fw-bold">
+                                        {% if curr.last_price is not none %}
+                                            {{ "%.4f"|format(curr.last_price) }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td class="{% if curr.change|default(0) > 0 %}text-success{% elif curr.change|default(0) < 0 %}text-danger{% endif %}">
+                                        {{ "+%.4f"|format(curr.change|default(0)) if curr.change|default(0) > 0 else "%.4f"|format(curr.change|default(0)) }}
+                                    </td>
+                                    <td class="{% if curr.change_percent|default(0) > 0 %}text-success{% elif curr.change_percent|default(0) < 0 %}text-danger{% endif %}">
+                                        {{ "+%.2f"|format(curr.change_percent|default(0)) if curr.change_percent|default(0) > 0 else "%.2f"|format(curr.change_percent|default(0)) }}%
+                                    </td>
+                                    {% if not restricted %}
+                                    <td>
+                                        {% set sig = curr.signal or '' %}
+                                        <span class="badge {% if sig in ['BUY','STRONG BUY'] %}bg-success{% elif sig in ['SELL','STRONG SELL'] %}bg-danger{% elif sig %}bg-secondary{% else %}bg-secondary{% endif %}">
+                                            {{ sig if sig else '—' }}
+                                        </span>
+                                    </td>
+                                    {% endif %}
+                                    <td>
+                                        {% if curr.bid is not none %}
+                                            {{ "%.4f"|format(curr.bid) }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if curr.ask is not none %}
+                                            {{ "%.4f"|format(curr.ask) }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ curr.volume|default('N/A') }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('stocks.details', symbol=ticker) }}" class="btn btn-sm btn-outline-primary" title="Vis detaljer">
+                                                <i class="bi bi-info-circle"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-outline-warning add-to-watchlist" data-ticker="{{ ticker }}" title="Legg til i favoritter">
+                                                <i class="bi bi-star"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Favorites toggle using global helper; also initialize current state
+document.addEventListener('DOMContentLoaded', function() {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    const buttons = Array.from(document.querySelectorAll('.add-to-watchlist'));
+
+    // Initialize state for each button
+    buttons.forEach(btn => {
+        const ticker = btn.dataset.ticker;
+        if (!ticker) return;
+        fetch(`/stocks/api/favorites/check/${encodeURIComponent(ticker)}`)
+            .then(r => r.ok ? r.json() : { favorited: false })
+            .then(d => {
+                const fav = !!(d && d.favorited);
+                btn.classList.toggle('btn-warning', fav);
+                btn.classList.toggle('btn-outline-warning', !fav);
+                btn.innerHTML = fav ? '<i class="bi bi-star-fill"></i>' : '<i class="bi bi-star"></i>';
+                btn.setAttribute('aria-pressed', fav ? 'true' : 'false');
+            })
+            .catch(() => {});
+    });
+
+    // Wire click handler to unified toggleFavorite
+    buttons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const ticker = this.dataset.ticker;
+            if (!ticker || typeof window.toggleFavorite !== 'function') return;
+            window.toggleFavorite(ticker, {
+                button: this,
+                favoritedText: '<i class="bi bi-star-fill"></i>',
+                unfavoritedText: '<i class="bi bi-star"></i>',
+                onSuccess: (data) => {
+                    const fav = !!data.favorited;
+                    this.classList.toggle('btn-warning', fav);
+                    this.classList.toggle('btn-outline-warning', !fav);
+                    if (window.showToast) {
+                        window.showToast(data.message || (fav ? 'Lagt til i favoritter!' : 'Fjernet fra favoritter!'), fav ? 'success' : 'info');
+                    }
+                },
+                onError: () => {
+                    if (window.showToast) window.showToast('Kunne ikke oppdatere favoritter', 'danger');
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

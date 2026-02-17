@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Avansert Screener - Pro | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i class="bi bi-funnel text-primary"></i> Avansert Screener
+                    </h1>
+                    <p class="text-muted">Finn aksjer basert på detaljerte kriterier og tekniske indikatorer</p>
+                </div>
+                <span class="badge bg-warning text-dark fs-6">PRO</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Filter Panel -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5><i class="bi bi-sliders me-2"></i>Filtere</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('pro_tools.advanced_screener') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <!-- Markedsverdi -->
+                        <div class="mb-3">
+                            <label class="form-label">Markedsverdi (Millioner NOK)</label>
+                            <div class="row">
+                                <div class="col">
+                                    <input type="number" class="form-control" name="market_cap_min" placeholder="Min" value="{{ criteria.market_cap_min if criteria else '' }}">
+                                </div>
+                                <div class="col">
+                                    <input type="number" class="form-control" name="market_cap_max" placeholder="Maks" value="{{ criteria.market_cap_max if criteria else '' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- P/E Ratio -->
+                        <div class="mb-3">
+                            <label class="form-label">P/E Ratio</label>
+                            <div class="row">
+                                <div class="col">
+                                    <input type="number" class="form-control" name="pe_min" placeholder="Min" step="0.1" value="{{ criteria.pe_min if criteria else '' }}">
+                                </div>
+                                <div class="col">
+                                    <input type="number" class="form-control" name="pe_max" placeholder="Maks" step="0.1" value="{{ criteria.pe_max if criteria else '' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dividend Yield -->
+                        <div class="mb-3">
+                            <label class="form-label">Utbytteavkastning (%)</label>
+                            <div class="row">
+                                <div class="col">
+                                    <input type="number" class="form-control" name="dividend_min" placeholder="Min" step="0.1" value="{{ criteria.dividend_min if criteria else '' }}">
+                                </div>
+                                <div class="col">
+                                    <input type="number" class="form-control" name="dividend_max" placeholder="Maks" step="0.1" value="{{ criteria.dividend_max if criteria else '' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sektor -->
+                        <div class="mb-3">
+                            <label class="form-label">Sektor</label>
+                            <select class="form-select" name="sector">
+                                <option value="">Alle sektorer</option>
+                                <option value="energy">Energi</option>
+                                <option value="finance">Finans</option>
+                                <option value="technology">Teknologi</option>
+                                <option value="healthcare">Helsevesen</option>
+                                <option value="industrials">Industri</option>
+                                <option value="materials">Materialer</option>
+                                <option value="consumer">Forbruksvarer</option>
+                                <option value="utilities">Forsyning</option>
+                            </select>
+                        </div>
+
+                        <!-- Marked -->
+                        <div class="mb-3">
+                            <label class="form-label">Marked</label>
+                            <select class="form-select" name="market">
+                                <option value="">Alle markeder</option>
+                                <option value="oslo">Oslo Børs</option>
+                                <option value="us">USA</option>
+                                <option value="europe">Europa</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> Søk
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Panel -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="bi bi-list-ul me-2"></i>Resultater</h5>
+                    {% if results %}
+                    <span class="badge bg-primary">{{ results|length }} aksjer funnet</span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if results %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Ticker</th>
+                                    <th>Navn</th>
+                                    <th>Pris</th>
+                                    <th>P/E</th>
+                                    <th>Utbytte</th>
+                                    <th>Markedsverdi</th>
+                                    <th>Handlinger</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stock in results %}
+                                <tr>
+                                    <td><strong>{{ stock.ticker }}</strong></td>
+                                    <td>{{ stock.name }}</td>
+                                    <td>{{ stock.price }} kr</td>
+                                    <td>{{ stock.pe }}</td>
+                                    <td>{{ stock.dividend }}%</td>
+                                    <td>{{ stock.market_cap }}M</td>
+                                    <td>
+                                        <a href="{{ url_for('stocks.details', symbol=stock.ticker) }}" class="btn btn-sm btn-outline-primary">Detaljer</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-funnel display-1 text-muted"></i>
+                        <h4 class="text-muted mt-3">Sett opp søkekriterier</h4>
+                        <p class="text-muted">Bruk filtrene til venstre for å finne aksjer som matcher dine kriterier</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

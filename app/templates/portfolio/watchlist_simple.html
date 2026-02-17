@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Watchlist{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Din Watchlist</h2>
+    
+    {% if stocks %}
+        <div class="card">
+            <div class="card-body">
+                <h5>Stocks ({{ stocks|length }})</h5>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Change</th>
+                            <th>Data Source</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stock in stocks %}
+                        <tr>
+                            <td>{{ stock.ticker }}</td>
+                            <td>{{ stock.name }}</td>
+                            <td>{{ stock.last_price }}</td>
+                            <td>{{ stock.change }}%</td>
+                            <td><span class="badge bg-success">{{ stock.data_source }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            Ingen aksjer i watchlist ennå.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

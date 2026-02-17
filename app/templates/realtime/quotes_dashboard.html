@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Real-time Quotes - Aksjeradar{% endblock %}
+
+{% block head %}
+<style>
+.quote-card {
+    background: linear-gradient(145deg, #ffffff, #f8f9fa);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.quote-card:hover {
+    transform: translateY(-5px);
+}
+
+.price-up { color: #28a745; }
+.price-down { color: #dc3545; }
+.price-neutral { color: #6c757d; }
+
+.live-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: #28a745;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="display-4 text-primary">
+                    <i class="bi bi-graph-up me-3"></i>Real-time Quotes
+                </h1>
+                <div class="live-indicator me-2"></div>
+                <span class="text-muted">Live Data</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Status Banner -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-clock me-2"></i>
+                <strong>Market Status:</strong> 
+                <span id="market-status">Oslo Børs is Open</span>
+                <span class="ms-3">Last Update: <span id="last-update">{{ current_time or "Loading..." }}</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Search -->
+    <div class="row mb-4">
+        <div class="col-md-6 col-lg-4">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search stocks..." id="quote-search">
+                <button class="btn btn-primary" type="button">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popular Stocks -->
+    <div class="row">
+        <div class="col-12">
+            <h3 class="mb-3">Most Watched Stocks</h3>
+        </div>
+        
+        {% set popular_stocks = [
+            {'symbol': 'EQNR.OL', 'name': 'Equinor ASA', 'price': 284.50, 'change': 2.45, 'change_pct': 0.87, 'volume': '2.1M'},
+            {'symbol': 'DNB.OL', 'name': 'DNB Bank ASA', 'price': 198.20, 'change': -1.30, 'change_pct': -0.65, 'volume': '1.8M'},
+            {'symbol': 'NHY.OL', 'name': 'Norsk Hydro ASA', 'price': 65.42, 'change': 1.28, 'change_pct': 1.99, 'volume': '3.2M'},
+            {'symbol': 'TEL.OL', 'name': 'Telenor ASA', 'price': 158.90, 'change': -0.80, 'change_pct': -0.50, 'volume': '1.5M'},
+            {'symbol': 'YAR.OL', 'name': 'Yara International', 'price': 401.20, 'change': 5.20, 'change_pct': 1.31, 'volume': '890K'},
+            {'symbol': 'AAPL', 'name': 'Apple Inc.', 'price': 194.27, 'change': 2.18, 'change_pct': 1.14, 'volume': '42.1M'}
+        ] %}
+
+        {% for stock in popular_stocks %}
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <div class="quote-card">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <h5 class="fw-bold text-primary">{{ stock.symbol }}</h5>
+                        <p class="text-muted mb-1">{{ stock.name }}</p>
+                    </div>
+                    <div class="text-end">
+                        <h4 class="fw-bold 
+                            {% if stock.change > 0 %}price-up{% elif stock.change < 0 %}price-down{% else %}price-neutral{% endif %}">
+                            {{ "%.2f"|format(stock.price) }}
+                            {% if stock.symbol.endswith('.OL') %}NOK{% else %}${% endif %}
+                        </h4>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-6">
+                        <small class="text-muted">Change</small><br>
+                        <span class="
+                            {% if stock.change > 0 %}price-up{% elif stock.change < 0 %}price-down{% else %}price-neutral{% endif %}">
+                            {% if stock.change > 0 %}+{% endif %}{{ "%.2f"|format(stock.change) }}
+                        </span>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">Change %</small><br>
+                        <span class="
+                            {% if stock.change_pct > 0 %}price-up{% elif stock.change_pct < 0 %}price-down{% else %}price-neutral{% endif %}">
+                            {% if stock.change_pct > 0 %}+{% endif %}{{ "%.2f"|format(stock.change_pct) }}%
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="row mt-2">
+                    <div class="col-6">
+                        <small class="text-muted">Volume</small><br>
+                        <span>{{ stock.volume }}</span>
+                    </div>
+                    <div class="col-6">
+                        <a href="{{ url_for('stocks.details', symbol=stock.symbol) }}" class="btn btn-sm btn-outline-primary">
+                            Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Market Indices -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3 class="mb-3">Market Indices</h3>
+        </div>
+        
+        {% set indices = [
+            {'name': 'Oslo Børs Benchmark (OSEBX)', 'value': 1387.45, 'change': 12.34, 'change_pct': 0.90},
+            {'name': 'S&P 500', 'value': 4567.89, 'change': -23.45, 'change_pct': -0.51},
+            {'name': 'NASDAQ Composite', 'value': 14123.67, 'change': 45.23, 'change_pct': 0.32},
+            {'name': 'FTSE 100', 'value': 7598.32, 'change': 18.76, 'change_pct': 0.25}
+        ] %}
+
+        {% for index in indices %}
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="quote-card">
+                <h6 class="fw-bold">{{ index.name }}</h6>
+                <h4 class="
+                    {% if index.change > 0 %}price-up{% elif index.change < 0 %}price-down{% else %}price-neutral{% endif %}">
+                    {{ "%.2f"|format(index.value) }}
+                </h4>
+                <div class="d-flex justify-content-between">
+                    <span class="
+                        {% if index.change > 0 %}price-up{% elif index.change < 0 %}price-down{% else %}price-neutral{% endif %}">
+                        {% if index.change > 0 %}+{% endif %}{{ "%.2f"|format(index.change) }}
+                    </span>
+                    <span class="
+                        {% if index.change_pct > 0 %}price-up{% elif index.change_pct < 0 %}price-down{% else %}price-neutral{% endif %}">
+                        {% if index.change_pct > 0 %}+{% endif %}{{ "%.2f"|format(index.change_pct) }}%
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update timestamps
+    function updateTimestamp() {
+        const now = new Date();
+        document.getElementById('last-update').textContent = now.toLocaleTimeString();
+    }
+    
+    // Update every 30 seconds
+    setInterval(updateTimestamp, 30000);
+    
+    // Search functionality
+    document.getElementById('quote-search').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            const query = this.value.trim();
+            if (query) {
+                window.location.href = `/stocks/search?q=${encodeURIComponent(query)}`;
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

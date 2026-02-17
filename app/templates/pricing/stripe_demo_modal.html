@@ -1,0 +1,119 @@
+<!-- Stripe Demo Modal -->
+<div class="modal fade" id="stripeDemoModal" tabindex="-1" aria-labelledby="stripeDemoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="stripeDemoModalLabel">
+                    <i class="bi bi-info-circle me-2"></i>Demo-modus aktivert
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <i class="bi bi-credit-card-2-front text-info" style="font-size: 4rem;"></i>
+                </div>
+                
+                <div class="alert alert-info mb-4">
+                    <h6 class="alert-heading">
+                        <i class="bi bi-lightbulb me-2"></i>Applikasjonen kjører i demo-modus
+                    </h6>
+                    <p class="mb-0">
+                        Betalingssystemet er ikke fullt konfigurert for produksjon. 
+                        I en reell implementering ville dette koble til Stripe for sikre betalinger.
+                    </p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card border-success">
+                            <div class="card-body text-center">
+                                <h5 class="card-title text-success">Månedlig - kr 399</h5>
+                                <p class="card-text">Demo: Abonnement aktivert</p>
+                                <button class="btn btn-success btn-sm" onclick="simulatePayment('monthly')">
+                                    Simuler betaling
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-primary">
+                            <div class="card-body text-center">
+                                <h5 class="card-title text-primary">Årlig - kr 2,999</h5>
+                                <p class="card-text">Demo: Abonnement aktivert</p>
+                                <button class="btn btn-primary btn-sm" onclick="simulatePayment('yearly')">
+                                    Simuler betaling
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 text-center">
+                    <small class="text-muted">
+                        <i class="bi bi-shield-check me-1"></i>
+                        I produksjon vil alle betalinger være sikret gjennom Stripe.
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Lukk</button>
+                <a href="{{ url_for('main.contact') }}" class="btn btn-primary">
+                    <i class="bi bi-envelope me-2"></i>Kontakt oss
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function simulatePayment(type) {
+    // Show loading
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Behandler...';
+    button.disabled = true;
+    
+    // Simulate payment processing
+    setTimeout(() => {
+        // Show success message
+        button.innerHTML = '<i class="bi bi-check-circle me-2"></i>Demo fullført!';
+        button.className = 'btn btn-success btn-sm';
+        
+        // Close modal after delay
+        setTimeout(() => {
+            $('#stripeDemoModal').modal('hide');
+            
+            // Show success toast or redirect
+            showSuccessToast(`Demo-abonnement (${type}) aktivert!`);
+        }, 1500);
+    }, 2000);
+}
+
+function showSuccessToast(message) {
+    // Create toast
+    const toastHtml = `
+        <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-check-circle me-2"></i>${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+    
+    // Add to toast container
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'position-fixed top-0 end-0 p-3';
+        toastContainer.style.zIndex = '1060';
+        document.body.appendChild(toastContainer);
+    }
+    
+    toastContainer.innerHTML = toastHtml;
+    const toast = new bootstrap.Toast(toastContainer.querySelector('.toast'));
+    toast.show();
+}
+</script>

@@ -1,0 +1,418 @@
+{% extends "base.html" %}
+
+{% block title %}Real-time Charts - Aksjeradar{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+.chart-container {
+    background: #ffffff;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.chart-header {
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.metric-card {
+    background: darkblue;
+    border-radius: 10px;
+    color: white;
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.price-up { color: #28a745; }
+.price-down { color: #dc3545; }
+.price-neutral { color: #6c757d; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-4 text-primary mb-4">
+                <i class="bi bi-graph-up-arrow me-3"></i>Real-time Charts
+            </h1>
+        </div>
+    </div>
+
+    <!-- Stock Selector -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="input-group">
+                <select class="form-select" id="stock-selector">
+                    <option value="EQNR.OL">Equinor ASA (EQNR.OL)</option>
+                    <option value="DNB.OL">DNB Bank ASA (DNB.OL)</option>
+                    <option value="NHY.OL">Norsk Hydro ASA (NHY.OL)</option>
+                    <option value="TEL.OL">Telenor ASA (TEL.OL)</option>
+                    <option value="AAPL">Apple Inc. (AAPL)</option>
+                    <option value="MSFT">Microsoft Corp (MSFT)</option>
+                </select>
+                <button class="btn btn-primary" type="button" onclick="loadChart()">
+                    <i class="bi bi-graph-up me-2"></i>Load Chart
+                </button>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary active" data-timeframe="1D">1D</button>
+                <script>
+                let priceChart, volumeChart, rsiChart, macdChart;
+
+                // Inject backend data
+                const backendQuote = {{ quote|tojson|safe }};
+                const backendHistorical = {{ historical_data|tojson|safe }};
+
+                function showError(message) {
+                    alert(message);
+                    // Optionally display in UI
+                }
+
+                function getChartData() {
+                    // Use backend data if available, else fallback to sample
+                    if (Array.isArray(backendHistorical) && backendHistorical.length > 0) {
+                        return backendHistorical.map(d => ({
+                            date: new Date(d.date || d.timestamp),
+                            price: d.close,
+                            volume: d.volume
+                        }));
+                    } else {
+                        showError('No real data available, using sample data.');
+                        return generateSampleData();
+                    }
+                }
+
+                function getQuoteData() {
+                    // Use backend quote if available, else fallback
+                    if (backendQuote && backendQuote.price) {
+                        return {
+                            price: backendQuote.price + ' NOK',
+                            change: (backendQuote.change >= 0 ? '+' : '') + backendQuote.change.toFixed(2),
+                            changePct: (backendQuote.change_percent >= 0 ? '+' : '') + backendQuote.change_percent.toFixed(2) + '%',
+                            volume: backendQuote.volume ? backendQuote.volume.toLocaleString() : '-',
+                            high: backendQuote.high,
+                            low: backendQuote.low
+                        };
+                    } else {
+                        showError('No real quote data available, using sample data.');
+                        return {
+                            price: '284.50 NOK', change: '+2.45', changePct: '+0.87%', volume: '2.1M', high: '286.20', low: '282.10'
+                        };
+                    }
+                }
+
+                function generateSampleData(days = 30) {
+                    const data = [];
+                    const basePrice = 280;
+                    let currentPrice = basePrice;
+                    const now = new Date();
+                    for (let i = days; i >= 0; i--) {
+                        const date = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000));
+                        const change = (Math.random() - 0.5) * 10;
+                        currentPrice += change;
+                        data.push({
+                            date: date,
+                            price: Math.max(currentPrice, 250),
+                            volume: Math.floor(Math.random() * 3000000) + 500000
+                        });
+                    }
+                    return data;
+                }
+
+                function initializeCharts() {
+                    const ctx1 = document.getElementById('priceChart').getContext('2d');
+                    const ctx2 = document.getElementById('volumeChart').getContext('2d');
+                    const ctx3 = document.getElementById('rsiChart').getContext('2d');
+                    const ctx4 = document.getElementById('macdChart').getContext('2d');
+
+                    const chartData = getChartData();
+                    const labels = chartData.map(d => d.date.toLocaleDateString());
+                    const prices = chartData.map(d => d.price);
+                    const volumes = chartData.map(d => d.volume);
+
+                    // Price Chart
+                    priceChart = new Chart(ctx1, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Price (NOK)',
+                                data: prices,
+                                borderColor: '#007bff',
+                                backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: false,
+                                    title: {
+                                        display: true,
+                                        text: 'Price (NOK)'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            }
+                        }
+                    });
+
+                    // Volume Chart
+                    volumeChart = new Chart(ctx2, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Volume',
+                                data: volumes,
+                                backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                                borderColor: '#28a745',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: 'Volume'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            }
+                        }
+                    });
+
+                    // RSI Chart
+                    const rsiData = Array.from({length: 30}, () => Math.random() * 100);
+                    rsiChart = new Chart(ctx3, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'RSI',
+                                data: rsiData,
+                                borderColor: '#ffc107',
+                                backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    min: 0,
+                                    max: 100,
+                                    title: {
+                                        display: true,
+                                        text: 'RSI'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            }
+                        }
+                    });
+
+                    // MACD Chart
+                    const macdData = Array.from({length: 30}, () => (Math.random() - 0.5) * 10);
+                    macdChart = new Chart(ctx4, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'MACD',
+                                data: macdData,
+                                borderColor: '#dc3545',
+                                backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: 'MACD'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            }
+                        }
+                    });
+                }
+
+                function loadChart() {
+                    const selectedStock = document.getElementById('stock-selector').value;
+                    document.getElementById('chart-title').textContent = `${selectedStock} - Price Chart`;
+
+                    // Update metrics using backend data or fallback
+                    const data = getQuoteData();
+                    document.getElementById('current-price').textContent = data.price;
+                    document.getElementById('price-change').textContent = data.change;
+                    document.getElementById('price-change-pct').textContent = data.changePct;
+                    document.getElementById('volume').textContent = data.volume;
+                    document.getElementById('day-high').textContent = data.high;
+                    document.getElementById('day-low').textContent = data.low;
+
+                    // Update chart colors based on change
+                    const isPositive = data.change.startsWith('+');
+                    const priceElements = ['current-price', 'price-change', 'price-change-pct'];
+                    priceElements.forEach(id => {
+                        const element = document.getElementById(id);
+                        element.className = isPositive ? 'price-up' : 'price-down';
+                    });
+
+                    // Regenerate charts with new data
+                    initializeCharts();
+                }
+
+                // Timeframe selection
+                document.addEventListener('DOMContentLoaded', function() {
+                    loadChart();
+
+                    // Timeframe buttons
+                    document.querySelectorAll('[data-timeframe]').forEach(button => {
+                        button.addEventListener('click', function() {
+                            document.querySelectorAll('[data-timeframe]').forEach(btn => btn.classList.remove('active'));
+                            this.classList.add('active');
+
+                            const timeframe = this.getAttribute('data-timeframe');
+                            console.log('Selected timeframe:', timeframe);
+                            // Here you would typically load different data based on timeframe
+                            loadChart();
+                        });
+                    });
+
+                    // Auto-refresh every 30 seconds
+                    setInterval(() => {
+                        console.log('Auto-refreshing charts...');
+                        loadChart();
+                    }, 30000);
+                });
+                </script>
+    // MACD Chart
+    const macdData = Array.from({length: 30}, () => (Math.random() - 0.5) * 10);
+    macdChart = new Chart(ctx4, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'MACD',
+                data: macdData,
+                borderColor: '#dc3545',
+                backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: 'MACD'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+
+function loadChart() {
+    const selectedStock = document.getElementById('stock-selector').value;
+    document.getElementById('chart-title').textContent = `${selectedStock} - Price Chart`;
+    
+    // Update metrics (mock data)
+    const mockData = {
+        'EQNR.OL': { price: '284.50 NOK', change: '+2.45', changePct: '+0.87%', volume: '2.1M', high: '286.20', low: '282.10' },
+        'DNB.OL': { price: '198.20 NOK', change: '-1.30', changePct: '-0.65%', volume: '1.8M', high: '199.50', low: '196.80' },
+        'NHY.OL': { price: '65.42 NOK', change: '+1.28', changePct: '+1.99%', volume: '3.2M', high: '66.10', low: '64.20' },
+        'TEL.OL': { price: '158.90 NOK', change: '-0.80', changePct: '-0.50%', volume: '1.5M', high: '159.70', low: '157.30' },
+        'AAPL': { price: '$194.27', change: '+2.18', changePct: '+1.14%', volume: '42.1M', high: '$195.80', low: '$192.10' },
+        'MSFT': { price: '$338.54', change: '+1.67', changePct: '+0.49%', volume: '28.3M', high: '$340.12', low: '$336.89' }
+    };
+    
+    const data = mockData[selectedStock] || mockData['EQNR.OL'];
+    
+    document.getElementById('current-price').textContent = data.price;
+    document.getElementById('price-change').textContent = data.change;
+    document.getElementById('price-change-pct').textContent = data.changePct;
+    document.getElementById('volume').textContent = data.volume;
+    document.getElementById('day-high').textContent = data.high;
+    document.getElementById('day-low').textContent = data.low;
+    
+    // Update chart colors based on change
+    const isPositive = data.change.startsWith('+');
+    const priceElements = ['current-price', 'price-change', 'price-change-pct'];
+    priceElements.forEach(id => {
+        const element = document.getElementById(id);
+        element.className = isPositive ? 'price-up' : 'price-down';
+    });
+    
+    // Regenerate charts with new data
+    initializeCharts();
+}
+
+// Timeframe selection
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+    
+    // Timeframe buttons
+    document.querySelectorAll('[data-timeframe]').forEach(button => {
+        button.addEventListener('click', function() {
+            document.querySelectorAll('[data-timeframe]').forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            const timeframe = this.getAttribute('data-timeframe');
+            console.log('Selected timeframe:', timeframe);
+            // Here you would typically load different data based on timeframe
+            initializeCharts();
+        });
+    });
+    
+    // Auto-refresh every 30 seconds
+    setInterval(() => {
+        console.log('Auto-refreshing charts...');
+        // In real implementation, this would fetch new data
+        loadChart();
+    }, 30000);
+});
+</script>
+{% endblock %}

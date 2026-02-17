@@ -1,0 +1,532 @@
+{% extends "base.html" %}
+
+{% block title %}Opprett nytt tema | Forum | Aksjeradar{% endblock %}
+{% block description %}Opprett et nytt diskusjonstema på Aksjeradar forum{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('forum.index') }}" class="text-decoration-none">
+                    <i class="bi bi-house"></i> Forum
+                </a>
+            </li>
+            {% if category %}
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('forum.category', category_name=category) }}" class="text-decoration-none">
+                    {{ category_info.display_name }}
+                </a>
+            </li>
+            {% endif %}
+            <li class="breadcrumb-item active">Nytt tema</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Create Topic Form -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="bi bi-plus-circle text-primary me-2"></i>Opprett nytt tema
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('forum.create_topic') }}" id="create-topic-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        
+                        <!-- Category Selection -->
+                        {% if not category %}
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Kategori <span class="text-danger">*</span></label>
+                            <select name="category" id="category" class="form-select" required>
+                                <option value="">Velg kategori...</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Velg den kategorien som best passer til ditt tema.</div>
+                        </div>
+                        {% else %}
+                        <input type="hidden" name="category" value="{{ category }}">
+                        <div class="mb-3">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Oppretter tema i kategorien: <strong>{{ category_info.display_name }}</strong>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Topic Title -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Tittel <span class="text-danger">*</span></label>
+                            <input type="text" name="title" id="title" class="form-control" 
+                                   placeholder="Skriv en beskrivende tittel for ditt tema..." 
+                                   required maxlength="200" value="{{ request.form.get('title', '') }}">
+                            <div class="form-text">
+                                <span id="title-counter">0</span>/200 tegn. Vær beskrivende og spesifikk.
+                            </div>
+                        </div>
+                        
+                        <!-- Tags -->
+                        <div class="mb-3">
+                            <label for="tags" class="form-label">Tags (valgfritt)</label>
+                            <input type="text" name="tags" id="tags" class="form-control" 
+                                   placeholder="aksje, teknisk-analyse, oljesektor..." 
+                                   value="{{ request.form.get('tags', '') }}">
+                            <div class="form-text">
+                                Skill tags med komma. Maks 5 tags.
+                            </div>
+                            <div id="tag-suggestions" class="mt-2"></div>
+                        </div>
+                        
+                        <!-- Content Editor -->
+                        <div class="mb-3">
+                            <label for="content" class="form-label">Innhold <span class="text-danger">*</span></label>
+                            <div class="card">
+                                <div class="card-header bg-light py-2">
+                                    <div class="btn-toolbar" role="toolbar">
+                                        <div class="btn-group btn-group-sm me-2" role="group">
+                                            <button type="button" class="btn btn-outline-secondary" onclick="insertMarkdown('**', '**')" title="Fet tekst">
+                                                <i class="bi bi-type-bold"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="insertMarkdown('*', '*')" title="Kursiv tekst">
+                                                <i class="bi bi-type-italic"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="insertMarkdown('`', '`')" title="Kode">
+                                                <i class="bi bi-code"></i>
+                                            </button>
+                                        </div>
+                                        <div class="btn-group btn-group-sm me-2" role="group">
+                                            <button type="button" class="btn btn-outline-secondary" onclick="insertMarkdown('[', '](url)')" title="Lenke">
+                                                <i class="bi bi-link"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="insertMarkdown('> ', '')" title="Sitat">
+                                                <i class="bi bi-quote"></i>
+                                            </button>
+                                        </div>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <button type="button" class="btn btn-outline-secondary" onclick="previewContent()" title="Forhåndsvis">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <textarea name="content" id="content" class="form-control border-0" 
+                                              rows="12" placeholder="Skriv ditt innlegg her..." 
+                                              required style="resize: vertical;">{{ request.form.get('content', '') }}</textarea>
+                                </div>
+                            </div>
+                            <div class="form-text">
+                                Du kan bruke <a href="#" data-bs-toggle="modal" data-bs-target="#markdown-help">Markdown-formatering</a>.
+                                Minimum 20 tegn.
+                            </div>
+                        </div>
+                        
+                        <!-- Options -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="watch_topic" id="watch_topic" checked>
+                                    <label class="form-check-label" for="watch_topic">
+                                        Følg dette temaet
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="allow_replies" id="allow_replies" checked>
+                                    <label class="form-check-label" for="allow_replies">
+                                        Tillat svar fra andre brukere
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                {% if current_user.is_premium %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="is_premium" id="is_premium">
+                                    <label class="form-check-label" for="is_premium">
+                                        <i class="bi bi-star-fill text-warning"></i> Premium-tema
+                                    </label>
+                                    <div class="form-text">Kun for premium-medlemmer</div>
+                                </div>
+                                {% endif %}
+                                
+                                {% if current_user.is_moderator %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="is_pinned" id="is_pinned">
+                                    <label class="form-check-label" for="is_pinned">
+                                        <i class="bi bi-pin-fill text-warning"></i> Fest tema
+                                    </label>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Buttons -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary" onclick="saveDraft()">
+                                    <i class="bi bi-save me-1"></i>Lagre utkast
+                                </button>
+                                <span id="draft-status" class="text-muted small ms-2"></span>
+                            </div>
+                            
+                            <div>
+                                <a href="{{ url_for('forum.category', category_name=category) if category else url_for('forum.index') }}" 
+                                   class="btn btn-secondary me-2">
+                                    <i class="bi bi-x-circle me-1"></i>Avbryt
+                                </a>
+                                <button type="button" class="btn btn-outline-primary me-2" onclick="previewTopic()">
+                                    <i class="bi bi-eye me-1"></i>Forhåndsvis
+                                </button>
+                                <button type="submit" class="btn btn-primary" id="submit-btn">
+                                    <i class="bi bi-send me-1"></i>Opprett tema
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Guidelines -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-info-circle text-info me-2"></i>Retningslinjer
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0 small">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            Skriv en beskrivende tittel
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            Velg riktig kategori for ditt tema
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            Bruk relevante tags for lettere søk
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            Skriv et detaljert og informativt innlegg
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-x-circle text-danger me-2"></i>
+                            Ikke spam eller reklamering
+                        </li>
+                        <li class="mb-0">
+                            <i class="bi bi-x-circle text-danger me-2"></i>
+                            Ingen personlige angrep eller trolling
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Similar Topics -->
+            <div class="card border-0 shadow-sm" id="similar-topics" style="display: none;">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-lightbulb text-warning me-2"></i>Lignende temaer
+                    </h6>
+                </div>
+                <div class="card-body" id="similar-topics-content">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="preview-modal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Forhåndsvisning</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="preview-content">
+                    <!-- Preview content will be inserted here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Lukk</button>
+                <button type="button" class="btn btn-primary" onclick="submitAfterPreview()">Publiser tema</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Markdown Help Modal -->
+<div class="modal fade" id="markdown-help" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Markdown Hjelpeguide</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Formatering</th>
+                            <th>Skriv</th>
+                            <th>Resultat</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Fet tekst</td>
+                            <td>**fet tekst**</td>
+                            <td><strong>fet tekst</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Kursiv tekst</td>
+                            <td>*kursiv tekst*</td>
+                            <td><em>kursiv tekst</em></td>
+                        </tr>
+                        <tr>
+                            <td>Lenke</td>
+                            <td>[tekst](url)</td>
+                            <td><a href="#">tekst</a></td>
+                        </tr>
+                        <tr>
+                            <td>Sitat</td>
+                            <td>&gt; sitat</td>
+                            <td><blockquote>sitat</blockquote></td>
+                        </tr>
+                        <tr>
+                            <td>Kode</td>
+                            <td>`kode`</td>
+                            <td><code>kode</code></td>
+                        </tr>
+                        <tr>
+                            <td>Liste</td>
+                            <td>- element</td>
+                            <td>• element</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Character counter for title
+document.getElementById('title').addEventListener('input', function() {
+    document.getElementById('title-counter').textContent = this.value.length;
+});
+
+// Tag suggestions
+const commonTags = ['aksje', 'teknisk-analyse', 'fundamental-analyse', 'oljesektor', 'teknologi', 'finans', 'dividend', 'vekst', 'value', 'momentum'];
+
+document.getElementById('tags').addEventListener('input', function() {
+    const input = this.value.toLowerCase();
+    const lastTag = input.split(',').pop().trim();
+    
+    if (lastTag.length > 1) {
+        const suggestions = commonTags.filter(tag => tag.includes(lastTag));
+        const suggestionsContainer = document.getElementById('tag-suggestions');
+        
+        if (suggestions.length > 0) {
+            suggestionsContainer.innerHTML = suggestions.slice(0, 5).map(tag => 
+                `<span class="badge bg-light text-dark me-1 mb-1 cursor-pointer" onclick="addTag('${tag}')">${tag}</span>`
+            ).join('');
+        } else {
+            suggestionsContainer.innerHTML = '';
+        }
+    }
+});
+
+function addTag(tag) {
+    const tagsInput = document.getElementById('tags');
+    const currentTags = tagsInput.value.split(',').map(t => t.trim()).filter(t => t);
+    
+    if (!currentTags.includes(tag) && currentTags.length < 5) {
+        currentTags.push(tag);
+        tagsInput.value = currentTags.join(', ');
+    }
+    
+    document.getElementById('tag-suggestions').innerHTML = '';
+}
+
+// Search for similar topics
+let searchTimeout;
+document.getElementById('title').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    const title = this.value;
+    
+    if (title.length > 10) {
+        searchTimeout = setTimeout(() => {
+            searchSimilarTopics(title);
+        }, 1000);
+    } else {
+        document.getElementById('similar-topics').style.display = 'none';
+    }
+});
+
+function searchSimilarTopics(title) {
+    fetch('/forum/api/similar-topics', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ title: title })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.topics && data.topics.length > 0) {
+            const container = document.getElementById('similar-topics-content');
+            container.innerHTML = data.topics.map(topic => 
+                `<div class="mb-2">
+                    <a href="/forum/topic/${topic.id}" class="text-decoration-none small" target="_blank">
+                        ${topic.title}
+                    </a>
+                    <div class="text-muted small">${topic.reply_count} svar</div>
+                </div>`
+            ).join('');
+            document.getElementById('similar-topics').style.display = 'block';
+        }
+    })
+    .catch(error => console.log('Error searching similar topics:', error));
+}
+
+// Markdown toolbar functions
+function insertMarkdown(before, after) {
+    const textarea = document.getElementById('content');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const selectedText = text.substring(start, end);
+    
+    const newText = text.substring(0, start) + before + selectedText + after + text.substring(end);
+    textarea.value = newText;
+    
+    // Set cursor position
+    const newCursorPos = start + before.length + selectedText.length;
+    textarea.focus();
+    textarea.setSelectionRange(newCursorPos, newCursorPos);
+}
+
+// Preview functionality
+function previewContent() {
+    const content = document.getElementById('content').value;
+    // Here you would implement markdown preview
+    alert('Preview functionality would be implemented here');
+}
+
+function previewTopic() {
+    const title = document.getElementById('title').value;
+    const content = document.getElementById('content').value;
+    
+    if (!title || !content) {
+        alert('Vennligst fyll ut tittel og innhold før forhåndsvisning.');
+        return;
+    }
+    
+    // Show preview in modal
+    document.getElementById('preview-content').innerHTML = `
+        <h4>${title}</h4>
+        <div class="border-top pt-3">${content}</div>
+    `;
+    
+    new bootstrap.Modal(document.getElementById('preview-modal')).show();
+}
+
+function submitAfterPreview() {
+    document.getElementById('create-topic-form').submit();
+}
+
+// Auto-save draft
+let draftTimeout;
+function autoSaveDraft() {
+    clearTimeout(draftTimeout);
+    draftTimeout = setTimeout(() => {
+        saveDraft();
+    }, 5000);
+}
+
+document.getElementById('title').addEventListener('input', autoSaveDraft);
+document.getElementById('content').addEventListener('input', autoSaveDraft);
+
+function saveDraft() {
+    const title = document.getElementById('title').value;
+    const content = document.getElementById('content').value;
+    const category = document.getElementById('category')?.value || '{{ category }}';
+    const tags = document.getElementById('tags').value;
+    
+    if (title.length > 3 || content.length > 10) {
+        const draft = {
+            title: title,
+            content: content,
+            category: category,
+            tags: tags,
+            timestamp: new Date().toISOString()
+        };
+        
+        localStorage.setItem('forum_topic_draft', JSON.stringify(draft));
+        document.getElementById('draft-status').textContent = 'Utkast lagret ' + new Date().toLocaleTimeString();
+    }
+}
+
+// Load draft on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const draftJson = localStorage.getItem('forum_topic_draft');
+    if (draftJson) {
+        const draft = JSON.parse(draftJson);
+        const draftAge = (new Date() - new Date(draft.timestamp)) / (1000 * 60 * 60); // hours
+        
+        if (draftAge < 24) { // Only load drafts less than 24 hours old
+            if (confirm('Du har et lagret utkast. Vil du laste det?')) {
+                document.getElementById('title').value = draft.title || '';
+                document.getElementById('content').value = draft.content || '';
+                document.getElementById('tags').value = draft.tags || '';
+                
+                if (draft.category && document.getElementById('category')) {
+                    document.getElementById('category').value = draft.category;
+                }
+            }
+        } else {
+            localStorage.removeItem('forum_topic_draft');
+        }
+    }
+});
+
+// Clear draft on successful submit
+document.getElementById('create-topic-form').addEventListener('submit', function() {
+    localStorage.removeItem('forum_topic_draft');
+});
+
+// Form validation
+document.getElementById('create-topic-form').addEventListener('submit', function(e) {
+    const title = document.getElementById('title').value.trim();
+    const content = document.getElementById('content').value.trim();
+    
+    if (title.length < 5) {
+        e.preventDefault();
+        alert('Tittelen må være minst 5 tegn lang.');
+        return;
+    }
+    
+    if (content.length < 20) {
+        e.preventDefault();
+        alert('Innholdet må være minst 20 tegn langt.');
+        return;
+    }
+    
+    // Disable submit button to prevent double-submission
+    document.getElementById('submit-btn').disabled = true;
+});
+</script>
+{% endblock %}

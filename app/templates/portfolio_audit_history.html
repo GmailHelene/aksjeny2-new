@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Portfolio Audit History{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Portfolio Audit History</h2>
+  <form method="get" class="row g-2 mb-3">
+    <div class="col-md-2">
+      <input type="text" name="portfolio_id" value="{{ request.args.get('portfolio_id','') }}" placeholder="Portfolio ID" class="form-control form-control-sm" />
+    </div>
+    <div class="col-md-2">
+      <input type="text" name="ticker" value="{{ request.args.get('ticker','') }}" placeholder="Ticker" class="form-control form-control-sm" />
+    </div>
+    <div class="col-md-2">
+      <select name="action" class="form-select form-select-sm">
+        <option value="">All Actions</option>
+        {% for a in ['add_stock','edit_stock','delete_stock','delete_portfolio'] %}
+          <option value="{{ a }}" {% if request.args.get('action')==a %}selected{% endif %}>{{ a }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <input type="date" name="start_date" value="{{ request.args.get('start_date','') }}" class="form-control form-control-sm" placeholder="Start date" />
+    </div>
+    <div class="col-md-2">
+      <input type="date" name="end_date" value="{{ request.args.get('end_date','') }}" class="form-control form-control-sm" placeholder="End date" />
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+      <a href="{{ url_for('portfolio.audit_history') }}" class="btn btn-sm btn-secondary">Reset</a>
+    </div>
+  </form>
+  <div class="table-responsive">
+    <table class="table table-sm table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Time (UTC)</th>
+          <th>User</th>
+            <th>Portfolio</th>
+          <th>Ticker</th>
+          <th>Action</th>
+          <th>Before</th>
+          <th>After</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            <td>{{ row.id }}</td>
+            <td>{{ row.created_at.strftime('%Y-%m-%d %H:%M:%S') if row.created_at else '' }}</td>
+            <td>{{ row.user_id }}</td>
+            <td>{{ row.portfolio_id }}</td>
+            <td>{{ row.ticker }}</td>
+            <td><span class="badge bg-info text-dark">{{ row.action }}</span></td>
+            <td><code style="white-space:pre-wrap;max-width:250px;display:block;">{{ (row.before_state | tojson)[:300] }}</code></td>
+            <td><code style="white-space:pre-wrap;max-width:250px;display:block;">{{ (row.after_state | tojson)[:300] }}</code></td>
+          </tr>
+        {% else %}
+          <tr><td colspan="8" class="text-center">No audit entries</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% from 'macros/pagination.html' import pagination %}
+  {{ pagination(page, total_pages, lambda p: url_for('portfolio.audit_history', **request.args.to_dict(), page=p)) }}
+</div>
+{% endblock %}

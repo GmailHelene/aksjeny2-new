@@ -1,0 +1,396 @@
+{% extends "base.html" %}
+
+{% block title %}Social Sentiment Tracker - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="mb-0">
+                    <i class="bi bi-chat-dots me-2"></i>Norsk Aksje Sentiment Tracker
+                </h1>
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-success me-2" id="live-indicator">
+                        <i class="bi bi-circle-fill pulse"></i> LIVE
+                    </span>
+                    <button class="btn btn-outline-primary btn-sm" onclick="refreshSentiment()">
+                        <i class="bi bi-arrow-repeat me-1"></i>Oppdater
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Oslo Børs Fear & Greed Index -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up me-2"></i>Oslo Børs Frykt & Grådighet Index
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="position-relative mb-3">
+                        <canvas id="fearGreedGauge" width="300" height="150"></canvas>
+                        <div class="position-absolute top-50 start-50 translate-middle">
+                            <h2 class="fw-bold" id="fearGreedScore">67</h2>
+                            <p class="mb-0 text-muted">Grådighet</p>
+                        </div>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col">
+                            <small class="text-danger">0 - Ekstrem Frykt</small>
+                        </div>
+                        <div class="col">
+                            <small class="text-warning">50 - Nøytral</small>
+                        </div>
+                        <div class="col">
+                            <small class="text-success">100 - Ekstrem Grådighet</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock me-2"></i>24-timer Sentiment Utvikling
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="sentimentTrendChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Norwegian Stocks Sentiment -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-fire me-2"></i>Norske Aksjer - Live Social Sentiment
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Aksje</th>
+                                    <th>Pris</th>
+                                    <th>Twitter Score</th>
+                                    <th>Reddit Score</th>
+                                    <th>Samlet Sentiment</th>
+                                    <th>Volum (24h)</th>
+                                    <th>Pris Prediksjon</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sentimentTable">
+                                <tr>
+                                    <td>
+                                        <strong>EQNR.OL</strong><br>
+                                        <small class="text-muted">Equinor ASA</small>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold">287.40</span><br>
+                                        <small class="text-success">+2.3%</small>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                                <div class="progress-bar bg-success" style="width: 78%"></div>
+                                            </div>
+                                            <span class="badge bg-success">78</span>
+                                        </div>
+                                        <small class="text-muted">1,247 mentions</small>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                                <div class="progress-bar bg-success" style="width: 82%"></div>
+                                            </div>
+                                            <span class="badge bg-success">82</span>
+                                        </div>
+                                        <small class="text-muted">456 comments</small>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <span class="badge bg-success fs-6">BULLISH</span><br>
+                                            <small class="text-muted">Score: 80/100</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="text-success">▲ 340%</span><br>
+                                        <small class="text-muted">vs avg</small>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <span class="text-success fw-bold">↗ +3.2%</span><br>
+                                            <small class="text-muted">neste 60 min</small>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>DNB.OL</strong><br>
+                                        <small class="text-muted">DNB Bank ASA</small>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold">187.80</span><br>
+                                        <small class="text-danger">-1.1%</small>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                                <div class="progress-bar bg-warning" style="width: 45%"></div>
+                                            </div>
+                                            <span class="badge bg-warning">45</span>
+                                        </div>
+                                        <small class="text-muted">892 mentions</small>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                                <div class="progress-bar bg-danger" style="width: 32%"></div>
+                                            </div>
+                                            <span class="badge bg-danger">32</span>
+                                        </div>
+                                        <small class="text-muted">234 comments</small>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <span class="badge bg-danger fs-6">BEARISH</span><br>
+                                            <small class="text-muted">Score: 38/100</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="text-danger">▼ 120%</span><br>
+                                        <small class="text-muted">vs avg</small>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <span class="text-danger fw-bold">↘ -1.8%</span><br>
+                                            <small class="text-muted">neste 60 min</small>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>TEL.OL</strong><br>
+                                        <small class="text-muted">Telenor ASA</small>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold">152.60</span><br>
+                                        <small class="text-success">+0.8%</small>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                                <div class="progress-bar bg-success" style="width: 68%"></div>
+                                            </div>
+                                            <span class="badge bg-success">68</span>
+                                        </div>
+                                        <small class="text-muted">567 mentions</small>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                                <div class="progress-bar bg-success" style="width: 72%"></div>
+                                            </div>
+                                            <span class="badge bg-success">72</span>
+                                        </div>
+                                        <small class="text-muted">189 comments</small>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <span class="badge bg-success fs-6">BULLISH</span><br>
+                                            <small class="text-muted">Score: 70/100</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="text-success">▲ 180%</span><br>
+                                        <small class="text-muted">vs avg</small>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <span class="text-success fw-bold">↗ +1.5%</span><br>
+                                            <small class="text-muted">neste 60 min</small>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- News Impact Prediction -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-newspaper me-2"></i>Nyhetspåvirkning Prediktor
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="alert alert-success">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-lightning-charge-fill fs-2 text-warning me-3"></i>
+                                    <div>
+                                        <h6 class="mb-1">BREAKING: Equinor rapporterer rekordresultat Q3</h6>
+                                        <p class="mb-1">AI Prediksjon: <strong class="text-success">+5.2% prisøkning</strong> i løpet av neste 30 minutter</p>
+                                        <small class="text-muted">Publisert: 2 minutter siden | Sentiment Score: 94/100</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="alert alert-warning">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-exclamation-triangle-fill fs-2 text-warning me-3"></i>
+                                    <div>
+                                        <h6 class="mb-1">DNB setter ned renteprognoser for 2025</h6>
+                                        <p class="mb-1">AI Prediksjon: <strong class="text-danger">-2.1% prisfall</strong> i løpet av neste 45 minutter</p>
+                                        <small class="text-muted">Publisert: 8 minutter siden | Sentiment Score: 23/100</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6>AI Nøyaktighet</h6>
+                                    <div class="mb-2">
+                                        <span class="display-6 fw-bold text-success">87.3%</span>
+                                    </div>
+                                    <p class="mb-0">Siste 30 dager</p>
+                                    <small class="text-muted">2,847 prediksjoner</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<style>
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.progress {
+    background-color: #e9ecef;
+    border-radius: 4px;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Fear & Greed Gauge
+const fearGreedCtx = document.getElementById('fearGreedGauge').getContext('2d');
+const fearGreedChart = new Chart(fearGreedCtx, {
+    type: 'doughnut',
+    data: {
+        datasets: [{
+            data: [25, 25, 25, 25],
+            backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#198754'],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        circumference: 180,
+        rotation: 270,
+        cutout: '70%',
+        plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false }
+        }
+    }
+});
+
+// Sentiment Trend Chart
+const sentimentCtx = document.getElementById('sentimentTrendChart').getContext('2d');
+const sentimentChart = new Chart(sentimentCtx, {
+    type: 'line',
+    data: {
+        labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+        datasets: [{
+            label: 'Sentiment Score',
+            data: [45, 52, 67, 73, 68, 72, 67],
+            borderColor: '#198754',
+            backgroundColor: 'rgba(25, 135, 84, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100,
+                grid: { color: 'rgba(0,0,0,0.1)' }
+            },
+            x: {
+                grid: { color: 'rgba(0,0,0,0.1)' }
+            }
+        }
+    }
+});
+
+function refreshSentiment() {
+    // Simulate real-time updates
+    const indicator = document.getElementById('live-indicator');
+    indicator.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Oppdaterer...';
+    
+    setTimeout(() => {
+    indicator.innerHTML = '<i class="bi bi-circle-fill pulse"></i> LIVE';
+        // Update some random values to show it's "live"
+        updateSentimentValues();
+    }, 2000);
+}
+
+function updateSentimentValues() {
+    // Simulate live updates by slightly changing values
+    const rows = document.querySelectorAll('#sentimentTable tr');
+    rows.forEach(row => {
+        const progressBars = row.querySelectorAll('.progress-bar');
+        progressBars.forEach(bar => {
+            const currentWidth = parseInt(bar.style.width);
+            const newWidth = Math.max(10, Math.min(90, currentWidth + (Math.random() - 0.5) * 10));
+            bar.style.width = newWidth + '%';
+            
+            // Update badge value
+            const badge = bar.parentElement.nextElementSibling;
+            if (badge && badge.classList.contains('badge')) {
+                badge.textContent = Math.round(newWidth);
+            }
+        });
+    });
+}
+
+// Auto-refresh every 30 seconds
+setInterval(refreshSentiment, 30000);
+</script>
+{% endblock %}

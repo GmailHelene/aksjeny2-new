@@ -1,0 +1,389 @@
+/* =====================================
+   COMPREHENSIVE TEXT CONTRAST IMPROVEMENTS
+   ===================================== */
+
+/* Improve all text-muted elements - default Bootstrap is too light */
+.text-muted {
+    color: #495057 !important; /* Darker gray instead of #6c757d */
+    font-weight: 500 !important; /* Slightly bolder */
+}
+
+/* Improve text-secondary visibility */
+.text-secondary {
+    color: #495057 !important; /* Consistent with text-muted */
+    font-weight: 500 !important;
+}
+
+/* Better contrast for small text elements */
+small.text-muted,
+.small.text-muted {
+    color: #343a40 !important; /* Even darker for small text */
+    font-weight: 600 !important;
+}
+
+/* Light background improvements */
+.bg-light {
+    background-color: #e9ecef !important; /* Darker light gray */
+}
+
+.bg-light .text-muted,
+.bg-light .text-secondary {
+    color: #212529 !important; /* Very dark text on light backgrounds */
+    font-weight: 600 !important;
+}
+
+/* Improve contrast on cards with light backgrounds */
+.card.bg-light .text-muted,
+.card-body .text-muted {
+    color: #343a40 !important;
+    font-weight: 600 !important;
+}
+
+/* Better visibility for placeholder text and loading states */
+.text-center.text-muted {
+    color: #495057 !important;
+    font-weight: 500 !important;
+}
+
+/* Improve dropdown contrast consistency */
+.dropdown-item.text-muted {
+    color: #495057 !important;
+}
+
+.dropdown-item:hover .text-muted {
+    color: #212529 !important;
+}
+
+/* =====================================
+   WARNING COLOR IMPROVEMENTS
+   ===================================== */
+
+/* Better contrast for warning elements */
+.bg-warning {
+    background-color: #fd7e14 !important; /* Orange instead of yellow */
+    color: #000 !important;
+}
+
+.bg-warning .text-dark,
+.bg-warning .text-muted {
+    color: #000 !important;
+    font-weight: 600 !important;
+    text-shadow: none !important;
+}
+
+.text-warning {
+    color: #fd7e14 !important; /* Orange instead of yellow */
+    font-weight: 600 !important;
+}
+
+/* Improve warning badges */
+.badge.bg-warning {
+    background-color: #fd7e14 !important;
+    color: #000 !important;
+    font-weight: 700 !important;
+}
+
+/* =====================================
+   INFO COLOR IMPROVEMENTS
+   ===================================== */
+
+.bg-info {
+    background-color: #0d6efd !important; /* Blue instead of cyan */
+    color: #fff !important;
+}
+
+.text-info {
+    color: #0d6efd !important; /* Darker blue */
+    font-weight: 600 !important;
+}
+
+/* =====================================
+   LIGHT COLOR BACKGROUNDS
+   ===================================== */
+
+/* Fix light blue backgrounds mentioned by users */
+.light-blue-bg, 
+.bg-light-blue,
+.bg-primary.bg-opacity-10,
+.bg-primary.bg-opacity-25 {
+    background-color: #b3d9ff !important; /* Darker light blue */
+    color: #000 !important;
+    font-weight: 500 !important;
+}
+
+/* Fix light pink backgrounds */
+.light-pink-bg, 
+.bg-light-pink,
+.bg-danger.bg-opacity-10,
+.bg-danger.bg-opacity-25 {
+    background-color: #ffb3d9 !important; /* Darker light pink */
+    color: #000 !important;
+    font-weight: 500 !important;
+}
+
+/* Fix light green backgrounds */
+.light-green-bg,
+.bg-light-green,
+.bg-success.bg-opacity-10,
+.bg-success.bg-opacity-25 {
+    background-color: #b3ffb3 !important; /* Darker light green */
+    color: #000 !important;
+    font-weight: 500 !important;
+}
+
+/* =====================================
+   TABLE IMPROVEMENTS
+   ===================================== */
+
+/* Better contrast for table text */
+.table .text-muted {
+    color: #495057 !important;
+    font-weight: 500 !important;
+}
+
+.table-light .text-muted {
+    color: #212529 !important;
+    font-weight: 600 !important;
+}
+
+/* Striped table improvements */
+.table-striped > tbody > tr:nth-of-type(odd) .text-muted {
+    color: #343a40 !important;
+    font-weight: 500 !important;
+}
+
+/* =====================================
+   MODAL AND TOOLTIP IMPROVEMENTS
+   ===================================== */
+
+/* Modal text contrast */
+.modal-body .text-muted {
+    color: #495057 !important;
+    font-weight: 500 !important;
+}
+
+.modal-light .text-muted {
+    color: #212529 !important;
+    font-weight: 600 !important;
+}
+
+/* Tooltip contrast */
+.tooltip .tooltip-inner .text-muted {
+    color: #f8f9fa !important;
+    font-weight: 500 !important;
+}
+
+/* =====================================
+   FORM IMPROVEMENTS
+   ===================================== */
+
+/* Form help text and labels */
+.form-text.text-muted {
+    color: #495057 !important;
+    font-weight: 500 !important;
+}
+
+.form-label.text-muted {
+    color: #343a40 !important;
+    font-weight: 600 !important;
+}
+
+/* =====================================
+   ALERT IMPROVEMENTS
+   ===================================== */
+
+/* Alert text contrast */
+.alert .text-muted {
+    color: #495057 !important;
+    font-weight: 500 !important;
+}
+
+.alert-light .text-muted {
+    color: #212529 !important;
+    font-weight: 600 !important;
+}
+
+/* =====================================
+   BREADCRUMB AND NAVIGATION
+   ===================================== */
+
+/* Breadcrumb improvements */
+.breadcrumb .text-muted {
+    color: #495057 !important;
+    font-weight: 500 !important;
+}
+
+.breadcrumb-item.active {
+    color: #495057 !important;
+    font-weight: 600 !important;
+}
+
+/* Navigation text improvements */
+.nav .text-muted {
+    color: #495057 !important;
+    font-weight: 500 !important;
+}
+
+/* =====================================
+   CARD AND CONTENT IMPROVEMENTS
+   ===================================== */
+
+/* Card subtitle and meta text */
+.card-subtitle.text-muted {
+    color: #495057 !important;
+    font-weight: 500 !important;
+}
+
+.card-text.text-muted {
+    color: #495057 !important;
+    font-weight: 500 !important;
+}
+
+/* List group improvements */
+.list-group-item .text-muted {
+    color: #495057 !important;
+    font-weight: 500 !important;
+}
+
+.list-group-item-light .text-muted {
+    color: #212529 !important;
+    font-weight: 600 !important;
+}
+
+/* =====================================
+   RESPONSIVE IMPROVEMENTS
+   ===================================== */
+
+/* Mobile specific improvements */
+@media (max-width: 768px) {
+    .text-muted {
+        color: #343a40 !important; /* Even darker on mobile */
+        font-weight: 600 !important;
+    }
+    
+    small.text-muted,
+    .small.text-muted {
+        color: #212529 !important; /* Very dark for small mobile text */
+        font-weight: 700 !important;
+    }
+    
+    .bg-light .text-muted {
+        color: #000 !important; /* Black text on light mobile backgrounds */
+        font-weight: 700 !important;
+    }
+}
+
+/* =====================================
+   ACCESSIBILITY ENHANCEMENTS
+   ===================================== */
+
+/* Focus improvements */
+.text-muted:focus,
+.text-secondary:focus {
+    color: #212529 !important;
+    font-weight: 600 !important;
+    outline: 2px solid #0d6efd;
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .text-muted,
+    .text-secondary {
+        color: #000 !important;
+        font-weight: 700 !important;
+    }
+    
+    .bg-light .text-muted {
+        color: #000 !important;
+        font-weight: 800 !important;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .text-muted,
+    .text-secondary {
+        transition: none !important;
+    }
+}
+
+/* =====================================
+   PRINT IMPROVEMENTS
+   ===================================== */
+
+@media print {
+    .text-muted,
+    .text-secondary {
+        color: #000 !important;
+        font-weight: 600 !important;
+    }
+    
+    .bg-light .text-muted {
+        color: #000 !important;
+        font-weight: 700 !important;
+    }
+}
+
+/* =====================================
+   SPECIFIC COMPONENT FIXES
+   ===================================== */
+
+/* Stock ticker and financial data */
+.stock-ticker .text-muted,
+.financial-data .text-muted {
+    color: #343a40 !important;
+    font-weight: 600 !important;
+}
+
+/* Chart placeholder improvements */
+.chart-placeholder .text-muted {
+    color: #495057 !important;
+    font-weight: 500 !important;
+}
+
+/* Demo page specific improvements */
+.demo-section .text-muted {
+    color: #343a40 !important;
+    font-weight: 600 !important;
+}
+
+.stat-card .text-muted {
+    color: #495057 !important;
+    font-weight: 600 !important;
+}
+
+/* Portfolio and dashboard improvements */
+.portfolio-item .text-muted,
+.dashboard-widget .text-muted {
+    color: #495057 !important;
+    font-weight: 500 !important;
+}
+
+/* Loading states and empty states */
+.loading-text.text-muted,
+.empty-state .text-muted {
+    color: #495057 !important;
+    font-weight: 500 !important;
+}
+
+/* =====================================
+   ERROR PREVENTION
+   ===================================== */
+
+/* Prevent any element with white background from having white text */
+.bg-white .text-white,
+[style*="background: white"] .text-white,
+[style*="background-color: white"] .text-white,
+[style*="background: #fff"] .text-white,
+[style*="background-color: #fff"] .text-white {
+    color: #212529 !important;
+    font-weight: 600 !important;
+}
+
+/* Ensure light backgrounds never have light text */
+.bg-light .text-light,
+.bg-white .text-light {
+    color: #212529 !important;
+    font-weight: 600 !important;
+}

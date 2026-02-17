@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}Short Analyse - {{ ticker }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    {% include 'analysis/_menu.html' %}
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 mb-0"><i class="bi bi-lightning me-2"></i>Short Analyse – {{ ticker }}</h2>
+        <a href="{{ url_for('analysis.short_analysis') }}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-arrow-left"></i> Velg annen aksje
+        </a>
+    </div>
+
+    {% if short_data and short_data.warnings %}
+        {% for warning in short_data.warnings %}
+            <div class="alert alert-warning d-flex align-items-center" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span>{{ warning }}</span>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if short_data and short_data.metrics %}
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <span class="text-muted">Sist rapportert</span>
+                            <div class="fw-semibold">{{ short_data.metrics.settlement_date or '—' }}</div>
+                        </div>
+                        <div>
+                            <span class="text-muted">Datakilder</span>
+                            <div class="fw-semibold">
+                                {% if short_data.sources %}
+                                    {{ short_data.sources | join(', ') }}
+                                {% else %}
+                                    Ikke oppgitt
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <div class="border rounded p-3 h-100">
+                                <span class="text-muted">Short interest (aksjer)</span>
+                                <div class="display-6 fw-semibold text-danger">
+                                    {% if short_data.metrics.short_interest is not none %}
+                                        {{ '{:,}'.format(short_data.metrics.short_interest) }}
+                                    {% else %}
+                                        <span class="text-muted">Ikke tilgjengelig</span>
+                                    {% endif %}
+                                </div>
+                                {% if short_data.trend and short_data.trend.change is not none %}
+                                    <div class="mt-2">
+                                        <span class="badge {% if short_data.trend.direction == 'up' %}bg-danger{% elif short_data.trend.direction == 'down' %}bg-success{% else %}bg-secondary{% endif %}">
+                                            {% if short_data.trend.direction == 'up' %}
+                                                <i class="bi bi-arrow-up"></i>
+                                            {% elif short_data.trend.direction == 'down' %}
+                                                <i class="bi bi-arrow-down"></i>
+                                            {% else %}
+                                                <i class="bi bi-dash"></i>
+                                            {% endif %}
+                                            {{ '{:,}'.format(short_data.trend.change|int) if short_data.trend.change is not none else '0' }} aksjer
+                                        </span>
+                                        {% if short_data.trend.change_percent is not none %}
+                                            <small class="ms-2 text-muted">({{ '{:+.2f}%'.format(short_data.trend.change_percent) }}) siden {{ short_data.trend.previous_settlement or 'forrige periode' }}</small>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="border rounded p-3 h-100">
+                                <span class="text-muted">Gj.sn. daglig volum</span>
+                                <div class="display-6 fw-semibold">
+                                    {% if short_data.metrics.avg_daily_volume is not none %}
+                                        {{ '{:,}'.format(short_data.metrics.avg_daily_volume) }}
+                                    {% else %}
+                                        <span class="text-muted">Ikke tilgjengelig</span>
+                                    {% endif %}
+                                </div>
+                                <div class="mt-2">
+                                    <span class="text-muted">Days to cover</span>
+                                    <div class="fw-semibold">
+                                        {% if short_data.metrics.days_to_cover is not none %}
+                                            {{ '{:.2f}'.format(short_data.metrics.days_to_cover) }} dager
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <span class="text-muted">Short ratio</span>
+                                    <div class="fw-semibold">
+                                        {% if short_data.metrics.short_ratio is not none %}
+                                            {{ '{:.2f}'.format(short_data.metrics.short_ratio) }}
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-1">
+                        <div class="col-sm-6">
+                            <div class="border rounded p-3 h-100">
+                                <span class="text-muted">Short float (andel av fri flyt)</span>
+                                <div class="fw-semibold">
+                                    {% if short_data.metrics.short_float_percent is not none %}
+                                        {{ '{:.2f}%'.format(short_data.metrics.short_float_percent) }}
+                                    {% else %}
+                                        <span class="text-muted">Ikke rapportert</span>
+                                    {% endif %}
+                                </div>
+                                {% if short_data.metrics.finviz_short_interest %}
+                                    <small class="text-muted">Finviz rapporterer {{ '{:,}'.format(short_data.metrics.finviz_short_interest) }} aksjer short</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="border rounded p-3 h-100">
+                                <span class="text-muted">Score og risikovurdering</span>
+                                {% if short_data.score %}
+                                    <div class="d-flex align-items-center mt-1">
+                                        <div class="progress flex-grow-1" style="height: 10px;">
+                                            <div class="progress-bar bg-danger" role="progressbar" style="width: {{ short_data.score.value }}%;"></div>
+                                        </div>
+                                        <span class="ms-2 fw-semibold">{{ '{:.1f}'.format(short_data.score.value) }}</span>
+                                    </div>
+                                    <small class="text-muted">Konfidens: {{ '{:.0f}%'.format(short_data.score.confidence * 100) }}</small>
+                                {% else %}
+                                    <div class="text-muted mt-2">Ingen fullstendig score tilgjengelig.</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">Anbefaling</div>
+                <div class="card-body">
+                    <h5 class="fw-semibold">{{ short_data.recommendation or 'Ukjent' }}</h5>
+                    <p class="text-muted">{{ short_data.recommendation_text or '—' }}</p>
+                    {% if short_data.score and short_data.score.factors %}
+                        <h6 class="fw-semibold">Drivende faktorer</h6>
+                        <ul class="list-unstyled small">
+                            {% for factor in short_data.score.factors %}
+                                <li class="d-flex align-items-start gap-2"><i class="bi bi-dot"></i><span>{{ factor }}</span></li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    <div class="alert alert-info small">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Short selling innebærer høy risiko. Data publiseres typisk annenhver uke.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header bg-light">Historikk (seneste 12 rapporter)</div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-sm table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Dato</th>
+                            <th class="text-end">Short interest</th>
+                            <th class="text-end">Avg. volum</th>
+                            <th class="text-end">Days to cover</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in short_data.history %}
+                            <tr>
+                                <td>{{ entry.settlement_date or '—' }}</td>
+                                <td class="text-end">
+                                    {% if entry.short_interest %}
+                                        {{ '{:,}'.format(entry.short_interest) }}
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    {% if entry.avg_daily_volume %}
+                                        {{ '{:,}'.format(entry.avg_daily_volume) }}
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    {% if entry.days_to_cover is not none %}
+                                        {{ '{:.2f}'.format(entry.days_to_cover) }}
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Ingen short interest-data tilgjengelig for {{ ticker }} enda. Prøv en annen ticker eller kom tilbake senere.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

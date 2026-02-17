@@ -1,0 +1,250 @@
+/* Loading States and Skeleton Screens */
+
+/* Shimmer animation */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+/* Base skeleton class */
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        #f0f0f0 25%,
+        #e0e0e0 50%,
+        #f0f0f0 75%
+    );
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
+    border-radius: 4px;
+}
+
+.skeleton-dark {
+    background: linear-gradient(
+        90deg,
+        #2a2a2a 25%,
+        #3a3a3a 50%,
+        #2a2a2a 75%
+    );
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
+    border-radius: 4px;
+}
+
+/* Skeleton elements */
+.skeleton-text {
+    height: 16px;
+    margin-bottom: 8px;
+    width: 100%;
+}
+
+.skeleton-text.w-25 { width: 25%; }
+.skeleton-text.w-50 { width: 50%; }
+.skeleton-text.w-75 { width: 75%; }
+
+.skeleton-title {
+    height: 32px;
+    margin-bottom: 16px;
+    width: 60%;
+}
+
+.skeleton-button {
+    height: 40px;
+    width: 120px;
+    border-radius: 5px;
+}
+
+.skeleton-card {
+    height: 200px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.skeleton-table-row {
+    display: flex;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.skeleton-table-cell {
+    flex: 1;
+    height: 20px;
+    margin: 0 10px;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: #007bff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-spinner.white {
+    border-color: rgba(255, 255, 255, 0.2);
+    border-top-color: #fff;
+}
+
+/* Loading overlay */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.loading-overlay.dark {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.loading-content {
+    text-align: center;
+}
+
+.loading-content .loading-spinner {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 16px;
+}
+
+.loading-text {
+    font-size: 16px;
+    color: #666;
+    margin-top: 12px;
+}
+
+/* Pulse animation for real-time data */
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.data-loading {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Error states */
+.error-state {
+    text-align: center;
+    padding: 40px;
+    color: #dc3545;
+}
+
+.error-state i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.error-state h4 {
+    margin-bottom: 12px;
+}
+
+.error-state p {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Empty states */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #333;
+}
+
+.empty-state i {
+    font-size: 64px;
+    color: #999;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.empty-state h4 {
+    color: #333;
+    margin-bottom: 12px;
+}
+
+.empty-state p {
+    margin-bottom: 24px;
+}
+
+/* Loading states for specific components */
+.stock-list-loading {
+    min-height: 400px;
+    position: relative;
+}
+
+.chart-loading {
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.price-loading {
+    display: inline-block;
+    min-width: 80px;
+    height: 24px;
+    vertical-align: middle;
+}
+
+/* Smooth transitions */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .skeleton-title {
+        width: 80%;
+    }
+    
+    .loading-overlay {
+        background: rgba(255, 255, 255, 0.95);
+    }
+    
+    .empty-state {
+        padding: 40px 20px;
+    }
+    
+    .empty-state i {
+        font-size: 48px;
+    }
+}

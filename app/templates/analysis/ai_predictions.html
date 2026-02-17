@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}AI-prediksjoner | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    {% include 'analysis/_menu.html' %}
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-robot text-primary"></i> AI-prediksjoner</h1>
+        <span class="badge bg-info fs-6">🤖 AI-Powered</span>
+    </div>
+    
+    {% if predictions %}
+    <!-- Main Prediction Card -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header" style="background-color: #0d47a1 !important; color: white;">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">{{ predictions.ticker }}</h4>
+                <small>Sist oppdatert: {{ predictions.last_updated or 'Nå' }}</small>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Key Metrics Row -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="text-center p-3 border rounded">
+                        <h6 class="text-muted">Nåværende pris</h6>
+                        <h4 class="text-primary">
+                            {% if '.OL' in predictions.ticker %}
+                                {{ "{:.2f}".format(predictions.current_price) }} NOK
+                            {% else %}
+                                ${{ "{:.2f}".format(predictions.current_price) }}
+                            {% endif %}
+                        </h4>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3 border rounded">
+                        <h6 class="text-muted">Predikert pris</h6>
+                        <h4 class="{% if predictions.change_percent > 0 %}text-success{% else %}text-danger{% endif %}">
+                            {% if '.OL' in predictions.ticker %}
+                                {{ "{:.2f}".format(predictions.predicted_price) }} NOK
+                            {% else %}
+                                ${{ "{:.2f}".format(predictions.predicted_price) }}
+                            {% endif %}
+                        </h4>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3 border rounded">
+                        <h6 class="text-muted">Forventet endring</h6>
+                        <h4 class="{% if predictions.change_percent > 0 %}text-success{% elif predictions.change_percent < 0 %}text-danger{% else %}text-muted{% endif %}">
+                            {% if predictions.change_percent > 0 %}+{% endif %}{{ "{:.2f}".format(predictions.change_percent) }}%
+                            <i class="bi bi-{% if predictions.change_percent > 0 %}arrow-up{% elif predictions.change_percent < 0 %}arrow-down{% else %}dash{% endif %}"></i>
+                        </h4>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3 border rounded">
+                        <h6 class="text-muted">Konfidens</h6>
+                        <h4>{{ "{:.0f}".format(predictions.confidence * 100) }}%</h4>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-{% if predictions.confidence > 0.8 %}success{% elif predictions.confidence > 0.6 %}warning{% else %}danger{% endif %}" 
+                                 style="width: {{ predictions.confidence * 100 }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis Metrics -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card border-light">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Tekniske indikatorer</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-6">
+                                    <p class="mb-2"><strong>Sentiment score:</strong></p>
+                                    <span class="badge bg-{% if predictions.sentiment_score > 0.5 %}success{% elif predictions.sentiment_score < -0.5 %}danger{% else %}warning{% endif %}">
+                                        {{ "{:.2f}".format(predictions.sentiment_score) }}
+                                    </span>
+                                </div>
+                                <div class="col-6">
+                                    <p class="mb-2"><strong>Nyhetssentiment:</strong></p>
+                                    <span class="badge bg-{% if predictions.news_sentiment > 0.5 %}success{% elif predictions.news_sentiment < -0.5 %}danger{% else %}secondary{% endif %}">
+                                        {{ "{:.2f}".format(predictions.news_sentiment) }}
+                                    </span>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-6">
+                                    <p class="mb-2"><strong>Volatilitet:</strong></p>
+                                    <span class="text-muted">{{ "{:.2f}".format(predictions.risk_metrics.volatility) }}%</span>
+                                </div>
+                                <div class="col-6">
+                                    <p class="mb-2"><strong>Modellnøyaktighet:</strong></p>
+                                    <span class="text-success">{{ "{:.1f}".format(predictions.model_accuracy) }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-light">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="bi bi-star me-2"></i>Viktige faktorer</h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled mb-0">
+                                {% for factor in predictions.key_factors %}
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle text-success me-2"></i>
+                                    {{ factor }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Prediction History Table -->
+            <div class="card border-light">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>Prediksjonshistorikk</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th><i class="bi bi-calendar me-1"></i>Dato</th>
+                                    <th class="text-end"><i class="bi bi-graph-up me-1"></i>Predikert verdi</th>
+                                    <th class="text-end"><i class="bi bi-arrow-up me-1"></i>Øvre konfidens</th>
+                                    <th class="text-end"><i class="bi bi-arrow-down me-1"></i>Nedre konfidens</th>
+                                    <th class="text-center"><i class="bi bi-activity me-1"></i>Volatilitet</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for i in range(predictions.dates|length) %}
+                                <tr>
+                                    <td class="fw-bold">{{ predictions.dates[i] }}</td>
+                                    <td class="text-end">
+                                        <strong>
+                                        {% if '.OL' in predictions.ticker %}
+                                            {{ "{:.2f}".format(predictions.predicted_values[i]) }} NOK
+                                        {% else %}
+                                            ${{ "{:.2f}".format(predictions.predicted_values[i]) }}
+                                        {% endif %}
+                                        </strong>
+                                    </td>
+                                    <td class="text-end text-success">
+                                        {% if '.OL' in predictions.ticker %}
+                                            {{ "{:.2f}".format(predictions.confidence_upper[i]) }} NOK
+                                        {% else %}
+                                            ${{ "{:.2f}".format(predictions.confidence_upper[i]) }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end text-danger">
+                                        {% if '.OL' in predictions.ticker %}
+                                            {{ "{:.2f}".format(predictions.confidence_lower[i]) }} NOK
+                                        {% else %}
+                                            ${{ "{:.2f}".format(predictions.confidence_lower[i]) }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% set vol_val = ((predictions.confidence_upper[i] - predictions.confidence_lower[i]) / predictions.predicted_values[i] * 100) %}
+                                        <span class="badge bg-{% if vol_val < 5 %}success{% elif vol_val < 10 %}warning{% else %}danger{% endif %}">
+                                            {{ "{:.1f}".format(vol_val) }}%
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning d-flex align-items-center">
+        <i class="bi bi-exclamation-triangle me-3 fs-4"></i>
+        <div>
+            <h6 class="alert-heading mb-1">Ingen prediksjonsdata tilgjengelig</h6>
+            <p class="mb-0">Velg en ticker for å se AI-prediksjoner eller prøv igjen senere.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

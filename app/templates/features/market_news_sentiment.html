@@ -1,0 +1,352 @@
+{% extends "base.html" %}
+
+{% block title %}Markedsnyheter og Sentiment | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="text-dark">
+                    <i class="bi bi-newspaper"></i> Markedsnyheter og Sentiment
+                </h1>
+                <div class="d-flex gap-2">
+                    <span class="badge bg-primary">AI-Powered</span>
+                    <span class="badge bg-success live-indicator pulse">
+                        <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i> LIVE
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sentiment Overview Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up-arrow"></i> Markedssentiment
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="display-1 mb-3" id="market-sentiment-score">75</div>
+                    <h6 class="text-success mb-3">Positivt</h6>
+                    <div class="progress mb-3" style="height: 8px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 75%"></div>
+                    </div>
+                    <small class="text-muted">Basert på 2,450 artikler siste 24t</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-chat-dots"></i> Sosiale Medier
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="display-1 mb-3" id="social-sentiment-score">68</div>
+                    <h6 class="text-warning mb-3">Nøytralt</h6>
+                    <div class="progress mb-3" style="height: 8px;">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 68%"></div>
+                    </div>
+                    <small class="text-muted">Fra Twitter, Reddit, Discord</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning-charge"></i> Volatilitet
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="display-1 mb-3" id="volatility-score">42</div>
+                    <h6 class="text-success mb-3">Lav</h6>
+                    <div class="progress mb-3" style="height: 8px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 42%"></div>
+                    </div>
+                    <small class="text-muted">VIX-indeks og korrelasjon</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top News Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-newspaper"></i> Dagens Toppnyheter
+                    </h5>
+                    <span class="badge bg-light text-dark">Oppdatert nå</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush" id="news-list">
+                        <!-- News items will be loaded here -->
+                        <div class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">Equinor rapporterer sterke Q2-resultater</div>
+                                <p class="mb-1">Energigiganten overgikk forventningene med betydelig økning i inntjening...</p>
+                                <small class="text-muted">
+                                    <i class="bi bi-clock"></i> 2 timer siden • 
+                                    <span class="badge bg-success">Positivt</span>
+                                </small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">EQNR</span>
+                        </div>
+                        
+                        <div class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">DNB lanserer ny digital bankplattform</div>
+                                <p class="mb-1">Nordens største bank investerer kraftig i teknologi og kundeoplevelse...</p>
+                                <small class="text-muted">
+                                    <i class="bi bi-clock"></i> 4 timer siden • 
+                                    <span class="badge bg-success">Positivt</span>
+                                </small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">DNB</span>
+                        </div>
+                        
+                        <div class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">Globale aksjemarkeder under press</div>
+                                <p class="mb-1">Bekymringer om renter og inflasjon påvirker investorsentiment...</p>
+                                <small class="text-muted">
+                                    <i class="bi bi-clock"></i> 6 timer siden • 
+                                    <span class="badge bg-warning">Nøytralt</span>
+                                </small>
+                            </div>
+                            <span class="badge bg-secondary rounded-pill">Global</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-end">
+                    <button class="btn btn-outline-primary" onclick="loadMoreNews()">
+                        <i class="bi bi-arrow-clockwise"></i> Last flere nyheter
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sector Sentiment -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pie-chart"></i> Sektorsentiment
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row" id="sector-sentiment">
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold">Energi</span>
+                                <span class="badge bg-success">+15%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold">Finans</span>
+                                <span class="badge bg-success">+8%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: 78%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold">Teknologi</span>
+                                <span class="badge bg-warning">-2%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-warning" style="width: 48%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold">Sjømat</span>
+                                <span class="badge bg-success">+12%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: 82%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold">Shipping</span>
+                                <span class="badge bg-danger">-5%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-danger" style="width: 35%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold">Fornybar energi</span>
+                                <span class="badge bg-success">+18%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: 88%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fear & Greed Index -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #ff6b6b 0%, #feca57 50%, #48dbfb 100%);">
+                    <h5 class="mb-0">
+                        <i class="bi bi-speedometer2"></i> Fear & Greed Index
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="position-relative mb-4">
+                        <svg width="200" height="100" viewBox="0 0 200 100">
+                            <path d="M 20 80 A 80 80 0 0 1 180 80" stroke="#e9ecef" stroke-width="20" fill="none"/>
+                            <path d="M 20 80 A 80 80 0 0 1 140 40" stroke="#28a745" stroke-width="20" fill="none"/>
+                        </svg>
+                        <div class="position-absolute top-50 start-50 translate-middle">
+                            <div class="display-4 fw-bold text-success">65</div>
+                            <div class="small text-muted">Grådighet</div>
+                        </div>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col">
+                            <small class="text-danger">Frykt</small>
+                        </div>
+                        <div class="col">
+                            <small class="text-warning">Nøytralt</small>
+                        </div>
+                        <div class="col">
+                            <small class="text-success">Grådighet</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up"></i> Markedsindikatorer
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6 text-center mb-3">
+                            <div class="h4 text-success">↑ 68%</div>
+                            <small class="text-muted">Bullish signals</small>
+                        </div>
+                        <div class="col-6 text-center mb-3">
+                            <div class="h4 text-danger">↓ 32%</div>
+                            <small class="text-muted">Bearish signals</small>
+                        </div>
+                        <div class="col-6 text-center mb-3">
+                            <div class="h4 text-primary">24.5</div>
+                            <small class="text-muted">VIX volatilitet</small>
+                        </div>
+                        <div class="col-6 text-center mb-3">
+                            <div class="h4 text-warning">1.24</div>
+                            <small class="text-muted">Put/Call ratio</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Simulate real-time data updates
+    function updateSentimentData() {
+        const marketScore = Math.floor(Math.random() * 20) + 70; // 70-90
+        const socialScore = Math.floor(Math.random() * 30) + 60; // 60-90
+        const volatility = Math.floor(Math.random() * 30) + 30; // 30-60
+        
+        document.getElementById('market-sentiment-score').textContent = marketScore;
+        document.getElementById('social-sentiment-score').textContent = socialScore;
+        document.getElementById('volatility-score').textContent = volatility;
+        
+        // Update progress bars
+        document.querySelector('.progress-bar.bg-success').style.width = marketScore + '%';
+        document.querySelector('.progress-bar.bg-warning').style.width = socialScore + '%';
+        document.querySelector('.progress-bar.bg-success:last-of-type').style.width = volatility + '%';
+    }
+    
+    // Load more news function
+    window.loadMoreNews = function() {
+        const newsList = document.getElementById('news-list');
+        const loadingItem = document.createElement('div');
+        loadingItem.className = 'list-group-item text-center';
+        loadingItem.innerHTML = '<div class="spinner-border spinner-border-sm me-2" role="status"></div>Laster flere nyheter...';
+        newsList.appendChild(loadingItem);
+        
+        setTimeout(() => {
+            newsList.removeChild(loadingItem);
+            // Simulate new news items
+            const newsItems = [
+                'Nel ASA sikrer ny hydrogenkontrakt',
+                'Telenor ekspanderer i Asia-markedet',
+                'Norsk Hydro investerer i grønn aluminium'
+            ];
+            
+            newsItems.forEach((title, index) => {
+                const item = document.createElement('div');
+                item.className = 'list-group-item d-flex justify-content-between align-items-start';
+                item.innerHTML = `
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold">${title}</div>
+                        <p class="mb-1">Detaljer om denne nyheten blir oppdatert kontinuerlig...</p>
+                        <small class="text-muted">
+                            <i class="bi bi-clock"></i> ${8 + index} timer siden • 
+                            <span class="badge bg-info">Nøytralt</span>
+                        </small>
+                    </div>
+                    <span class="badge bg-primary rounded-pill">Ny</span>
+                `;
+                newsList.appendChild(item);
+            });
+        }, 1000);
+    };
+    
+    // Update data every 30 seconds
+    updateSentimentData();
+    setInterval(updateSentimentData, 30000);
+    
+    // Live indicator animation
+    setInterval(() => {
+        document.querySelectorAll('.live-indicator').forEach(indicator => {
+            indicator.style.opacity = '0.5';
+            setTimeout(() => {
+                indicator.style.opacity = '1';
+            }, 500);
+        });
+    }, 2000);
+});
+</script>
+
+{% endblock %}

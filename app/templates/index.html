@@ -1,0 +1,1428 @@
+{% extends "base.html" %}
+
+{% block title %}Aksjeradar – Ekte aksjedata og analyser | Oslo Børs og globale markeder{% endblock %}
+{% block description %}Norges mest avanserte aksjeplattform med ekte data. Få sanntidskurser, teknisk og fundamental analyse for Oslo Børs og internasjonale aksjer. Ingen demo – kun reelle data.{% endblock %}
+{% block keywords %}aksjer Norge, Oslo Børs, aksjeanalyse, AI aksjeanalyse, teknisk analyse, fundamental analyse, aksjekurser, Warren Buffett analyse, Benjamin Graham, aksjetips, investering Norge{% endblock %}
+
+{% block og_title %}Aksjeradar – Ekte aksjeanalyser for Oslo Børs{% endblock %}
+{% block og_description %}Profesjonelle aksjeanalyser basert på ekte data. Analyser Oslo Børs og globale aksjer med avanserte verktøy – uten demo-innhold.{% endblock %}
+
+{% block head %}
+{{ super() }}
+<style>
+/* CACHE BUSTING - Version 20250822_v3 */
+
+/* FORCE HURTIGTILGANG TEXT TO BE WHITE - HIGHEST PRIORITY */
+.card-header h5,
+.card-header h5 span,
+.card-header .fw-bold,
+.card-header span.fw-bold,
+.card-header i.bi-lightning-fill {
+    color: #ffffff !important;
+}
+
+/* FORCE QUICK ACTION BUTTON ICONS TO STAY VISIBLE ON HOVER - HIGHEST PRIORITY */
+.quick-action-btn:hover i,
+.quick-action-btn:hover .bi,
+.btn-outline-primary:hover i,
+.btn-outline-primary:hover .bi,
+.btn-outline-success:hover i,
+.btn-outline-success:hover .bi,
+.btn-outline-info:hover i,
+.btn-outline-info:hover .bi,
+.btn-outline-dark:hover i,
+.btn-outline-dark:hover .bi {
+    color: #ffffff !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Enhanced Homepage Styles - Inspired by clean demo design */
+.live-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #28a745;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+    margin-right: 8px;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.feature-card {
+    border: none;
+    transition: all 0.3s ease;
+    border-radius: 12px;
+    overflow: hidden;
+    background:  #000000ff ;
+}
+
+
+
+.market-summary-widget {
+    background: linear-gradient(135deg, #0984e3  0%, #0984e3 100%);
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.mini-stat-card {
+    transition: all 0.3s ease;
+    border-radius: 8px;
+}
+
+.mini-stat-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.dashboard-container {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    border-radius: 20px;
+    margin: -20px;
+    padding: 20px;
+}
+
+.news-indicator {
+    width: 4px;
+    height: 40px;
+    border-radius: 2px;
+}
+
+.summary-metric {
+    padding: 1rem;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+}
+
+.enhanced-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.enhanced-card:hover {
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        margin: -10px;
+        padding: 10px;
+        border-radius: 10px;
+    }
+    
+    .quick-action-btn {
+        height: 80px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .feature-card {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+{% if current_user.is_authenticated %}
+    <!-- Enhanced Dashboard for Premium/Logged in users -->
+    <div class="container-fluid mt-4 dashboard-container">
+        
+        <!-- Quick Actions Enhanced with Notifications - MOVED TO TOP -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card enhanced-card border-0 shadow-sm">
+                    <div class="card-header bg-gradient border-0" style="background: linear-gradient(135deg, #13182c 0%, #000000 100%);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0 text-white">
+                                <i class="bi bi-lightning-fill me-2 text-white"></i>
+                                <span class="fw-bold text-white">Hurtigtilgang</span>
+                            </h5>
+                            <div class="d-flex align-items-center">
+                                <span class="live-indicator"></span>
+                                <small class="opacity-90 d-none d-md-inline fw-medium text-white">Live Dashboard</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body" style="background: linear-gradient(135deg, #f8f9ff 0%, #e6f3ff 100%);">
+                        <div class="row g-4">
+                            <div class="col-6 col-md-3">
+                                <div class="quick-action-wrapper position-relative">
+                                    <a href="{{ url_for('analysis.index') }}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3 quick-action-btn" data-bs-toggle="tooltip" title="Avanserte analyseverktøy">
+                                        <i class="bi bi-graph-up fs-1 mb-2 text-primary"></i>
+                                        <span class="fw-bold">Analyser</span>
+                                        <small class="text-muted mt-1 d-none d-md-block">12 verktøy</small>
+                                    </a>
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success shadow-sm">
+                                        <i class="bi bi-star-fill"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="quick-action-wrapper position-relative">
+                                    <a href="{{ url_for('portfolio.portfolio_overview') }}" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3 quick-action-btn" data-bs-toggle="tooltip" title="Administrer din portefølje">
+                                        <i class="bi bi-briefcase-fill fs-1 mb-2 text-success"></i>
+                                        <span class="fw-bold">Portefølje</span>
+                                        <small class="text-muted mt-1 d-none d-md-block">Investeringer</small>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="quick-action-wrapper position-relative">
+                                    <a href="{{ url_for('news_bp.index') }}" class="btn btn-outline-info w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3 quick-action-btn" data-bs-toggle="tooltip" title="Siste markedsnyheter">
+                                        <i class="bi bi-newspaper fs-1 mb-2 text-info"></i>
+                                        <span class="fw-bold">Nyheter</span>
+                                        <small class="text-muted mt-1 d-none d-md-block">AI-kurert</small>
+                                    </a>
+                                    {% if recommendations and recommendations|length > 0 %}
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning shadow-sm">
+                                        {{ recommendations|length }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="quick-action-wrapper position-relative">
+                                    <a href="{{ url_for('watchlist_advanced.watchlist_index') }}" class="btn btn-outline-dark w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3 quick-action-btn" data-bs-toggle="tooltip" title="Overvåk favorittaksjer">
+                                        <i class="bi bi-heart-fill fs-1 mb-2 text-dark"></i>
+                                        <span class="fw-bold">Watchlist</span>
+                                        <small class="text-muted mt-1 d-none d-md-block">{{ user_stats.watchlist_items }} aksjer</small>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                    <a href="{{ url_for('analysis.market_overview') }}" class="btn btn-primary rounded-pill">
+                                        <i class="bi bi-graph-up-arrow me-2"></i>Markedsoversikt
+                                    </a>
+                                    <a href="{{ url_for('stocks.search') }}" class="btn btn-outline-primary rounded-pill">
+                                        <i class="bi bi-search me-2"></i>Søk aksjer
+                                    </a>
+                                    <a href="{{ url_for('analysis.index') }}" class="btn btn-outline-secondary rounded-pill">
+                                        <i class="bi bi-graph-up me-2"></i>Avansert analyse
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Premium Market Summary Widget - MOVED TO TOP -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0 market-summary-widget">
+                    <div class="card-header bg-dark border-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-star-fill me-2"></i>
+                                <span>Premium Markedsoversikt</span>
+                            </h5>
+                            <div class="d-flex align-items-center">
+                                <span class="live-indicator"></span>
+                                <small class="opacity-75">Sanntidsdata</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="row g-0">
+                            <div class="col-lg-8">
+                                <div class="p-4">
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <div class="summary-metric">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="bi bi-building text-primary fs-4 me-3"></i>
+                                                    <div>
+                                                        <h6 class="mb-0">Oslo Børs Hovedindeks</h6>
+                                                        <small class="text-muted">OSEBX</small>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex align-items-center">
+                                                    <h4 class="mb-0 me-3">{{ market_data.get('osebx', {}).get('value') if market_data.get('osebx', {}).get('value') not in [None, 0] else 'N/A' }}</h4>
+                                                    {% set osebx_cp = market_data.get('osebx', {}).get('change_percent') %}
+                                                    {% if osebx_cp is not none and osebx_cp != 0 %}
+                                                    <span class="badge {{ 'bg-success' if market_data.get('osebx', {}).get('change', 0) >= 0 else 'bg-danger' }} rounded-pill">
+                                                        {{ "+" if market_data.get('osebx', {}).get('change', 0) >= 0 else '' }}{{ osebx_cp }}%
+                                                    </span>
+                                                    {% else %}
+                                                    <span class="badge bg-secondary rounded-pill">N/A</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="summary-metric">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="bi bi-globe text-info fs-4 me-3"></i>
+                                                    <div>
+                                                        <h6 class="mb-0">S&P 500</h6>
+                                                        <small class="text-muted">Global</small>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex align-items-center">
+                                                    <h4 class="mb-0 me-3">{{ market_data.get('sp500', {}).get('value') if market_data.get('sp500', {}).get('value') not in [None, 0] else 'N/A' }}</h4>
+                                                    {% set sp_cp = market_data.get('sp500', {}).get('change_percent') %}
+                                                    {% if sp_cp is not none and sp_cp != 0 %}
+                                                    <span class="badge {{ 'bg-success' if market_data.get('sp500', {}).get('change', 0) >= 0 else 'bg-danger' }} rounded-pill">
+                                                        {{ "+" if market_data.get('sp500', {}).get('change', 0) >= 0 else '' }}{{ sp_cp }}%
+                                                    </span>
+                                                    {% else %}
+                                                    <span class="badge bg-secondary rounded-pill">N/A</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="summary-metric">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="bi bi-currency-bitcoin text-warning fs-4 me-3"></i>
+                                                    <div>
+                                                        <h6 class="mb-0">Bitcoin</h6>
+                                                        <small class="text-muted">BTC/USD</small>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex align-items-center">
+                                                    <h4 class="mb-0 me-3">${{ market_data.get('btc', {}).get('price') if market_data.get('btc', {}).get('price') not in [None, 0] else 'N/A' }}</h4>
+                                                    {% set btc_cp = market_data.get('btc', {}).get('change_percent') %}
+                                                    {% if btc_cp is not none and btc_cp != 0 %}
+                                                    <span class="badge {{ 'bg-success' if market_data.get('btc', {}).get('change', 0) >= 0 else 'bg-danger' }} rounded-pill">
+                                                        {{ "+" if market_data.get('btc', {}).get('change', 0) >= 0 else '' }}{{ btc_cp }}%
+                                                    </span>
+                                                    {% else %}
+                                                    <span class="badge bg-secondary rounded-pill">N/A</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="p-4 border-start">
+                                    <h6 class="mb-3 text-muted">Markedsstatus</h6>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <span class="live-indicator me-2"></span>
+                                        {% if market_data.market_open %}
+                                            <span class="fw-bold text-success">Markeder åpne</span>
+                                        {% else %}
+                                            <span class="fw-bold text-danger">Markeder stengt</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="stat-cards">
+                                        <div class="stat-card mb-2">
+                                            <small class="text-muted">Dine porteføljer</small>
+                                            <div class="fw-bold">{{ user_stats.portfolios }}</div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <small class="text-muted">Watchlist-elementer</small>
+                                            <div class="fw-bold">{{ user_stats.watchlist_items }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Market Tables - MOVED DOWN -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="dashboard-market-tables">
+                    {% include 'market/overview.html' with context %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Enhanced Oslo Børs Table -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card enhanced-card border-0 shadow">
+                    <div class="card-header border-0 text-white" style="background: linear-gradient(135deg, #343a40 0%, #212529 100%);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0 fw-bold text-white">
+                                <i class="bi bi-bar-chart-fill me-2"></i>
+                                <span class="d-none d-md-inline">Oslo Børs - Topp Aksjer</span>
+                                <span class="d-inline d-md-none">Oslo Børs</span>
+                            </h5>
+                            <div class="d-flex align-items-center">
+                                <span class="live-indicator"></span>
+                                <small class="opacity-90 d-none d-md-inline fw-medium text-white">Sanntidsdata</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0" style="background: linear-gradient(135deg, #f8faff 0%, #e6f3ff 100%);">
+                        <!-- Desktop Table -->
+                        <div class="table-responsive d-none d-lg-block">
+                            <table class="table table-hover mb-0">
+                                <thead style="background: linear-gradient(135deg, #f1f8ff 0%, #e3f2fd 100%);">
+                                    <tr>
+                                        <th class="border-0 fw-bold text-primary">Symbol</th>
+                                        <th class="border-0 fw-bold text-primary">Navn</th>
+                                        <th class="border-0 fw-bold text-primary">Pris</th>
+                                        <th class="border-0 fw-bold text-primary">Endring</th>
+                                        <th class="border-0 fw-bold text-primary">Endring %</th>
+                                        <th class="border-0 fw-bold text-primary">Volum</th>
+                                        <th class="border-0 fw-bold text-primary">Handlinger</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if market_data.oslo_stocks %}
+                                        {% for stock in market_data.oslo_stocks %}
+                                            <tr class="align-middle stock-row" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                                                <td><strong class="text-primary fw-bold">{{ stock.symbol }}</strong></td>
+                                                <td class="fw-medium">{{ stock.name }}</td>
+                                                <td><strong class="fs-6">{{ stock.price }} NOK</strong></td>
+                                                <td class="{{ 'text-success' if stock.change >= 0 else 'text-danger' }} fw-bold">
+                                                    <i class="bi bi-{{ 'arrow-up' if stock.change >= 0 else 'arrow-down' }}-circle-fill me-1"></i>
+                                                    {{ stock.change }}
+                                                </td>
+                                                <td class="{{ 'text-success' if stock.change_percent >= 0 else 'text-danger' }} fw-bold">
+                                                    {{ stock.change_percent }}%
+                                                </td>
+                                                <td class="text-muted fw-medium">{{ stock.volume | int | nn }}</td>
+                                                <td>
+                                                    <a href="{{ url_for('stocks.details', symbol=stock.symbol) }}" class="btn btn-sm btn-primary rounded-pill shadow-sm">
+                                                        <i class="bi bi-eye me-1"></i>Detaljer
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted py-4">
+                                                <i class="bi bi-info-circle me-2"></i>Ingen sanntidsdata tilgjengelig
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Mobile Card Layout -->
+                        <div class="d-block d-lg-none">
+                            <div class="mobile-stocks-container p-3">
+                                {% if market_data.oslo_stocks %}
+                                    {% for stock in market_data.oslo_stocks %}
+                                        <div class="stock-card mb-3 p-3 rounded-3 shadow-sm" style="background: linear-gradient(135deg, #fff 0%, #f8faff 100%); border: 1px solid rgba(116, 185, 255, 0.2);">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <h6 class="mb-1 text-primary fw-bold">{{ stock.symbol }}</h6>
+                                                    <small class="text-muted fw-medium">{{ stock.name }}</small>
+                                                </div>
+                                                <div class="text-end">
+                                                    <div class="fw-bold fs-6">{{ stock.price }} NOK</div>
+                                                    <small class="{{ 'text-success' if stock.change >= 0 else 'text-danger' }} fw-bold">
+                                                        <i class="bi bi-{{ 'arrow-up' if stock.change >= 0 else 'arrow-down' }}-circle-fill me-1"></i>
+                                                        {{ stock.change }} ({{ stock.change_percent }}%)
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div></div>
+                                                <a href="{{ url_for('stocks.details', symbol=stock.symbol) }}" class="btn btn-sm btn-primary rounded-pill shadow-sm">
+                                                    <i class="bi bi-eye me-1"></i>Se
+                                                </a>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="text-center text-muted py-4">
+                                        <i class="bi bi-info-circle me-2"></i>Ingen sanntidsdata tilgjengelig
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-footer border-0" style="background: linear-gradient(135deg, #f1f8ff 0%, #e3f2fd 100%);">
+                            <div class="text-center">
+                                <a href="{{ url_for('stocks.list_oslo') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                                    <i class="bi bi-arrow-right me-2"></i>Se alle Oslo Børs aksjer
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <!-- Removed personal dashboard and investments section for logged-in users -->
+
+                        <!-- Quick Action Buttons -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                    <a href="{{ url_for('portfolio.portfolio_overview') }}" class="btn btn-success rounded-pill">
+                                        <i class="bi bi-briefcase me-2"></i>Administrer portefølje
+                                    </a>
+                                    <a href="{{ url_for('analysis.prediction') }}" class="btn btn-primary rounded-pill">
+                                        <i class="bi bi-crystal-ball me-2"></i>Se prediksjoner
+                                    </a>
+                                    <a href="{{ url_for('stocks.search') }}" class="btn btn-outline-primary rounded-pill">
+                                        <i class="bi bi-search me-2"></i>Søk aksjer
+                                    </a>
+                                    <a href="{{ url_for('analysis.index') }}" class="btn btn-outline-secondary rounded-pill">
+                                        <i class="bi bi-graph-up me-2"></i>Avansert analyse
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <!-- Landing page for non-logged in users -->
+    <div class="text-center py-5">
+        <h1 class="display-4">Velkommen til Aksjeradar</h1>
+        <p class="lead">Norges smarteste plattform for aksjeanalyse</p>
+        
+        <div class="row mt-5">
+            <div class="col-md-4">
+                <i class="bi bi-robot display-3 text-primary"></i>
+                <h3>AI-drevet analyse</h3>
+                <p>Få innsikt fra avanserte algoritmer</p>
+            </div>
+            <div class="col-md-4">
+                <i class="bi bi-graph-up-arrow display-3 text-success"></i>
+                <h3>Sanntidsdata</h3>
+                <p>Oppdaterte kurser og nyheter</p>
+            </div>
+            <div class="col-md-4">
+                <i class="bi bi-shield-check display-3 text-info"></i>
+                <h3>Sikker og pålitelig</h3>
+                <p>Dine data er trygge hos oss</p>
+            </div>
+        </div>
+        
+        <div class="mt-5">
+            <a href="{{ url_for('main.demo') }}" class="btn btn-success btn-lg me-3">
+                <i class="bi bi-play-circle"></i> Prøv demo
+            </a>
+            <a href="{{ url_for('main.register') }}" class="btn btn-primary btn-lg me-3">
+                <i class="bi bi-person-plus"></i> Kom i gang
+            </a>
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('achievements_bp.index') }}" class="btn btn-warning btn-lg">
+                <i class="bi bi-trophy"></i> Mine oppnåelser
+            </a>
+            {% endif %}
+        </div>
+        
+        <!-- ROI Calculator Promotion -->
+        <div class="mt-5 mb-5">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body text-center py-5" style="background: #344686; color: white;">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3 class="fw-bold mb-3">💰 Finn ut hvor mye du kan tjene!</h3>
+                            <p class="lead mb-0">Bruk vår ROI-kalkulator og se hvor lønnsomt det kan være å investere smart med Aksjeradar.trade</p>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ url_for('main.roi_kalkulator') }}" class="btn btn-light btn-lg shadow">
+                                <i class="bi bi-calculator me-2"></i>Beregn ROI
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Market Data for AUTHENTICATED Users ONLY -->
+    {% if current_user.is_authenticated and market_data and market_data.oslo_stocks %}
+    <div class="container mt-5">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-primary border-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-bar-chart me-2"></i>
+                                Oslo Børs - Populære Aksjer
+                            </h5>
+                            <small class="opacity-75">Sanntidsdata</small>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <!-- Desktop Table -->
+                        <div class="table-responsive d-none d-lg-block">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="border-0 fw-semibold">Symbol</th>
+                                        <th class="border-0 fw-semibold">Navn</th>
+                                        <th class="border-0 fw-semibold">Pris</th>
+                                        <th class="border-0 fw-semibold">Endring</th>
+                                        <th class="border-0 fw-semibold">Endring %</th>
+                                        <th class="border-0 fw-semibold">Volum</th>
+                                        <th class="border-0 fw-semibold">Handlinger</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for stock in market_data.oslo_stocks %}
+                                        <tr class="align-middle">
+                                            <td><strong class="text-primary">{{ stock.symbol }}</strong></td>
+                                            <td>{{ stock.name }}</td>
+                                            <td><strong>{{ stock.price }} NOK</strong></td>
+                                            <td class="{{ 'text-success' if stock.change >= 0 else 'text-danger' }} fw-semibold">{{ stock.change }}</td>
+                                            <td class="{{ 'text-success' if stock.change_percent >= 0 else 'text-danger' }} fw-semibold">{{ stock.change_percent }}%</td>
+                                            <td class="text-muted">{{ stock.volume | int }}</td>
+                                            <td>
+                                                <a href="{{ url_for('stocks.details', symbol=stock.symbol) }}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                                    <i class="bi bi-eye me-1"></i>Detaljer
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Mobile Card Layout -->
+                        <div class="d-block d-lg-none">
+                            <div class="mobile-stocks-container p-3">
+                                {% for stock in market_data.oslo_stocks %}
+                                    <div class="stock-card mb-3 p-3 bg-light rounded-3">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <h6 class="mb-1 text-primary fw-bold">{{ stock.symbol }}</h6>
+                                                <small class="text-muted">{{ stock.name }}</small>
+                                            </div>
+                                            <div class="text-end">
+                                                <div class="fw-bold">{{ stock.price }} NOK</div>
+                                                <small class="{{ 'text-success' if stock.change >= 0 else 'text-danger' }}">{{ stock.change }} ({{ stock.change_percent }}%)</small>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">Vol: {{ stock.volume | int }}</small>
+                                            <a href="{{ url_for('stocks.details', symbol=stock.symbol) }}" class="btn btn-sm btn-primary rounded-pill">
+                                                <i class="bi bi-eye me-1"></i>Se
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light border-0">
+                            <div class="text-center">
+                                <a href="{{ url_for('stocks.list_oslo') }}" class="btn btn-primary rounded-pill px-4">
+                                    <i class="bi bi-arrow-right me-2"></i>Se alle Oslo Børs aksjer
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Global Stocks for Public Users -->
+    {% if current_user.is_authenticated and market_data and market_data.global_stocks %}
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-success border-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-globe me-2"></i>
+                                Globale Aksjer
+                            </h5>
+                            <small class="opacity-75">Sanntidsdata</small>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <!-- Desktop Table -->
+                        <div class="table-responsive d-none d-lg-block">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="border-0 fw-semibold">Symbol</th>
+                                        <th class="border-0 fw-semibold">Navn</th>
+                                        <th class="border-0 fw-semibold">Pris</th>
+                                        <th class="border-0 fw-semibold">Endring</th>
+                                        <th class="border-0 fw-semibold">Endring %</th>
+                                        <th class="border-0 fw-semibold">Volum</th>
+                                        <th class="border-0 fw-semibold">Handlinger</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for stock in market_data.global_stocks %}
+                                        <tr class="align-middle">
+                                            <td><strong class="text-primary">{{ stock.symbol }}</strong></td>
+                                            <td>{{ stock.name }}</td>
+                                            <td><strong>${{ stock.price }}</strong></td>
+                                            <td class="{{ 'text-success' if stock.change >= 0 else 'text-danger' }} fw-semibold">{{ stock.change }}</td>
+                                            <td class="{{ 'text-success' if stock.change_percent >= 0 else 'text-danger' }} fw-semibold">{{ stock.change_percent }}%</td>
+                                            <td class="text-muted">{{ stock.volume | int }}</td>
+                                            <td>
+                                                <a href="{{ url_for('stocks.details', symbol=stock.symbol) }}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                                    <i class="bi bi-eye me-1"></i>Detaljer
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Mobile Card Layout -->
+                        <div class="d-block d-lg-none">
+                            <div class="mobile-stocks-container p-3">
+                                {% for stock in market_data.global_stocks %}
+                                    <div class="stock-card mb-3 p-3 bg-light rounded-3">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <h6 class="mb-1 text-primary fw-bold">{{ stock.symbol }}</h6>
+                                                <small class="text-muted">{{ stock.name }}</small>
+                                            </div>
+                                            <div class="text-end">
+                                                <div class="fw-bold">${{ stock.price }}</div>
+                                                <small class="{{ 'text-success' if stock.change >= 0 else 'text-danger' }}">{{ stock.change }} ({{ stock.change_percent }}%)</small>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">Vol: {{ stock.volume | int }}</small>
+                                            <a href="{{ url_for('stocks.details', symbol=stock.symbol) }}" class="btn btn-sm btn-primary rounded-pill">
+                                                <i class="bi bi-eye me-1"></i>Se
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light border-0">
+                            <div class="text-center">
+                                <a href="{{ url_for('stocks.global_list') }}" class="btn btn-success rounded-pill px-4">
+                                    <i class="bi bi-arrow-right me-2"></i>Se alle globale aksjer
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Crypto for AUTHENTICATED Users ONLY -->
+    {% if current_user.is_authenticated and market_data and market_data.crypto_stocks %}
+    <div class="container mt-4 mb-5">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-warning text-dark border-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-currency-bitcoin me-2"></i>
+                                Kryptovalutaer
+                            </h5>
+                            <small class="opacity-75">Sanntidsdata</small>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <!-- Desktop Table -->
+                        <div class="table-responsive d-none d-lg-block">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="border-0 fw-semibold">Symbol</th>
+                                        <th class="border-0 fw-semibold">Navn</th>
+                                        <th class="border-0 fw-semibold">Pris</th>
+                                        <th class="border-0 fw-semibold">Endring</th>
+                                        <th class="border-0 fw-semibold">Endring %</th>
+                                        <th class="border-0 fw-semibold">Handlinger</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for crypto in market_data.crypto_stocks %}
+                                        <tr class="align-middle">
+                                            <td><strong class="text-primary">{{ crypto.symbol }}</strong></td>
+                                            <td>{{ crypto.name }}</td>
+                                            <td><strong>${{ crypto.price }}</strong></td>
+                                            <td class="{{ 'text-success' if crypto.change >= 0 else 'text-danger' }} fw-semibold">{{ crypto.change }}</td>
+                                            <td class="{{ 'text-success' if crypto.change_percent >= 0 else 'text-danger' }} fw-semibold">{{ crypto.change_percent }}%</td>
+                                            <td>
+                                                <a href="{{ url_for('stocks.details', symbol=crypto.symbol) }}" class="btn btn-sm btn-outline-warning rounded-pill">
+                                                    <i class="bi bi-eye me-1"></i>Detaljer
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Mobile Card Layout -->
+                        <div class="d-block d-lg-none">
+                            <div class="mobile-stocks-container p-3">
+                                {% for crypto in market_data.crypto_stocks %}
+                                    <div class="stock-card mb-3 p-3 bg-light rounded-3">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <h6 class="mb-1 text-primary fw-bold">{{ crypto.symbol }}</h6>
+                                                <small class="text-muted">{{ crypto.name }}</small>
+                                            </div>
+                                            <div class="text-end">
+                                                <div class="fw-bold">${{ crypto.price }}</div>
+                                                <small class="{{ 'text-success' if crypto.change >= 0 else 'text-danger' }}">{{ crypto.change }} ({{ crypto.change_percent }}%)</small>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <a href="{{ url_for('stocks.details', symbol=crypto.symbol) }}" class="btn btn-sm btn-warning rounded-pill">
+                                                <i class="bi bi-eye me-1"></i>Se
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light border-0">
+                            <div class="text-center">
+                                <a href="{{ url_for('stocks.list_crypto') }}" class="btn btn-warning rounded-pill px-4">
+                                    <i class="bi bi-arrow-right me-2"></i>Se alle kryptovalutaer
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Phase 3: Enhanced Mobile Responsiveness & Modern Design */
+
+/* Personal Dashboard Styling */
+.personal-dashboard-widget .stat-box {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.personal-dashboard-widget .stat-box:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.recommendation-item {
+    transition: all 0.2s ease;
+    border: 1px solid #e9ecef !important;
+}
+
+.recommendation-item:hover {
+    border-color: #007bff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 10px rgba(0,123,255,0.1);
+}
+
+.activity-feed .activity-icon {
+    min-width: 40px;
+    min-height: 40px;
+}
+
+.activity-item {
+    transition: all 0.2s ease;
+    padding: 0.5rem;
+    border-radius: 8px;
+}
+
+.activity-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Dashboard Container Improvements */
+.dashboard-container {
+    padding: 0 15px;
+}
+
+/* Welcome Header Styling */
+.welcome-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 2rem;
+    border-radius: 15px;
+    border: 1px solid #dee2e6;
+    margin-bottom: 1rem;
+}
+
+.welcome-content h1 {
+    color: #2c3e50;
+    font-weight: 700;
+}
+
+.premium-badge .badge {
+    font-size: 0.875rem;
+    box-shadow: 0 2px 10px rgba(40, 167, 69, 0.2);
+}
+
+/* Quick Stats Mobile Cards */
+.quick-stats-mobile {
+    margin: 0 -15px;
+    padding: 0 15px;
+}
+
+.stats-scroll {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.stats-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.stat-card-mini {
+    min-width: 100px;
+}
+
+.stat-card-mini .card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card-mini .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1) !important;
+}
+
+/* Enhanced Card Styling */
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+
+
+/* Gradient Headers - ensure correct text color for accessibility */
+.bg-primary, .bg-success, .bg-warning, .bg-info, .bg-secondary, .bg-dark {
+    color: #fff !important;
+}
+.bg-light, .bg-gray {
+    color: #212529 !important;
+}
+.bg-primary {
+    background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%) !important;
+}
+.bg-success {
+    background: linear-gradient(135deg, #198754 0%, #157347 100%) !important;
+}
+.bg-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #e6ac00 100%) !important;
+}
+.bg-info {
+    background: linear-gradient(135deg, #0dcaf0 0%, #0bb5d6 100%) !important;
+}
+
+/* Enhanced Table Styling */
+.table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+    transform: scale(1.01);
+    transition: all 0.2s ease;
+}
+
+.table thead th {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    color: #495057;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    letter-spacing: 0.5px;
+}
+
+/* Mobile Stock Cards */
+.mobile-stocks-container {
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.stock-card {
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+    background: transparent;
+}
+
+.stock-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-color: #0d6efd;
+}
+
+/* Enhanced Buttons */
+.btn {
+    border-radius: 25px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: none;
+    padding: 0.5rem 1.5rem;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+}
+
+.btn-outline-primary {
+    border: 2px solid #0d6efd;
+    color: #0d6efd;
+    background: transparent;
+}
+
+.btn-outline-primary:hover {
+    background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+    border-color: #0d6efd;
+    color: white;
+}
+
+/* Quick Action Enhancements */
+.quick-action-wrapper {
+    position: relative;
+}
+
+.quick-action-btn {
+    position: relative;
+    overflow: hidden;
+    min-height: 120px;
+    border-width: 2px;
+    transition: all 0.3s ease;
+}
+
+.quick-action-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.6s ease;
+}
+
+.quick-action-btn:hover::before {
+    left: 100%;
+}
+
+.quick-action-btn:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.quick-action-btn i {
+    transition: all 0.3s ease;
+}
+
+.quick-action-btn:hover i {
+    transform: scale(1.1);
+}
+
+/* Mini Stats Cards */
+.mini-stat-card {
+    transition: all 0.2s ease;
+    border: 1px solid #e9ecef;
+}
+
+.mini-stat-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-color: #0d6efd;
+}
+
+/* Notification Badges */
+.badge {
+    animation: badgePulse 2s infinite;
+}
+
+@keyframes badgePulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Enhanced Loading States */
+.loading-skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
+    height: 20px;
+    margin: 4px 0;
+}
+
+@keyframes loading {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Toast Notifications */
+.toast-container {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 1055;
+}
+
+.custom-toast {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    overflow: hidden;
+}
+
+.toast-success {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+}
+
+.toast-warning {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+    color: #212529;
+}
+
+/* Advanced Hover Effects */
+.card-hover-scale:hover {
+    transform: scale(1.02);
+}
+
+.icon-bounce:hover {
+    animation: iconBounce 0.6s ease;
+}
+
+@keyframes iconBounce {
+    0%, 20%, 60%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    80% { transform: translateY(-5px); }
+}
+
+/* Market Summary Widget */
+.market-summary-widget {
+    border: 2px solid #f8f9fa;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.bg-gradient-dark {
+    background: linear-gradient(135deg, #343a40 0%, #495057 100%) !important;
+}
+
+.summary-metric {
+    padding: 1rem;
+    border-radius: 10px;
+    background: transparent;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.summary-metric:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    border-color: #0d6efd;
+}
+
+.market-news-sidebar {
+    border-left: 1px solid #dee2e6;
+    min-height: 200px;
+}
+
+.news-item {
+    padding: 0.75rem;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+}
+
+.news-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.news-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 6px;
+    flex-shrink: 0;
+}
+
+/* Progress Indicators */
+.progress-modern {
+    height: 8px;
+    border-radius: 10px;
+    background: #e9ecef;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-modern::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #0d6efd, #20c997, #0d6efd);
+    border-radius: inherit;
+    animation: progressMove 2s infinite;
+}
+
+@keyframes progressMove {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* Mobile Enhancements for New Features */
+@media (max-width: 768px) {
+    .market-news-sidebar {
+        border-left: none;
+        border-top: 1px solid #dee2e6;
+        margin-top: 1rem;
+        padding-top: 1rem;
+    }
+    
+    .summary-metric {
+        margin-bottom: 1rem;
+    }
+    
+    .quick-action-btn {
+        min-height: 100px;
+    }
+    
+    .news-item:hover {
+        transform: none;
+    }
+}
+
+/* Mobile Responsive Enhancements */
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 0 10px;
+    }
+    
+    .welcome-header {
+        padding: 1.5rem;
+        margin: 0 -10px 1rem;
+        border-radius: 0;
+    }
+    
+    .welcome-content h1 {
+        font-size: 1.75rem;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .welcome-content h1 {
+        font-size: 1.5rem;
+    }
+    
+    .premium-badge {
+        text-align: center;
+        margin-top: 1rem;
+    }
+}
+
+/* Loading States & Animations */
+.loading-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.pulse-success {
+    animation: pulseSuccess 2s infinite;
+}
+
+.pulse-danger {
+    animation: pulseDanger 2s infinite;
+}
+
+@keyframes pulseSuccess {
+    0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+}
+
+@keyframes pulseDanger {
+    0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
+
+/* Live Data Indicators */
+.live-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: #28a745;
+    border-radius: 50%;
+    animation: blink 1s infinite;
+    margin-right: 5px;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.3; }
+}
+
+/* Enhanced Performance */
+* {
+    scroll-behavior: smooth;
+}
+
+.card, .btn {
+    will-change: transform;
+}
+
+/* Connection Status */
+.connection-status {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    z-index: 1050;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-size: 0.875rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+.connection-status.online {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+}
+
+.connection-status.offline {
+    background: linear-gradient(135deg, #dc3545, #fd7e14);
+    color: white;
+}
+
+/* Override any white colors in card headers */
+.card-header h5, 
+.card-header .bi,
+.card-header span,
+.card-header i {
+    color: inherit !important;
+}
+
+.card-header.bg-primary h5,
+.card-header.bg-primary .bi,
+.card-header.bg-primary span,
+.card-header.bg-primary i {
+    color: #ffffff !important;
+}
+
+.card-header.bg-dark h5,
+.card-header.bg-dark .bi, 
+.card-header.bg-dark span,
+.card-header.bg-dark i {
+    color: #ffffff !important;
+}
+
+.card-header.bg-success h5,
+.card-header.bg-success .bi,
+.card-header.bg-success span, 
+.card-header.bg-success i {
+    color: #ffffff !important;
+}
+
+/* Fix for quick action button icons to remain visible on hover */
+.quick-action-btn:hover .bi.text-primary {
+    color: #ffffff !important;
+}
+
+.quick-action-btn:hover .bi.text-success {
+    color: #ffffff !important;
+}
+
+.quick-action-btn:hover .bi.text-info {
+    color: #ffffff !important;
+}
+
+.quick-action-btn:hover .bi.text-dark {
+    color: #ffffff !important;
+}
+
+/* Alternative approach - ensure icons stay visible on all hover states */
+.btn-outline-primary:hover .bi,
+.btn-outline-success:hover .bi,
+.btn-outline-info:hover .bi,
+.btn-outline-dark:hover .bi {
+    color: #ffffff !important;
+}
+</style>
+
+<!-- Real-time JavaScript Enhancements -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Only initialize tooltips and connection monitoring, no demo data simulation
+    initializeTooltips();
+    setupConnectionMonitoring();
+});
+
+function initializeTooltips() {
+    // Add tooltips to mobile stat cards
+    const statCards = document.querySelectorAll('.stat-card-mini .card');
+    statCards.forEach(card => {
+        card.setAttribute('title', 'Tap for details');
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 150);
+        });
+    });
+}
+
+function setupConnectionMonitoring() {
+    // Add connection status indicator
+    const statusDiv = document.createElement('div');
+    statusDiv.id = 'connection-status';
+    statusDiv.className = 'connection-status online';
+    statusDiv.innerHTML = '<i class="bi bi-wifi me-1"></i>Live';
+    document.body.appendChild(statusDiv);
+    window.addEventListener('online', () => {
+        statusDiv.className = 'connection-status online';
+        statusDiv.innerHTML = '<i class="bi bi-wifi me-1"></i>Live';
+    });
+    window.addEventListener('offline', () => {
+        statusDiv.className = 'connection-status offline';
+        statusDiv.innerHTML = '<i class="bi bi-wifi-off me-1"></i>Offline';
+    });
+}
+</script>
+{% endblock %}

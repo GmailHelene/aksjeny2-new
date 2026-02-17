@@ -1,0 +1,425 @@
+{% extends "base.html" %}
+
+{% block title %}Mitt Abonnement - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="mb-4">Mitt Abonnement</h1>
+            
+            <div class="card">
+                <div class="card-body">
+                    {% if subscription and subscription.is_active %}
+                        <h5 class="card-title">{{ subscription.plan|title }} Abonnement</h5>
+                        <p class="card-text">
+                            Status: <span class="badge bg-success">Aktiv</span>
+                        </p>
+                        {% if subscription.end_date %}
+                        <p class="card-text">
+                            Fornyes: {{ subscription.end_date.strftime('%d.%m.%Y') }}
+                        </p>
+                        {% endif %}
+                        
+                        <hr>
+                        
+                        <h6>Inkluderte funksjoner:</h6>
+                        <ul>
+                            <li>Ubegrenset tilgang til alle aksjeanalyser</li>
+                            <li>Sanntids markedsdata</li>
+                            <li>Avanserte tekniske indikatorer</li>
+                            <li>AI-drevne anbefalinger</li>
+                            <li>Porteføljeovervåkning</li>
+                            <li>Eksport av data</li>
+                        </ul>
+                        
+                        <div class="mt-4">
+                            <a href="{{ url_for('main.cancel_subscription') }}" class="btn btn-outline-danger">
+                                Avbryt abonnement
+                            </a>
+                        </div>
+                    {% else %}
+                        <h5 class="card-title">Gratis konto</h5>
+                        <p class="card-text">
+                            Du har begrenset tilgang til funksjoner.
+                        </p>
+                        
+                        <a href="{{ url_for('pricing.pricing_page') }}" class="btn btn-primary">
+                            Oppgrader til Premium
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+    height: 100%;
+    background: #ffffff;
+    /* Ensure pricing card text is dark on white background */
+    color: #212529;
+}
+
+.pricing-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.pricing-card.featured {
+    border: 3px solid #0d6efd;
+    transform: scale(1.05);
+    position: relative;
+    z-index: 10;
+}
+
+.pricing-card.featured .card-header {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    color: white;
+    border-radius: 12px 12px 0 0;
+}
+
+.price-amount {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #0d6efd;
+    line-height: 1;
+}
+
+.price-period {
+    font-size: 1rem;
+    color: #6c757d;
+}
+
+.feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.feature-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.feature-list li:last-child {
+    border-bottom: none;
+}
+
+.feature-list li i {
+    color: #28a745;
+    margin-right: 0.5rem;
+}
+
+.discount-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #dc3545;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .pricing-card.featured {
+        transform: none;
+        margin-bottom: 2rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="pricing-hero py-5 text-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3">Velg ditt abonnement</h1>
+                <p class="lead mb-4">Få tilgang til Norges mest avanserte aksjeplattform og AI-drevne analyser</p>
+                <!-- Tydelig forklaring av abonnementsmodellen -->
+                <div class="alert alert-info mt-3">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <strong>Alle abonnement gir full tilgang til alle funksjoner</strong> - velg bare den betalingsperioden som passer deg best.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="pricing-container py-5">
+    <div class="container">
+    <!-- Trial period messaging removed -->
+    
+    <!-- Referral Discount Banner -->
+    {% if current_user.is_authenticated and current_user.has_referral_discount() %}
+    <div class="alert alert-success border-0 shadow-sm mb-5">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h4 class="alert-heading mb-2">
+                    <i class="bi bi-gift-fill"></i> Gratulerer! Du har rabatt tilgjengelig!
+                </h4>
+                <p class="mb-2">
+                    Du har <strong>20% rabatt</strong> på årlig abonnement takket være dine vellykkede referrals.
+                    Pris blir kun <strong class="text-success">2499 kr</strong> - ordinær pris!
+                </p>
+                <small class="text-muted">
+                    <i class="bi bi-clock"></i> Rabatten utløper om {{ current_user.get_available_referral_discounts()[0].expires_at.strftime('%d.%m.%Y') if current_user.get_available_referral_discounts() else 'ett år' }}
+                </small>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="badge bg-success fs-6 p-3">
+                    <i class="bi bi-percent"></i> 20% RABATT<br>
+                    <small>Kun på årlig abonnement</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% elif current_user.is_authenticated %}
+    <div class="alert alert-info border-0 mb-5 text-center">
+        <h5 class="mb-2">
+            <i class="bi bi-people"></i> Vil du spare penger?
+        </h5>
+        <p class="mb-3">
+            Inviter venner og få <strong>20% rabatt</strong> på årlig abonnement for hver venn som tegner abonnement!
+        </p>
+        <a href="{{ url_for('pricing.index') }}" class="btn btn-info">
+            <i class="bi bi-share"></i> Se alle planer
+        </a>
+    </div>
+    {% endif %}
+    
+    <!-- Pricing Cards -->
+    <div class="row justify-content-center g-4 mb-5">
+        <!-- Pro Monthly - Featured -->
+        <div class="col-lg-4 col-md-6">
+            <div class="pricing-card featured position-relative">
+                <div class="discount-badge">POPULÆR</div>
+                <div class="card-header text-center py-4">
+                    <h3 class="mb-2 text-white">Pro</h3>
+                    <p class="text-white-50 mb-0">For seriøse investorer</p>
+                </div>
+                <div class="card-body d-flex flex-column text-center p-4">
+                    <div class="mb-4">
+                        <span class="price-amount">249</span>
+                        <span class="price-period">kr/måned</span>
+                    </div>
+                    <ul class="feature-list mb-4 text-start">
+                        <li><i class="bi bi-check-circle-fill"></i> Ubegrensede aksje-analyser</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Full AI-analyse med signaler</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Avansert porteføljeanalyse</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Avansert backtest og strategibygger</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Monte Carlo-simulering</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Ubegrenset watchlist</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Prioritert AI-prosessering</li>
+                        <li><i class="bi bi-check-circle-fill"></i> API-tilgang</li>
+                    </ul>
+                    <div class="mt-auto">
+                        <a href="https://buy.stripe.com/5kQcN503z30z2oL35wfYY03" target="_blank" class="btn btn-primary btn-lg w-100">
+                            <i class="bi bi-credit-card me-2"></i>Velg Pro - 249 kr/mnd
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pro Yearly -->
+        <div class="col-lg-4 col-md-6">
+            <div class="pricing-card position-relative">
+                <div class="discount-badge">SPAR 25%</div>
+                <div class="card-header text-center py-4 bg-success text-white">
+                    <h3 class="mb-2">Pro Årlig</h3>
+                    <p class="text-white-50 mb-0">Beste verdi</p>
+                </div>
+                <div class="card-body d-flex flex-column text-center p-4">
+                    <div class="mb-4">
+                        <span class="price-amount text-success">2499</span>
+                        <span class="price-period">kr/år</span>
+                        <div class="small text-muted">
+                            <del>4788 kr</del> - Du sparer 1789 kr
+                        </div>
+                    </div>
+                    <ul class="feature-list mb-4 text-start">
+                        <li><i class="bi bi-check-circle-fill"></i> Alt fra Pro månedlig</li>
+                        <li><i class="bi bi-check-circle-fill"></i> 25% rabatt vs månedlig</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Prioritert kundesupport</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Eksklusive webinarer</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Beta-tilgang til nye funksjoner</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Kvartalsvis markedsrapport</li>
+                    </ul>
+                    <div class="mt-auto">
+                        <a href="https://buy.stripe.com/dRm3cvbMh1WvbZldKafYY04" target="_blank" class="btn btn-success btn-lg w-100">
+                            <i class="bi bi-credit-card me-2"></i>Velg Årlig - 2499 kr/år
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Teams Plan -->
+        <div class="col-lg-4 col-md-6">
+            <div class="pricing-card position-relative">
+                <div class="discount-badge">TEAM</div>
+                <div class="card-header text-center py-4 bg-info text-white">
+                    <h3 class="mb-2">Teams</h3>
+                    <p class="text-white-50 mb-0">For bedrifter og team</p>
+                </div>
+                <div class="card-body d-flex flex-column text-center p-4">
+                    <div class="mb-4">
+                        <span class="price-amount text-info">Kontakt</span>
+                        <span class="price-period">for pris</span>
+                        <div class="small text-muted">
+                            Fra 10% rabatt ved flere brukere
+                        </div>
+                    </div>
+                    <ul class="feature-list mb-4 text-start">
+                        <li><i class="bi bi-check-circle-fill"></i> Alt fra Pro årlig</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Flere brukere per konto</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Sentralisert admin-panel</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Delte porteføljer og analyser</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Dedikert kundeservice</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Tilpassede rapporter</li>
+                        <li><i class="bi bi-check-circle-fill"></i> On-premise løsning tilgjengelig</li>
+                    </ul>
+                    <div class="mt-auto">
+                        <a href="mailto:kontakt@aksjeradar.trade?subject=Teams%20abonnement" class="btn btn-info btn-lg w-100">
+                            <i class="bi bi-envelope me-2"></i>Kontakt oss
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Team Pricing Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white text-center">
+                    <h3><i class="bi bi-people-fill"></i> Team-abonnement</h3>
+                    <p class="mb-0">For bedrifter og team som ønsker tilgang for flere brukere</p>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4>Spesialtilpassede løsninger for teams</h4>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Rabatter fra 3+ brukere</li>
+                                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Sentralisert fakturering</li>
+                                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Team-dashboards og deling</li>
+                                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Prioritert support</li>
+                                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Opplæring og onboarding</li>
+                                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Fleksible betalingsvilkår</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="bg-light p-4 rounded">
+                                <h5 class="text-primary">Fra 10% rabatt</h5>
+                                <p class="small text-muted">3-5 brukere: 10% rabatt<br>
+                                6-10 brukere: 15% rabatt<br>
+                                11+ brukere: 20% rabatt</p>
+                                <a href="mailto:kontakt@aksjeradar.trade" class="btn btn-info btn-lg">
+                                    <i class="bi bi-envelope"></i> Kontakt oss
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Vanlige spørsmål</h3>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faqOne">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                    Hva er inkludert i abonnementet?
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="faqOne" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Abonnementet gir deg full tilgang til alle funksjoner i Aksjeradar, inkludert AI-drevet aksjeanalyse, tekniske analyser, porteføljestyring, anbefalinger og historiske data.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faqTwo">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                    Kan jeg avbryte abonnementet?
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="faqTwo" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Ja, du kan avbryte abonnementet når som helst direkte fra din kontoside eller ved å kontakte vår kundeservice. Ved avbrudd fortsetter du å ha tilgang til alle premium-funksjoner ut perioden du har betalt for. Ingen automatisk fornyelse skjer etter avslutning, og du vil ikke bli belastet videre.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faqThree">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                    Hvilke betalingsmetoder aksepterer dere?
+                                </button>
+                            </h2>
+                            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="faqThree" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Vi aksepterer alle større betalingskort inkludert Visa, Mastercard, American Express samt debetkort. Alle betalinger behandles sikkert gjennom vår betalingspartner Stripe.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faqFour">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                    Hva skjer med mine data hvis jeg avbryter abonnementet?
+                                </button>
+                            </h2>
+                            <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="faqFour" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Dine data vil bli lagret i 30 dager etter at abonnementet er kansellert. Du kan gjenoppta abonnementet i løpet av denne perioden for å få tilgang til dataene dine igjen.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="alert alert-warning mt-4">
+        <strong>Merk:</strong> Alle abonnement fornyes automatisk. Du kan når som helst si opp via Stripe eller ved å kontakte oss.
+    </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Simple enhancement for payment buttons
+    document.querySelectorAll('a[href*="buy.stripe.com"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Add loading state to give user feedback
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Åpner betaling...';
+            
+            // Reset after a short delay
+            setTimeout(() => {
+                this.innerHTML = originalText;
+            }, 3000);
+        });
+    });
+});
+</script>
+{% endblock %}
+

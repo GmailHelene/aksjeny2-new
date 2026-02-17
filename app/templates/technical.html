@@ -1,0 +1,627 @@
+{% extends 'base.html' %}
+
+{% block title %}Teknisk Analyse | Aksjeradar{% endblock %}
+
+{% block styles %}
+<style>
+.tech-hero {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    padding: 3rem 0;
+}
+
+.market-overview-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.market-overview-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.index-card {
+    background: linear-gradient(135deg, #667eea 0%, #000000 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.movers-card {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.stock-item {
+    border-bottom: 1px solid #f1f3f4;
+    padding: 0.75rem 0;
+    transition: background-color 0.2s ease;
+}
+
+.stock-item:hover {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin: 0 -0.5rem;
+    padding: 0.75rem 0.5rem;
+}
+
+.stock-item:last-child {
+    border-bottom: none;
+}
+
+.price-positive {
+    color: #28a745;
+}
+
+.price-negative {
+    color: #dc3545;
+}
+
+.price-neutral {
+    color: #6c757d;
+}
+
+.indicator-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.indicator-bullish {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.indicator-bearish {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.indicator-neutral {
+    background-color: #e2e3e5;
+    color: #383d41;
+}
+
+.analysis-tool-card {
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.analysis-tool-card:hover {
+    border-color: #0d6efd;
+    box-shadow: 0 4px 15px rgba(13, 110, 253, 0.2);
+    transform: translateY(-2px);
+}
+
+.search-container {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.search-result-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f1f3f4;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.search-result-item:hover {
+    background-color: #f8f9fa;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.mini-chart {
+    height: 60px;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .tech-hero {
+        padding: 2rem 0;
+    }
+    
+    .analysis-tool-card {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="tech-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3">Teknisk Analyse</h1>
+                <p class="lead mb-4">Avanserte verktøy for teknisk analyse av det norske aksjemarkedet</p>
+            </div>
+            <div class="col-lg-4 text-end">
+                <div class="bg-white bg-opacity-20 rounded p-3">
+                    <h5 class="mb-2">Markedet akkurat nå</h5>
+                    <div class="d-flex justify-content-between">
+                        <span>OSEBX:</span>
+                        <span class="fw-bold price-positive">+1,2%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <!-- Stock Search -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="search-container">
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" class="form-control" 
+                           placeholder="Søk etter aksjer for analyse (f.eks. EQUI, NEL, NHY)..."
+                           id="stockSearch">
+                </div>
+                <div class="search-results d-none" id="searchResults">
+                    <!-- Search results will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Overview -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="mb-4">Markedsoversikt</h2>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="index-card">
+                <h5 class="mb-2">OSEBX</h5>
+                <h3 class="mb-1">1,234.56</h3>
+                <small class="price-positive">
+                    <i class="bi bi-arrow-up"></i> +15.23 (+1.25%)
+                </small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="index-card">
+                <h5 class="mb-2">OBX</h5>
+                <h3 class="mb-1">987.65</h3>
+                <small class="price-positive">
+                    <i class="bi bi-arrow-up"></i> +8.91 (+0.91%)
+                </small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="index-card">
+                <h5 class="mb-2">OSESX</h5>
+                <h3 class="mb-1">543.21</h3>
+                <small class="price-negative">
+                    <i class="bi bi-arrow-down"></i> -2.45 (-0.45%)
+                </small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="index-card">
+                <h5 class="mb-2">Volum</h5>
+                <h3 class="mb-1">2.1B</h3>
+                <small class="price-neutral">
+                    <i class="bi bi-bar-chart"></i> NOK omsetning
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Movers and Analysis Tools -->
+    <div class="row mb-5">
+        <!-- Top Gainers -->
+        <div class="col-lg-4 mb-4">
+            <div class="card movers-card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-arrow-up-circle"></i> Dagens vinnere
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="stock-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>NEL</strong>
+                                <div class="small text-muted">Nel ASA</div>
+                            </div>
+                            <div class="text-end">
+                                <div class="price-positive fw-bold">+8.5%</div>
+                                <div class="small">15.23 NOK</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stock-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>EQUI</strong>
+                                <div class="small text-muted">Equinor ASA</div>
+                            </div>
+                            <div class="text-end">
+                                <div class="price-positive fw-bold">+6.2%</div>
+                                <div class="small">234.50 NOK</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stock-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>NHY</strong>
+                                <div class="small text-muted">Norsk Hydro ASA</div>
+                            </div>
+                            <div class="text-end">
+                                <div class="price-positive fw-bold">+4.8%</div>
+                                <div class="small">45.67 NOK</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Losers -->
+        <div class="col-lg-4 mb-4">
+            <div class="card movers-card h-100">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-arrow-down-circle"></i> Dagens tapere
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="stock-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>MOWI</strong>
+                                <div class="small text-muted">Mowi ASA</div>
+                            </div>
+                            <div class="text-end">
+                                <div class="price-negative fw-bold">-5.3%</div>
+                                <div class="small">189.20 NOK</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stock-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>DNB</strong>
+                                <div class="small text-muted">DNB Bank ASA</div>
+                            </div>
+                            <div class="text-end">
+                                <div class="price-negative fw-bold">-3.1%</div>
+                                <div class="small">156.80 NOK</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stock-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>TEL</strong>
+                                <div class="small text-muted">Telenor ASA</div>
+                            </div>
+                            <div class="text-end">
+                                <div class="price-negative fw-bold">-2.7%</div>
+                                <div class="small">98.45 NOK</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Most Active -->
+        <div class="col-lg-4 mb-4">
+            <div class="card movers-card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-activity"></i> Mest omsatte
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="stock-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>EQUI</strong>
+                                <div class="small text-muted">Vol: 2.1M</div>
+                            </div>
+                            <div class="text-end">
+                                <div class="price-positive fw-bold">+6.2%</div>
+                                <div class="small">234.50 NOK</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stock-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>NEL</strong>
+                                <div class="small text-muted">Vol: 1.8M</div>
+                            </div>
+                            <div class="text-end">
+                                <div class="price-positive fw-bold">+8.5%</div>
+                                <div class="small">15.23 NOK</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stock-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>DNB</strong>
+                                <div class="small text-muted">Vol: 1.5M</div>
+                            </div>
+                            <div class="text-end">
+                                <div class="price-negative fw-bold">-3.1%</div>
+                                <div class="small">156.80 NOK</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Tools -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="mb-4">Analyseverktøy</h2>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="analysis-tool-card" onclick="window.location.href='{{ url_for('main.technical_analysis') }}?tool=screener'">
+                <i class="bi bi-filter-circle display-4 text-primary mb-3"></i>
+                <h5>Aksje-screener</h5>
+                <p class="text-muted mb-0">Finn aksjer basert på tekniske kriterier</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="analysis-tool-card" onclick="window.location.href='{{ url_for('main.technical_analysis') }}?tool=scanner'">
+                <i class="bi bi-radar display-4 text-success mb-3"></i>
+                <h5>Teknisk scanner</h5>
+                <p class="text-muted mb-0">Identifiser tekniske mønstre</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="analysis-tool-card" onclick="window.location.href='{{ url_for('main.technical_analysis') }}?tool=heatmap'">
+                <i class="bi bi-grid-3x3-gap display-4 text-warning mb-3"></i>
+                <h5>Heatmap</h5>
+                <p class="text-muted mb-0">Visualiser markedsperformance</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="analysis-tool-card" onclick="window.location.href='{{ url_for('main.technical_analysis') }}?tool=comparison'">
+                <i class="bi bi-bar-chart-line display-4 text-info mb-3"></i>
+                <h5>Sammenligning</h5>
+                <p class="text-muted mb-0">Sammenlign flere aksjer</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Indicators -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="mb-4">Markedsindikatorer</h2>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="card market-overview-card">
+                <div class="card-header">
+                    <h5 class="mb-0">Tekniske indikatorer</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>RSI (14):</span>
+                                <span class="indicator-badge indicator-neutral">52.3</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>MACD:</span>
+                                <span class="indicator-badge indicator-bullish">Bullish</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>Moving Avg:</span>
+                                <span class="indicator-badge indicator-bullish">Over 50MA</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>Volume:</span>
+                                <span class="indicator-badge indicator-neutral">Normal</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="card market-overview-card">
+                <div class="card-header">
+                    <h5 class="mb-0">Sektorperformance</h5>
+                </div>
+                <div class="card-body">
+                    <div class="stock-item">
+                        <div class="d-flex justify-content-between">
+                            <span>Energi</span>
+                            <span class="price-positive fw-bold">+2.8%</span>
+                        </div>
+                    </div>
+                    <div class="stock-item">
+                        <div class="d-flex justify-content-between">
+                            <span>Sjømat</span>
+                            <span class="price-negative fw-bold">-1.2%</span>
+                        </div>
+                    </div>
+                    <div class="stock-item">
+                        <div class="d-flex justify-content-between">
+                            <span>Teknologi</span>
+                            <span class="price-positive fw-bold">+1.5%</span>
+                        </div>
+                    </div>
+                    <div class="stock-item">
+                        <div class="d-flex justify-content-between">
+                            <span>Bank</span>
+                            <span class="price-negative fw-bold">-0.8%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Analysis -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card market-overview-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning-charge"></i> Hurtiganalyse
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">Få en rask teknisk analyse av en aksje:</p>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <input type="text" class="form-control" 
+                                       placeholder="Skriv inn ticker (f.eks. EQUI, NEL, DNB)"
+                                       id="quickAnalysisInput">
+                                <button class="btn btn-primary" type="button" id="quickAnalysisBtn">
+                                    <i class="bi bi-search"></i> Analyser
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-grid">
+                                <button class="btn btn-outline-secondary" type="button" onclick="showRandomAnalysis()">
+                                    <i class="bi bi-shuffle"></i> Tilfeldig aksje
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="quickAnalysisResult" class="mt-3 d-none">
+                        <!-- Quick analysis results will appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Stock search functionality
+    const stockSearch = document.getElementById('stockSearch');
+    const searchResults = document.getElementById('searchResults');
+    
+    let searchTimeout;
+    stockSearch.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value.trim();
+        
+        if (query.length < 2) {
+            searchResults.classList.add('d-none');
+            return;
+        }
+        
+        searchTimeout = setTimeout(() => {
+            performStockSearch(query);
+        }, 300);
+    });
+    
+    // Quick analysis functionality
+    const quickAnalysisInput = document.getElementById('quickAnalysisInput');
+    const quickAnalysisBtn = document.getElementById('quickAnalysisBtn');
+    const quickAnalysisResult = document.getElementById('quickAnalysisResult');
+    
+    quickAnalysisBtn.addEventListener('click', function() {
+        const symbol = quickAnalysisInput.value.trim().toUpperCase();
+        if (symbol) {
+            performQuickAnalysis(symbol);
+        }
+    });
+    
+    quickAnalysisInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            quickAnalysisBtn.click();
+        }
+    });
+    
+    // Hide search results when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!stockSearch.contains(e.target) && !searchResults.contains(e.target)) {
+            searchResults.classList.add('d-none');
+        }
+    });
+});
+
+function performStockSearch(query) {
+    // EKTE-only: Do not fabricate search results; prompt user to open real analysis.
+    const searchResults = document.getElementById('searchResults');
+    if (!searchResults) return;
+    searchResults.innerHTML = `
+        <div class="search-result-item text-muted">
+            Trykk Enter for å analysere "${query.toUpperCase()}" med ekte data
+        </div>`;
+    searchResults.classList.remove('d-none');
+}
+
+function analyzeStock(symbol) {
+    // Hide search results
+    const sr = document.getElementById('searchResults');
+    if (sr) sr.classList.add('d-none');
+    const inp = document.getElementById('stockSearch');
+    if (inp) inp.value = symbol;
+    // Use canonical analysis route which renders real data only
+    window.location.href = `{{ url_for('analysis.technical') }}?symbol=${"${symbol}"}`;
+}
+
+function performQuickAnalysis(symbol) {
+    // Redirect directly to the real analysis page; no mock preview
+    if (symbol) {
+        window.location.href = `{{ url_for('analysis.technical') }}?symbol=${"${symbol}"}`;
+    }
+}
+
+function showRandomAnalysis() {
+    // EKTE-only: avoid random mock; do nothing or prompt user.
+    if (window.showToast) {
+        window.showToast('Skriv inn en ticker for ekte analyse', 'info');
+    }
+}
+
+// Note: Live updates require backend endpoints; mock refresh removed for EKTE-only compliance.
+</script>
+{% endblock %}

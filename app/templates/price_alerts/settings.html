@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Varsling Innstillinger - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">
+                    <i class="bi bi-gear"></i> Varsling Innstillinger
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('price_alerts.index') }}">Kursvarsler</a></li>
+                        <li class="breadcrumb-item active">Innstillinger</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-bell"></i> Varslingsinnstillinger
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('price_alerts.settings') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <!-- Email Notifications -->
+                        <div class="mb-4">
+                            <h6 class="text-primary">
+                                <i class="bi bi-envelope"></i> E-post varsler
+                            </h6>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" 
+                                       id="email_enabled" name="email_enabled"
+                                       {{ 'checked' if settings and settings.email_enabled else '' }}>
+                                <label class="form-check-label" for="email_enabled">
+                                    <strong>Aktiver e-post varsler</strong>
+                                    <div class="form-text">Motta varsler på e-post når kursmål nås</div>
+                                </label>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" 
+                                       id="email_instant" name="email_instant"
+                                       {{ 'checked' if settings and settings.email_instant else '' }}>
+                                <label class="form-check-label" for="email_instant">
+                                    <strong>Øyeblikkelige varsler</strong>
+                                    <div class="form-text">Send varsel umiddelbart når kursmål nås</div>
+                                </label>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" 
+                                       id="email_daily_summary" name="email_daily_summary"
+                                       {{ 'checked' if settings and settings.email_daily_summary else '' }}>
+                                <label class="form-check-label" for="email_daily_summary">
+                                    <strong>Daglig sammendrag</strong>
+                                    <div class="form-text">Motta daglig e-post med sammendrag av alle varsler</div>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Language Settings -->
+                        <div class="mb-4">
+                            <h6 class="text-primary">
+                                <i class="bi bi-translate"></i> Språk
+                            </h6>
+                            
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" 
+                                       name="language" id="language_no" value="no"
+                                       {{ 'checked' if not settings or settings.language == 'no' else '' }}>
+                                <label class="form-check-label" for="language_no">
+                                    <i class="flag-icon flag-icon-no me-2"></i>Norsk
+                                </label>
+                            </div>
+                            
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" 
+                                       name="language" id="language_en" value="en"
+                                       {{ 'checked' if settings and settings.language == 'en' else '' }}>
+                                <label class="form-check-label" for="language_en">
+                                    <i class="flag-icon flag-icon-us me-2"></i>English
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Save Button -->
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg"></i> Lagre innstillinger
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Current Status -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h6 class="card-title mb-0">
+                        <i class="bi bi-info-circle"></i> Status
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>E-post:</strong> {{ current_user.email if current_user.email else 'Ikke angitt' }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Aktive varsler:</strong>
+                        <span class="badge bg-primary">{{ alerts_count if alerts_count is defined else 0 }}</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Status:</strong>
+                        {% if settings and settings.email_enabled %}
+                            <span class="badge bg-success">Aktivert</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Deaktivert</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Help -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="card-title mb-0">
+                        <i class="bi bi-question-circle"></i> Hjelp
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled small mb-0">
+                        <li class="mb-2">
+                            <i class="bi bi-check text-success"></i>
+                            Aktiver e-post varsler for å motta notifikasjoner
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check text-success"></i>
+                            Øyeblikkelige varsler sendes umiddelbart
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check text-success"></i>
+                            Daglig sammendrag sendes hver morgen
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

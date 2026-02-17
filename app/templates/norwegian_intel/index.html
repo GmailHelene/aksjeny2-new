@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% block title %}Norge Oversikt{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Norge Oversikt (Plassholder)</h2>
+  <p>Denne siden vil vise norsk markedsinnsikt. Ingen falske data genereres.</p>
+  <div class="row mt-3">
+    <div class="col-md-3 mb-3"><a class="btn btn-primary w-100" href="{{ url_for('norwegian_intel.social_sentiment') }}">Sosial sentiment</a></div>
+    <div class="col-md-3 mb-3"><a class="btn btn-warning w-100" href="{{ url_for('norwegian_intel.oil_correlation') }}">Olje-korrelasjon</a></div>
+    <div class="col-md-3 mb-3"><a class="btn btn-info w-100" href="{{ url_for('norwegian_intel.government_impact') }}">Regjeringsanalyse</a></div>
+    <div class="col-md-3 mb-3"><a class="btn btn-success w-100" href="{{ url_for('norwegian_intel.shipping_intelligence') }}">Shipping</a></div>
+  </div>
+</div>
+{% endblock %}{% extends "base.html" %}
+
+{% block title %}Norwegian Market Intelligence Hub | Aksjeradar{% endblock %}
+{% block description %}Avansert markedsintelligens for det norske markedet - sosial sentiment, oljekorrelasjoner, regjeringsanalyse og shippingintelligens{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center mb-5">
+                <h1 class="display-4">🇳🇴 Norwegian Market Intelligence</h1>
+                <p class="lead">Avansert markedsintelligens spesielt tilpasset det norske markedet</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Feature Cards -->
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-chat-square-heart text-primary" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5 class="card-title">Social Sentiment</h5>
+                    <p class="card-text">Real-time Twitter/Reddit sentiment tracking for Norwegian stocks</p>
+                    <a href="{{ url_for('norwegian_intel.social_sentiment') }}" class="btn btn-primary">Se Sentiment</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-fuel-pump text-warning" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5 class="card-title">Oljekorrelasjoner</h5>
+                    <p class="card-text">Analyse av hvordan oljeprisen påvirker norske selskaper</p>
+                    <a href="{{ url_for('norwegian_intel.oil_correlation') }}" class="btn btn-warning">Oljematrise</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-building text-info" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5 class="card-title">Regjeringspåvirkning</h5>
+                    <p class="card-text">Analyser hvordan regjeringsvedtak påvirker sektorene</p>
+                    <a href="{{ url_for('norwegian_intel.government_impact') }}" class="btn btn-info">Regjeringsanalyse</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-globe2 text-success" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5 class="card-title">Shipping Intelligence</h5>
+                    <p class="card-text">Korrelasjon med Baltic Dry Index og flåteanalyse</p>
+                    <a href="{{ url_for('norwegian_intel.shipping_intelligence') }}" class="btn btn-success">Shipping Data</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Market Overview Dashboard -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">🔥 Norsk Markedsoversikt</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <h5 class="text-success">Oslo Børs Hovedindeks</h5>
+                            <h3 class="text-success">1,234.56 <small>+1.23%</small></h3>
+                        </div>
+                        <div class="col-md-3">
+                            <h5 class="text-warning">Brent Olje (USD)</h5>
+                            <h3 class="text-warning">$85.67 <small>+1.46%</small></h3>
+                        </div>
+                        <div class="col-md-3">
+                            <h5 class="text-info">NOK/USD</h5>
+                            <h3 class="text-info">10.85 <small>-0.34%</small></h3>
+                        </div>
+                        <div class="col-md-3">
+                            <h5 class="text-danger">Marked Sentiment</h5>
+                            <h3 class="text-danger">Bullish <small>+15%</small></h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Advanced Analytics Preview -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h4>🚀 Kommende Funksjoner</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6><i class="bi bi-robot text-primary"></i> AI Sentiment Predictor</h6>
+                            <p class="small text-muted">Prediker prisbevegelser basert på sentimentendringer</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="bi bi-graph-up text-success"></i> Insider Trading AI</h6>
+                            <p class="small text-muted">Avansert mønstergjenkjenning for innsidehandel</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="bi bi-currency-exchange text-info"></i> Currency Hedging</h6>
+                            <p class="small text-muted">NOK-fokuserte valutasikringsanbefalinger</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.feature-icon {
+    background: rgba(13, 110, 253, 0.1);
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,347 @@
+{% extends "base.html" %}
+
+{% block title %}Teknisk Analyse | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-9">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h2><i class="bi bi-graph-up"></i> Teknisk Analyse</h2>
+                    <p class="mb-0">Avansert teknisk analyse med indikatorer, mønstre og signaler</p>
+                </div>
+                <div class="card-body">
+                    <!-- Søkeskjema -->
+                    <form method="POST" action="{{ url_for('analysis.technical') }}" class="mb-4">
+                        {{ csrf_token() }}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <select name="ticker" class="form-select" required>
+                                    <option value="">Velg aksje for teknisk analyse</option>
+                                    <optgroup label="Oslo Børs">
+                                        {% for stock in available_stocks.oslo_stocks %}
+                                        <option value="{{ stock.ticker }}" {% if ticker == stock.ticker %}selected{% endif %}>
+                                            {{ stock.ticker }} - {{ stock.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </optgroup>
+                                    <optgroup label="Globale aksjer">
+                                        {% for stock in available_stocks.global_stocks %}
+                                        <option value="{{ stock.ticker }}" {% if ticker == stock.ticker %}selected{% endif %}>
+                                            {{ stock.ticker }} - {{ stock.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select name="timeframe" class="form-select">
+                                    <option value="1d">1 dag</option>
+                                    <option value="1w" selected>1 uke</option>
+                                    <option value="1m">1 måned</option>
+                                    <option value="3m">3 måneder</option>
+                                    <option value="6m">6 måneder</option>
+                                    <option value="1y">1 år</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-search"></i> Analyser
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    {% if technical_data %}
+                    <!-- Technical Analysis Results -->
+                    <div class="technical-results">
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <h3>{{ technical_data.ticker }} - Teknisk Analyse</h3>
+                                <div class="alert alert-{{ 'success' if technical_data.signal == 'BUY' else 'warning' if technical_data.signal == 'HOLD' else 'danger' }}">
+                                    <strong>Signal: {{ technical_data.signal }}</strong>
+                                    <span class="float-end">Styrke: {{ technical_data.signal_strength }}/10</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Key Indicators -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h5>RSI (14)</h5>
+                                        <h3 class="text-{{ 'danger' if technical_data.rsi > 70 else 'success' if technical_data.rsi < 30 else 'warning' }}">
+                                            {{ "%.1f"|format(technical_data.rsi) }}
+                                        </h3>
+                                        <small>{{ 'Overkjøpt' if technical_data.rsi > 70 else 'Oversolgt' if technical_data.rsi < 30 else 'Nøytral' }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h5>MACD</h5>
+                                        <h3 class="text-{{ 'success' if technical_data.macd > 0 else 'danger' }}">
+                                            {{ "%.3f"|format(technical_data.macd) }}
+                                        </h3>
+                                        <small>{{ 'Bullish' if technical_data.macd > 0 else 'Bearish' }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h5>Bollinger Bands</h5>
+                                        <h3 class="text-{{ technical_data.bb_signal_color }}">
+                                            {{ technical_data.bb_position }}
+                                        </h3>
+                                        <small>{{ technical_data.bb_signal }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h5>Volume</h5>
+                                        <h3 class="text-{{ 'success' if technical_data.volume_trend == 'UP' else 'danger' }}">
+                                            {{ technical_data.volume_indicator }}
+                                        </h3>
+                                        <small>{{ technical_data.volume_trend }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chart -->
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <canvas id="technicalChart" width="400" height="200"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Support & Resistance -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>Support Nivåer</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        {% for level in technical_data.support_levels %}
+                                        <div class="d-flex justify-content-between">
+                                            <span>Support {{ loop.index }}</span>
+                                            <span class="text-success">{{ "%.2f"|format(level) }} NOK</span>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>Resistance Nivåer</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        {% for level in technical_data.resistance_levels %}
+                                        <div class="d-flex justify-content-between">
+                                            <span>Resistance {{ loop.index }}</span>
+                                            <span class="text-danger">{{ "%.2f"|format(level) }} NOK</span>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Moving Averages -->
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>Glidende Gjennomsnitt</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Periode</th>
+                                                        <th>SMA</th>
+                                                        <th>EMA</th>
+                                                        <th>Posisjon</th>
+                                                        <th>Signal</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for ma in technical_data.moving_averages %}
+                                                    <tr>
+                                                        <td>{{ ma.period }}</td>
+                                                        <td>{{ "%.2f"|format(ma.sma) }}</td>
+                                                        <td>{{ "%.2f"|format(ma.ema) }}</td>
+                                                        <td class="text-{{ 'success' if ma.position == 'ABOVE' else 'danger' }}">
+                                                            {{ ma.position }}
+                                                        </td>
+                                                        <td class="text-{{ 'success' if ma.signal == 'BUY' else 'danger' if ma.signal == 'SELL' else 'warning' }}">
+                                                            {{ ma.signal }}
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pattern Recognition -->
+                        {% if technical_data.patterns %}
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>Gjenkjente Mønstre</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        {% for pattern in technical_data.patterns %}
+                                        <div class="alert alert-{{ 'success' if pattern.bullish else 'danger' }}">
+                                            <strong>{{ pattern.name }}</strong>
+                                            <span class="float-end">
+                                                Pålitelighet: {{ pattern.confidence }}%
+                                            </span>
+                                            <br>
+                                            <small>{{ pattern.description }}</small>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Analysis Summary -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>Analyse Sammendrag</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>Konklusjon:</strong> {{ technical_data.conclusion }}</p>
+                                        <p><strong>Anbefaling:</strong> {{ technical_data.recommendation }}</p>
+                                        <p><strong>Risiko:</strong> {{ technical_data.risk_level }}</p>
+                                        <p><strong>Mål pris:</strong> {{ "%.2f"|format(technical_data.target_price) }} NOK</p>
+                                        <p><strong>Stop loss:</strong> {{ "%.2f"|format(technical_data.stop_loss) }} NOK</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- No analysis data -->
+                    <div class="alert alert-info">
+                        <h5>Velg en aksje for å starte teknisk analyse</h5>
+                        <p>Teknisk analyse inkluderer:</p>
+                        <ul>
+                            <li>RSI, MACD, Bollinger Bands og andre indikatorer</li>
+                            <li>Support og resistance nivåer</li>
+                            <li>Glidende gjennomsnitt (SMA/EMA)</li>
+                            <li>Mønstre og trendanalyse</li>
+                            <li>Volume analyse</li>
+                            <li>Kjøp/salg signaler</li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Hurtig analyse</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="{{ url_for('analysis.technical') }}?ticker=NHY.OL" class="list-group-item list-group-item-action">
+                            <strong>NHY.OL</strong><br>
+                            <small>Norsk Hydro</small>
+                        </a>
+                        <a href="{{ url_for('analysis.technical') }}?ticker=EQNR.OL" class="list-group-item list-group-item-action">
+                            <strong>EQNR.OL</strong><br>
+                            <small>Equinor</small>
+                        </a>
+                        <a href="{{ url_for('analysis.technical') }}?ticker=DNB.OL" class="list-group-item list-group-item-action">
+                            <strong>DNB.OL</strong><br>
+                            <small>DNB Bank</small>
+                        </a>
+                        <a href="{{ url_for('analysis.technical') }}?ticker=MOWI.OL" class="list-group-item list-group-item-action">
+                            <strong>MOWI.OL</strong><br>
+                            <small>Mowi</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5>Indikatorer</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>RSI:</strong> Relative Strength Index måler om en aksje er overkjøpt eller oversolgt.</p>
+                    <p><strong>MACD:</strong> Moving Average Convergence Divergence viser momentum endringer.</p>
+                    <p><strong>Bollinger Bands:</strong> Viser volatilitet og potensielle reversal punkter.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+{% if technical_data %}
+// Create technical chart
+const ctx = document.getElementById('technicalChart').getContext('2d');
+const chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ technical_data.dates|tojson }},
+        datasets: [{
+            label: 'Pris',
+            data: {{ technical_data.prices|tojson }},
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.1)',
+            tension: 0.1
+        }, {
+            label: 'SMA(20)',
+            data: {{ technical_data.sma20|tojson }},
+            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+            tension: 0.1
+        }, {
+            label: 'EMA(20)',
+            data: {{ technical_data.ema20|tojson }},
+            borderColor: 'rgb(54, 162, 235)',
+            backgroundColor: 'rgba(54, 162, 235, 0.1)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: false
+            }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

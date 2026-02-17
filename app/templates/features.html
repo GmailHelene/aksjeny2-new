@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Funksjoner{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h1 class="mb-4 text-center">Funksjoner</h1>
+            <p class="lead text-center mb-5">
+                Oppdag alle verktøyene og funksjonene som gjør Aksjeradar til din ultimate investeringspartner.
+            </p>
+
+            <div class="row g-4">
+                <!-- AI-Analyse -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="bi bi-robot text-primary" style="font-size: 3rem;"></i>
+                            </div>
+                            <h5 class="card-title">AI-Analyse</h5>
+                            <p class="card-text">
+                                Avansert maskinlæring analyserer markedstrender og gir deg intelligente investeringsinsights.
+                            </p>
+                            <a href="{{ url_for('analysis.ai') }}" class="btn btn-outline-primary">
+                                Utforsk AI-analyse
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Teknisk Analyse -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="bi bi-graph-up text-success" style="font-size: 3rem;"></i>
+                            </div>
+                            <h5 class="card-title">Teknisk Analyse</h5>
+                            <p class="card-text">
+                                Omfattende tekniske indikatorer inkludert RSI, MACD, glidende gjennomsnitt og mer.
+                            </p>
+                            <a href="{{ url_for('analysis.technical') }}" class="btn btn-outline-success">
+                                Se teknisk analyse
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Porteføljeoptimalisering -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="bi bi-briefcase text-warning" style="font-size: 3rem;"></i>
+                            </div>
+                            <h5 class="card-title">Porteføljeoptimalisering</h5>
+                            <p class="card-text">
+                                Optimaliser porteføljen din med moderne portfolioteori og risikostyring.
+                            </p>
+                            <a href="{{ url_for('portfolio.portfolio_overview') }}" class="btn btn-outline-warning">
+                                Administrer portefølje
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Markedsdata -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="bi bi-speedometer2 text-info" style="font-size: 3rem;"></i>
+                            </div>
+                            <h5 class="card-title">Sanntids Markedsdata</h5>
+                            <p class="card-text">
+                                Oppdaterte kurser og markedsinformasjon for Oslo Børs og globale markeder.
+                            </p>
+                            <a href="{{ url_for('stocks.list_oslo') }}" class="btn btn-outline-info">
+                                Se markedsdata
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nyheter -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="bi bi-newspaper text-dark" style="font-size: 3rem;"></i>
+                            </div>
+                            <h5 class="card-title">Finansnyheter</h5>
+                            <p class="card-text">
+                                Oppdaterte nyheter og analyser som påvirker dine investeringer.
+                            </p>
+                            <a href="{{ url_for('news_bp.index') }}" class="btn btn-outline-dark">
+                                Les nyheter
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Varsler -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="bi bi-bell text-danger" style="font-size: 3rem;"></i>
+                            </div>
+                            <h5 class="card-title">Prisvarsler</h5>
+                            <p class="card-text">
+                                Sett opp personlige varsler for aksjer du følger og få beskjed om viktige endringer.
+                            </p>
+                            <a href="{{ url_for('portfolio.watchlist') }}" class="btn btn-outline-danger">
+                                Administrer varsler
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-5">
+                <h2 class="h4 mb-3">Klar til å komme i gang?</h2>
+                <p class="text-muted mb-4">
+                    Opprett en gratis konto og begynn å utforske alle funksjoner i dag.
+                </p>
+                <div class="d-flex gap-2 justify-content-center">
+                    {% if not current_user.is_authenticated %}
+                        <a href="{{ url_for('main.register') }}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-person-plus"></i> Registrer deg gratis
+                        </a>
+                        <a href="{{ url_for('main.demo') }}" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-eye"></i> Se demo
+                        </a>
+                    {% else %}
+                        <a href="/financial-dashboard" class="btn btn-primary btn-lg">
+                            <i class="bi bi-speedometer2"></i> Åpne dashboard
+                        </a>
+                        <a href="{{ url_for('main.pricing') }}" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-star"></i> Oppgrader til Premium
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

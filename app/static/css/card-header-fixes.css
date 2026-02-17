@@ -1,0 +1,82 @@
+/* Card Header Global Fixes - August 24, 2025 */
+
+/* Base card header styles */
+.card-header {
+    padding: 1rem;
+    margin-bottom: 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    background-color: #fff;
+    color: #212529;
+}
+
+/* Themed card headers - background and text color for all variants */
+.card-header.bg-primary {
+    background-color: #0d47a1 !important;
+    color: #fff !important;
+}
+.card-header.bg-success {
+    background-color: #1b5e20 !important;
+    color: #fff !important;
+}
+.card-header.bg-info {
+    background-color: #0d6efd !important;
+    color: #fff !important;
+}
+.card-header.bg-warning {
+    background-color: #fd7e14 !important;
+    color: #000 !important;
+}
+.card-header.bg-danger {
+    background-color: #b71c1c !important;
+    color: #fff !important;
+}
+.card-header.bg-dark {
+    background-color: #212529 !important;
+    color: #fff !important;
+}
+.card-header.bg-secondary {
+    background-color: #6c757d !important;
+    color: #fff !important;
+}
+.card-header.bg-light {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+}
+
+/* Remove forced background images */
+.card-header[class*="bg-"] {
+    background-image: none !important;
+}
+
+/* Ensure text contrast in themed headers */
+.card-header[class*="bg-"]:not(.bg-light):not(.bg-warning):not(.bg-info) .text-muted {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Button and icon coloring in themed headers */
+.card-header[class*="bg-"] .btn-light {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: inherit !important;
+}
+.card-header[class*="bg-"] .btn-light:hover {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+}
+.card-header[class*="bg-"] .bi {
+    color: inherit !important;
+}
+
+/* Fix spacing issues */
+.card-header .btn {
+    margin: -0.5rem 0;
+}
+
+.card-header .btn + .btn {
+    margin-left: 0.5rem;
+}
+
+/* Remove legacy !important rules */
+.card-header h5.mb-0,
+.card-header h6.mb-0 {
+    background: transparent !important;
+}

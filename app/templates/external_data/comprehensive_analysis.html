@@ -1,0 +1,484 @@
+{% extends "base.html" %}
+
+{% block title %}Omfattende Analyse - {{ symbol }} - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">
+        <i class="bi bi-graph-up"></i> Omfattende Analyse: {{ symbol }}
+    </h1>
+
+    <!-- Navigation tabs -->
+    <ul class="nav nav-tabs mb-4" id="analysisTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button">
+                Oversikt
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="insider-tab" data-bs-toggle="tab" data-bs-target="#insider" type="button">
+                Innsidehandel
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="analyst-tab" data-bs-toggle="tab" data-bs-target="#analyst" type="button">
+                Analytikeranbefalinger
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="sentiment-tab" data-bs-toggle="tab" data-bs-target="#sentiment" type="button">
+                Markedssentiment
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="ai-tab" data-bs-toggle="tab" data-bs-target="#ai" type="button">
+                AI-analyse
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab content -->
+    <div class="tab-content" id="analysisTabContent">
+        <!-- Overview tab -->
+        <div class="tab-pane fade show active" id="overview" role="tabpanel">
+            {% if comprehensive_data %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5><i class="bi bi-info-circle"></i> Nøkkeltall</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <tbody>
+                                    {% if comprehensive_data.market_cap %}
+                                    <tr>
+                                        <td>Markedsverdi:</td>
+                                        <td class="text-end fw-bold">
+                                            {% if comprehensive_data.market_cap >= 1000000000 %}
+                                                {{ "{:,.1f}".format(comprehensive_data.market_cap / 1000000000).replace(',', ' ').replace('.', ',') }} mrd kr
+                                            {% elif comprehensive_data.market_cap >= 1000000 %}
+                                                {{ "{:,.1f}".format(comprehensive_data.market_cap / 1000000).replace(',', ' ').replace('.', ',') }} mill kr
+                                            {% else %}
+                                                kr {{ "{:,.0f}".format(comprehensive_data.market_cap).replace(',', ' ') }}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if comprehensive_data.pe_ratio %}
+                                    <tr>
+                                        <td>P/E-forhold:</td>
+                                        <td class="text-end fw-bold">{{ "{:.2f}".format(comprehensive_data.pe_ratio).replace('.', ',') }}</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if comprehensive_data.dividend_yield %}
+                                    <tr>
+                                        <td>Utbytteavkastning:</td>
+                                        <td class="text-end fw-bold">{{ "{:.2f}".format(comprehensive_data.dividend_yield * 100).replace('.', ',') }}%</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if comprehensive_data.beta %}
+                                    <tr>
+                                        <td>Beta:</td>
+                                        <td class="text-end fw-bold">{{ "{:.2f}".format(comprehensive_data.beta).replace('.', ',') }}</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5><i class="bi bi-bar-chart"></i> Teknisk analyse</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if comprehensive_data.technical_analysis %}
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <td>RSI (14):</td>
+                                        <td class="text-end fw-bold">{{ "{:.1f}".format(comprehensive_data.technical_analysis.rsi).replace('.', ',') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>MACD:</td>
+                                        <td class="text-end fw-bold">{{ comprehensive_data.technical_analysis.macd_signal }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>50-dagers SMA:</td>
+                                        <td class="text-end fw-bold">kr {{ "{:,.2f}".format(comprehensive_data.technical_analysis.sma_50).replace(',', ' ').replace('.', ',') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>200-dagers SMA:</td>
+                                        <td class="text-end fw-bold">kr {{ "{:,.2f}".format(comprehensive_data.technical_analysis.sma_200).replace(',', ' ').replace('.', ',') }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                Ingen omfattende data tilgjengelig for {{ symbol }}.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Insider trading tab -->
+        <div class="tab-pane fade" id="insider" role="tabpanel">
+            {% if insider_trades %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Dato</th>
+                            <th>Navn</th>
+                            <th>Stilling</th>
+                            <th>Type</th>
+                            <th class="text-end">Antall</th>
+                            <th class="text-end">Pris</th>
+                            <th class="text-end">Verdi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for trade in insider_trades %}
+                        <tr>
+                            <td>{{ trade.date.strftime('%d.%m.%Y') if trade.date else '-' }}</td>
+                            <td>{{ trade.insider_name }}</td>
+                            <td>{{ trade.position }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if trade.transaction_type == 'Kjøp' else 'danger' }}">
+                                    {{ trade.transaction_type }}
+                                </span>
+                            </td>
+                            <td class="text-end">{{ "{:,.0f}".format(trade.shares).replace(',', ' ') }}</td>
+                            <td class="text-end">kr {{ "{:,.2f}".format(trade.price).replace(',', ' ').replace('.', ',') }}</td>
+                            <td class="text-end">kr {{ "{:,.0f}".format(trade.value).replace(',', ' ') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                Ingen innsidehandel registrert for {{ symbol }}.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Analyst ratings tab -->
+        <div class="tab-pane fade" id="analyst" role="tabpanel">
+            {% if analyst_ratings %}
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Konsensus</h5>
+                            <h2 class="text-primary">{{ comprehensive_data.analyst_consensus.rating if comprehensive_data and comprehensive_data.analyst_consensus else 'N/A' }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Gjennomsnittlig kursmål</h5>
+                            <h2 class="text-success">
+                                {% if comprehensive_data and comprehensive_data.analyst_consensus and comprehensive_data.analyst_consensus.avg_price_target %}
+                                kr {{ "{:,.0f}".format(comprehensive_data.analyst_consensus.avg_price_target).replace(',', ' ') }}
+                                {% else %}
+                                N/A
+                                {% endif %}
+                            </h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Antall analytikere</h5>
+                            <h2 class="text-info">{{ analyst_ratings|length }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Dato</th>
+                            <th>Firma</th>
+                            <th>Anbefaling</th>
+                            <th class="text-end">Kursmål</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rating in analyst_ratings %}
+                        <tr>
+                            <td>{{ rating.date.strftime('%d.%m.%Y') if rating.date else '-' }}</td>
+                            <td>{{ rating.analyst_firm }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if 'Buy' in rating.rating else ('danger' if 'Sell' in rating.rating else 'warning') }}">
+                                    {{ rating.rating }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                {% if rating.price_target %}
+                                kr {{ "{:,.0f}".format(rating.price_target).replace(',', ' ') }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                Ingen analytikeranbefalinger tilgjengelig for {{ symbol }}.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Market sentiment tab -->
+        <div class="tab-pane fade" id="sentiment" role="tabpanel">
+            {% if market_sentiment %}
+            <div class="row">
+                <div class="col-md-6 mx-auto">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="bi bi-emoji-smile"></i> Markedssentiment</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <h6>Samlet sentiment</h6>
+                                <div class="progress" style="height: 30px;">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                         style="width: {{ market_sentiment.bullish_percent }}%">
+                                        Bullish {{ "{:.0f}".format(market_sentiment.bullish_percent).replace('.', ',') }}%
+                                    </div>
+                                    <div class="progress-bar bg-warning" role="progressbar" 
+                                         style="width: {{ market_sentiment.neutral_percent }}%">
+                                        Nøytral {{ "{:.0f}".format(market_sentiment.neutral_percent).replace('.', ',') }}%
+                                    </div>
+                                    <div class="progress-bar bg-danger" role="progressbar" 
+                                         style="width: {{ market_sentiment.bearish_percent }}%">
+                                        Bearish {{ "{:.0f}".format(market_sentiment.bearish_percent).replace('.', ',') }}%
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center">
+                                <h3>Sentiment Score</h3>
+                                <h1 class="display-1 
+                                    {% if market_sentiment.sentiment_score > 0.6 %}text-success
+                                    {% elif market_sentiment.sentiment_score < 0.4 %}text-danger
+                                    {% else %}text-warning{% endif %}">
+                                    {{ "{:.1f}".format(market_sentiment.sentiment_score * 10).replace('.', ',') }}
+                                </h1>
+                                <p class="text-muted">Skala: 0 (mest bearish) - 10 (mest bullish)</p>
+                            </div>
+                        </div>
+                        <div class="card-footer text-muted">
+                            <small>Kilde: {{ market_sentiment.source }} | 
+                            Oppdatert: {{ market_sentiment.date.strftime('%d.%m.%Y %H:%M') if market_sentiment.date else 'N/A' }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                Markedssentiment-data er ikke tilgjengelig for {{ symbol }}.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- AI analysis tab -->
+        <div class="tab-pane fade" id="ai" role="tabpanel">
+            {% if ai_analysis %}
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5><i class="bi bi-robot"></i> AI-analyse</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <h6>Sentiment</h6>
+                                <h3 class="
+                                    {% if ai_analysis.sentiment == 'stigende' %}text-success
+                                    {% elif ai_analysis.sentiment == 'fallende' %}text-danger
+                                    {% else %}text-warning{% endif %}">
+                                    {{ ai_analysis.sentiment|capitalize }}
+                                </h3>
+                                <p>Styrke: <strong>{{ ai_analysis.strength }}</strong></p>
+                            </div>
+
+                            <div class="mb-4">
+                                <h6>Sammendrag</h6>
+                                <p>{{ ai_analysis.summary }}</p>
+                            </div>
+
+                            {% if ai_analysis.prediction %}
+                            <div class="mb-4">
+                                <h6>Prediksjon</h6>
+                                <div class="alert alert-{{ 'success' if ai_analysis.prediction.direction == 'opp' else 'danger' }}">
+                                    <strong>Retning:</strong> {{ ai_analysis.prediction.direction|upper }}<br>
+                                    <strong>Konfidans:</strong> {{ "{:.0%}".format(ai_analysis.prediction.confidence).replace('.', ',') }}<br>
+                                    <strong>Tidsramme:</strong> {{ ai_analysis.prediction.time_frame }}<br>
+                                    {% if ai_analysis.prediction.target_price %}
+                                    <strong>Kursmål:</strong> {{ ai_analysis.prediction.target_price }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            {% if ai_analysis.technical_factors %}
+                            <div class="mb-4">
+                                <h6>Tekniske faktorer</h6>
+                                <ul>
+                                    {% for factor in ai_analysis.technical_factors[:3] %}
+                                    <li>{{ factor }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+
+                            {% if ai_analysis.fundamental_factors %}
+                            <div class="mb-4">
+                                <h6>Fundamentale faktorer</h6>
+                                <ul>
+                                    {% for factor in ai_analysis.fundamental_factors[:3] %}
+                                    <li>{{ factor }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                AI-analyse er ikke tilgjengelig for {{ symbol }}.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-refresh data every 5 minutes
+setInterval(() => {
+    location.reload();
+}, 300000);
+</script>
+{% endblock %}
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Overall Rating</td>
+                    <td>
+                        {% if ai_analysis.ai_score >= 7 %}
+                        <span class="rating-badge rating-buy">BUY</span>
+                        {% elif ai_analysis.ai_score >= 4 %}
+                        <span class="rating-badge rating-hold">HOLD</span>
+                        {% else %}
+                        <span class="rating-badge rating-sell">SELL</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="rating-badge {% if comprehensive_data.technical_analysis.overall_rating == 'BUY' %}rating-buy{% elif comprehensive_data.technical_analysis.overall_rating == 'SELL' %}rating-sell{% else %}rating-hold{% endif %}">
+                            {{ comprehensive_data.technical_analysis.overall_rating }}
+                        </span>
+                    </td>
+                    <td>
+                        {% set ai_rating = 'BUY' if ai_analysis.ai_score >= 7 else 'HOLD' if ai_analysis.ai_score >= 4 else 'SELL' %}
+                        {% if ai_rating == comprehensive_data.technical_analysis.overall_rating %}
+                        <span class="text-success">✅ Enig</span>
+                        {% else %}
+                        <span class="text-warning">⚠️ Uenig</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>AI Score / Technical Score</td>
+                    <td>{{ "%.1f"|format(ai_analysis.ai_score) }}/10</td>
+                    <td>{{ "%.2f"|format(comprehensive_data.technical_analysis.technical_score) }}</td>
+                    <td>
+                        {% set score_diff = (ai_analysis.ai_score/10 - comprehensive_data.technical_analysis.technical_score)|abs %}
+                        {% if score_diff < 0.2 %}
+                        <span class="text-success">✅ Høy</span>
+                        {% elif score_diff < 0.4 %}
+                        <span class="text-warning">⚠️ Medium</span>
+                        {% else %}
+                        <span class="text-danger">❌ Lav</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Insider Sentiment</td>
+                    <td>-</td>
+                    <td>{{ comprehensive_data.insider_activity.sentiment }}</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Risk Factors and Opportunities -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="analysis-card">
+                <h3>⚠️ Risikofaktorer</h3>
+                
+                {% for risk in comprehensive_data.risk_factors %}
+                <div class="risk-item">
+                    {{ risk }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="analysis-card">
+                <h3>🎯 Muligheter</h3>
+                
+                {% for opportunity in comprehensive_data.opportunities %}
+                <div class="opportunity-item">
+                    {{ opportunity }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function refreshData() {
+    const btn = document.querySelector('button[onclick="refreshData()"]');
+    const originalText = btn.innerHTML;
+    
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Oppdaterer...';
+    btn.disabled = true;
+    
+    // Simulate data refresh
+    setTimeout(() => {
+        window.location.reload();
+    }, 2000);
+}
+
+// Auto-refresh every 5 minutes
+setInterval(() => {
+    console.log('Auto-refreshing external data...');
+    // In production, you might want to fetch new data via AJAX
+}, 300000);
+</script>
+{% endblock %}

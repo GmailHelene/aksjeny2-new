@@ -1,0 +1,514 @@
+{% extends "base.html" %}
+
+{% block title %}Sektoranalyse - Market Intelligence - Aksjeradar{% endblock %}
+
+{% block head %}
+<style>
+.sector-analysis-page {
+        background: linear-gradient(135deg, #505050 0%, #ffffff 100%);
+    min-height: 100vh;
+    padding-top: 2rem;
+}
+
+.sector-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: white;
+    overflow: hidden;
+}
+
+.sector-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.sector-header {
+    background: linear-gradient(45deg, #3498db, #2980b9);
+    color: white;
+    padding: 1.5rem;
+    position: relative;
+}
+
+.sector-header.negative {
+    background: linear-gradient(45deg, #e74c3c, #c0392b);
+}
+
+.performance-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(255,255,255,0.2);
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 25px;
+    padding: 0.5rem 1rem;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.sector-stats {
+    padding: 1.5rem;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.market-cap-chart {
+    height: 300px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin: 1rem 0;
+}
+
+.top-stocks-card {
+        background: linear-gradient(135deg, #505050 0%, #ffffff 100%);
+    color: white;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.stock-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    transition: background 0.3s ease;
+}
+
+.stock-item:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.stock-item:last-child {
+    border-bottom: none;
+}
+
+.rotation-heatmap {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.rotation-cell {
+    padding: 1rem;
+    border-radius: 10px;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+}
+
+.rotation-hot {
+    background: linear-gradient(45deg, #e74c3c, #c0392b);
+}
+
+.rotation-warm {
+    background: linear-gradient(45deg, #f39c12, #e67e22);
+}
+
+.rotation-cool {
+    background: linear-gradient(45deg, #3498db, #2980b9);
+}
+
+.rotation-cold {
+    background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+}
+
+.data-source-badge {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    z-index: 1000;
+}
+
+.insights-panel {
+    background: linear-gradient(135deg, #636b8fff 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 2rem;
+    margin: 2rem 0;
+}
+
+.insight-item {
+    display: flex;
+    align-items: center;
+    margin: 1rem 0;
+}
+
+.insight-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+    .sector-card {
+        margin-bottom: 1rem;
+    }
+    
+    .rotation-heatmap {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="sector-analysis-page">
+    <div class="container">
+        <!-- Header Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="text-center text-white">
+                    <h1 class="display-4 mb-3">
+                        <i class="bi bi-pie-chart-fill me-3"></i>
+                        Sektoranalyse
+                    </h1>
+                    <p class="lead">Omfattende analyse av sektorrotasjon, ytelse og markedsdynamikk</p>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-center" style="background: rgba(255,255,255,0.1); border-radius: 25px;">
+                            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-white">Hjem</a></li>
+                            <li class="breadcrumb-item"><a href="#" class="text-white">Market Intelligence</a></li>
+                            <li class="breadcrumb-item active text-white">Sektoranalyse</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {{ error }}
+        </div>
+        {% elif sectors|length == 0 %}
+        <div class="alert alert-warning">
+            <i class="bi bi-info-circle me-2"></i>
+            Ingen sektordata tilgjengelig akkurat nå. Viser ikke diagrammer. Prøv å laste siden på nytt senere.
+        </div>
+        {% else %}
+
+        <!-- Market Overview Stats -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card text-center" style="background: linear-gradient(45deg, #3498db, #2ecc71); color: white; border-radius: 15px;">
+                    <div class="card-body">
+                        <h3>{{ sectors|length }}</h3>
+                        <p class="mb-0">Analyserte Sektorer</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card text-center" style="background: linear-gradient(45deg, #e74c3c, #c0392b); color: white; border-radius: 15px;">
+                    <div class="card-body">
+                        <h3>{{ (total_market_cap / 1000000000000) | round(1) }}T</h3>
+                        <p class="mb-0">Total Markedsverdi</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card text-center" style="background: linear-gradient(45deg, #f39c12, #e67e22); color: white; border-radius: 15px;">
+                    <div class="card-body">
+                        <h3>{{ top_gainers|length }}</h3>
+                        <p class="mb-0">Toppvinnere</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card text-center" style="background: linear-gradient(45deg, #3498db, #2980b9); color: white; border-radius: 15px;">
+                    <div class="card-body">
+                        <h3>{{ top_losers|length }}</h3>
+                        <p class="mb-0">Topptapere</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sector Performance Cards -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="text-white mb-4">
+                    <i class="bi bi-graph-up me-2"></i>
+                    Sektorytelse
+                </h2>
+            </div>
+            {% for sector in sectors %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="sector-card">
+                    <div class="sector-header {{ 'negative' if sector.change_percent < 0 else '' }}">
+                        <h5 class="mb-1">{{ sector.name }}</h5>
+                        <p class="mb-0 small">{{ sector.description }}</p>
+                        <div class="performance-badge">
+                            {{ "{:+.1f}".format(sector.change_percent) }}%
+                        </div>
+                    </div>
+                    <div class="sector-stats">
+                        <div class="stat-item">
+                            <span>Markedsverdi:</span>
+                            <strong>{{ (sector.market_cap / 1000000000) | round(1) }}B NOK</strong>
+                        </div>
+                        <div class="stat-item">
+                            <span>Volum:</span>
+                            <strong>{{ (sector.volume / 1000000) | round(1) }}M</strong>
+                        </div>
+                        <div class="stat-item">
+                            <span>Antall selskaper:</span>
+                            <strong>{{ sector.companies_count }}</strong>
+                        </div>
+                        <div class="stat-item">
+                            <span>Markedsandel:</span>
+                            <strong>{{ sector.market_cap_percentage | round(1) }}%</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Sector Rotation Heatmap -->
+        {% if sector_rotation %}
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="text-white mb-4">
+                    <i class="bi bi-arrow-repeat me-2"></i>
+                    Sektorrotasjon & Momentum
+                </h2>
+                <div class="rotation-heatmap">
+                    {% for rotation in sector_rotation %}
+                    <div class="rotation-cell {{ 'rotation-hot' if rotation.momentum_1m > 5 else ('rotation-warm' if rotation.momentum_1m > 0 else ('rotation-cool' if rotation.momentum_1m > -5 else 'rotation-cold')) }}">
+                        <h6>{{ rotation.sector }}</h6>
+                        <div>1U: {{ "{:+.1f}".format(rotation.momentum_1w) }}%</div>
+                        <div>1M: {{ "{:+.1f}".format(rotation.momentum_1m) }}%</div>
+                        <div>3M: {{ "{:+.1f}".format(rotation.momentum_3m) }}%</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Top Performers and Losers -->
+        <div class="row mb-5">
+            <div class="col-lg-6 mb-4">
+                <div class="top-stocks-card">
+                    <div style="padding: 1.5rem 1.5rem 0.5rem;">
+                        <h4>
+                            <i class="bi bi-trophy-fill me-2"></i>
+                            Dagens Toppvinnere
+                        </h4>
+                    </div>
+                    {% for stock in top_gainers[:5] %}
+                    <div class="stock-item">
+                        <div>
+                            <strong>{{ stock.symbol }}</strong>
+                            <div class="small">{{ stock.name }}</div>
+                        </div>
+                        <div class="text-end">
+                            <strong>{{ stock.last_price }} NOK</strong>
+                            <div class="small">+{{ stock.change_percent }}%</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="col-lg-6 mb-4">
+                <div class="top-stocks-card" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                    <div style="padding: 1.5rem 1.5rem 0.5rem;">
+                        <h4>
+                            <i class="bi bi-arrow-down-circle-fill me-2"></i>
+                            Dagens Topptapere
+                        </h4>
+                    </div>
+                    {% for stock in top_losers[:5] %}
+                    <div class="stock-item">
+                        <div>
+                            <strong>{{ stock.symbol }}</strong>
+                            <div class="small">{{ stock.name }}</div>
+                        </div>
+                        <div class="text-end">
+                            <strong>{{ stock.last_price }} NOK</strong>
+                            <div class="small">{{ stock.change_percent }}%</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Intelligence Insights -->
+        <div class="insights-panel">
+            <h3 class="mb-4">
+                <i class="bi bi-lightbulb-fill me-2"></i>
+                Markedsinnsikt & Analyse
+            </h3>
+            
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="insight-item">
+                        <div class="insight-icon">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <div>
+                            <strong>Sektortrend:</strong> 
+                            {% set positive_sectors = sectors | selectattr('change_percent', '>', 0) | list %}
+                            {{ positive_sectors | length }} av {{ sectors | length }} sektorer er positive i dag
+                        </div>
+                    </div>
+                    
+                    <div class="insight-item">
+                        <div class="insight-icon">
+                            <i class="bi bi-pie-chart"></i>
+                        </div>
+                        <div>
+                            <strong>Markedskonsentrasjon:</strong>
+                            {% set top_3_sectors = sectors | sort(attribute='market_cap', reverse=true) | list %}
+                            De 3 største sektorene utgjør {{ (top_3_sectors[:3] | sum(attribute='market_cap_percentage')) | round(1) }}% av markedet
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="insight-item">
+                        <div class="insight-icon">
+                            <i class="bi bi-arrow-repeat"></i>
+                        </div>
+                        <div>
+                            <strong>Rotasjonssignal:</strong>
+                            Kapital roterer mot {% if sectors | selectattr('name', 'equalto', 'Energy') | first %}energi{% else %}defensive{% endif %} sektorer
+                        </div>
+                    </div>
+                    
+                    <div class="insight-item">
+                        <div class="insight-icon">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                        <div>
+                            <strong>Risikovarsel:</strong>
+                            Økt volatilitet observert i {{ sectors | selectattr('change_percent', '<', -2) | list | length }} sektorer
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Cap Distribution Chart -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card" style="border-radius: 15px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                    <div class="card-header" style="background: linear-gradient(45deg, #3498db, #2ecc71); color: white; border-radius: 15px 15px 0 0;">
+                        <h4 class="mb-0">
+                            <i class="bi bi-pie-chart-fill me-2"></i>
+                            Markedsverdi Fordeling
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="marketCapChart" style="max-height: 400px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% endif %}
+    </div>
+</div>
+
+<!-- Data Source Badge -->
+<div class="data-source-badge">
+    <i class="bi bi-database-fill me-1"></i>
+    {{ data_source }}
+</div>
+
+<script>
+// Market Cap Distribution Chart
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('marketCapChart').getContext('2d');
+    
+    const sectorData = {{ sectors | tojson }};
+    const sectorNames = sectorData.map(s => s.name);
+    const marketCaps = sectorData.map(s => s.market_cap_percentage || 0);
+    
+    const colors = [
+        '#3498db', '#e74c3c', '#2ecc71', '#f39c12', 
+        '#9b59b6', '#1abc9c', '#34495e', '#e67e22'
+    ];
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: sectorNames,
+            datasets: [{
+                data: marketCaps,
+                backgroundColor: colors,
+                borderWidth: 0,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.label + ': ' + context.parsed.toFixed(1) + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+
+// Add click handlers for stock items
+document.querySelectorAll('.stock-item').forEach(item => {
+    item.style.cursor = 'pointer';
+    item.addEventListener('click', function() {
+        const symbol = this.querySelector('strong').textContent;
+        window.open(`/stocks/details/${symbol}`, '_blank');
+    });
+});
+
+// Sector card click handlers
+document.querySelectorAll('.sector-card').forEach(card => {
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', function() {
+        // Could navigate to detailed sector view
+        const sectorName = this.querySelector('.sector-header h5').textContent;
+        console.log(`Clicked on sector: ${sectorName}`);
+    });
+});
+</script>
+{% endblock %}

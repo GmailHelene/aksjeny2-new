@@ -1,0 +1,357 @@
+{% extends 'base.html' %}
+{% block title %}Innsidehandel - {{ ticker }} - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('analysis.index') }}">Analyse</a></li>
+                    <li class="breadcrumb-item active">Innsidehandel - {{ ticker }}</li>
+                </ol>
+            </nav>
+            <h1 class="h2 fw-bold mb-2">🏢 Innsidehandel - {{ ticker }}</h1>
+            <p class="text-muted mb-1">Oversikt over innsidehandler og institusjonelt eierskap.</p>
+            <small class="text-muted">Symbolformat: OSE-aksjer «EQNR.OL» → «OSL:EQNR» hos TradingView</small>
+            
+            {% if error %}
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i>
+                {{ error }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Stock Symbol Selector -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">Velg aksje for innsideanalyse</h6>
+                    <form method="get" action="{{ url_for('analysis.insider_trading') }}">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="ticker" value="{{ ticker if ticker != 'EQNR.OL' else '' }}" placeholder="F.eks. EQNR.OL, DNB.OL, AAPL">
+                            <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Søk</button>
+                        </div>
+                    </form>
+                    <small class="text-muted mt-2 d-block">Populært: EQNR.OL • DNB.OL • AAPL • MSFT • TSLA</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Insider Trading Transactions -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">📊 Innsidehandler</h5>
+                    <button id="export-insider" class="btn btn-sm btn-outline-light" data-symbol="{{ ticker|default('', true) }}">
+                        <i class="bi bi-download"></i> Eksporter CSV
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    {% if show_search_prompt %}
+                    <div class="text-center p-5">
+                        <i class="bi bi-search text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="mt-3 mb-3">Søk etter en aksje for å se innsidehandel</h5>
+                        <p class="text-muted">Skriv inn et aksjensymbol i søkefeltet ovenfor for å se detaljert innsidehandel informasjon.</p>
+                        <div class="mt-4">
+                            <small class="text-muted">Populære aksjer: 
+                                <a href="?ticker=EQNR.OL" class="text-decoration-none">EQNR.OL</a> • 
+                                <a href="?ticker=DNB.OL" class="text-decoration-none">DNB.OL</a> • 
+                                <a href="?ticker=TEL.OL" class="text-decoration-none">TEL.OL</a> • 
+                                <a href="?ticker=AAPL" class="text-decoration-none">AAPL</a>
+                            </small>
+                        </div>
+                    </div>
+                    {% elif insider_data %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="insider-table">
+                            <thead class="table-light">
+                                <tr class="small text-uppercase text-muted">
+                                    <th>Rapportert</th>
+                                    <th>Dato</th>
+                                    <th>Navn</th>
+                                    <th>Rolle</th>
+                                    <th>Type</th>
+                                    <th class="text-end">Antall</th>
+                                    <th class="text-end">Pris</th>
+                                    <th class="text-end">Verdi</th>
+                                    <th class="text-end">Eid</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trade in insider_data %}
+                                <tr>
+                                    <td><small>{{ trade.filing_date }}</small></td>
+                                    <td><small>{{ trade.transaction_date }}</small></td>
+                                    <td><strong>{{ trade.reporting_name }}</strong></td>
+                                    <td><small>{{ trade.relationship }}</small></td>
+                                    <td>
+                                        {% if 'Purchase' in trade.transaction_type or 'P-' in trade.transaction_type %}
+                                            <span class="badge bg-success">KJØP</span>
+                                        {% elif 'Sale' in trade.transaction_type or 'S-' in trade.transaction_type %}
+                                            <span class="badge bg-danger">SALG</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ trade.transaction_type }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">{{ "{:,.0f}".format(trade.securities_transacted) }}</td>
+                                    <td class="text-end">${{ "%.2f"|format(trade.price) }}</td>
+                                    <td class="text-end"><strong>${{ "{:,.0f}".format(trade.securities_transacted * trade.price) }}</strong></td>
+                                    <td class="text-end">{{ "{:,.0f}".format(trade.securities_owned) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <div class="text-muted">
+                            <i class="bi bi-info-circle" style="font-size: 3rem;"></i>
+                            {% if ticker %}
+                                <h5 class="mt-3">Ingen innsidehandel data for {{ ticker }}</h5>
+                                <p>Det kan være at selskapet ikke har rapportert nylige innsidehandler, eller at dataene ikke er tilgjengelige for denne aksjen.</p>
+                                <small class="text-muted">Prøv et annet aksjensymbol eller kontakt support hvis du mener dette er en feil.</small>
+                            {% else %}
+                                <h5 class="mt-3">Ingen innsidehandel data tilgjengelig</h5>
+                                <p>Søk etter en aksje for å se innsidehandel informasjon.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Institutional Ownership -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">🏦 Institusjonelt Eierskap</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if institutional_data %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Institusjon</th>
+                                    <th>Antall Aksjer</th>
+                                    <th>Rapporteringsdato</th>
+                                    <th>Endring</th>
+                                    <th>Eierandel (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for holder in institutional_data %}
+                                <tr>
+                                    <td><strong>{{ holder.holder }}</strong></td>
+                                    <td>{{ "{:,}".format(holder.shares) }}</td>
+                                    <td><small>{{ holder.date_reported }}</small></td>
+                                    <td>
+                                        {% if holder.change > 0 %}
+                                            <span class="text-success">+{{ "{:,}".format(holder.change) }}</span>
+                                        {% elif holder.change < 0 %}
+                                            <span class="text-danger">{{ "{:,}".format(holder.change) }}</span>
+                                        {% else %}
+                                            <span class="text-muted">Ingen endring</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress me-2" style="width: 120px; height: 10px;">
+                                                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ holder.weight|default(0) }}%"></div>
+                                            </div>
+                                            <small>{{ "%.1f"|format(holder.weight) }}%</small>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <div class="text-muted">
+                            <i class="bi bi-building" style="font-size: 3rem;"></i>
+                            <h5 class="mt-3">Ingen institusjonelle eierskap data tilgjengelig</h5>
+                            <p>Institusjonelle eierskap data kan være begrenset for mindre selskaper eller ikke-amerikanske aksjer.</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Summary -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">📈 Innsidehandel Sammendrag</h6>
+                </div>
+                <div class="card-body">
+                    {% if insider_data %}
+                    {% set buy_transactions = insider_data | selectattr('transaction_type', 'equalto', 'Purchase') | list | length %}
+                    {% set sell_transactions = insider_data | selectattr('transaction_type', 'equalto', 'Sale') | list | length %}
+                    
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <div class="h4 text-success">{{ buy_transactions }}</div>
+                                <small class="text-muted">Kjøpstransaksjoner</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <div class="h4 text-danger">{{ sell_transactions }}</div>
+                                <small class="text-muted">Salgstransaksjoner</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if buy_transactions > sell_transactions %}
+                    <div class="alert alert-success">
+                        <i class="bi bi-arrow-up-circle"></i>
+                        <strong>Bullish Signal:</strong> Flere kjøp enn salg fra innsidere kan indikere positiv utsikt.
+                    </div>
+                    {% elif sell_transactions > buy_transactions %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-arrow-down-circle"></i>
+                        <strong>Bearish Signal:</strong> Flere salg enn kjøp fra innsidere kan indikere bekymringer.
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-dash-circle"></i>
+                        <strong>Nøytral:</strong> Balansert aktivitet mellom kjøp og salg.
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-muted text-center">Ingen data tilgjengelig for sammendrag.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0">💡 Hvordan Tolke Innsidehandel</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            <strong>Kjøp av innsidere:</strong> Kan indikere at ledelsen tror på selskapets fremtid
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-exclamation-triangle text-warning"></i>
+                            <strong>Salg av innsidere:</strong> Kan være rutinssalg eller bekymringer
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-clock text-info"></i>
+                            <strong>Timing:</strong> Transaksjoner nær kvartalsrapporter er spesielt interessante
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-people text-primary"></i>
+                            <strong>Mengde:</strong> Store transaksjoner fra toppledelsen er mest signifikante
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-body">
+                    <h6 class="card-title text-primary">🔍 Relaterte Analyser</h6>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="{{ url_for('stocks.details', symbol=ticker) }}" class="btn btn-outline-primary w-100 mb-2">
+                                Teknisk Analyse
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('analysis.ai', ticker=ticker) }}" class="btn btn-outline-success w-100 mb-2">
+                                AI-Analyse
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('portfolio.portfolio_overview') }}" class="btn btn-outline-warning w-100 mb-2">
+                                Legg til Portefølje
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('analysis.index') }}" class="btn btn-outline-info w-100 mb-2">
+                                Tilbake til Oversikt
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-refresh data every 10 minutes
+setInterval(function() {
+    // Only refresh if user is still on the page
+    if (document.visibilityState === 'visible') {
+        location.reload();
+    }
+}, 600000); // 10 minutes
+</script>
+<script>
+// Ensure any progress bars with data-width get applied if present
+document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('.progress-bar[data-width]').forEach(pb=>{
+        const w = parseFloat(pb.getAttribute('data-width'));
+        if(!isNaN(w)) pb.style.width = w+"%";
+    });
+    // Insider CSV export
+    const btn = document.getElementById('export-insider');
+    const tbl = document.getElementById('insider-table');
+    if(btn && tbl){
+        btn.addEventListener('click', ()=>{
+            const rows = [];
+            const header = Array.from(tbl.querySelectorAll('thead th')).map(th=>th.innerText.trim());
+            rows.push(header);
+            tbl.querySelectorAll('tbody tr').forEach(tr=>{
+                const cols = Array.from(tr.querySelectorAll('td')).map(td=>{
+                    let txt = td.innerText.replace(/\s+/g,' ').trim();
+                    txt = txt.replace(/\u00A0/g,' ').replace(/\bNOK\b/g,'').trim();
+                    if(/[",\n]/.test(txt)){
+                        txt = '"' + txt.replace(/"/g,'""') + '"';
+                    }
+                    return txt;
+                });
+                rows.push(cols);
+            });
+            const csv = rows.map(r=>r.join(',')).join('\n');
+            const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const sym = btn.getAttribute('data-symbol') || 'insider';
+            a.download = `${sym}_insider_transactions.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+    }
+});
+</script>
+{% endblock %}

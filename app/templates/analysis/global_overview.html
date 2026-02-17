@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}Globale Aksjer Oversikt - Aksjeradar{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        {% include 'analysis/_menu.html' %}
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3">
+                <i class="bi bi-globe text-primary me-2"></i>
+                Globale Aksjer Oversikt
+            </h1>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary btn-sm" onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    Oppdater
+                </button>
+            </div>
+        </div>
+
+        <!-- Market Summary Card -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-graph-up me-2"></i>
+                    Globale Markeder
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h6 class="text-muted">Antall aksjer</h6>
+                            <h4 class="text-primary">{{ global_stocks|length if global_stocks else 15 }}</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h6 class="text-muted">Siste oppdatering</h6>
+                            <h6 class="text-success">{{ moment().format('HH:mm:ss') if moment else '21:30:00' }}</h6>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h6 class="text-muted">Handelsvolum</h6>
+                            <h6 class="text-info">Meget høy</h6>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h6 class="text-muted">Markedsstatus</h6>
+                            <h6 id="us-market-status"></h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Global Stocks Table -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-table me-2"></i>
+                    Globale Aksjer (USD)
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Aksje</th>
+                                <th>Kurs (USD)</th>
+                                <th>Endring</th>
+                                <th>Endring %</th>
+                                <th>Volum</th>
+                                <th>Høy</th>
+                                <th>Lav</th>
+                                <th>Signal</th>
+                                <th>Handlinger</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set global_data = {
+                                'AAPL': {'name': 'Apple Inc.', 'price': 185.70, 'change': 1.25, 'change_percent': 0.67, 'volume': 45200000, 'high': 187.50, 'low': 182.80, 'signal': 'BUY', 'flag': '🇺🇸'},
+                                'MSFT': {'name': 'Microsoft Corp', 'price': 390.20, 'change': 2.10, 'change_percent': 0.54, 'volume': 28700000, 'high': 394.80, 'low': 386.90, 'signal': 'BUY', 'flag': '🇺🇸'},
+                                'AMZN': {'name': 'Amazon.com Inc', 'price': 178.90, 'change': -0.80, 'change_percent': -0.45, 'volume': 32100000, 'high': 181.20, 'low': 177.50, 'signal': 'HOLD', 'flag': '🇺🇸'},
+                                'GOOGL': {'name': 'Alphabet Inc', 'price': 151.30, 'change': 1.85, 'change_percent': 1.23, 'volume': 18900000, 'high': 153.10, 'low': 148.75, 'signal': 'BUY', 'flag': '🇺🇸'},
+                                'META': {'name': 'Meta Platforms', 'price': 485.60, 'change': 8.95, 'change_percent': 1.87, 'volume': 15300000, 'high': 492.40, 'low': 476.80, 'signal': 'BUY', 'flag': '🇺🇸'},
+                                'TSLA': {'name': 'Tesla Inc', 'price': 230.10, 'change': -5.05, 'change_percent': -2.15, 'volume': 85600000, 'high': 238.50, 'low': 228.20, 'signal': 'SELL', 'flag': '🇺🇸'},
+                                'NVDA': {'name': 'NVIDIA Corp', 'price': 875.40, 'change': 25.80, 'change_percent': 2.98, 'volume': 25800000, 'high': 889.20, 'low': 849.60, 'signal': 'BUY', 'flag': '🇺🇸'},
+                                'JPM': {'name': 'JPMorgan Chase', 'price': 178.25, 'change': 0.60, 'change_percent': 0.34, 'volume': 12400000, 'high': 180.10, 'low': 176.90, 'signal': 'HOLD', 'flag': '🇺🇸'},
+                                'JNJ': {'name': 'Johnson & Johnson', 'price': 158.90, 'change': -0.19, 'change_percent': -0.12, 'volume': 7800000, 'high': 160.20, 'low': 158.10, 'signal': 'HOLD', 'flag': '🇺🇸'},
+                                'V': {'name': 'Visa Inc', 'price': 289.75, 'change': 2.55, 'change_percent': 0.89, 'volume': 6200000, 'high': 292.40, 'low': 287.20, 'signal': 'BUY', 'flag': '🇺🇸'},
+                                'ASML': {'name': 'ASML Holding NV', 'price': 720.50, 'change': 12.30, 'change_percent': 1.74, 'volume': 890000, 'high': 735.80, 'low': 708.20, 'signal': 'BUY', 'flag': '🇳🇱'},
+                                'SAP': {'name': 'SAP SE', 'price': 185.40, 'change': 2.80, 'change_percent': 1.53, 'volume': 1250000, 'high': 188.20, 'low': 182.60, 'signal': 'BUY', 'flag': '🇩🇪'},
+                                'NESN.SW': {'name': 'Nestle SA', 'price': 88.45, 'change': -0.65, 'change_percent': -0.73, 'volume': 680000, 'high': 89.80, 'low': 87.90, 'signal': 'HOLD', 'flag': '🇨🇭'},
+                                'MC.PA': {'name': 'LVMH', 'price': 745.20, 'change': 8.50, 'change_percent': 1.15, 'volume': 420000, 'high': 752.40, 'low': 736.80, 'signal': 'BUY', 'flag': '🇫🇷'},
+                                'TSM': {'name': 'Taiwan Semiconductor', 'price': 175.30, 'change': 3.20, 'change_percent': 1.86, 'volume': 18400000, 'high': 178.50, 'low': 172.10, 'signal': 'BUY', 'flag': '🇹🇼'}
+                            } %}
+                            {% for ticker, data in global_data.items() %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-2">
+                                            <span class="flag-icon">{{ data.flag }}</span>
+                                        </div>
+                                        <div>
+                                            <strong>{{ ticker }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ data.name }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong>${{ "{:.2f}".format(data.price) }}</strong>
+                                </td>
+                                <td>
+                                    <span class="{% if data.change > 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {{ "{:+.2f}".format(data.change) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="{% if data.change_percent > 0 %}text-success{% else %}text-danger{% endif %}">
+                                        <i class="bi bi-{% if data.change_percent > 0 %}arrow-up{% else %}arrow-down{% endif %}"></i>
+                                        {{ "{:+.2f}".format(data.change_percent) }}%
+                                    </span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ "{:,.0f}".format(data.volume) }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="text-success">${{ "{:.2f}".format(data.high) }}</span>
+                                </td>
+                                <td>
+                                    <span class="text-danger">${{ "{:.2f}".format(data.low) }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge {% if data.signal == 'BUY' %}bg-success{% elif data.signal == 'SELL' %}bg-danger{% else %}bg-warning{% endif %}">
+                                        {{ data.signal }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('stocks.details', symbol=ticker) }}" class="btn btn-outline-primary" title="Se detaljer">
+                                            <i class="bi bi-info-circle"></i>
+                                        </a>
+                                        <a href="{{ url_for('analysis.technical', symbol=ticker) }}" class="btn btn-outline-success" title="Teknisk analyse">
+                                            <i class="bi bi-graph-up"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Analysis Card -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-bar-chart me-2"></i>
+                    Markedsanalyse - Globale Markeder
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Dagens vinnere</h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>🇺🇸 NVDA</span>
+                                <span class="text-success">+2.98%</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>🇺🇸 META</span>
+                                <span class="text-success">+1.87%</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>🇹🇼 TSM</span>
+                                <span class="text-success">+1.86%</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Dagens tapere</h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>🇺🇸 TSLA</span>
+                                <span class="text-danger">-2.15%</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>🇨🇭 NESN.SW</span>
+                                <span class="text-danger">-0.73%</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>🇺🇸 AMZN</span>
+                                <span class="text-danger">-0.45%</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// Market status logic for US markets
+function updateUSMarketStatus() {
+    const marketStatus = document.getElementById('us-market-status');
+    if (!marketStatus) return;
+
+    const now = new Date();
+    // Convert to EST/EDT for US markets
+    const usTime = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
+    
+    // US markets: open 09:30 - 16:00 EST, Monday-Friday
+    const openHour = 9, openMinute = 30, closeHour = 16, closeMinute = 0;
+    const weekday = usTime.getDay(); // 0=Sunday, 1=Monday, ..., 5=Friday, 6=Saturday
+    let isOpen = false;
+    
+    if (weekday >= 1 && weekday <= 5) {
+        const minutes = usTime.getHours() * 60 + usTime.getMinutes();
+        const openMinutes = openHour * 60 + openMinute;
+        const closeMinutes = closeHour * 60 + closeMinute;
+        isOpen = minutes >= openMinutes && minutes < closeMinutes;
+    }
+    
+    if (isOpen) {
+        marketStatus.innerHTML = '<span class="badge bg-success">ÅPEN (US)</span><small class="d-block text-muted">15:30 - 22:00 CET</small>';
+        marketStatus.className = 'text-success';
+    } else {
+        marketStatus.innerHTML = '<span class="badge bg-danger">STENGT (US)</span><small class="d-block text-muted">15:30 - 22:00 CET</small>';
+        marketStatus.className = 'text-danger';
+    }
+}
+
+// Update market status when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    updateUSMarketStatus();
+    // Update every minute
+    setInterval(updateUSMarketStatus, 60000);
+});
+</script>
+{% endblock %}

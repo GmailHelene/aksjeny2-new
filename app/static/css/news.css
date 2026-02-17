@@ -1,0 +1,114 @@
+/* News article image styles - reduced height */
+.news-image-container {
+    position: relative;
+    width: 100%;
+    height: 120px !important;
+    overflow: hidden;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.news-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.3s ease;
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+
+/* Global image constraints for news content */
+/* Global image constraints for news content - reduced max height */
+.news-content img, 
+.news-article img,
+.article-content img {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: 120px !important;
+    object-fit: cover !important;
+    border-radius: 8px;
+    margin: 1rem 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Fix oversized images globally */
+img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+/* Specific fixes for news card images - reduced height */
+.card-img-top {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: 120px !important;
+    max-height: 120px !important;
+    object-fit: cover !important;
+}
+
+/* Icon and small image constraints */
+.news-content svg,
+.news-article svg,
+.article-content svg,
+.news-content .icon,
+.news-article .icon,
+.article-content .icon {
+    max-width: 24px !important;
+    max-height: 24px !important;
+}
+
+/* Responsive image sizes */
+@media (max-width: 768px) {
+    .news-image-container {
+        height: 100px !important;
+    }
+    
+    .news-content img, 
+    .news-article img,
+    .article-content img {
+        max-height: 90px !important;
+    }
+}
+
+@media (min-width: 992px) {
+    .news-image-container {
+        height: 250px;
+    }
+}
+
+/* News article card */
+.news-card {
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.news-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.news-card .card-body {
+    padding: 1.25rem;
+}
+
+/* News article title */
+.news-title {
+    font-size: 1.1rem;
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* News meta info */
+.news-meta {
+    color: #6c757d;
+    font-size: 0.875rem;
+}

@@ -1,0 +1,835 @@
+{% extends "base.html" %}
+
+{% block title %}TradingView Charts - {{ symbol if symbol else 'Aksjeradar' }}{% endblock %}
+
+{% block head %}
+{# Fjernet global tradingview-enhanced.js her for å unngå dobbelt-initialisering og kollisjon med side-spesifikk logikk #}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    {% include 'analysis/_menu.html' %}
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">
+                    <i class="bi bi-graph-up text-primary me-2"></i>
+                    TradingView Charts
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('analysis.index') }}">Analyse</a></li>
+                        <li class="breadcrumb-item active">TradingView</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i> TradingView charts er midlertidig utilgjengelig.
+    </div>
+    {% endif %}
+
+    <!-- Stock Search -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h5 class="mb-3">
+                        <i class="bi bi-search me-2"></i>Velg aksje/symbol for analyse
+                    </h5>
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control" id="symbolSearch" 
+                               placeholder="Aksjesymbol (f.eks. EQNR.OL, AAPL, BTC-USD)" 
+                               value="{{ symbol if symbol else '' }}">
+                        <button class="btn btn-primary" type="button" id="loadChart">
+                            <span class="default-label"><i class="bi bi-bar-chart-line"></i> Last chart</span>
+                            <span class="loading-label d-none"><span class="spinner-border spinner-border-sm me-1"></span>Laster...</span>
+                        </button>
+                    </div>
+                    <small class="text-muted">
+                        <strong>Eksempler:</strong> 
+                        <code>EQNR.OL</code> (Oslo Børs), 
+                        <code>AAPL</code> (US aksjer), 
+                        <code>BTC-USD</code> (Crypto), 
+                        <code>EURUSD=X</code> (Forex)
+                    </small>
+                </div>
+                <div class="col-md-4">
+                    {% if stock_info %}
+                    <div class="text-md-end">
+                        <h6 class="mb-1 text-primary">{{ symbol }}</h6>
+                        <p class="text-muted mb-1">{{ stock_info.get('shortName', symbol) }}</p>
+                        {% if stock_info.get('regularMarketPrice') %}
+                        <span class="h5 text-success">{{ "%.2f"|format(stock_info.regularMarketPrice) }} {{ stock_info.get('currency', 'USD') }}</span>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="text-md-end text-muted">
+                        <i class="bi bi-graph-up" style="font-size: 2rem;"></i>
+                        <p class="small mt-2">TradingView integrert chart</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main TradingView Widget -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-bar-chart me-2"></i>
+                Avansert Chart - <span id="currentSymbolDisplay">{{ symbol if symbol else 'Velg aksje' }}</span>
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div id="tradingview_main_widget" style="height: 600px;">
+                <!-- TradingView Chart will load here -->
+                <div class="text-center p-5" id="loading-indicator">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Laster TradingView chart...</span>
+                    </div>
+                    <p class="text-muted mt-3">Laster TradingView chart...</p>
+                    <small class="text-muted">Hvis chartet ikke laster, kan det skyldes ad blocker eller nettverksproblemer</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick symbol buttons -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <h6 class="mb-3">Populære aksjer</h6>
+            <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-outline-primary btn-sm" onclick="loadSymbol('EQNR.OL')">EQNR</button>
+                <button class="btn btn-outline-primary btn-sm" onclick="loadSymbol('DNB.OL')">DNB</button>
+                <button class="btn btn-outline-primary btn-sm" onclick="loadSymbol('AAPL')">AAPL</button>
+                <button class="btn btn-outline-primary btn-sm" onclick="loadSymbol('TSLA')">TSLA</button>
+                <button class="btn btn-outline-primary btn-sm" onclick="loadSymbol('MSFT')">MSFT</button>
+                <button class="btn btn-outline-primary btn-sm" onclick="loadSymbol('BTC-USD')">Bitcoin</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technical Analysis Widget -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h6 class="mb-0">Teknisk Analyse</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div id="tradingview_technical_analysis" style="height: 350px;">
+                        <div class="text-center p-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Laster teknisk analyse...</span>
+                            </div>
+                            <p class="text-muted mt-3">Laster teknisk analyse...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Market Overview Widget -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h6 class="mb-0">Markedsoversikt</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div id="tradingview_market_overview" style="height: 350px;">
+                        <div class="text-center p-4">
+                            <i class="bi bi-graph-up text-primary mb-2" style="font-size: 2rem;"></i>
+                            <h6>Markedsoversikt</h6>
+                            <p class="text-muted small">Laster markeds-indikatorer...</p>
+                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                <span class="visually-hidden">Laster...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Economic Calendar -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h6 class="mb-0">Økonomisk Kalender</h6>
+        </div>
+        <div class="card-body p-0">
+            <div id="tradingview_economic_calendar" style="height: 400px;">
+                <div class="text-center p-4">
+                    <i class="fas fa-calendar text-primary mb-2" style="font-size: 2rem;"></i>
+                    <h6>Økonomisk Kalender</h6>
+                    <p class="text-muted small">Viktige økonomiske hendelser laster...</p>
+                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                        <span class="visually-hidden">Laster...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Global variables
+let currentSymbol = '{{ symbol if symbol else "AAPL" }}';
+let widgets = {};
+
+// Format symbol for TradingView
+// Enhanced symbol validation and formatting
+function formatSymbolForTradingView(symbol) {
+    if (!symbol || typeof symbol !== 'string') {
+        console.warn('Invalid symbol provided:', symbol);
+        return 'NASDAQ:AAPL'; // Default fallback
+    }
+    
+    const cleanSymbol = symbol.trim().toUpperCase();
+    
+    // Validate symbol format
+    if (!/^[A-Z0-9\.\-_]+$/i.test(cleanSymbol)) {
+        console.warn('Symbol contains invalid characters:', cleanSymbol);
+        return 'NASDAQ:AAPL'; // Default fallback
+    }
+    
+    // Enhanced Oslo Børs mapping with validation
+    if (cleanSymbol.endsWith('.OL')) {
+        const base = cleanSymbol.replace('.OL', '');
+        if (base.length >= 2 && base.length <= 6) {
+            console.log(`✅ Oslo Børs symbol validated: ${cleanSymbol} → OSL:${base}`);
+            return `OSL:${base}`;
+        }
+    }
+    
+    // Enhanced crypto mapping with validation
+    if (cleanSymbol.includes('BTC') || cleanSymbol.includes('ETH') || cleanSymbol.endsWith('-USD')) {
+        let base = cleanSymbol;
+        if (cleanSymbol.endsWith('-USD')) {
+            base = cleanSymbol.replace('-USD', '');
+        }
+        console.log(`🪙 Crypto symbol validated: ${cleanSymbol} → BINANCE:${base}USDT`);
+        return `BINANCE:${base}USDT`;
+    }
+    
+    // Enhanced US stock validation
+    const knownNasdaq = ['AAPL', 'MSFT', 'GOOGL', 'GOOG', 'TSLA', 'NVDA', 'META', 'NFLX', 'AMZN', 'INTC', 'ADBE', 'CRM', 'PYPL'];
+    const knownNyse = ['JPM', 'BAC', 'WMT', 'DIS', 'KO', 'XOM', 'JNJ', 'V', 'MA', 'PG', 'UNH'];
+    
+    if (knownNasdaq.includes(cleanSymbol)) {
+        console.log(`📈 NASDAQ symbol validated: ${cleanSymbol} → NASDAQ:${cleanSymbol}`);
+        return `NASDAQ:${cleanSymbol}`;
+    }
+    
+    if (knownNyse.includes(cleanSymbol)) {
+        console.log(`🏛️ NYSE symbol validated: ${cleanSymbol} → NYSE:${cleanSymbol}`);
+        return `NYSE:${cleanSymbol}`;
+    }
+    
+    // Default to NASDAQ for unknown symbols (most common)
+    if (!cleanSymbol.includes(':') && cleanSymbol.length <= 5) {
+        console.log(`❓ Unknown symbol, defaulting to NASDAQ: ${cleanSymbol} → NASDAQ:${cleanSymbol}`);
+        return `NASDAQ:${cleanSymbol}`;
+    }
+    
+    console.log(`⚠️ Using symbol as-is: ${cleanSymbol}`);
+    return cleanSymbol;
+}
+
+// Enhanced error handling functions
+function showAdBlockerWarning() {
+    const container = document.getElementById('tradingview_main_widget');
+    if (container) {
+        container.innerHTML = `
+            <div class="alert alert-warning text-center p-4">
+                <i class="bi bi-shield-exclamation fs-1 text-warning mb-3"></i>
+                <h4>TradingView Chart Blokkert</h4>
+                <p class="mb-3">TradingView charts kan ikke lastes. Dette skyldes sannsynligvis:</p>
+                <ul class="list-unstyled mb-3">
+                    <li><i class="bi bi-check text-danger"></i> Ad blocker eller privacy extension</li>
+                    <li><i class="bi bi-check text-danger"></i> Nettverksbegrensninger</li>
+                    <li><i class="bi bi-check text-danger"></i> Firewall eller proxy-innstillinger</li>
+                </ul>
+                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                    <button class="btn btn-primary" onclick="location.reload()">
+                        <i class="bi bi-arrow-clockwise"></i> Prøv igjen
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="loadChartJsFallback('${currentSymbol}')">
+                        <i class="bi bi-bar-chart"></i> Vis fallback chart
+                    </button>
+                    <a href="https://www.tradingview.com/symbols/${currentSymbol}" target="_blank" class="btn btn-outline-success">
+                        <i class="bi bi-box-arrow-up-right"></i> Åpne i TradingView
+                    </a>
+                </div>
+                <small class="text-muted mt-3 d-block">
+                    <strong>Tips:</strong> Deaktiver ad blocker for denne siden eller legg til unntak for tradingview.com
+                </small>
+            </div>
+        `;
+    }
+}
+
+function handleTradingViewError(error) {
+    console.error('TradingView error details:', error);
+    
+    // Check for specific error types
+    if (error.toString().includes('network') || error.toString().includes('fetch')) {
+        showNetworkError();
+    } else if (error.toString().includes('rate') || error.toString().includes('limit')) {
+        showRateLimitError();
+    } else {
+        showGenericTradingViewError(error);
+    }
+}
+
+function showRateLimitError() {
+    const container = document.getElementById('tradingview_main_widget');
+    if (container) {
+        container.innerHTML = `
+            <div class="alert alert-info text-center p-4">
+                <i class="bi bi-clock fs-1 text-info mb-3"></i>
+                <h4>TradingView Rate Limit</h4>
+                <p class="mb-3">For mange forespørsler til TradingView. Vennligst vent noen sekunder.</p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button class="btn btn-primary" onclick="setTimeout(() => location.reload(), 5000)">
+                        <i class="bi bi-arrow-clockwise"></i> Auto-refresh om 5 sek
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="loadChartJsFallback('${currentSymbol}')">
+                        <i class="bi bi-bar-chart"></i> Vis fallback chart
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+}
+
+function showNetworkError() {
+    const container = document.getElementById('tradingview_main_widget');
+    if (container) {
+        container.innerHTML = `
+            <div class="alert alert-danger text-center p-4">
+                <i class="bi bi-wifi-off fs-1 text-danger mb-3"></i>
+                <h4>Nettverksfeil</h4>
+                <p class="mb-3">Kan ikke koble til TradingView. Sjekk internettforbindelsen.</p>
+                <button class="btn btn-primary" onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i> Prøv igjen
+                </button>
+            </div>
+        `;
+    }
+}
+
+function showGenericTradingViewError(error) {
+    const container = document.getElementById('tradingview_main_widget');
+    if (container) {
+        container.innerHTML = `
+            <div class="alert alert-warning text-center p-4">
+                <i class="bi bi-exclamation-triangle fs-1 text-warning mb-3"></i>
+                <h4>Chart feil</h4>
+                <p class="mb-3">En feil oppstod under lasting av TradingView chart.</p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button class="btn btn-primary" onclick="location.reload()">
+                        <i class="bi bi-arrow-clockwise"></i> Prøv igjen
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="loadChartJsFallback('${currentSymbol}')">
+                        <i class="bi bi-bar-chart"></i> Fallback chart
+                    </button>
+                </div>
+                <small class="text-muted mt-2 d-block">Feil: ${error.toString()}</small>
+            </div>
+        `;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Enhanced TradingView loading with ad blocker and network detection
+    let tradingViewLoadAttempts = 0;
+    const maxLoadAttempts = 10;
+    
+    function waitForTradingView() {
+        tradingViewLoadAttempts++;
+        
+        if (typeof TradingView !== 'undefined') {
+            console.log('✅ TradingView library loaded successfully');
+            // Test if TradingView actually works (not blocked)
+            testTradingViewAccess();
+        } else if (tradingViewLoadAttempts >= maxLoadAttempts) {
+            console.warn('❌ TradingView library failed to load - likely blocked by ad blocker or network issues');
+            showAdBlockerWarning();
+        } else {
+            console.log(`⏳ Waiting for TradingView library... (attempt ${tradingViewLoadAttempts}/${maxLoadAttempts})`);
+            setTimeout(waitForTradingView, 1000);
+        }
+    }
+    
+    function testTradingViewAccess() {
+        try {
+            // Test if we can create a widget (basic access test)
+            if (TradingView && TradingView.widget) {
+                console.log('✅ TradingView widget constructor available');
+                // Initialize charts with enhanced error handling
+                setTimeout(() => {
+                    try {
+                        loadMainChart(currentSymbol);
+                        loadTechnicalAnalysis(currentSymbol);
+                        loadMarketOverview();
+                    } catch (error) {
+                        console.error('Error initializing charts:', error);
+                        handleTradingViewError(error);
+                    }
+                }, 1500);
+            } else {
+                throw new Error('TradingView.widget not available');
+            }
+        } catch (error) {
+            console.error('TradingView access test failed:', error);
+            showAdBlockerWarning();
+        }
+    }
+    
+    waitForTradingView();
+    
+    // --- Search functionality (robust deferred TradingView init) ---
+    const searchInput = document.getElementById('symbolSearch');
+    const loadBtn = document.getElementById('loadChart');
+
+    function sanitizeInputSymbol(raw) {
+        if(!raw) return '';
+        let cleaned = raw.toUpperCase().trim();
+        cleaned = cleaned.replace(/[^A-Z0-9.\-=/]/g,'');
+        if(cleaned.endsWith('.OSL') && !cleaned.endsWith('.OL')) cleaned = cleaned.replace('.OSL','.OL');
+        if(cleaned.length === 0 || cleaned.length > 20) return '';
+        return cleaned;
+    }
+
+    function setButtonLoading(state){
+        if(!loadBtn) return; 
+        loadBtn.disabled = state; 
+        const def = loadBtn.querySelector('.default-label');
+        const load = loadBtn.querySelector('.loading-label');
+        if(def && load){
+            if(state){ def.classList.add('d-none'); load.classList.remove('d-none'); }
+            else { load.classList.add('d-none'); def.classList.remove('d-none'); }
+        }
+    }
+
+    function ensureTradingViewReady(callback){
+        if (typeof TradingView !== 'undefined' && TradingView.widget){
+            callback();
+            return;
+        }
+        let attempts = 0;
+        const maxAttempts = 14; // ~7s
+        const iv = setInterval(()=>{
+            if (typeof TradingView !== 'undefined' && TradingView.widget){
+                clearInterval(iv);
+                callback();
+            } else if(++attempts >= maxAttempts){
+                clearInterval(iv);
+                console.warn('TradingView ikke klar etter venting – viser adblocker advarsel');
+                showAdBlockerWarning();
+                setButtonLoading(false);
+            }
+        },500);
+    }
+
+    function showQuickToast(msg){
+        let c = document.querySelector('.toast-container');
+        if(!c){ c = document.createElement('div'); c.className='toast-container position-fixed bottom-0 end-0 p-3'; document.body.appendChild(c);}        
+        const t = document.createElement('div');
+        t.className='toast align-items-center text-white bg-primary border-0';
+        t.setAttribute('role','alert');
+        t.innerHTML = `<div class="d-flex"><div class="toast-body">${msg}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
+        c.appendChild(t);
+        const inst = new bootstrap.Toast(t,{delay:2000});
+        inst.show();
+        t.addEventListener('hidden.bs.toast',()=>t.remove());
+    }
+
+    function dynamicLoadSymbol(rawSymbol){
+        const sym = sanitizeInputSymbol(rawSymbol);
+        if(!sym) return;
+        setButtonLoading(true);
+        currentSymbol = sym;
+        const disp = document.getElementById('currentSymbolDisplay');
+        if(disp) disp.textContent = sym;
+        const url = new URL(window.location.href);
+        url.searchParams.set('symbol', sym);
+        window.history.pushState({}, '', url.toString());
+        ensureTradingViewReady(()=>{
+            try {
+                loadMainChart(sym);
+                loadTechnicalAnalysis(sym);
+                loadMarketOverview();
+            } catch(err){ console.warn('Dynamic load error', err); }
+            setTimeout(()=>setButtonLoading(false), 400);
+            showQuickToast('Lastet '+sym);
+        });
+    }
+
+    loadBtn.addEventListener('click', ()=> {
+        dynamicLoadSymbol(searchInput.value);
+    });
+
+    searchInput.addEventListener('keydown', e => {
+        if(e.key === 'Enter') {
+            if(e.shiftKey) { // full reload pathway for updated server-side stock_info panel
+                const sym = sanitizeInputSymbol(searchInput.value);
+                if(sym){
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('symbol', sym);
+                    window.location.replace(url.toString());
+                }
+            } else {
+                dynamicLoadSymbol(searchInput.value);
+            }
+        }
+    });
+});
+
+// Enhanced Chart.js fallback for when TradingView is blocked
+function loadChartJsFallback(symbol) {
+    const container = document.getElementById('tradingview_main_widget');
+    if (!container) return;
+    
+    // Create canvas for Chart.js
+    container.innerHTML = `
+        <div class="bg-light border rounded p-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">
+                    <i class="bi bi-bar-chart-fill text-primary"></i> 
+                    Fallback Chart - ${symbol}
+                </h5>
+                <span class="badge bg-secondary">Chart.js</span>
+            </div>
+            <canvas id="fallbackChart" width="400" height="200"></canvas>
+            <div class="mt-2 text-center">
+                <small class="text-muted">
+                    TradingView utilgjengelig - viser sample data med Chart.js
+                </small>
+            </div>
+        </div>
+    `;
+    
+    // Load Chart.js if not already loaded
+    if (typeof Chart === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+        script.onload = () => initFallbackChart(symbol);
+        document.head.appendChild(script);
+    } else {
+        initFallbackChart(symbol);
+    }
+}
+
+function initFallbackChart(symbol) {
+    const canvas = document.getElementById('fallbackChart');
+    if (!canvas) return;
+    
+    // Generate realistic sample data
+    const data = generateSampleChartData(symbol);
+    
+    new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                label: `${symbol} Pris`,
+                data: data.prices,
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                fill: true,
+                tension: 0.2,
+                pointRadius: 2,
+                pointHoverRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    title: {
+                        display: true,
+                        text: 'Pris (NOK)'
+                    },
+                    grid: {
+                        color: 'rgba(0,0,0,0.1)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Dato'
+                    },
+                    grid: {
+                        color: 'rgba(0,0,0,0.1)'
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: `Teknisk Analyse - ${symbol} (Fallback)`
+                },
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            }
+        }
+    });
+}
+
+function generateSampleChartData(symbol) {
+    const labels = [];
+    const prices = [];
+    
+    // Base price varies by symbol type
+    let basePrice = 100;
+    if (symbol.endsWith('.OL')) basePrice = 150; // Norwegian stocks
+    if (symbol.includes('BTC')) basePrice = 45000; // Bitcoin
+    if (symbol.includes('ETH')) basePrice = 3000; // Ethereum
+    
+    let currentPrice = basePrice;
+    
+    // Generate 30 days of data
+    for (let i = 29; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        labels.push(date.toLocaleDateString('no-NO', { month: 'short', day: 'numeric' }));
+        
+        // Realistic price movement
+        const volatility = 0.03; // 3% daily volatility
+        const change = (Math.random() - 0.5) * 2 * volatility * currentPrice;
+        currentPrice = Math.max(currentPrice + change, basePrice * 0.5); // Don't go below 50% of base
+        prices.push(Math.round(currentPrice * 100) / 100);
+    }
+    
+    return { labels, prices };
+}
+
+// Enhanced main chart loader with robust error handling
+function loadMainChart(symbol) {
+    const container = document.getElementById('tradingview_main_widget');
+    if (!container) return;
+    
+    // Validate symbol before proceeding
+    if (!symbol || typeof symbol !== 'string' || symbol.trim() === '') {
+        console.warn('Invalid symbol provided to loadMainChart:', symbol);
+        showGenericTradingViewError(new Error('Ugyldig symbol'));
+        return;
+    }
+    
+    // Clear container and show loading
+    container.innerHTML = `
+        <div class="text-center p-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted mt-3">Laster TradingView chart for ${symbol}...</p>
+            <small class="text-muted">Dette kan ta noen sekunder</small>
+        </div>
+    `;
+    
+    // Enhanced chart initialization with timeout and error handling
+    function initChart() {
+        if (typeof TradingView !== 'undefined' && TradingView.widget) {
+            try {
+                const formattedSymbol = formatSymbolForTradingView(symbol);
+                console.log(`🎯 Loading TradingView chart: ${symbol} → ${formattedSymbol}`);
+                
+                // Clear any existing widget
+                if (widgets.mainChart) {
+                    try {
+                        widgets.mainChart.remove();
+                    } catch (e) {
+                        console.log('Previous widget cleanup:', e);
+                    }
+                }
+                
+                widgets.mainChart = new TradingView.widget({
+                    "width": "100%",
+                    "height": 600,
+                    "symbol": formattedSymbol,
+                    "interval": "D",
+                    "timezone": "Europe/Oslo",
+                    "theme": "light",
+                    "style": "1",
+                    "locale": "no",
+                    "toolbar_bg": "#f1f3f6",
+                    "enable_publishing": false,
+                    "allow_symbol_change": true,
+                    "container_id": "tradingview_main_widget",
+                    "studies": ["RSI@tv-basicstudies", "MACD@tv-basicstudies"],
+                    "watchlist": [
+                        "NASDAQ:AAPL", "NASDAQ:TSLA", "NASDAQ:MSFT", 
+                        "OSL:EQNR", "OSL:DNB", "OSL:MOWI"
+                    ],
+                    "onChartReady": function() {
+                        console.log('✅ TradingView main chart loaded successfully for:', formattedSymbol);
+                    },
+                    "onerror": function(error) {
+                        console.error('❌ TradingView widget error:', error);
+                        handleTradingViewError(error);
+                    }
+                });
+                
+                // Set timeout to detect if chart fails to load
+                setTimeout(() => {
+                    const iframe = container.querySelector('iframe');
+                    if (!iframe || iframe.style.display === 'none') {
+                        console.warn('⏰ TradingView chart timeout - no iframe detected after 15 seconds');
+                        showRateLimitError();
+                    }
+                }, 15000);
+                
+            } catch (error) {
+                console.error('Error creating TradingView widget:', error);
+                handleTradingViewError(error);
+            }
+        } else {
+            console.error('TradingView widget constructor not available');
+            showAdBlockerWarning();
+        }
+    }
+    
+    initChart();
+}
+
+// Technical analysis widget
+function loadTechnicalAnalysis(symbol) {
+    const container = document.getElementById('tradingview_technical_analysis');
+    if (!container) return;
+    
+    function initTechAnalysis() {
+        if (typeof TradingView !== 'undefined' && TradingView.TechnicalAnalysisWidget) {
+            try {
+                const formattedSymbol = formatSymbolForTradingView(symbol);
+                
+                widgets.techAnalysis = new TradingView.TechnicalAnalysisWidget({
+                    "interval": "1D",
+                    "width": "100%",
+                    "isTransparent": false,
+                    "height": "350",
+                    "symbol": formattedSymbol,
+                    "showIntervalTabs": true,
+                    "locale": "no",
+                    "colorTheme": "light",
+                    "container_id": "tradingview_technical_analysis"
+                });
+                
+                console.log('✅ Technical analysis widget loaded');
+            } catch (error) {
+                console.error('❌ Error loading technical analysis:', error);
+                container.innerHTML = '<div class="text-center p-4 text-muted">Teknisk analyse ikke tilgjengelig</div>';
+            }
+        } else {
+            setTimeout(initTechAnalysis, 500);
+        }
+    }
+    
+    initTechAnalysis();
+}
+
+// Market overview widget
+function loadMarketOverview() {
+    const container = document.getElementById('tradingview_market_overview');
+    if (!container) return;
+    
+    function initMarketOverview() {
+        if (typeof TradingView !== 'undefined' && TradingView.MarketOverviewWidget) {
+            try {
+                widgets.marketOverview = new TradingView.MarketOverviewWidget({
+                    "colorTheme": "light",
+                    "dateRange": "12M",
+                    "showChart": true,
+                    "locale": "no",
+                    "width": "100%",
+                    "height": "350",
+                    "plotLineColorGrowing": "rgba(41, 98, 255, 1)",
+                    "plotLineColorFalling": "rgba(41, 98, 255, 1)",
+                    "gridLineColor": "rgba(240, 243, 250, 0)",
+                    "scaleFontColor": "rgba(120, 123, 134, 1)",
+                    "belowLineFillColorGrowing": "rgba(41, 98, 255, 0.12)",
+                    "belowLineFillColorFalling": "rgba(41, 98, 255, 0.12)",
+                    "belowLineFillColorGrowingBottom": "rgba(41, 98, 255, 0)",
+                    "belowLineFillColorFallingBottom": "rgba(41, 98, 255, 0)",
+                    "symbolActiveColor": "rgba(41, 98, 255, 0.12)",
+                    "tabs": [
+                        {
+                            "title": "Indekser",
+                            "symbols": [
+                                {"s": "FOREXCOM:SPXUSD", "d": "S&P 500"},
+                                {"s": "FOREXCOM:NSXUSD", "d": "US 100"},
+                                {"s": "FOREXCOM:DJI", "d": "Dow 30"},
+                                {"s": "INDEX:OSEBX", "d": "OSEBX"},
+                                {"s": "FOREXCOM:UKXGBP", "d": "UK 100"},
+                                {"s": "INDEX:DAX", "d": "DAX Index"}
+                            ],
+                            "originalTitle": "Indices"
+                        }
+                    ],
+                    "container_id": "tradingview_market_overview"
+                });
+                
+                console.log('✅ Market overview widget loaded');
+            } catch (error) {
+                console.error('❌ Error loading market overview:', error);
+                container.innerHTML = '<div class="text-center p-4 text-muted">Markedsoversikt ikke tilgjengelig</div>';
+            }
+        } else {
+            setTimeout(initMarketOverview, 500);
+        }
+    }
+    
+    initMarketOverview();
+}
+
+// Fallback chart display
+function showFallbackChart(container, symbol) {
+    container.innerHTML = `
+        <div class="text-center p-5 border rounded bg-light">
+            <i class="bi bi-bar-chart text-primary mb-3" style="font-size: 3rem;"></i>
+            <h4>TradingView Chart</h4>
+            <p class="text-muted">Symbol: <strong>${symbol}</strong></p>
+            <div class="alert alert-info">
+                Chart kunne ikke lastes. Prøv å oppdatere siden eller besøk TradingView direkte.
+            </div>
+            <div class="mt-3">
+                <button class="btn btn-primary me-2" onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i> Oppdater
+                </button>
+                <a href="https://www.tradingview.com/symbols/${symbol}" target="_blank" class="btn btn-outline-primary">
+                    <i class="bi bi-box-arrow-up-right"></i> Åpne i TradingView
+                </a>
+            </div>
+        </div>`;
+}
+
+// Load symbol function
+function loadSymbol(symbol) {
+    currentSymbol = symbol;
+    document.getElementById('symbolSearch').value = symbol;
+    loadMainChart(symbol);
+    loadTechnicalAnalysis(symbol);
+    loadMarketOverview();
+    
+    // Update URL
+    const url = new URL(window.location);
+    url.searchParams.set('symbol', symbol);
+    window.history.pushState({}, '', url);
+}
+</script>
+{% endblock %}

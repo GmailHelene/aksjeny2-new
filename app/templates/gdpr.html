@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <h2>GDPR og personvern</h2>
+            <p class="lead">Vi tar personvern på alvor og følger GDPR-regelverket. Her finner du informasjon om hvordan vi håndterer dine personopplysninger.</p>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h4>📋 Hvilke data samler vi inn?</h4>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li><strong>Brukerdata:</strong> E-post, brukernavn, abonnementsstatus</li>
+                        <li><strong>Handelsdata:</strong> Portfolio-informasjon, favorittaksjer, søkehistorikk</li>
+                        <li><strong>Teknisk data:</strong> IP-adresse, nettleserinfo, cookies</li>
+                        <li><strong>Betalingsdata:</strong> Behandles sikkert via Stripe (vi lagrer ikke kredittkortinfo)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h4>🛡️ Dine rettigheter under GDPR</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>📋 Rett til innsyn</h6>
+                            <p>Du kan be om å få se alle data vi har om deg</p>
+                            
+                            <h6>🗑️ Rett til sletting</h6>
+                            <p>Du kan be om at vi sletter alle dine personopplysninger</p>
+                            
+                            <h6>✏️ Rett til retting</h6>
+                            <p>Du kan be om at vi retter feil i dine data</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>📤 Rett til dataportabilitet</h6>
+                            <p>Du kan be om å få dine data i et maskinlesbart format</p>
+                            
+                            <h6>⛔ Rett til begrensning</h6>
+                            <p>Du kan be om at vi begrenser behandlingen av dine data</p>
+                            
+                            <h6>🚫 Rett til innsigelse</h6>
+                            <p>Du kan protestere mot vår behandling av dine data</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h4>🍪 Cookie-samtykkehåndtering</h4>
+                </div>
+                <div class="card-body">
+                    <p>Vi bruker cookies for å forbedre din opplevelse:</p>
+                    <ul>
+                        <li><strong>Nødvendige cookies:</strong> For pålogging og grunnleggende funksjonalitet</li>
+                        <li><strong>Analytiske cookies:</strong> For å forstå hvordan tjenesten brukes</li>
+                        <li><strong>Funksjonelle cookies:</strong> For å huske dine preferanser</li>
+                    </ul>
+                    <button class="btn btn-secondary" onclick="openCookieSettings()">
+                        <i class="bi bi-gear"></i> Administrer cookie-innstillinger
+                    </button>
+                </div>
+            </div>
+
+            <div class="alert alert-info mt-4">
+                <h5><i class="bi bi-shield-check"></i> Datasikkerhet</h5>
+                <p>Vi bruker industri-standard sikkerhetstiltak for å beskytte dine data, inkludert SSL-kryptering og sikre servere.</p>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="mailto:kontakt@aksjeradar.trade?subject=GDPR%20forespørsel" class="btn btn-primary btn-lg">
+                    <i class="bi bi-envelope"></i> Send GDPR-forespørsel
+                </a>
+                <a href="{{ url_for('main.terms') }}" class="btn btn-outline-secondary btn-lg ms-2">
+                    <i class="bi bi-file-text"></i> Les våre brukervilkår
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5><i class="bi bi-check-circle"></i> Hurtige handlinger</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary" onclick="requestDataExport()">
+                            <i class="bi bi-download"></i> Last ned mine data
+                        </button>
+                        <button class="btn btn-outline-warning" onclick="requestDataDeletion()">
+                            <i class="bi bi-trash"></i> Slett min konto
+                        </button>
+                        <button class="btn btn-outline-info" onclick="updatePrivacySettings()">
+                            <i class="bi bi-gear"></i> Personverninnstillinger
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-body text-center">
+                    <h6>📞 Kontakt personvernansvarlig</h6>
+                    <p class="small">For spørsmål om personvern og GDPR</p>
+                    <a href="mailto:kontakt@aksjeradar.trade?subject=Personvern" class="btn btn-sm btn-outline-primary">
+                        Send e-post
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openCookieSettings() {
+    alert('Cookie-innstillinger vil åpnes i en fremtidig oppdatering.');
+}
+
+function requestDataExport() {
+    if(confirm('Ønsker du å motta en kopi av alle dine lagrede data?')) {
+        window.location.href = 'mailto:kontakt@aksjeradar.trade?subject=GDPR - Be om datauttak&body=Jeg ønsker å motta en kopi av alle mine personopplysninger lagret hos Aksjeradar.';
+    }
+}
+
+function requestDataDeletion() {
+    if(confirm('ADVARSEL: Dette vil permanent slette din konto og alle data. Er du sikker?')) {
+        window.location.href = 'mailto:kontakt@aksjeradar.trade?subject=GDPR - Be om sletting&body=Jeg ønsker å slette min konto og alle mine personopplysninger hos Aksjeradar.';
+    }
+}
+
+function updatePrivacySettings() {
+    alert('Personverninnstillinger vil være tilgjengelige i brukerinnstillinger.');
+}
+</script>
+{% endblock %}

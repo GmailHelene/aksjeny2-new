@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Clear Cache - Admin{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1>Cache Management</h1>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h3>Server-side Cache</h3>
+        </div>
+        <div class="card-body">
+            <button id="clearServerCache" class="btn btn-danger">Clear Server Cache</button>
+            <p class="mt-2">Dette vil tømme alle server-side cacher inkludert Flask cache og Python cache.</p>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h3>Browser Cache - Automatisk</h3>
+        </div>
+        <div class="card-body">
+            <button id="forceBrowserRefresh" class="btn btn-warning">Force Browser Refresh</button>
+            <p class="mt-2">Dette vil legge til cache-busting parametere til alle ressurser.</p>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            <h3>Manual Browser Cache Clear</h3>
+        </div>
+        <div class="card-body">
+            <h4>Windows/Linux:</h4>
+            <ul>
+                <li><strong>Chrome/Edge:</strong> Ctrl + Shift + Delete</li>
+                <li><strong>Firefox:</strong> Ctrl + Shift + Delete</li>
+                <li><strong>Hard Refresh:</strong> Ctrl + F5</li>
+            </ul>
+            
+            <h4>Mac:</h4>
+            <ul>
+                <li><strong>Chrome/Safari:</strong> Cmd + Shift + Delete</li>
+                <li><strong>Firefox:</strong> Cmd + Shift + Delete</li>
+                <li><strong>Hard Refresh:</strong> Cmd + Shift + R</li>
+            </ul>
+            
+            <h4>Developer Tools Method (All browsers):</h4>
+            <ol>
+                <li>Åpne Developer Tools (F12)</li>
+                <li>Høyreklikk på refresh-knappen</li>
+                <li>Velg "Empty Cache and Hard Reload"</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('clearServerCache').addEventListener('click', function() {
+    if(confirm('Er du sikker på at du vil tømme server cache?')) {
+        fetch('/admin/clear-cache', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                alert('Server cache tømt!');
+                location.reload();
+            } else {
+                alert('Feil ved tømming av cache: ' + data.error);
+            }
+        });
+    }
+});
+
+document.getElementById('forceBrowserRefresh').addEventListener('click', function() {
+    // Clear localStorage
+    localStorage.clear();
+    
+    // Clear sessionStorage
+    sessionStorage.clear();
+    
+    // Add cache buster to URL and reload
+    const timestamp = new Date().getTime();
+    const separator = window.location.search ? '&' : '?';
+    window.location.href = window.location.href + separator + 'v=' + timestamp;
+});
+</script>
+{% endblock %}

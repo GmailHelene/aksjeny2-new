@@ -1,0 +1,384 @@
+{% extends 'base.html' %}
+
+{% block title %}Min portefølje{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <!-- Error Message Display -->
+  {% if error_message %}
+  <div class="alert alert-warning alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle me-2"></i>{{ error_message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endif %}
+  
+  <!-- Empty State Check -->
+  {% if not portfolios or portfolios|length == 0 %}
+  <div class="text-center py-5">
+    <div class="mb-4">
+      <i class="bi bi-briefcase display-1 text-muted"></i>
+    </div>
+    <h3 class="text-muted">Ingen porteføljer ennå</h3>
+    <p class="text-muted">Kom i gang ved å opprette din første portefølje!</p>
+    <a href="{{ url_for('portfolio.create_portfolio') }}" class="btn btn-primary btn-lg">
+      <i class="bi bi-plus-circle me-2"></i>Opprett din første portefølje
+    </a>
+  </div>
+  {% else %}
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Mine porteføljer</h1>
+    <a href="{{ url_for('portfolio.create_portfolio') }}" class="btn btn-success">
+      <i class="bi bi-plus-circle me-2"></i>Opprett ny portefølje
+    </a>
+  </div>
+  
+  {% if not portfolios or portfolios|length == 0 %}
+  <!-- Empty State -->
+  <div class="text-center py-5">
+    <div class="mb-4">
+      <i class="bi bi-briefcase display-1 text-muted"></i>
+    </div>
+    <h3 class="text-muted">Ingen porteføljer ennå</h3>
+    <p class="text-muted">Kom i gang ved å opprette din første portefølje!</p>
+    <a href="{{ url_for('portfolio.create_portfolio') }}" class="btn btn-primary btn-lg">
+      <i class="bi bi-plus-circle me-2"></i>Opprett din første portefølje
+    </a>
+  </div>
+  {% else %}
+    <!-- Portfolio Selector (if multiple portfolios) -->
+  {% if portfolios and portfolios|length > 1 %}
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <label for="portfolioSelect" class="form-label">Velg portefølje:</label>
+      <select class="form-select" id="portfolioSelect" onchange="switchPortfolio(this.value)">
+        {% for p in portfolios %}
+        <option value="{{ p.id }}" {% if portfolio and p.id == portfolio.id %}selected{% endif %}>
+          {{ p.name }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  {% endif %}
+  
+  <!-- Dashboard Widgets -->
+  <div id="dashboard-widgets" class="row mb-4">
+    <!-- Total Value Widget -->
+    <div class="col-md-4" id="widget-total-value" style="display:none">
+      <div class="card text-center border-primary">
+        <div class="card-body">
+          <h5 class="card-title text-primary">
+            <i class="bi bi-wallet2 me-2"></i>Total porteføljeverdi
+          </h5>
+          <p class="display-6 fw-bold">{{ (total_value|default(0))|round(2) }} kr</p>
+        </div>
+      </div>
+    </div>
+    <!-- Profit/Loss Widget -->
+    <div class="col-md-4" id="widget-profit-loss" style="display:none">
+      <div class="card text-center {% if total_profit_loss > 0 %}border-success{% elif total_profit_loss < 0 %}border-danger{% else %}border-secondary{% endif %}">
+        <div class="card-body">
+          <h5 class="card-title {% if total_profit_loss > 0 %}text-success{% elif total_profit_loss < 0 %}text-danger{% else %}text-secondary{% endif %}">
+            <i class="bi bi-graph-{% if total_profit_loss > 0 %}up{% elif total_profit_loss < 0 %}down{% else %}up{% endif %} me-2"></i>Samlet gevinst/tap
+          </h5>
+          <p class="display-6 fw-bold {% if total_profit_loss > 0 %}text-success{% elif total_profit_loss < 0 %}text-danger{% endif %}">
+            {{ (total_profit_loss|default(0))|round(2) }} kr
+          </p>
+        </div>
+      </div>
+    </div>
+    <!-- Alerts Widget -->
+    <div class="col-md-4" id="widget-alerts" style="display:none">
+      <div class="card text-center border-info">
+        <div class="card-body">
+          <h5 class="card-title text-info">
+            <i class="bi bi-bell me-2"></i>Aktive varsler
+          </h5>
+          <p class="display-6 fw-bold">{{ active_alerts|default(0) }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if stocks %}
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header bg-primary text-white">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h2 class="mb-1">{{ portfolio.name }}</h2>
+            <p class="mb-0">Total verdi: <strong>{{ (total_value|default(0))|round(2) }} NOK</strong></p>
+          </div>
+          <div class="text-end">
+            {% if total_profit_loss > 0 %}
+              <span class="badge bg-success fs-6">
+                <i class="bi bi-arrow-up"></i> +{{ total_profit_loss|round(2) }} NOK
+              </span>
+            {% elif total_profit_loss < 0 %}
+              <span class="badge bg-danger fs-6">
+                <i class="bi bi-arrow-down"></i> {{ total_profit_loss|round(2) }} NOK
+              </span>
+            {% else %}
+              <span class="badge bg-secondary fs-6">
+                <i class="bi bi-dash"></i> 0.00 NOK
+              </span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped table-hover">
+            <thead>
+              <tr>
+                <th><i class="bi bi-tag me-1"></i>Ticker</th>
+                <th><i class="bi bi-hash me-1"></i>Antall</th>
+                <th><i class="bi bi-currency-exchange me-1"></i>Kjøpspris</th>
+                <th><i class="bi bi-graph-up me-1"></i>Nåværende pris</th>
+                <th><i class="bi bi-wallet me-1"></i>Verdi</th>
+                <th><i class="bi bi-calculator me-1"></i>Gevinst/Tap</th>
+                <th><i class="bi bi-percent me-1"></i>%</th>
+                <th><i class="bi bi-gear me-1"></i>Handlinger</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ticker, data in stocks.items() %}
+              <tr>
+                <td><strong>{{ ticker }}</strong></td>
+                <td>{{ data.shares }}</td>
+                <td>{{ data.purchase_price|round(2) }} NOK</td>
+                <td>
+                  {% if data.last_price != 'N/A' %}
+                    {{ data.last_price|round(2) }} NOK
+                  {% else %}
+                    <span class="text-muted">N/A</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if data.last_price != 'N/A' %}
+                    {{ (data.last_price * data.shares)|round(2) }} NOK
+                  {% else %}
+                    {{ (data.shares * data.purchase_price)|round(2) }} NOK
+                  {% endif %}
+                </td>
+                <td class="{% if data.profit_loss > 0 %}text-success{% elif data.profit_loss < 0 %}text-danger{% endif %}">
+                  {% if data.profit_loss > 0 %}
+                    <i class="bi bi-arrow-up"></i> +{{ data.profit_loss|round(2) }}
+                  {% elif data.profit_loss < 0 %}
+                    <i class="bi bi-arrow-down"></i> {{ data.profit_loss|round(2) }}
+                  {% else %}
+                    <i class="bi bi-dash"></i> 0.00
+                  {% endif %}
+                  NOK
+                </td>
+                <td class="{% if data.profit_loss_percent > 0 %}text-success{% elif data.profit_loss_percent < 0 %}text-danger{% endif %}">
+                  {% if data.profit_loss_percent > 0 %}
+                    <i class="bi bi-arrow-up"></i> +{{ data.profit_loss_percent|round(2) }}%
+                  {% elif data.profit_loss_percent < 0 %}
+                    <i class="bi bi-arrow-down"></i> {{ data.profit_loss_percent|round(2) }}%
+                  {% else %}
+                    <i class="bi bi-dash"></i> 0.00%
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="btn-group" role="group">
+                    <a href="{{ url_for('stocks.details', symbol=ticker) }}" class="btn btn-sm btn-outline-primary" title="Se detaljer">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                    <a href="{{ url_for('portfolio.edit_stock', id=portfolio.id, stock_id=data.stock_id) }}" class="btn btn-sm btn-outline-secondary" title="Rediger">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    <button class="btn btn-sm btn-outline-danger" onclick="removeStock({{ data.stock_id }})" title="Fjern">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Portfolio Actions -->
+    <div class="d-flex justify-content-between mb-4">
+      <div>
+        <a href="{{ url_for('portfolio.add_stock_to_portfolio', id=portfolio.id) }}" class="btn btn-primary">
+          <i class="bi bi-plus-circle me-2"></i>Legg til aksje
+        </a>
+        <a href="{{ url_for('portfolio.transactions') }}" class="btn btn-outline-info">
+          <i class="bi bi-list-ul me-2"></i>Transaksjoner
+        </a>
+      </div>
+      <div>
+        <button class="btn btn-outline-danger" onclick="deletePortfolio({{ portfolio.id }})">
+          <i class="bi bi-trash me-2"></i>Slett portefølje
+        </button>
+      </div>
+    </div>
+    
+  {% elif portfolios %}
+    <!-- User has portfolios but they are empty -->
+    <div class="alert alert-warning">
+      <h4><i class="bi bi-exclamation-triangle me-2"></i>Porteføljen er tom</h4>
+      <p>Du har opprettet porteføljer, men de inneholder ingen aksjer ennå.</p>
+      <a href="{{ url_for('portfolio.add_stock_to_portfolio', id=portfolios[0].id) }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-2"></i>Legg til din første aksje
+      </a>
+    </div>
+  {% else %}
+    <!-- No portfolios exist -->
+    <div class="alert alert-info">
+      <h4><i class="bi bi-info-circle me-2"></i>Velkommen til porteføljer</h4>
+      <p>Du har ingen porteføljer ennå. Opprett din første portefølje for å begynne å spore dine investeringer!</p>
+      <a href="{{ url_for('portfolio.create_portfolio') }}" class="btn btn-primary btn-lg">
+        <i class="bi bi-plus-circle me-2"></i>Opprett din første portefølje
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deletePortfolio(portfolioId) {
+    if (confirm('Er du sikker på at du vil slette denne porteføljen? Denne handlingen kan ikke angres.')) {
+        // Show loading state
+        const portfolioCard = document.querySelector(`[data-portfolio-id="${portfolioId}"]`);
+        if (portfolioCard) {
+            portfolioCard.style.opacity = '0.5';
+            portfolioCard.style.pointerEvents = 'none';
+        }
+
+        fetch(`/portfolio/${portfolioId}/delete`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Animate removal of the portfolio card
+                if (portfolioCard) {
+                    portfolioCard.style.transition = 'all 0.3s ease';
+                    portfolioCard.style.opacity = '0';
+                    portfolioCard.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        portfolioCard.remove();
+                        
+                        // Show success toast
+                        showToast(data.message || 'Portefølje slettet', 'success');
+                        
+                        // Check if no portfolios remain
+                        const remainingCards = document.querySelectorAll('[data-portfolio-id]');
+                        if (remainingCards.length === 0) {
+                            location.reload(); // Reload to show "no portfolios" message
+                        }
+                    }, 300);
+                }
+            } else {
+                // Reset card state and show error
+                if (portfolioCard) {
+                    portfolioCard.style.opacity = '1';
+                    portfolioCard.style.pointerEvents = 'auto';
+                }
+                showToast(data.error || 'Kunne ikke slette portefølje', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting portfolio:', error);
+            // Reset card state and show error
+            if (portfolioCard) {
+                portfolioCard.style.opacity = '1';
+                portfolioCard.style.pointerEvents = 'auto';
+            }
+            showToast('Teknisk feil ved sletting av portefølje', 'error');
+        });
+
+function removeStock(stockId) {
+    if (confirm('Er du sikker på at du vil fjerne denne aksjen fra porteføljen?')) {
+        // Find portfolio ID from current context
+        const portfolioId = {{ portfolio.id if portfolio else 'null' }};
+        if (!portfolioId) {
+            alert('Kunne ikke identifisere portefølje-ID');
+            return;
+        }
+        
+        fetch(`/portfolio/${portfolioId}/remove/${stockId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                alert('Aksjen ble fjernet fra porteføljen.');
+                window.location.reload();
+            } else {
+                alert('Kunne ikke fjerne aksjen: ' + (data.error || 'Ukjent feil'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Det oppstod en feil ved fjerning av aksjen: ' + error.message);
+        });
+    }
+}
+
+function switchPortfolio(portfolioId) {
+    // Redirect to the same page with selected portfolio
+    window.location.href = `/portfolio?selected=${portfolioId}`;
+}
+
+// Dynamic widget display based on user preferences
+document.addEventListener('DOMContentLoaded', function() {
+    // Load user preferences for dashboard widgets
+    fetch('/api/user/preferences')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Could not load preferences');
+            }
+            return response.json();
+        })
+        .then(data => {
+            let widgets = [];
+            try { 
+                widgets = JSON.parse(data.dashboard_widgets || '[]'); 
+            } catch(e) {
+                // Default widgets if parsing fails
+                widgets = ['total-value', 'profit-loss', 'alerts'];
+            }
+            
+            // Show widgets based on preferences
+            if (widgets.includes('total-value')) {
+                document.getElementById('widget-total-value').style.display = '';
+            }
+            if (widgets.includes('profit-loss')) {
+                document.getElementById('widget-profit-loss').style.display = '';
+            }
+            if (widgets.includes('alerts')) {
+                document.getElementById('widget-alerts').style.display = '';
+            }
+        })
+        .catch(error => {
+            console.log('Could not load widget preferences, showing defaults');
+            // Show all widgets by default if preferences can't be loaded
+            document.getElementById('widget-total-value').style.display = '';
+            document.getElementById('widget-profit-loss').style.display = '';
+            document.getElementById('widget-alerts').style.display = '';
+        });
+});
+</script>
+{% endif %}
+{% endblock %}

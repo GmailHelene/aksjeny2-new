@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}Authentication Diagnostic{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Authentication & Access Control Diagnostic</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Authentication Status -->
+                    <div class="mb-4">
+                        <h5>Authentication Status</h5>
+                        <table class="table table-bordered">
+                            <tr>
+                                <td><strong>Authenticated:</strong></td>
+                                <td>
+                                    {% if auth_info.is_authenticated %}
+                                        <span class="badge bg-success">Yes</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">No</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Access Level:</strong></td>
+                                <td>
+                                    {% if auth_info.access_level == 'admin' %}
+                                        <span class="badge bg-danger">Admin</span>
+                                    {% elif auth_info.access_level == 'premium' %}
+                                        <span class="badge bg-success">Premium</span>
+                                    {% elif auth_info.access_level == 'demo' %}
+                                        <span class="badge bg-warning">Demo</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">None</span>
+                                    {% endif %}
+                                    {{ auth_info.access_level }}
+                                </td>
+                            </tr>
+                            {% if auth_info.is_authenticated %}
+                                <tr>
+                                    <td><strong>Exempt User:</strong></td>
+                                    <td>
+                                        {% if auth_info.is_exempt %}
+                                            <span class="badge bg-success">Yes</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">No</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% if auth_info.has_active_subscription is defined %}
+                                    <tr>
+                                        <td><strong>Has Active Subscription:</strong></td>
+                                        <td>
+                                            {% if auth_info.has_active_subscription %}
+                                                <span class="badge bg-success">Yes</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">No</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endif %}
+                        </table>
+                    </div>
+
+                    <!-- User Attributes -->
+                    {% if auth_info.is_authenticated and auth_info.user_attributes %}
+                        <div class="mb-4">
+                            <h5>User Attributes</h5>
+                            <table class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Attribute</th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for key, value in auth_info.user_attributes.items() %}
+                                        <tr>
+                                            <td><strong>{{ key }}</strong></td>
+                                            <td>{{ value }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+
+                    <!-- Endpoint Access Checks -->
+                    <div class="mb-4">
+                        <h5>Endpoint Access Checks</h5>
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Endpoint</th>
+                                    <th>Allowed</th>
+                                    <th>Redirect To</th>
+                                    <th>Message</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for endpoint, check in auth_info.endpoint_access.items() %}
+                                    <tr>
+                                        <td><code>{{ endpoint }}</code></td>
+                                        <td>
+                                            {% if check.allowed %}
+                                                <span class="badge bg-success">Yes</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">No</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if check.redirect_to %}
+                                                <code>{{ check.redirect_to }}</code>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if check.message %}
+                                                {{ check.message }}
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Request Information -->
+                    <div class="mb-4">
+                        <h5>Request Information</h5>
+                        <table class="table table-striped table-bordered">
+                            <tbody>
+                                {% for key, value in request_info.items() %}
+                                    <tr>
+                                        <td><strong>{{ key }}</strong></td>
+                                        <td>{{ value }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Helpful Links -->
+                    <div class="mb-4">
+                        <h5>Diagnostic Links</h5>
+                        <div class="list-group">
+                            <a href="{{ url_for('main.profile') }}" class="list-group-item list-group-item-action">
+                                <i class="bi bi-person"></i> Profile (Main Blueprint)
+                            </a>
+                            <a href="{{ url_for('profile.profile_page') }}" class="list-group-item list-group-item-action">
+                                <i class="bi bi-person-badge"></i> Profile (Profile Blueprint)
+                            </a>
+                            <a href="{{ url_for('portfolio.portfolio_overview') }}" class="list-group-item list-group-item-action">
+                                <i class="bi bi-graph-up"></i> Portfolio Overview
+                            </a>
+                            <a href="/portfolio" class="list-group-item list-group-item-action">
+                                <i class="bi bi-graph-up"></i> Portfolio Direct Link
+                            </a>
+                            <a href="/profile" class="list-group-item list-group-item-action">
+                                <i class="bi bi-person"></i> Profile Direct Link
+                            </a>
+                            <a href="{{ url_for('diagnostic.api_auth_status') }}" class="list-group-item list-group-item-action">
+                                <i class="bi bi-code-slash"></i> JSON Auth Status (API)
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

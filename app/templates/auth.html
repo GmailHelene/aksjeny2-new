@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}Logg inn eller Registrer deg - Aksjeradar{% endblock %}
+
+{% block styles %}
+<style>
+.auth-container {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    overflow: hidden;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.auth-tabs {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    padding: 0;
+}
+
+.auth-tabs .nav-link {
+    background: transparent !important;
+    border: none !important;
+    color: rgba(255,255,255,0.7) !important;
+    font-weight: 500;
+    padding: 1rem 2rem;
+    border-radius: 0 !important;
+}
+
+.auth-tabs .nav-link.active {
+    color: white !important;
+    background: rgba(255,255,255,0.1) !important;
+}
+
+.auth-content {
+    padding: 2rem;
+}
+
+.form-floating label {
+    color: #6c757d;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.divider {
+    position: relative;
+    text-align: center;
+    margin: 1.5rem 0;
+}
+
+.divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #dee2e6;
+}
+
+.divider span {
+    background: white;
+    padding: 0 1rem;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.social-login {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.btn-social {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid #dee2e6;
+    background: white;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.btn-social:hover {
+    border-color: #0d6efd;
+    background: #f8f9ff;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #cff4fc 0%, #b6effb 100%);
+    border: none;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="container">
+        <div class="auth-card">
+            <!-- Navigation Tabs -->
+            <div class="auth-tabs">
+                <ul class="nav nav-tabs nav-fill" id="authTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Logg inn
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button" role="tab">
+                            <i class="bi bi-person-plus me-2"></i>Registrer deg
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="authTabContent">
+                <!-- Login Tab -->
+                <div class="tab-pane fade show active" id="login" role="tabpanel">
+                    <div class="auth-content">
+                        <div class="text-center mb-4">
+                            <h3 class="fw-bold">Velkommen tilbake!</h3>
+                            <p class="text-muted">Logg inn for å få tilgang til dine investeringsverktøy</p>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Har du aktiv tilgang?</strong> Logg inn for å sjekke din abonnementsstatus og få tilgang til alle funksjoner.
+                        </div>
+
+                        <form action="{{ url_for('auth.login') }}" method="post">
+                            {{ csrf_token() }}
+                            
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="loginUsername" name="username" placeholder="Brukernavn eller e-post" required>
+                                <label for="loginUsername">Brukernavn eller e-post</label>
+                            </div>
+                            
+                            <div class="form-floating mb-3">
+                                <input type="password" class="form-control" id="loginPassword" name="password" placeholder="Passord" required>
+                                <label for="loginPassword">Passord</label>
+                            </div>
+                            
+                            <div class="form-check mb-4">
+                                <input class="form-check-input" type="checkbox" id="rememberMe" name="remember_me">
+                                <label class="form-check-label" for="rememberMe">
+                                    Husk meg
+                                </label>
+                                <a href="#" class="float-end text-decoration-none">Glemt passord?</a>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100 mb-3">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Logg inn
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Register Tab -->
+                <div class="tab-pane fade" id="register" role="tabpanel">
+                    <div class="auth-content">
+                        <div class="text-center mb-4">
+                            <h3 class="fw-bold">Start din investeringsreise</h3>
+                            <p class="text-muted">Opprett gratis konto og få tilgang til Aksjeradar</p>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-gift me-2"></i>
+                            <strong>Velkommen til Aksjeradar!</strong> Registrer deg og få tilgang til våre kraftige analyseverktøy.
+                        </div>
+
+                        <form action="{{ url_for('main.register') }}" method="post">
+                            {{ csrf_token() }}
+                            
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="registerUsername" name="username" placeholder="Brukernavn" required>
+                                <label for="registerUsername">Brukernavn</label>
+                            </div>
+                            
+                            <div class="form-floating mb-3">
+                                <input type="email" class="form-control" id="registerEmail" name="email" placeholder="E-postadresse" required>
+                                <label for="registerEmail">E-postadresse</label>
+                            </div>
+                            
+                            <div class="form-floating mb-3">
+                                <input type="password" class="form-control" id="registerPassword" name="password" placeholder="Passord" required>
+                                <label for="registerPassword">Passord</label>
+                            </div>
+                            
+                            <div class="form-floating mb-3">
+                                <input type="password" class="form-control" id="confirmPassword" name="confirm_password" placeholder="Bekreft passord" required>
+                                <label for="confirmPassword">Bekreft passord</label>
+                            </div>
+                            
+                            <div class="form-check mb-4">
+                                <input class="form-check-input" type="checkbox" id="acceptTerms" required>
+                                <label class="form-check-label" for="acceptTerms">
+                                    Jeg aksepterer <a href="{{ url_for('main.privacy') }}" target="_blank">vilkårene</a> og <a href="{{ url_for('main.privacy') }}" target="_blank">personvernpolitikken</a>
+                                </label>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100 mb-3">
+                                <i class="bi bi-person-plus me-2"></i>Opprett konto
+                            </button>
+                        </form>
+
+                        <div class="text-center">
+                            <small class="text-muted">
+                                Ved å registrere deg får du tilgang til våre kraftige analyseverktøy og markedsdata. 
+                                Deretter kan du fortsette med begrenset tilgang eller oppgradere til full tilgang.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Return to Demo -->
+        <div class="text-center mt-4">
+            <a href="{{ url_for('main.demo') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Tilbake til demo
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-switch to register tab if coming from demo
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('tab') === 'register') {
+        const registerTab = new bootstrap.Tab(document.getElementById('register-tab'));
+        registerTab.show();
+    }
+    
+    // Password confirmation validation
+    const password = document.getElementById('registerPassword');
+    const confirmPassword = document.getElementById('confirmPassword');
+    
+    function validatePassword() {
+        if (password.value !== confirmPassword.value) {
+            confirmPassword.setCustomValidity('Passordene matcher ikke');
+        } else {
+            confirmPassword.setCustomValidity('');
+        }
+    }
+    
+    if (password && confirmPassword) {
+        password.addEventListener('change', validatePassword);
+        confirmPassword.addEventListener('keyup', validatePassword);
+    }
+});
+</script>
+{% endblock %}

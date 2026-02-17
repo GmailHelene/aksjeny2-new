@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Benjamin Graham Analyse{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Benjamin Graham Analysis</h1>
+    
+    {% if not analysis %}
+    <div class="alert alert-info">
+        <h4>Velg en aksje å analysere</h4>
+        <form method="GET" action="{{ url_for('analysis.benjamin_graham') }}">
+            <div class="mb-3">
+                <label for="ticker" class="form-label">Ticker Symbol</label>
+                <input type="text" class="form-control" id="ticker" name="ticker" 
+                       placeholder="F.eks. EQNR.OL" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Analyser</button>
+        </form>
+    </div>
+    {% endif %}
+    
+    {% if analysis %}
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ analysis.company_name }} ({{ analysis.ticker }})</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Graham Score: {{ analysis.graham_score }}%</h5>
+                    <div class="progress mb-3">
+                        <div class="progress-bar bg-{% if analysis.graham_score >= 70 %}success{% elif analysis.graham_score >= 50 %}warning{% else %}danger{% endif %}" 
+                             style="width: {{ analysis.graham_score }}%"></div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5>Anbefaling: {{ analysis.recommendation.action }}</h5>
+                    <p>{{ analysis.recommendation.reasoning }}</p>
+                </div>
+            </div>
+            
+            <h6>Kriterier:</h6>
+            <div class="row">
+                {% for criterion_key, result in analysis.criteria_results.items() %}
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <h6>{{ result.criterion.name }}</h6>
+                            <div class="h4 {% if result.passed %}text-success{% else %}text-danger{% endif %}">
+                                {{ result.value }}
+                            </div>
+                            <span class="badge {% if result.passed %}bg-success{% else %}bg-danger{% endif %}">
+                                {% if result.passed %}✓{% else %}✗{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Social Sentiment Tracker | Norwegian Stocks | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-chat-square-heart text-primary"></i> Social Sentiment Tracker</h1>
+        <div>
+            <span class="badge bg-success">Live Data</span>
+            <small class="text-muted">Sist oppdatert: {{ last_updated.strftime('%H:%M:%S') }}</small>
+        </div>
+    </div>
+    
+    <!-- Sentiment Overview Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="text-success">Bullish Sentiment</h5>
+                    <h3 class="text-success">{{ sentiment_data | selectattr('trend', 'equalto', 'bullish') | list | length + sentiment_data | selectattr('trend', 'equalto', 'very_bullish') | list | length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="text-warning">Neutral</h5>
+                    <h3 class="text-warning">{{ sentiment_data | selectattr('trend', 'equalto', 'neutral') | list | length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="text-danger">Bearish</h5>
+                    <h3 class="text-danger">{{ sentiment_data | selectattr('trend', 'equalto', 'bearish') | list | length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="text-info">Total Mentions</h5>
+                    <h3 class="text-info">{{ sentiment_data | sum(attribute='mentions') }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Ticker Actions -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header">
+            <h6><i class="fas fa-bolt text-warning"></i> Hurtiganalyse - Populære Aksjer</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for ticker in ['EQNR.OL', 'DNB.OL', 'TEL.OL', 'NHY.OL', 'MOWI.OL', 'YAR.OL', 'SALM.OL', 'ORK.OL'] %}
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="window.location.href='{{ url_for('stocks.details', symbol=ticker) }}'">
+                                {{ ticker }}
+                            </button>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-primary btn-sm dropdown-toggle dropdown-toggle-split" 
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="visually-hidden">Toggle Dropdown</span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{{ url_for('analysis.sentiment') }}?symbol={{ ticker }}">
+                                        <i class="fas fa-heart-pulse"></i> Sentiment Analyse
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('analysis.technical') }}?symbol={{ ticker }}">
+                                        <i class="fas fa-chart-area"></i> Teknisk Analyse
+                                    </a></li>
+                                    {# Fjernet AI Anbefaling og Legg til portefølje etter krav #}
+                                </ul>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sentiment Data Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header">
+            <h5>Real-time Norwegian Stock Sentiment</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Selskap</th>
+                            <th>Sentiment Score</th>
+                            <th>Trend</th>
+                            <th>Mentions (24h)</th>
+                            <th>Sentiment Meter</th>
+                            {# Fjernet Analyser kolonne #}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stock in sentiment_data %}
+                        <tr>
+                            <td>
+                                <strong>{{ stock.ticker }}</strong>
+                                <br>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{{ url_for('stocks.details', symbol=stock.ticker) }}" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-chart-line"></i> Detaljer
+                                    </a>
+                                    <a href="{{ url_for('analysis.sentiment') }}?symbol={{ stock.ticker }}" 
+                                       class="btn btn-outline-info btn-sm">
+                                        <i class="fas fa-heart-pulse"></i> Sentiment
+                                    </a>
+                                    <a href="{{ url_for('analysis.technical') }}?symbol={{ stock.ticker }}" 
+                                       class="btn btn-outline-success btn-sm">
+                                        <i class="fas fa-chart-area"></i> Teknisk
+                                    </a>
+                                </div>
+                            </td>
+                            <td>{{ stock.name }}</td>
+                            <td>
+                                <span class="badge bg-{% if stock.sentiment >= 0.7 %}success{% elif stock.sentiment >= 0.5 %}warning{% else %}danger{% endif %}">
+                                    {{ "%.0f" | format(stock.sentiment * 100) }}%
+                                </span>
+                            </td>
+                            <td>
+                                {% if stock.trend == 'very_bullish' %}
+                                    <span class="badge bg-success">🚀 Very Bullish</span>
+                                {% elif stock.trend == 'bullish' %}
+                                    <span class="badge bg-success">📈 Bullish</span>
+                                {% elif stock.trend == 'neutral' %}
+                                    <span class="badge bg-warning">➡️ Neutral</span>
+                                {% else %}
+                                    <span class="badge bg-danger">📉 Bearish</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ stock.mentions }}</td>
+                            <td>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-{% if stock.sentiment >= 0.7 %}success{% elif stock.sentiment >= 0.5 %}warning{% else %}danger{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ stock.sentiment * 100 }}%">
+                                    </div>
+                                </div>
+                            </td>
+                            {# Kolonnen fjernet #}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sentiment Analysis Tips -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h6>💡 Hvordan tolke sentiment data</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li><strong>70-100%:</strong> Meget positiv sentiment - potensielt kjøpssignal</li>
+                        <li><strong>50-69%:</strong> Positiv sentiment - følg med på trend</li>
+                        <li><strong>30-49%:</strong> Nøytral/negativ - vær forsiktig</li>
+                        <li><strong>0-29%:</strong> Meget negativ - potensielt salgssignal</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h6>⚠️ Viktige merknader</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li>• Sentiment er ikke en garanti for fremtidig prisutvikling</li>
+                        <li>• Kombiner med teknisk og fundamental analyse</li>
+                        <li>• Høy aktivitet kan indikere økt volatilitet</li>
+                        <li>• Data oppdateres hver 15. minutt</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-refresh sentiment data every 5 minutes
+setInterval(function() {
+    location.reload();
+}, 300000);
+</script>
+{% endblock %}

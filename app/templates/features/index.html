@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Funksjoner - AksjeRadar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">
+                <i class="bi bi-tools"></i> Funksjoner
+            </h1>
+            <p class="text-muted mb-4">Utforsk våre avanserte analyse- og investeringsverktøy</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Investment Analyzer -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-calculator-fill text-primary"></i>
+                        Investment Analyzer
+                    </h5>
+                    <p class="card-text">AI-drevet investeringsanalyse med personlige anbefalinger basert på dine kriterier.</p>
+                    <a href="{{ url_for('investment_analyzer.index') }}" class="btn btn-primary">
+                        <i class="bi bi-arrow-right"></i> Start analyse
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technical Analysis -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-bar-chart-line text-success"></i>
+                        Teknisk Analyse
+                    </h5>
+                    <p class="card-text">Avansert teknisk analyse med indikatorer, mønstre og handelssignaler.</p>
+                    <a href="{{ url_for('features.technical_analysis') }}" class="btn btn-success">
+                        <i class="bi bi-arrow-right"></i> Se teknisk analyse
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Predictions -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-cpu text-info"></i>
+                        AI Prediksjoner
+                    </h5>
+                    <p class="card-text">Maskinlæring-baserte kursprediksjoner med konfidensintervaller.</p>
+                        <a href="{{ url_for('analysis.prediction') }}" class="btn btn-info text-white">
+                            <i class="bi bi-crystal-ball"></i> Prediksjoner
+                        </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analyst Recommendations -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-star text-warning"></i>
+                        Analytiker Anbefalinger
+                    </h5>
+                    <p class="card-text">Profesjonelle analytikeranbefalinger og målkurser fra finansinstitusjoner.</p>
+                    <a href="{{ url_for('analysis.recommendations') }}" class="btn btn-warning">
+                        <i class="bi bi-arrow-right"></i> Se anbefalinger
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Social Sentiment -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-emoji-smile text-secondary"></i>
+                        Sosial Sentiment
+                    </h5>
+                    <p class="card-text">Analyser av stemning på sosiale medier og deres påvirkning på aksjekurser.</p>
+                    <a href="{{ url_for('features.social_sentiment') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-right"></i> Se sentiment
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market News Sentiment -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-newspaper text-dark"></i>
+                        Markeds Sentiment
+                    </h5>
+                    <p class="card-text">Sentiment-analyse av finansnyheter og deres innvirkning på markedet.</p>
+                    <a href="{{ url_for('features.market_news_sentiment') }}" class="btn btn-dark">
+                        <i class="bi bi-arrow-right"></i> Se nyhetssentiment
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Access Section -->
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <h3 class="mb-3">Hurtigtilgang</h3>
+            <div class="list-group">
+                <a href="{{ url_for('analysis.screener') }}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-funnel"></i>
+                    <strong>Aksje Screener</strong> - Finn aksjer basert på dine kriterier
+                </a>
+                <a href="{{ url_for('price_alerts.index') }}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-bell"></i>
+                    <strong>Prisalarmer</strong> - Få varsler når aksjer når målkurser
+                </a>
+                <a href="{{ url_for('portfolio.portfolio_overview') }}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-briefcase"></i>
+                    <strong>Portfolio</strong> - Administrer dine investeringer
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

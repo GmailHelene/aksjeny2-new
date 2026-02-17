@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category|title }} Nyheter - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="bi bi-newspaper"></i>
+                {{ category|title }} Nyheter
+            </h1>
+            
+            {% if news_articles %}
+                <div class="row">
+                    {% for article in news_articles %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ article.title }}</h5>
+                                <p class="card-text">{{ article.summary }}</p>
+                                <small class="text-muted">
+                                    {{ article.source }} • {{ article.published.strftime('%d.%m.%Y %H:%M') if article.published else 'Nylig' }}
+                                </small>
+                            </div>
+                            <div class="card-footer">
+                                <a href="{{ url_for('news_bp.article', article_id=article.id) if article.id else article.link }}" 
+                                   {% if not article.id %}target="_blank"{% endif %} class="btn btn-primary btn-sm">
+                                    Les mer <i class="bi bi-arrow-up-right-square"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    Ingen nyheter funnet for kategorien "{{ category }}".
+                    {% if error %}
+                    <br><small class="text-muted">{{ error }}</small>
+                    {% endif %}
+                </div>
+            {% endif %}
+            
+            <div class="mt-4">
+                <a href="{{ url_for('news_bp.index') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Tilbake til nyheter
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

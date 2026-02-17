@@ -1,0 +1,47 @@
+<!-- Tabs -->
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'oversikt' %}active{% endif %}" href="?tab=oversikt">Oversikt</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'teknisk' %}active{% endif %}" href="?tab=teknisk">Teknisk</a>
+    </li>
+    <!-- ...other tabs... -->
+</ul>
+
+<div class="tab-content mt-3">
+    {% if active_tab == 'oversikt' %}
+        <!-- Chart loading fix -->
+        <div id="chart-container">
+            {% if chart_data %}
+                <!-- Render chart here -->
+                {{ chart_html|safe }}
+            {% else %}
+                <div class="text-center py-5">
+                    <div class="spinner-border"></div>
+                    <p>Laster diagram...</p>
+                </div>
+            {% endif %}
+        </div>
+        <!-- Only show Nøkkeltall on Oversikt tab -->
+        <div id="nokkeltall-container">
+            {% if nokkeltall %}
+                {{ nokkeltall_html|safe }}
+            {% endif %}
+        </div>
+    {% elif active_tab == 'teknisk' %}
+        <!-- Remove empty RSI/MACD sections and whitespace -->
+        {% if rsi_data %}
+            <div id="rsi-section">
+                {{ rsi_html|safe }}
+            </div>
+        {% endif %}
+        {% if macd_data %}
+            <div id="macd-section">
+                {{ macd_html|safe }}
+            </div>
+        {% endif %}
+        {# No empty sections or extra whitespace #}
+    {% endif %}
+    <!-- ...other tab content... -->
+</div>

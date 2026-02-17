@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Crypto Dashboard - Aksjeradar{% endblock %}
+
+{% block head %}
+<link href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css" rel="stylesheet">
+<style>
+.crypto-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.crypto-price {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.positive { color: #28a745; }
+.negative { color: #dc3545; }
+
+.crypto-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h2 mb-4">🚀 Crypto Dashboard</h1>
+            
+            {% if error %}
+                <div class="alert alert-warning">
+                    <h4>⚠️ Service Issue</h4>
+                    <p>{{ error }}</p>
+                    <p>Please try again later or contact support.</p>
+                </div>
+            {% else %}
+                
+                <div class="crypto-grid">
+                    {% if crypto_data %}
+                        {% for crypto in crypto_data %}
+                        <div class="crypto-card">
+                            <h3>{{ crypto.name }}</h3>
+                            <div class="crypto-price">{{ crypto.symbol }}</div>
+                            <div class="crypto-price">${{ "%.2f"|format(crypto.price) }}</div>
+                            <div class="{% if crypto.change >= 0 %}positive{% else %}negative{% endif %}">
+                                {{ "%.2f"|format(crypto.change_percent) }}% 
+                                ({{ "%.2f"|format(crypto.change) }})
+                            </div>
+                            <div class="mt-2">
+                                <small>Volume: {{ crypto.volume | format_number }}</small><br>
+                                <small>Market Cap: {{ crypto.market_cap | format_number }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <h4>📊 Demo Mode</h4>
+                                <p>Real crypto data is temporarily unavailable. This is a preview of the Crypto Dashboard.</p>
+                                <p>Main features:</p>
+                                <ul>
+                                    <li>Real-time crypto prices</li>
+                                    <li>24h price changes</li>
+                                    <li>Trading volume</li>
+                                    <li>Market cap data</li>
+                                    <li>Portfolio tracking</li>
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h3>Market Overview</h3>
+                        <div class="card">
+                            <div class="card-body">
+                                <canvas id="cryptoChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+// Simple crypto chart
+const ctx = document.getElementById('cryptoChart').getContext('2d');
+const chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+            label: 'Crypto Market Trend',
+            data: [12, 19, 3, 5, 2, 3],
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.1)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

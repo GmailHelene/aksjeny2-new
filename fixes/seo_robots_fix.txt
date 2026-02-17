@@ -1,0 +1,18 @@
+# Add to robots.txt in root directory:
+
+User-agent: *
+Disallow: 
+Sitemap: https://aksjeradar.trade/sitemap.xml
+
+# Add canonical URLs to all pages in base template:
+<link rel="canonical" href="https://aksjeradar.trade{{ request.path }}">
+
+# Add to Railway environment variables:
+CANONICAL_DOMAIN=aksjeradar.trade
+
+# Configure redirect in app to force aksjeradar.trade domain:
+from flask import request, redirect
+@app.before_request
+def force_domain():
+    if 'railway.app' in request.host:
+        return redirect('https://aksjeradar.trade' + request.path, code=301)

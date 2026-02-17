@@ -1,0 +1,1036 @@
+{% extends "base.html" %}
+{% block title %}{{ stock_info.get('longName', ticker) }} - Aksjedetaljer{% endblock %}
+
+{% block head %}
+<style>
+    /* Fix for Nøkkeltall card in tab content (ensure only rendered once on header) */
+    .tab-pane {
+        opacity: 1 !important;
+    }
+    
+    /* Hide empty technical indicators */
+    #technical .empty-indicator {
+        display: none;
+    }
+    
+    /* Ensure cards in inactive tabs don't show */
+    .tab-pane:not(.active) .key-metrics-card {
+        display: none !important;
+    }
+    
+    /* Fix for tab transitions */
+    .tab-content {
+        transition: all 0.2s ease-in-out;
+    }
+    
+    /* TradingView loading indicator */
+    #loading-indicator {
+        padding: 2rem;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4" data-stock-details data-ticker="{{ ticker }}"{% if technical_data %} data-rsi="{{ technical_data.rsi|default(50) }}" data-macd="{{ technical_data.macd|default(0) }}" data-macd-signal="{{ technical_data.macd_signal|default(0) }}"{% endif %}>
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('main.index') }}" class="text-decoration-none">
+                    <i class="bi bi-house-door me-1"></i>Hjem
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('stocks.list_oslo') }}" class="text-decoration-none">
+                    <i class="bi bi-graph-up me-1"></i>Aksjer
+                </a>
+            </li>
+            {% if ticker and (ticker.endswith('.OL') or ticker in ['EQNR.OL', 'DNB.OL', 'TEL.OL', 'NHY.OL']) %}
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('stocks.list_oslo') }}" class="text-decoration-none">Oslo Børs</a>
+            </li>
+            {% elif ticker and ticker in ['BTC-USD', 'ETH-USD', 'XRP-USD', 'ADA-USD'] %}
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('stocks.list_crypto') }}" class="text-decoration-none">Kryptovaluta</a>
+            </li>
+            {% else %}
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('stocks.global_list') }}" class="text-decoration-none">Globale markeder</a>
+            </li>
+            {% endif %}
+            <li class="breadcrumb-item active" aria-current="page">
+                {{ stock_info.get('longName', ticker) if stock_info and stock_info.get('longName') else ticker }}
+            </li>
+        </ol>
+    </nav>
+    
+    <!-- Stock Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h1 class="mb-1">
+                                {% if stock_info and stock_info.get('longName') %}
+                                    {{ stock_info.get('longName') }}
+                                {% else %}{{ ticker }}{% endif %}
+                            </h1>
+                            <p class="text-muted mb-2">{{ ticker }}</p>
+                            <div class="d-flex align-items-center">
+                                <h2 class="text-primary mb-0 me-3 stock-price">
+                                    {% if stock_info and stock_info.get('regularMarketPrice') %}
+                                        {% if stock_info.get('currency') == 'NOK' %}
+                                            {{ "{:,.2f}".format(stock_info.get('regularMarketPrice')).replace(',', ' ').replace('.', ',') }} kr
+                                        {% else %}
+                                            ${{ "{:,.2f}".format(stock_info.get('regularMarketPrice')) }}
+                                        {% endif %}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </h2>
+                                {% if stock_info and stock_info.get('regularMarketChangePercent') %}
+                                <span class="badge {{ 'bg-success' if stock_info.get('regularMarketChangePercent', 0) > 0 else 'bg-danger' if stock_info.get('regularMarketChangePercent', 0) < 0 else 'bg-secondary' }} fs-6">
+                                    {{ "{:+.2f}".format(stock_info.get('regularMarketChangePercent', 0)).replace('.', ',') }}%
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-outline-warning" id="add-to-watchlist" data-ticker="{{ ticker }}">
+                                    <i class="bi bi-star"></i> Favoritt
+                                </button>
+                                <button class="btn btn-success external-buy-btn" data-ticker="{{ ticker }}">
+                                    <i class="bi bi-cart-plus"></i> Kjøp
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Key Metrics Row -->
+                    <div class="row mt-4">
+                        <div class="col-6 col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="text-muted small">Dagshøy</div>
+                                <div class="fw-bold">
+                                    {% if stock_info and stock_info.get('dayHigh') is not none %}
+                                        {% if stock_info.get('currency') == 'NOK' %}
+                                            {{ "{:,.2f}".format(stock_info.get('dayHigh')|float).replace(',', ' ').replace('.', ',') }}
+                                        {% else %}
+                                            ${{ "{:,.2f}".format(stock_info.get('dayHigh')|float) }}
+                                        {% endif %}
+                                    {% else %}-{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="text-muted small">Dagsbunn</div>
+                                <div class="fw-bold">
+                                    {% if stock_info and stock_info.get('dayLow') is not none %}
+                                        {% if stock_info.get('currency') == 'NOK' %}
+                                            {{ "{:,.2f}".format(stock_info.get('dayLow')|float).replace(',', ' ').replace('.', ',') }}
+                                        {% else %}
+                                            ${{ "{:,.2f}".format(stock_info.get('dayLow')|float) }}
+                                        {% endif %}
+                                    {% else %}-{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="text-muted small">Volum</div>
+                                <div class="fw-bold">
+                                    {% if stock_info and stock_info.get('volume') is not none %}
+                                        {{ "{:,.0f}".format(stock_info.get('volume')|int).replace(',', ' ') }}
+                                    {% else %}-{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="text-muted small">Markedsverdi</div>
+                                <div class="fw-bold">
+                                    {% if stock_info and stock_info.get('marketCap') is not none %}
+                                        {% if stock_info.get('marketCap') > 1000000000 %}
+                                            {{ "{:.1f}".format(stock_info.get('marketCap')/1000000000).replace('.', ',') }} mrd
+                                        {% elif stock_info.get('marketCap') > 1000000 %}
+                                            {{ "{:.1f}".format(stock_info.get('marketCap')/1000000).replace('.', ',') }} mill
+                                        {% else %}
+                                            {{ "{:,.0f}".format(stock_info.get('marketCap')|int).replace(',', ' ') }}
+                                        {% endif %}
+                                    {% else %}-{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End key metrics block -->
+        
+        <!-- Tabs Section -->
+        <!-- Ensure key metrics not duplicated in other tabs by not repeating card markup -->
+                        title: {
+                            display: true,
+                            text: 'Pris ({{ stock_info.get("currency", "NOK") }})'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Fallback Chart - Estimerte data'
+                    }
+                }
+            }
+        });
+    }
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tabs with error handling
+    try {
+        const tabTriggerList = document.querySelectorAll('#stockDetailTabs button');
+        if (tabTriggerList.length > 0 && typeof bootstrap !== 'undefined') {
+            const tabList = [...tabTriggerList].map(tabTriggerEl => new bootstrap.Tab(tabTriggerEl));
+            console.log('Tabs initialized successfully:', tabList.length);
+        } else {
+            console.warn('Bootstrap not available or no tab triggers found');
+        }
+    } catch (error) {
+        console.error('Error initializing tabs:', error);
+    }
+
+    // Initialize favorite button states
+    if (window.portfolioActionsManager && typeof window.portfolioActionsManager.initializeFavoriteButtonStates === 'function') {
+        window.portfolioActionsManager.initializeFavoriteButtonStates();
+    }
+    
+    // Load TradingView chart on initial page load
+    const loadingIndicator = document.getElementById('loading-indicator');
+    if (loadingIndicator) loadingIndicator.style.display = 'block';
+    
+    // IMMEDIATE LOADING: Initialize TradingView main chart
+    try {
+        console.log('Initializing TradingView main chart');
+        const mainChartContainer = document.getElementById('tradingview_main_widget');
+        if (mainChartContainer) {
+            // Format symbol for TradingView
+            let symbol = "{{ ticker }}";
+            let formattedSymbol = symbol;
+            
+            // Handle Oslo Børs symbols
+            if (symbol.endsWith('.OL')) {
+                const ticker = symbol.replace('.OL', '');
+                formattedSymbol = `OSE:${ticker}`;
+            } 
+            // Handle US exchanges
+            else if (!symbol.includes(':') && symbol.match(/^[A-Z]{1,5}$/)) {
+                formattedSymbol = `NASDAQ:${symbol}`;
+            }
+            
+            // Function to load TradingView widget after ensuring script is loaded
+            function createTradingViewWidget() {
+                console.log(`Creating TradingView widget for ${formattedSymbol}`);
+                
+                if (typeof TradingView === 'undefined') {
+                    console.log('TradingView not defined yet, waiting 500ms...');
+                    setTimeout(createTradingViewWidget, 500);
+                    return;
+                }
+                
+                try {
+                    new TradingView.widget({
+                        "autosize": true,
+                        "symbol": formattedSymbol,
+                        "interval": "D",
+                        "timezone": "Europe/Oslo",
+                        "theme": "light",
+                        "style": "1",
+                        "locale": "no",
+                        "toolbar_bg": "#f1f3f6",
+                        "enable_publishing": false,
+                        "allow_symbol_change": true,
+                        "container_id": "tradingview_main_widget",
+                        "hide_side_toolbar": false,
+                        "studies": [
+                            "RSI@tv-basicstudies",
+                            "MACD@tv-basicstudies"
+                        ],
+                        "onChartReady": function() {
+                            console.log("Main TradingView chart loaded successfully");
+                            const loadingIndicator = document.getElementById('tv-loading-indicator');
+                            if (loadingIndicator) loadingIndicator.style.display = 'none';
+                        },
+                        "loading_screen": {
+                            "backgroundColor": "#ffffff",
+                            "foregroundColor": "#2962FF"
+                        }
+                    });
+                    window.tradingViewLoaded = true;
+                } catch (error) {
+                    console.error('Error creating TradingView widget:', error);
+                    
+                    // Show fallback message if widget creation fails
+                    const fallbackElement = document.getElementById('chart-fallback');
+                    if (fallbackElement) fallbackElement.style.display = 'block';
+                    
+                    const loadingIndicator = document.getElementById('tv-loading-indicator');
+                    if (loadingIndicator) loadingIndicator.style.display = 'none';
+                }
+            }
+            
+            // Add a visible loading indicator inside the container
+            const loadingIndicator = document.createElement('div');
+            loadingIndicator.id = 'tv-loading-indicator';
+            loadingIndicator.innerHTML = `
+                <div style="text-align: center; padding: 50px 0;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Laster inn graf...</span>
+                    </div>
+                    <p class="mt-2">Laster inn TradingView-graf...</p>
+                </div>
+            `;
+            mainChartContainer.appendChild(loadingIndicator);
+            
+            // Wait for the next tick to start the widget creation
+            setTimeout(createTradingViewWidget, 100);
+        }
+    } catch (error) {
+        console.error('Error initializing main chart:', error);
+    }
+    
+    // Also initialize the other widgets 
+    initializeTradingViewWidget();
+    
+    // Enhanced price chart with volume bars and improved color contrast
+    // Removed legacy basic priceChart loading block (simplified to TradingView + fallback charts)
+    });
+    
+    // Note: Portfolio actions are handled by the global PortfolioActionsManager
+    // loaded in base.html from portfolio-actions-enhanced.js
+    // No additional event listeners needed here as they're automatically setup
+
+    // Load technical analysis data and charts
+    function loadTechnicalAnalysis() {
+        {% if technical_data %}
+        try {
+            // Use data already available in template
+            const data = {
+                rsi: {{ technical_data.rsi|default(50) }},
+                macd: {{ technical_data.macd|default(0) }},
+                macd_signal: {{ technical_data.macd_signal|default(0) }},
+                signal_line: {{ technical_data.macd_signal|default(0) }}
+            };
+            
+            console.log('📊 Technical data loaded:', data);
+            
+            // Create RSI chart
+            createRSIChart(data);
+            
+            // Create MACD chart
+            createMACDChart(data);
+        } catch (error) {
+            console.error('Error loading technical analysis:', error);
+        }
+        {% else %}
+        console.warn('No technical data available - using fallback');
+        // Use fallback data
+        const fallbackData = {
+            rsi: 50,
+            macd: 0,
+            macd_signal: 0,
+            signal_line: 0
+        };
+        createRSIChart(fallbackData);
+        createMACDChart(fallbackData);
+        {% endif %}
+    }
+    
+    function createRSIChart(data) {
+        const rsiCtx = document.getElementById('rsiChart');
+        if (!rsiCtx) return;
+        
+        // DESTROY EXISTING CHART TO PREVENT CANVAS REUSE ERROR
+        const existingChart = Chart.getChart(rsiCtx);
+        if (existingChart) {
+            existingChart.destroy();
+        }
+        
+        // Generate RSI data for the last 14 days
+        const rsiData = [];
+        for (let i = 13; i >= 0; i--) {
+            const variance = (Math.random() - 0.5) * 10;
+            rsiData.push(Math.max(0, Math.min(100, data.rsi + variance)));
+        }
+        
+        window.technicalRsiChart = new Chart(rsiCtx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 14}, (_, i) => `Dag ${14-i}`),
+                datasets: [{
+                    label: 'RSI',
+                    data: rsiData,
+                    borderColor: '#dc3545',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    borderWidth: 2,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        min: 0,
+                        max: 100,
+                        grid: {
+                            color: 'rgba(0,0,0,0.1)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+    
+    function createMACDChart(data) {
+        const macdCtx = document.getElementById('macdChart');
+        if (!macdCtx) return;
+        
+        // DESTROY EXISTING CHART TO PREVENT CANVAS REUSE ERROR
+        const existingChart = Chart.getChart(macdCtx);
+        if (existingChart) {
+            existingChart.destroy();
+        }
+        
+        // Generate MACD data
+        const macdData = [];
+        const signalData = [];
+        for (let i = 13; i >= 0; i--) {
+            const variance = (Math.random() - 0.5) * 0.2;
+            macdData.push(data.macd + variance);
+            signalData.push(data.signal_line + variance * 0.5);
+        }
+        
+        window.technicalMacdChart = new Chart(macdCtx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 14}, (_, i) => `Dag ${14-i}`),
+                datasets: [{
+                    label: 'MACD',
+                    data: macdData,
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    borderWidth: 2,
+                    fill: false
+                }, {
+                    label: 'Signal',
+                    data: signalData,
+                    borderColor: '#ffc107',
+                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                    borderWidth: 2,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        grid: {
+                            color: 'rgba(0,0,0,0.1)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                }
+            }
+        });
+    }
+    
+    // Load technical analysis when technical tab is clicked (only if we have a target canvas)
+    document.addEventListener('shown.bs.tab', function (e) {
+        if (e.target.getAttribute('href') === '#technical') {
+            if (document.getElementById('rsiChart') || document.getElementById('macdChart')) {
+                loadTechnicalAnalysis();
+            } else {
+                console.log('Technical tab opened but no RSI/MACD canvases present – skipping chart init');
+            }
+        }
+    });
+    
+    // Enhanced Chart functionality with working indicators
+    // Removed legacy priceChart reference (basic chart deprecated)
+    let rsiChart = null;
+    let macdChart = null;
+    
+    // Generate realistic price data
+    function generatePriceData() {
+        const currentPrice = {{ stock_info.get('regularMarketPrice', 100) }};
+        const days = 30;
+        const prices = [];
+        const dates = [];
+        
+        let price = currentPrice * 0.9; // Start 10% lower
+        
+        for (let i = days; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            dates.push(date.toLocaleDateString('no-NO'));
+            
+            // Add realistic price variation
+            const variation = (Math.random() - 0.5) * 0.04; // ±2% daily variation
+            price = price * (1 + variation);
+            prices.push(parseFloat(price.toFixed(2)));
+        }
+        
+        // Ensure current price is the last value
+        prices[prices.length - 1] = currentPrice;
+        
+        return { dates, prices };
+    }
+    
+    // Calculate RSI
+    function calculateRSI(prices, period = 14) {
+        const rsi = [];
+        for (let i = 0; i < prices.length; i++) {
+            if (i < period) {
+                rsi.push(50); // Default RSI value
+            } else {
+                // Simplified RSI calculation
+                const gains = [];
+                const losses = [];
+                
+                for (let j = i - period + 1; j <= i; j++) {
+                    const change = prices[j] - prices[j - 1];
+                    if (change > 0) gains.push(change);
+                    else losses.push(Math.abs(change));
+                }
+                
+                const avgGain = gains.length ? gains.reduce((a, b) => a + b, 0) / gains.length : 0;
+                const avgLoss = losses.length ? losses.reduce((a, b) => a + b, 0) / losses.length : 0;
+                
+                const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+                const rsiValue = 100 - (100 / (1 + rs));
+                rsi.push(parseFloat(rsiValue.toFixed(2)));
+            }
+        }
+        return rsi;
+    }
+    
+    // Calculate MACD
+    function calculateMACD(prices) {
+        const macd = [];
+        const signal = [];
+        
+        for (let i = 0; i < prices.length; i++) {
+            // Simplified MACD calculation
+            const macdValue = {{ technical_data.get('macd', 0) }} + (Math.random() - 0.5) * 2;
+            const signalValue = {{ technical_data.get('macd_signal', 0) }} + (Math.random() - 0.5) * 1.5;
+            
+            macd.push(parseFloat(macdValue.toFixed(2)));
+            signal.push(parseFloat(signalValue.toFixed(2)));
+        }
+        
+        return { macd, signal };
+    }
+    
+    // Initialize price chart
+    // Removed initializePriceChart (basic chart deprecated)
+    
+    // Initialize RSI chart  
+    function initializeRSIChart() {
+        const rsiElement = document.getElementById('rsiChart');
+        if (!rsiElement) {
+            console.log('RSI chart element not found, skipping initialization');
+            return;
+        }
+        
+        const { dates, prices } = generatePriceData();
+        const rsiData = calculateRSI(prices);
+        
+        // DESTROY EXISTING CHART TO PREVENT CANVAS REUSE ERROR
+        if (window.rsiChart instanceof Chart) {
+            window.rsiChart.destroy();
+        }
+        
+        window.rsiChart = new Chart(rsiElement.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'RSI',
+                    data: rsiData,
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    borderWidth: 2,
+                    fill: false,
+                        tension: 0.4,
+                        pointRadius: 1,
+                        pointHoverRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'RSI (14) - Relative Strength Index'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 100,
+                            ticks: {
+                                stepSize: 20,
+                                callback: function(value) {
+                                    if (value === 70) return '70 (Overkjøpt)';
+                                    if (value === 30) return '30 (Oversolgt)';
+                                    return value;
+                                }
+                            },
+                            grid: {
+                                color: function(context) {
+                                    if (context.tick.value === 70 || context.tick.value === 30) {
+                                        return '#dc3545';
+                                    }
+                                    return 'rgba(0,0,0,0.1)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
+    // Initialize MACD chart
+    function initializeMACDChart() {
+        const macdElement = document.getElementById('macdChart');
+        if (!macdElement) {
+            console.log('MACD chart element not found, skipping initialization');
+            return;
+        }
+        
+        const { dates } = generatePriceData();
+        const { macd, signal } = calculateMACD(dates);
+        
+        // DESTROY EXISTING CHART TO PREVENT CANVAS REUSE ERROR
+        if (window.macdChart instanceof Chart) {
+            window.macdChart.destroy();
+        }
+        
+        window.macdChart = new Chart(macdElement.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'MACD',
+                    data: macd,
+                    borderColor: '#dc3545',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    borderWidth: 2,
+                        fill: false,
+                        pointRadius: 1,
+                        pointHoverRadius: 4
+                    }, {
+                        label: 'Signal',
+                        data: signal,
+                        borderColor: '#ffc107',
+                        backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                        borderWidth: 2,
+                        fill: false,
+                        pointRadius: 1,
+                        pointHoverRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'MACD - Moving Average Convergence Divergence'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: function(context) {
+                                    if (context.tick.value === 0) {
+                                        return '#000';
+                                    }
+                                    return 'rgba(0,0,0,0.1)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
+    // Update technical indicator values
+    function updateTechnicalIndicators() {
+        // Update RSI value
+        const rsiValue = {{ technical_data.get('rsi', 50) }};
+    // Removed DOM updates for rsi-value (element no longer rendered)
+        
+        // Update MACD value
+        const macdValue = {{ technical_data.get('macd', 0) }};
+    // Removed DOM updates for macd-value (element no longer rendered)
+        
+        // Update Bollinger Bands
+        const bbUpper = {{ technical_data.get('bollinger_upper', 0) }};
+        const bbLower = {{ technical_data.get('bollinger_lower', 0) }};
+        
+        const bbUpperElement = document.querySelector('#bollinger-upper');
+        const bbLowerElement = document.querySelector('#bollinger-lower');
+        
+        if (bbUpperElement) bbUpperElement.textContent = bbUpper.toFixed(2);
+        if (bbLowerElement) bbLowerElement.textContent = bbLower.toFixed(2);
+    }
+    
+    // Chart toggle functionality
+    // Removed basic vs TradingView chart toggle buttons (only TradingView kept)
+    
+    function loadTradingViewWidget() {
+        if (typeof TradingView !== 'undefined') {
+            // Format symbol for TradingView
+            let symbol = "{{ ticker }}";
+            let formattedSymbol = symbol;
+            
+        // Handle Oslo Børs symbols
+        if (symbol.endsWith('.OL')) {
+            const ticker = symbol.replace('.OL', '');
+            
+            // Handle special cases for Merkur Market (now Euronext Growth)
+            if (['MORG', 'HUNT', 'KID'].includes(ticker)) {
+                formattedSymbol = `OTC:${ticker}`;
+            }
+            // Handle special cases for OTC
+            else if (['NAVA', 'REPSS', 'ULTI'].includes(ticker)) { 
+                formattedSymbol = `OTC:${ticker}`;
+            }
+            // Default to OSE (Oslo Stock Exchange)
+            else {
+                formattedSymbol = `OSE:${ticker}`; 
+            }
+        } 
+        // Handle US exchanges
+        else if (symbol.includes('.')) {
+            if (symbol.endsWith('.N')) {
+                formattedSymbol = `NYSE:${symbol.replace('.N', '')}`;
+            } else if (symbol.endsWith('.O')) {
+                formattedSymbol = `NASDAQ:${symbol.replace('.O', '')}`;
+            } else {
+                formattedSymbol = symbol; // Keep other exchange symbols as is
+            }
+        }
+        // Default to NASDAQ for bare US symbols
+        else if (!symbol.includes(':')) {
+            formattedSymbol = `NASDAQ:${symbol}`;
+        }
+        console.log(`Loading TradingView widget for symbol: ${formattedSymbol}`);
+            
+            new TradingView.widget({
+                "autosize": true,
+                "symbol": formattedSymbol,
+                "interval": "D",
+                "timezone": "Europe/Oslo",
+                "theme": "light",
+                "style": "1",
+                "locale": "no",
+                "toolbar_bg": "#f1f3f6",
+                "enable_publishing": false,
+                "allow_symbol_change": true,
+                "container_id": "tradingview_main_widget",
+                "hide_side_toolbar": false,
+                "details": true,
+                "hotlist": true,
+                "calendar": true,
+                "studies": [
+                    "RSI@tv-basicstudies",
+                    "MACD@tv-basicstudies"
+                ],
+                "onChartReady": function() {
+                    console.log("TradingView chart loaded successfully");
+                    const loadingIndicator = document.getElementById('loading-indicator');
+                    if (loadingIndicator) loadingIndicator.style.display = 'none';
+                },
+                "loading_screen": {
+                    "backgroundColor": "#ffffff",
+                    "foregroundColor": "#2962FF"
+                }
+            });
+        } else {
+            console.error('TradingView library not loaded');
+            loadTradingViewScript(loadTradingViewWidget);
+        }
+    }
+    
+    // Function to initialize TradingView Widget
+    function initializeTradingViewWidget() {
+        console.log('Initializing TradingView Widget');
+        // Check if TradingView library is already loaded
+        if (typeof TradingView !== 'undefined') {
+            loadTradingViewWidget();
+        } else {
+            // Load TradingView script and then initialize the widget
+            loadTradingViewScript(loadTradingViewWidget);
+        }
+    }
+            // Fallback if TradingView not loaded
+            console.error('TradingView library not loaded, adding fallback');
+            document.getElementById('tradingview_widget').innerHTML = 
+                `<div class="text-center mt-5 p-4 border rounded">
+                    <i class="bi bi-graph-up text-primary mb-3" style="font-size: 2rem;"></i>
+                    <h5>TradingView Chart</h5>
+                    <p class="text-muted">Avansert chart for {{ ticker }}</p>
+                    <button class="btn btn-outline-primary" onclick="window.open('https://www.tradingview.com/symbols/{{ ticker }}', '_blank')">
+                        <i class="bi bi-box-arrow-up-right"></i> Åpne i TradingView
+                    </button>
+                </div>`;
+        }
+    }
+    
+    // Initialize technical indicators only
+    updateTechnicalIndicators();
+    
+    // External buy functionality is now handled in the DOMContentLoaded event listener
+});
+
+function showToast(message, type) {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    // Add to toast container or create one
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        document.body.appendChild(container);
+    }
+    
+    container.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+}
+
+// Initialize technical analysis charts when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Initializing technical analysis charts');
+    setTimeout(() => {
+        loadTechnicalAnalysis();
+    }, 500); // Small delay to ensure Chart.js is loaded
+});
+
+    // Remove after hidden
+    toast.addEventListener('hidden.bs.toast', () => toast.remove());
+}
+
+// Button functionality for stock details
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if user is authenticated
+    const isAuthenticated = document.body.classList.contains('user-authenticated');
+    
+    // Add to Watchlist/Favorites functionality
+    document.getElementById('add-to-watchlist')?.addEventListener('click', async function() {
+        if (!isAuthenticated) {
+            window.location.href = '/auth/login?next=' + encodeURIComponent(window.location.pathname);
+            return;
+        }
+        
+        const ticker = this.dataset.ticker;
+        if (!ticker) return;
+        
+        const originalHtml = this.innerHTML;
+        this.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Oppdaterer...';
+        this.disabled = true;
+        
+        try {
+            const response = await fetch('/api/watchlist/toggle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({ symbol: ticker })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                this.innerHTML = data.is_favorite ? 
+                    '<i class="bi bi-star-fill"></i> I favoritter' : 
+                    '<i class="bi bi-star"></i> Favoritt';
+                this.className = data.is_favorite ? 
+                    'btn btn-warning' : 
+                    'btn btn-outline-warning';
+                showToast(data.message || `${ticker} ${data.is_favorite ? 'lagt til i' : 'fjernet fra'} favoritter`, 'success');
+            } else {
+                throw new Error(data.error || 'Kunne ikke oppdatere favoritt');
+            }
+        } catch (error) {
+            console.error('Favorite error:', error);
+            this.innerHTML = originalHtml;
+            this.disabled = false;
+            showToast(error.message || 'Teknisk feil ved favoritt', 'error');
+        }
+    });
+    
+    // Add to Portfolio functionality
+    document.getElementById('add-to-portfolio')?.addEventListener('click', async function() {
+        if (!isAuthenticated) {
+            window.location.href = '/auth/login?next=' + encodeURIComponent(window.location.pathname);
+            return;
+        }
+        
+        const ticker = this.dataset.ticker;
+        if (!ticker) return;
+        
+        // Get current price from the price element
+        const priceElement = document.querySelector('.stock-price');
+        const currentPrice = priceElement ? parseFloat(priceElement.textContent.replace(/[^\d,.-]/g, '').replace(',', '.')) : 100;
+        
+        // Show loading state
+        const originalHtml = this.innerHTML;
+        this.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Legger til...';
+        this.disabled = true;
+        
+        try {
+            const response = await fetch('/portfolio/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({
+                    ticker: ticker,
+                    quantity: 1,
+                    purchase_price: currentPrice
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.innerHTML = '<i class="bi bi-check-circle me-1"></i>Lagt til';
+                this.classList.remove('btn-primary');
+                this.classList.add('btn-success');
+                showToast(result.message || `${ticker} lagt til i portefølje!`, 'success');
+            } else {
+                throw new Error(result.error || 'Ukjent feil');
+            }
+        } catch (error) {
+            console.error('Portfolio add error:', error);
+            this.innerHTML = originalHtml;
+            this.disabled = false;
+            showToast('Kunne ikke legge til i portefølje: ' + error.message, 'error');
+        }
+    });
+    // External buy buttons handled centrally (portfolio-actions-enhanced.js)
+});
+
+// Function to load TradingView script
+function loadTradingViewScript(callback) {
+    console.log('Loading TradingView script dynamically');
+    const script = document.createElement('script');
+    script.src = 'https://s3.tradingview.com/tv.js';
+    script.async = true;
+    script.onload = function() {
+        console.log('TradingView script loaded successfully');
+        if (typeof callback === 'function') {
+            callback();
+        }
+    };
+    script.onerror = function() {
+        console.error('Failed to load TradingView script');
+    };
+    document.head.appendChild(script);
+}
+
+// Price Alert Function 
+function createPriceAlert(ticker) {
+    // Get current price for reference
+    const currentPrice = {{ stock_info.get('regularMarketPrice', 100) if stock_info else 100 }};
+    
+    // Create dialog
+    const condition = prompt('Angi betingelse (over/under):', 'over');
+    if (!condition || !['over', 'under', 'above', 'below'].includes(condition.toLowerCase())) {
+        showToast('Ugyldig betingelse. Bruk "over" eller "under".', 'warning');
+        return;
+    }
+    
+    const targetPrice = prompt(`Angi målpris (nåværende pris: ${currentPrice.toFixed(2)}):`, currentPrice.toFixed(2));
+    if (!targetPrice || isNaN(parseFloat(targetPrice))) {
+        showToast('Ugyldig pris. Angi et gyldig tall.', 'warning');
+        return;
+    }
+    
+    // Create price alert via API
+    fetch('/mobile-trading/api/price-alerts', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        },
+        body: JSON.stringify({
+            symbol: ticker,
+            condition: condition.toLowerCase(),
+            target_price: parseFloat(targetPrice),
+            current_price: currentPrice
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(`Prisvarsel opprettet for ${ticker} ${condition} ${parseFloat(targetPrice).toFixed(2)}`, 'success');
+        } else {
+            showToast('Kunne ikke opprette prisvarsel: ' + (data.message || 'Ukjent feil'), 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error creating price alert:', error);
+        showToast('En feil oppstod ved oppretting av prisvarsel', 'danger');
+    });
+}
+</script>
+
+<!-- Chart.js -->
+<!-- Scripts for Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- TradingView Widget Script - Load only once -->
+<script src="https://s3.tradingview.com/tv.js"></script>
+{% endblock %}

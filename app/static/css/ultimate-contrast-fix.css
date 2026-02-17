@@ -1,0 +1,46 @@
+/* Ultimate Contrast Fix - Final Override for All Text Visibility Issues */
+
+/* Global text visibility rules */
+/* Card header styles moved to card-header-override.css */
+
+/* Navigation menu fixes */
+.dropdown-header {
+    color: #6c757d !important;
+}
+
+.navbar-dark .dropdown-header {
+    color: #adb5bd !important;
+}
+
+/* Card header styles moved to card-header-override.css */
+
+/* Override any problematic Bootstrap variables */
+.text-primary {
+    color: #0d6efd !important;
+}
+
+.text-dark {
+    color: #212529 !important;
+}
+
+.text-white {
+    color: #ffffff !important;
+}
+
+/* Mobile menu text fixes */
+@media (max-width: 768px) {
+    .analysis-menu .small {
+        font-size: 0.75rem !important;
+    }
+}
+
+/* Force white text on colored buttons */
+.btn-primary, .btn-success, .btn-info, .btn-warning, .btn-danger, .btn-dark {
+    color: #ffffff !important;
+}
+
+/* Achievement tracking fixes */
+.achievement-notification {
+    background-color: #28a745 !important;
+    color: #ffffff !important;
+}

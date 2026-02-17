@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Opprett Portefølje - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">Opprett Ny Portefølje</h1>
+                <a href="{{ url_for('portfolio.index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Tilbake
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('portfolio.create_portfolio') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Porteføljenavn</label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   placeholder="f.eks. Min Langsiktige Portefølje" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Beskrivelse</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"
+                                      placeholder="Beskrivelse av porteføljens strategi og mål"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="initial_value" class="form-label">Initial verdi (NOK)</label>
+                            <input type="number" class="form-control" id="initial_value" name="initial_value" 
+                                   step="0.01" min="0" placeholder="100000">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="currency" class="form-label">Base valuta</label>
+                            <select class="form-select" id="currency" name="currency">
+                                <option value="NOK" selected>NOK - Norske kroner</option>
+                                <option value="USD">USD - US Dollar</option>
+                                <option value="EUR">EUR - Euro</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="is_public" name="is_public">
+                                <label class="form-check-label" for="is_public">
+                                    Gjør porteføljen offentlig (andre kan se ytelsen)
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Opprett Portefølje
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Quick Start Tips -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Tips for å komme i gang</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-lightbulb text-warning me-2"></i>
+                            Velg et beskrivende navn som reflekterer din investeringsstrategi
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-lightbulb text-warning me-2"></i>
+                            Sett en realistisk initial verdi basert på din investeringskapital
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-lightbulb text-warning me-2"></i>
+                            Du kan legge til aksjer og spore ytelse etter opprettelse
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

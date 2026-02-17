@@ -1,0 +1,43 @@
+{
+  "github.copilot.selectedCompletionModel": "4.1 beast mode",
+  "git.ignoreLimitWarning": true,
+  "github.copilot.nextEditSuggestions.enabled": true,
+  "github.copilot.enable": {
+    "markdown": true,
+    "scminput": true
+  },
+  "github.copilot.chat.codesearch.enabled": true,
+  "github.copilot.chat.languageContext.inline.typescript.enabled": true,
+  "github.copilot.chat.languageContext.fix.typescript.enabled": true,
+  "github.copilot.chat.generateTests.codeLens": true,
+  "github.copilot.chat.agent.thinkingTool": true,
+  "github.copilot.chat.editor.temporalContext.enabled": true,
+  "github.copilot.chat.edits.temporalContext.enabled": true,
+  "github.copilot.chat.languageContext.typescript.enabled": true,
+  "github.copilot.chat.languageContext.typescript.cacheTimeout": 9500,
+  "github.copilot.chat.notebook.followCellExecution.enabled": true,
+  "python.defaultInterpreterPath": "/usr/bin/python3",
+  "python.terminal.activateEnvironment": false,
+  "python.analysis.extraPaths": [
+    "/home/alloy/.local/lib/python3.9/site-packages"
+  ],
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": false,
+  "python.linting.flake8Enabled": false,
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.diagnosticMode": "workspace",
+  "python.analysis.stubPath": "/home/alloy/.local/lib/python3.9/site-packages",
+  "pylance.insidersChannel": "off",
+  "github.copilot.chat.scopeSelection": true,
+  "github.copilot.chat.enableRetryAfterFilteredResponse": true,
+  "github.copilot.chat.notebook.enhancedNextEditSuggestions.enabled": true,
+  "github.copilot.chat.responsesApiReasoningEffort": "medium",
+  "chat.renderRelatedFiles": true,
+  "chat.todoListTool.enabled": true,
+  "chat.todoListTool.writeOnly": true,
+  "inlineChat.hideOnRequest": true,
+  "chat.commandCenter.enabled": false,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.tsserver.experimental.enableProjectDiagnostics": false
+}

@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ ticker }} - AI Analysis{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('analysis.index') }}">Analysis</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('analysis.ai') }}">AI Analysis</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ ticker }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h3>{{ ai_analysis.get('company_name', ticker) }} ({{ ticker }}) - AI Analysis</h3>
+            </div>
+            <div class="card-body">
+                {% if ai_analysis.get('error') %}
+                    <div class="alert alert-danger">
+                        <h4 class="alert-heading">Error</h4>
+                        <p>{{ ai_analysis.get('error') }}</p>
+                        <p>{{ ai_analysis.get('analysis') }}</p>
+                    </div>
+                {% else %}
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h4 class="card-title">AI Market Analysis</h4>
+                                    <div class="card-text">
+                                        {% if ai_analysis.get('market_analysis') %}
+                                            {{ ai_analysis.market_analysis|replace('\n', '<br>')|safe }}
+                                        {% else %}
+                                            {{ ai_analysis.analysis|replace('\n', '<br>')|safe }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if ai_analysis.get('investment_strategy') %}
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h4 class="card-title">Investment Strategy</h4>
+                                    <div class="card-text">
+                                        {{ ai_analysis.investment_strategy|replace('\n', '<br>')|safe }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if ai_analysis.get('risk_assessment') %}
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h4 class="card-title">Risk Assessment</h4>
+                                    <div class="card-text">
+                                        {{ ai_analysis.risk_assessment|replace('\n', '<br>')|safe }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endif %}
+                
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Actions</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex gap-2">
+                                    {% if ticker %}
+                                        <a href="{{ url_for('stocks.details', symbol=ticker) }}" class="btn btn-primary">
+                                            <i class="bi bi-graph-up"></i> Technical Analysis
+                                        </a>
+                                        <button class="btn btn-success" id="add-to-portfolio" data-ticker="{{ ticker }}">
+                                            <i class="bi bi-briefcase"></i> Add to Portfolio
+                                        </button>
+                                        <button class="btn btn-info" id="add-to-watchlist" data-ticker="{{ ticker }}">
+                                            <i class="bi bi-eye"></i> Add to Watchlist
+                                        </button>
+                                        <a href="{{ url_for('stocks.details', symbol=ticker) }}" class="btn btn-outline-secondary">
+                                            <i class="bi bi-info-circle"></i> Stock Details
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="alert alert-info">
+                            <h5><i class="bi bi-info-circle"></i> About AI Analysis</h5>
+                            <p>This analysis is powered by advanced AI models that examine market trends, technical indicators, and company fundamentals. The AI provides insights based on available data, but should not be the sole basis for investment decisions.</p>
+                            <p>Always do your own research and consider consulting with a financial advisor before making investment decisions.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

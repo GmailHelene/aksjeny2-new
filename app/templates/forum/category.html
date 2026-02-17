@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category_info.display_name }} | Forum | Aksjeradar{% endblock %}
+{% block description %}Diskusjoner om {{ category_info.description }} på Aksjeradar forum{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('forum.index') }}" class="text-decoration-none">
+                            <i class="bi bi-house"></i> Forum
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active">{{ category_info.display_name }}</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-2">
+                        <i class="bi bi-{{ category_info.icon }} text-primary me-2"></i>
+                        {{ category_info.display_name }}
+                    </h1>
+                    <p class="text-muted mb-0">{{ category_info.description }}</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('forum.create_topic', category=category) }}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-1"></i>Nytt Tema
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <form method="GET" action="{{ url_for('forum.category', category_name=category) }}">
+                <div class="input-group">
+                    <input type="text" name="search" class="form-control" 
+                           placeholder="Søk i {{ category_info.display_name }}..." 
+                           value="{{ request.args.get('search', '') }}">
+                    <button class="btn btn-outline-secondary" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-6">
+            <div class="d-flex justify-content-end">
+                <div class="btn-group" role="group">
+                    <input type="radio" class="btn-check" name="sort" id="sort-latest" value="latest" 
+                           {{ 'checked' if request.args.get('sort', 'latest') == 'latest' }}>
+                    <label class="btn btn-outline-primary btn-sm" for="sort-latest">Nyeste</label>
+                    
+                    <input type="radio" class="btn-check" name="sort" id="sort-popular" value="popular"
+                           {{ 'checked' if request.args.get('sort') == 'popular' }}>
+                    <label class="btn btn-outline-primary btn-sm" for="sort-popular">Populære</label>
+                    
+                    <input type="radio" class="btn-check" name="sort" id="sort-active" value="active"
+                           {{ 'checked' if request.args.get('sort') == 'active' }}>
+                    <label class="btn btn-outline-primary btn-sm" for="sort-active">Aktive</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Topics List -->
+    <div class="row">
+        <div class="col-12">
+            {% if topics %}
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-0">
+                        {% for topic in topics %}
+                        <div class="border-bottom p-4 {{ 'bg-light' if topic.is_pinned else '' }}">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <div class="d-flex align-items-start">
+                                        <!-- Topic Status Icon -->
+                                        <div class="me-3 mt-1">
+                                            {% if topic.is_pinned %}
+                                                <i class="bi bi-pin-fill text-warning" title="Festet"></i>
+                                            {% elif topic.is_locked %}
+                                                <i class="bi bi-lock-fill text-danger" title="Låst"></i>
+                                            {% elif topic.reply_count > 20 %}
+                                                <i class="bi bi-fire text-danger" title="Populært"></i>
+                                            {% elif topic.reply_count > 5 %}
+                                                <i class="bi bi-chat-dots-fill text-success" title="Aktivt"></i>
+                                            {% else %}
+                                                <i class="bi bi-chat-dots text-muted" title="Nytt"></i>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="flex-grow-1">
+                                            <!-- Topic Title -->
+                                            <h5 class="mb-2">
+                                                <a href="{{ url_for('forum.topic', topic_id=topic.id) }}" 
+                                                   class="text-decoration-none text-dark">
+                                                    {{ topic.title }}
+                                                </a>
+                                                {% if topic.has_poll %}
+                                                    <span class="badge bg-info ms-2">
+                                                        <i class="bi bi-bar-chart"></i> Poll
+                                                    </span>
+                                                {% endif %}
+                                            </h5>
+                                            
+                                            <!-- Topic Preview -->
+                                            <p class="text-muted mb-2 small">{{ topic.preview_text }}</p>
+                                            
+                                            <!-- Topic Meta -->
+                                            <div class="d-flex align-items-center text-small text-muted">
+                                                <img src="{{ topic.author.avatar_url or '/static/img/default-avatar.png' }}" 
+                                                     alt="{{ topic.author.username }}" 
+                                                     class="rounded-circle me-2" 
+                                                     style="width: 24px; height: 24px;">
+                                                <span class="me-3">
+                                                    <strong>{{ topic.author.username }}</strong>
+                                                </span>
+                                                <span class="me-3">
+                                                    <i class="bi bi-clock me-1"></i>{{ topic.created_at.strftime('%d.%m.%Y %H:%M') }}
+                                                </span>
+                                                {% if topic.tags %}
+                                                <div class="ms-auto">
+                                                    {% for tag in topic.tags[:3] %}
+                                                    <span class="badge bg-light text-dark me-1">{{ tag }}</span>
+                                                    {% endfor %}
+                                                    {% if topic.tags|length > 3 %}
+                                                    <span class="badge bg-light text-muted">+{{ topic.tags|length - 3 }}</span>
+                                                    {% endif %}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Topic Stats -->
+                                <div class="col-md-2 text-center d-none d-md-block">
+                                    <div class="small text-muted">Svar</div>
+                                    <div class="h5 mb-0 text-primary">{{ topic.reply_count }}</div>
+                                </div>
+                                
+                                <!-- Last Activity -->
+                                <div class="col-md-2 text-center d-none d-md-block">
+                                    <div class="small text-muted">Siste aktivitet</div>
+                                    <div class="small">
+                                        {% if topic.last_reply %}
+                                            <div class="fw-bold">{{ topic.last_reply.author.username }}</div>
+                                            <div class="text-muted">{{ topic.last_reply.created_at.strftime('%d.%m %H:%M') }}</div>
+                                        {% else %}
+                                            <div class="text-muted">Ingen svar ennå</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                {% if topics.pages > 1 %}
+                <nav aria-label="Topics pagination" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if topics.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('forum.category', category_name=category, page=topics.prev_num, **request.args) }}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for page_num in topics.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num != topics.page %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('forum.category', category_name=category, page=page_num, **request.args) }}">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
+                                {% else %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                                {% endif %}
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">…</span>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if topics.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('forum.category', category_name=category, page=topics.next_num, **request.args) }}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+
+            {% else %}
+                <!-- Empty State -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <div class="text-muted mb-3">
+                            <i class="bi bi-chat-dots" style="font-size: 3rem;"></i>
+                        </div>
+                        <h5>Ingen temaer funnet</h5>
+                        <p class="text-muted mb-4">
+                            {% if request.args.get('search') %}
+                                Ingen temaer matcher søket "{{ request.args.get('search') }}".
+                            {% else %}
+                                Vær den første til å starte en diskusjon i denne kategorien!
+                            {% endif %}
+                        </p>
+                        <a href="{{ url_for('forum.create_topic', category=category) }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-1"></i>Opprett første tema
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Handle sort button changes
+document.addEventListener('DOMContentLoaded', function() {
+    const sortButtons = document.querySelectorAll('input[name="sort"]');
+    sortButtons.forEach(button => {
+        button.addEventListener('change', function() {
+            if (this.checked) {
+                const url = new URL(window.location);
+                url.searchParams.set('sort', this.value);
+                url.searchParams.delete('page'); // Reset to first page
+                window.location.href = url.toString();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

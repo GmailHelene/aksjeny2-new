@@ -1,0 +1,12 @@
+/* Accessibility contrast fixes */
+.btn-white, .btn-light.bg-white, .bg-white .btn-link.text-white {
+  color: #0d47a1 !important;
+}
+
+/* Ensure primary buttons always have white text */
+.btn-primary, .btn-primary:focus, .btn-primary:hover {
+  color: #fff !important;
+}
+
+/* Generic helper to force dark text on light backgrounds */
+.text-on-light { color: #212529 !important; }

@@ -1,0 +1,299 @@
+<!-- Language Switcher Component -->
+<div class="language-switcher-container">
+    <!-- Simple Language Toggle Button -->
+    <div class="language-toggle">
+        <button id="language-toggle-btn" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-globe"></i>
+            <span id="current-language">NO</span>
+            /
+            <span id="target-language">EN</span>
+        </button>
+    </div>
+    
+    <!-- ConveyThis Widget Container (when activated) -->
+    <div id="conveythis-widget" style="display: none;"></div>
+    
+    <!-- Browser Translation Prompt -->
+    <div id="browser-translate-prompt" class="alert alert-info alert-dismissible fade" role="alert" style="display: none; margin-top: 10px;">
+        <i class="bi bi-translate"></i>
+        <strong>Oversett til engelsk:</strong> Høyreklikk på siden og velg "Oversett til engelsk" i nettleseren din, eller bruk Ctrl+Shift+T (Chrome).
+        <div class="mt-2">
+            <a href="{{ url_for('main.translation_help') }}" class="btn btn-outline-primary btn-sm me-2">
+                <i class="bi bi-question-circle me-1"></i>
+                Flere alternativer
+            </a>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
+</div>
+
+<style>
+.language-switcher-container {
+    position: relative;
+    display: inline-block;
+}
+
+.language-toggle {
+    margin: 5px 0;
+}
+
+#language-toggle-btn {
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border: 1px solid #007bff;
+    color: #007bff;
+}
+
+#language-toggle-btn:hover {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,123,255,0.3);
+}
+
+#language-toggle-btn i {
+    margin-right: 5px;
+}
+
+#current-language {
+    font-weight: bold;
+    color: #28a745;
+}
+
+#target-language {
+    opacity: 0.7;
+}
+
+/* ConveyThis Integration Styles */
+.conveythis-widget {
+    z-index: 9999;
+}
+
+/* Browser translation prompt */
+#browser-translate-prompt {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    min-width: 300px;
+    z-index: 1000;
+    font-size: 0.9rem;
+    border-left: 4px solid #007bff;
+}
+
+#browser-translate-prompt i {
+    color: #007bff;
+    margin-right: 8px;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    #browser-translate-prompt {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        min-width: auto;
+    }
+}
+</style>
+
+<script>
+// Translation functionality
+class TranslationManager {
+    constructor() {
+        this.currentLanguage = 'no';
+        this.targetLanguage = 'en';
+        this.conveyThisEnabled = false;
+        this.init();
+    }
+    
+    init() {
+        this.bindEvents();
+        this.checkForConveyThis();
+        this.detectBrowserTranslation();
+    }
+    
+    bindEvents() {
+        const toggleBtn = document.getElementById('language-toggle-btn');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => this.toggleTranslation());
+        }
+    }
+    
+    toggleTranslation() {
+        if (this.conveyThisEnabled) {
+            // Use ConveyThis if available
+            this.activateConveyThis();
+        } else {
+            // Fallback to browser translation or show instructions
+            this.showBrowserTranslationOptions();
+        }
+    }
+    
+    checkForConveyThis() {
+        // Check if ConveyThis is loaded
+        if (typeof ConveyThis !== 'undefined') {
+            this.conveyThisEnabled = true;
+            this.initConveyThis();
+        } else {
+            // Load ConveyThis if API key is available
+            const apiKey = '{{ config.CONVEYTHIS_API_KEY if config.CONVEYTHIS_API_KEY else "" }}';
+            if (apiKey) {
+                this.loadConveyThis(apiKey);
+            }
+        }
+    }
+    
+    loadConveyThis(apiKey) {
+        // ConveyThis script loading
+        const script = document.createElement('script');
+        script.src = 'https://cdn.conveythis.com/javascript/conveythis-initializer.js';
+        script.async = true;
+        script.onload = () => {
+            if (typeof ConveyThis !== 'undefined') {
+                ConveyThis.init({
+                    api_key: apiKey,
+                    source_language: 'no',
+                    target_languages: ['en'],
+                    display_mode: 'widget',
+                    custom_widget: {
+                        container: '#conveythis-widget',
+                        style: {
+                            button_background_color: '#007bff',
+                            button_text_color: '#ffffff'
+                        }
+                    }
+                });
+                this.conveyThisEnabled = true;
+                document.getElementById('conveythis-widget').style.display = 'block';
+            }
+        };
+        document.head.appendChild(script);
+    }
+    
+    activateConveyThis() {
+        if (typeof ConveyThis !== 'undefined') {
+            // Toggle between Norwegian and English
+            if (this.currentLanguage === 'no') {
+                ConveyThis.translatePage('en');
+                this.currentLanguage = 'en';
+                this.updateLanguageDisplay();
+            } else {
+                ConveyThis.translatePage('no');
+                this.currentLanguage = 'no';
+                this.updateLanguageDisplay();
+            }
+        }
+    }
+    
+    showBrowserTranslationOptions() {
+        const prompt = document.getElementById('browser-translate-prompt');
+        prompt.style.display = 'block';
+        prompt.classList.add('show');
+        
+        // Auto-hide after 8 seconds
+        setTimeout(() => {
+            if (prompt.classList.contains('show')) {
+                prompt.classList.remove('show');
+                setTimeout(() => {
+                    prompt.style.display = 'none';
+                }, 300);
+            }
+        }, 8000);
+        
+        // Try to detect and use browser's built-in translation
+        this.triggerBrowserTranslation();
+    }
+    
+    triggerBrowserTranslation() {
+        // For Chrome/Edge - add translate meta tag
+        if (!document.querySelector('meta[name="google"]')) {
+            const meta = document.createElement('meta');
+            meta.name = 'google';
+            meta.content = 'translate';
+            document.head.appendChild(meta);
+        }
+        
+        // Try to trigger Chrome's automatic translation
+        if (navigator.userAgent.includes('Chrome')) {
+            // Add language hints for better detection
+            const html = document.documentElement;
+            html.lang = 'no';
+            
+            // Dispatch events that might trigger translation
+            const event = new CustomEvent('translate-request', {
+                detail: { from: 'no', to: 'en' }
+            });
+            document.dispatchEvent(event);
+        }
+    }
+    
+    detectBrowserTranslation() {
+        // Monitor for browser translation changes
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && 
+                    mutation.attributeName === 'lang' &&
+                    mutation.target === document.documentElement) {
+                    const newLang = document.documentElement.lang;
+                    if (newLang !== this.currentLanguage) {
+                        this.currentLanguage = newLang;
+                        this.updateLanguageDisplay();
+                    }
+                }
+            });
+        });
+        
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['lang']
+        });
+    }
+    
+    updateLanguageDisplay() {
+        const currentLangElement = document.getElementById('current-language');
+        const targetLangElement = document.getElementById('target-language');
+        
+        if (this.currentLanguage === 'no') {
+            currentLangElement.textContent = 'NO';
+            targetLangElement.textContent = 'EN';
+        } else {
+            currentLangElement.textContent = 'EN';
+            targetLangElement.textContent = 'NO';
+        }
+    }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    window.translationManager = new TranslationManager();
+});
+
+// Browser translation detection helpers
+function addTranslationMeta() {
+    // Add meta tags to help browser detect language
+    const metas = [
+        { name: 'google', content: 'translate' },
+        { name: 'language', content: 'Norwegian' },
+        { name: 'og:locale', content: 'no_NO' },
+        { name: 'og:locale:alternate', content: 'en_US' }
+    ];
+    
+    metas.forEach(meta => {
+        if (!document.querySelector(`meta[name="${meta.name}"]`)) {
+            const metaTag = document.createElement('meta');
+            metaTag.name = meta.name;
+            metaTag.content = meta.content;
+            document.head.appendChild(metaTag);
+        }
+    });
+}
+
+// Call on page load
+addTranslationMeta();
+</script>

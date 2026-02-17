@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Market Analysis | {{ date }} | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-calendar-day text-primary"></i> Daily Market Analysis</h1>
+        <div>
+            <span class="badge bg-primary">{{ date }}</span>
+            <a href="{{ url_for('daily_view.index') }}" class="btn btn-outline-secondary btn-sm ms-2">
+                <i class="bi bi-arrow-left"></i> Tilbake til oversikt
+            </a>
+        </div>
+    </div>
+    
+    <!-- Market Summary -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5><i class="bi bi-graph-up"></i> Markedssammendrag for {{ date }}</h5>
+                </div>
+                <div class="card-body">
+                    {% if analysis.market_summary %}
+                    <div class="alert alert-info"><p class="mb-0">{{ analysis.market_summary }}</p></div>
+                    {% else %}
+                    <div class="alert alert-secondary mb-0">Ingen oppsummering er tilgjengelig for denne datoen.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sector Performance -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5><i class="bi bi-pie-chart-fill"></i> Sektorutvikling</h5>
+                </div>
+                <div class="card-body">
+                    {% if analysis.sector_performance and analysis.sector_performance|length > 0 %}
+                    <div class="row">
+                        {% for sector in analysis.sector_performance %}
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-{% if sector.performance.startswith('+') %}success{% else %}danger{% endif %}">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">{{ sector.sector }}</h6>
+                                    <h4 class="text-{% if sector.performance.startswith('+') %}success{% else %}danger{% endif %}">
+                                        {{ sector.performance }}
+                                    </h4>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">Leder:</small>
+                                        <span class="badge bg-primary">{{ sector.leader }}</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        {% if sector.performance.startswith('+') %}
+                                            <i class="bi bi-arrow-up-circle-fill text-success h4"></i>
+                                        {% else %}
+                                            <i class="bi bi-arrow-down-circle-fill text-danger h4"></i>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted">Ingen sektor-data tilgjengelig.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Key Events Timeline -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5><i class="bi bi-clock-history"></i> Nøkkelhendelser</h5>
+                </div>
+                <div class="card-body">
+                    {% if analysis.key_events and analysis.key_events|length > 0 %}
+                    <div class="timeline">
+                        {% for event in analysis.key_events %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker">
+                                <i class="bi bi-circle-fill text-primary"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-body">
+                                        <p class="mb-0">{{ event }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted">Ingen hendelser registrert for denne datoen.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Market Analysis Cards -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h6><i class="bi bi-bullseye"></i> Dagens Høydepunkter</h6>
+                </div>
+                <div class="card-body">
+                    {% if analysis.sector_performance and analysis.sector_performance|length > 0 %}
+                        {% set best_sector = None %}
+                        {% for s in analysis.sector_performance %}
+                            {% if best_sector is none and '+' in s.performance %}
+                                {% set best_sector = s %}
+                            {% endif %}
+                        {% endfor %}
+                        {% if best_sector %}
+                        <div class="alert alert-success">
+                            <strong>Beste sektor:</strong> {{ best_sector.sector }} ({{ best_sector.performance }})
+                            <br><small>Ledet av {{ best_sector.leader }}</small>
+                        </div>
+                        {% endif %}
+
+                        {% set worst_sector = None %}
+                        {% for s in analysis.sector_performance %}
+                            {% if worst_sector is none and '+' not in s.performance %}
+                                {% set worst_sector = s %}
+                            {% endif %}
+                        {% endfor %}
+                        {% if worst_sector %}
+                        <div class="alert alert-warning">
+                            <strong>Svakeste sektor:</strong> {{ worst_sector.sector }} ({{ worst_sector.performance }})
+                            <br><small>{{ worst_sector.leader }} hadde størst fall</small>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-secondary mb-0">Ingen analyseinnsikt tilgjengelig uten sektordata.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h6><i class="bi bi-lightbulb"></i> Analytikerinnsikt</h6>
+                </div>
+                <div class="card-body">
+                    {% if analysis.sector_performance and analysis.sector_performance|length > 0 %}
+                        <div class="alert alert-info">
+                            <strong>Markedsstemning:</strong> 
+                            {% set positive_sectors = 0 %}
+                            {% for s in analysis.sector_performance %}
+                                {% if '+' in s.performance %}{% set positive_sectors = positive_sectors + 1 %}{% endif %}
+                            {% endfor %}
+                            {% set total_sectors = analysis.sector_performance | length %}
+                            {% if positive_sectors > total_sectors / 2 %}
+                                Generelt positiv med {{ positive_sectors }}/{{ total_sectors }} sektorer i oppgang.
+                            {% else %}
+                                Blandet til negativ med kun {{ positive_sectors }}/{{ total_sectors }} sektorer i pluss.
+                            {% endif %}
+                        </div>
+
+                        <div class="alert alert-secondary">
+                            <strong>Handelsmuligheter:</strong> 
+                            Følg opp sterke sektorer og vurder contrarian-posisjoner i svake områder.
+                        </div>
+                    {% else %}
+                        <div class="alert alert-secondary mb-0">Ingen analytikerinnsikt uten underliggende data.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Navigation -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary" onclick="navigateDay(-1)">
+                    <i class="bi bi-chevron-left"></i> Forrige dag
+                </button>
+                <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('daily_view.index') }}'">
+                    I dag
+                </button>
+                <button type="button" class="btn btn-outline-primary" onclick="navigateDay(1)">
+                    Neste dag <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -22px;
+    top: 10px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #007bff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timeline-marker i {
+    font-size: 6px;
+}
+
+.timeline-content {
+    margin-left: 10px;
+}
+
+.border-success {
+    border-color: #28a745 !important;
+}
+
+.border-danger {
+    border-color: #dc3545 !important;
+}
+</style>
+
+<script>
+function navigateDay(direction) {
+    // Parse current date from URL or use today
+    const currentDate = new Date('{{ date }}' || new Date());
+    currentDate.setDate(currentDate.getDate() + direction);
+    
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const day = String(currentDate.getDate()).padStart(2, '0');
+    const newDate = `${year}-${month}-${day}`;
+    
+    window.location.href = `/daily-view/analysis/${newDate}`;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Logg inn for å se portefølje{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <div class="alert alert-warning">
+    <h2>Logg inn for å se din portefølje</h2>
+    <p>Du må være innlogget for å se og administrere din aksjeportefølje.</p>
+    <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Logg inn</a>
+    <a href="{{ url_for('main.register') }}" class="btn btn-outline-secondary">Registrer deg</a>
+  </div>
+</div>
+{% endblock %}

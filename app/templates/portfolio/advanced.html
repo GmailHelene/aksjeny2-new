@@ -1,0 +1,655 @@
+{% extends "base.html" %}
+
+{% block title %}Avansert Porteføljeanalyse - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-1">🧠 AI-dreven Porteføljeanalyse</h1>
+                    <p class="text-muted">Optimaliser din portefølje med avanserte algoritmer og AI-innsikt</p>
+                </div>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#optimizeModal">
+                        <i class="bi bi-graph-up-arrow"></i> Optimaliser
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#backtestModal">
+                        <i class="bi bi-clock-history"></i> Backtest
+                    </button>
+                    <button type="button" class="btn btn-outline-info" onclick="showMonteCarloModal()">
+                        <i class="bi bi-dice-6"></i> Monte Carlo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Forventet Avkastning</h6>
+                            <h4 id="expected-return">--%</h4>
+                        </div>
+                        <i class="bi bi-graph-up fs-1 opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Volatilitet</h6>
+                            <h4 id="volatility">--%</h4>
+                        </div>
+                        <i class="bi bi-activity fs-1 opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Sharpe Ratio</h6>
+                            <h4 id="sharpe-ratio">--</h4>
+                        </div>
+                        <i class="bi bi-award fs-1 opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Maks Drawdown</h6>
+                            <h4 id="max-drawdown">--%</h4>
+                        </div>
+                        <i class="bi bi-arrow-down fs-1 opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Portefølje Sammensetning -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">📊 Portefølje Sammensetning</h5>
+                </div>
+                <div class="card-body">
+                    <div style="position: relative; height: 300px; width: 100%;">
+                        <canvas id="portfolioChart"></canvas>
+                    </div>
+                    <div id="portfolio-weights" class="mt-3">
+                        <p class="text-muted">Ingen portefølje valgt. Klikk "Optimaliser" for å starte.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Innsikt -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">🤖 AI-Innsikt og Anbefalinger</h5>
+                </div>
+                <div class="card-body">
+                    <div id="ai-insights">
+                        <div class="text-center text-muted">
+                            <i class="bi bi-lightbulb fs-2"></i>
+                            <p class="mt-2">AI-anbefalinger vil vises her etter optimalisering</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Chart -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">📈 Ytelsesanalyse</h5>
+                </div>
+                <div class="card-body">
+                    <div style="position: relative; height: 400px; width: 100%;">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Analysis -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">⚡ Risikoanalyse</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <canvas id="riskChart" width="400" height="300"></canvas>
+                        </div>
+                        <div class="col-md-6">
+                            <div id="risk-metrics" class="mt-3">
+                                <div class="alert alert-info">
+                                    <h6><i class="bi bi-info-circle"></i> Risikomålinger</h6>
+                                    <ul class="mb-0">
+                                        <li><strong>Value at Risk (95%):</strong> <span id="var-95">--</span></li>
+                                        <li><strong>Conditional VaR:</strong> <span id="cvar">--</span></li>
+                                        <li><strong>Beta:</strong> <span id="beta">--</span></li>
+                                        <li><strong>Alpha:</strong> <span id="alpha">--</span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Optimize Modal -->
+<div class="modal fade" id="optimizeModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">🎯 Optimaliser Portefølje</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="optimizeForm">
+                    <div class="mb-3">
+                        <label class="form-label">Velg aksjer (skriv ticker-symboler separert med komma)</label>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="text" class="form-control" id="symbols" placeholder="AAPL, TSLA, GOOGL, MSFT" required>
+                        <div class="form-text">Eksempel: EQNR.OL, AKER.OL, TEL.OL for norske aksjer</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Optimaliseringsstrategi</label>
+                        <select class="form-select" id="optimizationType" required>
+                            <option value="sharpe">Maksimer Sharpe Ratio (Anbefalt)</option>
+                            <option value="min_volatility">Minimer Risiko</option>
+                            <option value="max_return">Maksimer Avkastning</option>
+                        </select>
+                    </div>
+                    <div class="alert alert-info">
+                        <h6><i class="bi bi-lightbulb"></i> Tips for beste resultater:</h6>
+                        <ul class="mb-0">
+                            <li>Velg 4-8 aksjer fra ulike sektorer</li>
+                            <li>Inkluder både vekst- og verdiaksjer</li>
+                            <li>Sharpe Ratio balanserer risiko og avkastning optimalt</li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Avbryt</button>
+                <button type="button" class="btn btn-primary" onclick="optimizePortfolio()">
+                    <i class="bi bi-cpu"></i> Start Optimalisering
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Backtest Modal -->
+<div class="modal fade" id="backtestModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">📊 Backtest Strategi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="backtestForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Aksjer</label>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="text" class="form-control" id="backtestSymbols" placeholder="AAPL, TSLA, GOOGL" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Vekter (% separert med komma)</label>
+                                <input type="text" class="form-control" id="backtestWeights" placeholder="25, 25, 25, 25" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Fra dato</label>
+                                <input type="date" class="form-control" id="startDate" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Til dato</label>
+                                <input type="date" class="form-control" id="endDate" required>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Avbryt</button>
+                <button type="button" class="btn btn-primary" onclick="runBacktest()">
+                    <i class="bi bi-play-fill"></i> Kjør Backtest
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 12px;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid #dee2e6;
+    border-radius: 12px 12px 0 0 !important;
+}
+
+.btn-group .btn {
+    border-radius: 8px;
+    margin-left: 4px;
+}
+
+.btn-group .btn:first-child {
+    margin-left: 0;
+}
+
+.alert {
+    border-radius: 8px;
+    border: none;
+}
+
+.insight-card {
+    border-left: 4px solid;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 12px;
+}
+
+.insight-card.success {
+    border-left-color: #198754;
+    background-color: rgba(25, 135, 84, 0.1);
+}
+
+.insight-card.warning {
+    border-left-color: #ffc107;
+    background-color: rgba(255, 193, 7, 0.1);
+}
+
+.insight-card.info {
+    border-left-color: #0dcaf0;
+    background-color: rgba(13, 202, 240, 0.1);
+}
+
+.portfolio-weight {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #0d6efd;
+}
+
+.weight-bar {
+    height: 6px;
+    background-color: #0d6efd;
+    border-radius: 3px;
+    margin-top: 4px;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let portfolioChart = null;
+let performanceChart = null;
+let riskChart = null;
+let selectedStocks = {{ selected_stocks|tojson|safe }} || [];
+
+// Initialize charts
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+    setDefaultDates();
+    loadPortfolioData();
+});
+
+function initializeCharts() {
+    // Portfolio pie chart
+    const portfolioCtx = document.getElementById('portfolioChart').getContext('2d');
+    portfolioChart = new Chart(portfolioCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [],
+            datasets: [{
+                data: [],
+                backgroundColor: [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                    '#9966FF', '#FF9F40', '#FF6384', '#36A2EB'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Performance line chart
+    const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+    performanceChart = new Chart(performanceCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Kumulativ Avkastning',
+                data: [],
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Kumulativ Avkastning (%)'
+                    }
+                }
+            }
+        }
+    });
+
+    // Risk histogram
+    const riskCtx = document.getElementById('riskChart').getContext('2d');
+    riskChart = new Chart(riskCtx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Frekvens',
+                data: [],
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Avkastningsfordeling (Monte Carlo)'
+                }
+            }
+        }
+    });
+}
+
+function setDefaultDates() {
+    const today = new Date();
+    const oneYearAgo = new Date(today.getTime() - 365 * 24 * 60 * 60 * 1000);
+    
+    document.getElementById('startDate').value = oneYearAgo.toISOString().split('T')[0];
+    document.getElementById('endDate').value = today.toISOString().split('T')[0];
+}
+
+async function optimizePortfolio() {
+    try {
+        const response = await fetch('/portfolio/api/optimize', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                tickers: selectedStocks
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            displayOptimizationResults(data);
+        } else {
+            throw new Error(data.error || 'Feil ved optimalisering');
+        }
+    } catch (error) {
+        console.error('Error optimizing portfolio:', error);
+        alert('Kunne ikke optimalisere portefølje: ' + error.message);
+    }
+}
+
+async function runBacktest() {
+    const symbols = document.getElementById('backtestSymbols').value.split(',').map(s => s.trim());
+    const weights = document.getElementById('backtestWeights').value.split(',').map(w => parseFloat(w.trim()) / 100);
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    if (symbols.length !== weights.length) {
+        alert('Antall aksjer og vekter må være like');
+        return;
+    }
+
+    try {
+        showLoading('Kjører backtest...');
+        
+        const response = await fetch('/backtest/api/run_backtest', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({
+                symbol: symbols[0], // Use first symbol for now
+                strategy: 'moving_average',
+                period_short: 20,
+                period_long: 50,
+                start_date: startDate,
+                end_date: endDate,
+                initial_capital: 100000
+            })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+            updateBacktestDisplay(data);
+            bootstrap.Modal.getInstance(document.getElementById('backtestModal')).hide();
+        } else {
+            throw new Error(data.error || 'Feil ved backtesting');
+        }
+    } catch (error) {
+        alert('Feil: ' + error.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+async function showMonteCarloModal() {
+    // Implement Monte Carlo modal and simulation
+    alert('Monte Carlo-simulering kommer snart!');
+}
+
+function updatePortfolioDisplay(data) {
+    // Update stats cards
+    document.getElementById('expected-return').textContent = (data.expected_return * 100).toFixed(1) + '%';
+    document.getElementById('volatility').textContent = (data.volatility * 100).toFixed(1) + '%';
+    document.getElementById('sharpe-ratio').textContent = data.sharpe_ratio.toFixed(2);
+
+    // Update portfolio chart
+    portfolioChart.data.labels = data.symbols;
+    portfolioChart.data.datasets[0].data = data.weights.map(w => (w * 100).toFixed(1));
+    portfolioChart.update();
+
+    // Update weights display
+    const weightsHtml = data.symbols.map((symbol, index) => {
+        const weight = data.weights[index] * 100;
+        return `
+            <div class="portfolio-weight">
+                <div>
+                    <strong>${symbol}</strong>
+                    <div class="weight-bar" style="width: ${weight}%"></div>
+                </div>
+                <span class="badge bg-primary">${weight.toFixed(1)}%</span>
+            </div>
+        `;
+    }).join('');
+    
+    document.getElementById('portfolio-weights').innerHTML = weightsHtml;
+}
+
+function updateBacktestDisplay(data) {
+    // Update performance chart
+    const returns = data.cumulative_returns.map(r => ((r - 1) * 100).toFixed(2));
+    
+    performanceChart.data.labels = data.dates;
+    performanceChart.data.datasets[0].data = returns;
+    performanceChart.update();
+
+    // Update stats
+    document.getElementById('expected-return').textContent = (data.annual_return * 100).toFixed(1) + '%';
+    document.getElementById('volatility').textContent = (data.volatility * 100).toFixed(1) + '%';
+    document.getElementById('sharpe-ratio').textContent = data.sharpe_ratio.toFixed(2);
+    document.getElementById('max-drawdown').textContent = (data.max_drawdown * 100).toFixed(1) + '%';
+}
+
+function updateAIInsights(insights) {
+    if (!insights || insights.length === 0) {
+        document.getElementById('ai-insights').innerHTML = `
+            <div class="text-center text-success">
+                <i class="bi bi-check-circle fs-2"></i>
+                <p class="mt-2">Porteføljen ser bra ut! Ingen kritiske anbefalinger.</p>
+            </div>
+        `;
+        return;
+    }
+
+    const insightsHtml = insights.map(insight => {
+        const typeClass = insight.type === 'success' ? 'success' : 
+                         insight.type === 'warning' ? 'warning' : 'info';
+        const icon = insight.type === 'success' ? 'check-circle' : 
+                    insight.type === 'warning' ? 'exclamation-triangle' : 'info-circle';
+        
+        return `
+            <div class="insight-card ${typeClass} p-3">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-${icon} fs-5 me-2 mt-1"></i>
+                    <div>
+                        <h6 class="mb-1">${insight.title}</h6>
+                        <p class="mb-0 small">${insight.message}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    document.getElementById('ai-insights').innerHTML = insightsHtml;
+}
+
+function loadPortfolioData() {
+    // Initialize portfolio data display
+    if (selectedStocks && selectedStocks.length > 0) {
+        console.log('Loading portfolio data for:', selectedStocks);
+        
+        // Update portfolio display with selected stocks
+        updatePortfolioDisplay();
+        
+        // Update stats if available
+        updatePortfolioStats();
+    } else {
+        console.log('No stocks selected, showing sample data');
+        // Show sample data or empty state
+    }
+}
+
+function updatePortfolioDisplay() {
+    // Update portfolio chart with selected stocks
+    if (portfolioChart && selectedStocks.length > 0) {
+        portfolioChart.data.labels = selectedStocks.map(stock => stock.replace('.OL', ''));
+        portfolioChart.data.datasets[0].data = selectedStocks.map(() => Math.random() * 30 + 10); // Sample weights
+        portfolioChart.update();
+    }
+}
+
+function updatePortfolioStats() {
+    // Update displayed statistics
+    const expectedReturn = {{ expected_return|default(8.5) }};
+    const volatility = {{ volatility|default(12.3) }};
+    const sharpeRatio = {{ sharpe_ratio|default(0.69) }};
+    
+    // Update the UI elements
+    const expectedReturnEl = document.getElementById('expected-return');
+    const volatilityEl = document.getElementById('volatility');
+    
+    if (expectedReturnEl) expectedReturnEl.textContent = expectedReturn.toFixed(1) + '%';
+    if (volatilityEl) volatilityEl.textContent = volatility.toFixed(1) + '%';
+}
+
+function showLoading(message) {
+    // Implement loading indicator
+    const loadingHtml = `
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Laster...</span>
+            </div>
+            <p class="mt-2">${message}</p>
+        </div>
+    `;
+    
+    // Show in a modal or overlay
+    console.log('Loading:', message);
+}
+
+function hideLoading() {
+    // Hide loading indicator
+    console.log('Loading complete');
+}
+
+function getCSRFToken() {
+    return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - Aksjeradar</title>
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#0d6efd">
+</head>
+<body class="bg-dark text-light">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <img src="/static/images/logo-192.png" alt="Aksjeradar Logo" class="mb-4" width="96">
+                <h1 class="display-4 mb-4">Du er offline</h1>
+                <p class="lead mb-4">
+                    Det ser ut til at du ikke har internettforbindelse for øyeblikket.
+                    Noen funksjoner vil ikke være tilgjengelige før du er online igjen.
+                </p>
+                <div class="d-grid gap-2 col-md-6 mx-auto">
+                    <button class="btn btn-primary btn-lg" onclick="window.location.reload()">
+                        Prøv igjen
+                    </button>
+                    <a href="/" class="btn btn-outline-light btn-lg">
+                        Gå til forsiden
+                    </a>
+                </div>
+                <div class="mt-5">
+                    <h4>Tilgjengelig offline:</h4>
+                    <ul class="list-group list-group-flush bg-dark">
+                        <li class="list-group-item bg-dark text-light border-secondary">Sist sette aksjer</li>
+                        <li class="list-group-item bg-dark text-light border-secondary">Cached markedsdata</li>
+                        <li class="list-group-item bg-dark text-light border-secondary">Din lagrede portefølje</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Check for connectivity
+        window.addEventListener('online', function() {
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>

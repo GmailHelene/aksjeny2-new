@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Nyhetswidget | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="news-embed-widget">
+    <div class="news-embed-header d-flex justify-content-between align-items-center mb-3">
+        <h6 class="mb-0">
+            <i class="bi bi-newspaper text-primary me-1"></i>
+            Finansnyheter
+            {% if category == 'norwegian' %}
+            (Norske)
+            {% elif category == 'international' %}
+            (Internasjonale)
+            {% endif %}
+        </h6>
+        <small class="text-muted">Oppdatert {{ datetime.now().strftime('%H:%M') }}</small>
+    </div>
+    
+    <div class="news-embed-content">
+        {% for article in articles %}
+        <div class="news-embed-item mb-3 pb-3 border-bottom">
+            <div class="d-flex">
+                {% if show_images and article.image_url %}
+                <div class="news-embed-image me-3">
+                    <img src="{{ article.image_url }}" alt="{{ article.title }}" 
+                         class="rounded" style="width: 80px; height: 60px; object-fit: cover;">
+                </div>
+                {% endif %}
+                <div class="news-embed-text flex-grow-1">
+                    <h6 class="news-embed-title mb-1">
+                        <a href="{{ article.link }}" target="_blank" rel="noopener" 
+                           class="text-decoration-none text-dark">
+                            {{ article.title }}
+                        </a>
+                    </h6>
+                    <p class="news-embed-summary text-muted small mb-1">
+                        {{ article.summary[:100] }}{% if article.summary|length > 100 %}...{% endif %}
+                    </p>
+                    <div class="news-embed-meta d-flex justify-content-between align-items-center">
+                        <span class="badge bg-light text-dark small">{{ article.source }}</span>
+                        <small class="text-muted">
+                            {% if article.published %}
+                                {{ article.published.strftime('%H:%M') }}
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-3">
+            <i class="bi bi-newspaper"></i>
+            <p class="mb-0 small">Ingen nyheter tilgjengelig</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if articles %}
+    <div class="news-embed-footer text-center mt-3">
+        <a href="{{ url_for('news_bp.index') }}" class="btn btn-outline-primary btn-sm text-decoration-none">
+            Se alle nyheter <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.news-embed-widget {
+    max-width: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.news-embed-image {
+    width: 80px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.news-embed-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.news-embed-item:last-child {
+    border-bottom: none !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.news-embed-title a:hover {
+    color: #0d6efd !important;
+}
+
+.news-embed-summary {
+    line-height: 1.4;
+}
+
+.news-embed-meta .badge {
+    font-size: 0.7em;
+}
+
+.news-embed-widget .btn-sm {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.75rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .news-embed-image {
+        display: none;
+    }
+    
+    .news-embed-title {
+        font-size: 0.9rem;
+    }
+}
+</style>
+{% endblock %}

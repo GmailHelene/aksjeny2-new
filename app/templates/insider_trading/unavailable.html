@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Insiderhandel - Funksjon ikke tilgjengelig - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-1">🎯 Insiderhandel Intelligence</h1>
+                    <p class="text-muted mb-0">Avansert analyse av insiderhandel og institusjonelle transaksjoner</p>
+                </div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
+                        <li class="breadcrumb-item active">Insiderhandel</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unavailable Message -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Funksjon ikke tilgjengelig</h5>
+                </div>
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="bi bi-database-x display-1 text-muted"></i>
+                    </div>
+                    <h4 class="mb-3">Insiderhandel-data krever betalt API-abonnement</h4>
+                    <p class="text-muted mb-4 lead">
+                        For å vise ekte insiderhandel-data må vi ha tilgang til en betalt API-tjeneste. 
+                        Denne funksjonen er midlertidig ikke tilgjengelig da vi kun viser ekte data - ingen demo- eller mockup-data.
+                    </p>
+                    
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="border rounded p-3 h-100">
+                                <i class="bi bi-shield-check text-success fs-2 mb-2"></i>
+                                <h6>Kun ekte data</h6>
+                                <small class="text-muted">Vi viser aldri falske eller demo-data for å opprettholde troverdighet</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border rounded p-3 h-100">
+                                <i class="bi bi-currency-dollar text-primary fs-2 mb-2"></i>
+                                <h6>API-kostnader</h6>
+                                <small class="text-muted">Insiderhandel-data krever betalt abonnement hos dataleverandør</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{{ url_for('main.index') }}" class="btn btn-primary me-md-2">
+                            <i class="bi bi-house me-2"></i>Tilbake til forsiden
+                        </a>
+                        <a href="{{ url_for('stocks.prices') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-graph-up me-2"></i>Se aksjekurser
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Alternative Features -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h4 class="mb-4 text-center">Andre tilgjengelige funksjoner</h4>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-graph-up-arrow text-primary fs-1 mb-3"></i>
+                    <h5 class="card-title">Aksjekurser</h5>
+                    <p class="card-text text-muted">Se sanntidskurser for norske og globale aksjer</p>
+                    <a href="{{ url_for('stocks.prices') }}" class="btn btn-outline-primary">Utforsk kurser</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-robot text-success fs-1 mb-3"></i>
+                    <h5 class="card-title">AI-analyse</h5>
+                    <p class="card-text text-muted">Få AI-drevet analyse av aksjer og markeder</p>
+                    <a href="{{ url_for('analysis.ai') }}" class="btn btn-outline-success">Start analyse</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-briefcase text-warning fs-1 mb-3"></i>
+                    <h5 class="card-title">Portfolio</h5>
+                    <p class="card-text text-muted">Administrer og følg dine investeringer</p>
+                    <a href="{{ url_for('portfolio.portfolio_overview') }}" class="btn btn-outline-warning">Åpne portfolio</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hover-lift {
+    transition: transform 0.2s;
+}
+.hover-lift:hover {
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}

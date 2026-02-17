@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+{% block title %}Markedsintelligens - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5 mb-3">📊 Markedsintelligens</h1>
+            <p class="lead">Få innsikt i innsidehandel, institusjonell eierskap, resultatkalender og makroøkonomiske indikatorer.</p>
+                {% if ekte_notice %}
+                <div class="alert alert-warning">
+                    {{ ekte_notice }}
+                </div>
+                {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Stats Row -->
+    <div class="row mb-5">
+        {% if economic_indicators and economic_indicators.get('gdp_growth') is not none %}
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="display-6 text-primary">{{ economic_indicators.gdp_growth }}%</div>
+                    <small class="text-muted">BNP Vekst</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% if economic_indicators and economic_indicators.get('inflation_rate') is not none %}
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="display-6 text-warning">{{ economic_indicators.inflation_rate }}%</div>
+                    <small class="text-muted">Inflasjon</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% if economic_indicators and economic_indicators.get('oil_price_brent') is not none %}
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="display-6 text-info">${{ economic_indicators.oil_price_brent }}</div>
+                    <small class="text-muted">Brent Olje</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% if crypto_fear_greed and crypto_fear_greed.get('value') is not none %}
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="display-6 {% if crypto_fear_greed.value > 50 %}text-success{% elif crypto_fear_greed.value < 30 %}text-danger{% else %}text-warning{% endif %}">
+                        {{ crypto_fear_greed.value }}
+                    </div>
+                    <small class="text-muted">Krypto F&G</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Navigation Pills -->
+    <ul class="nav nav-pills mb-4" id="market-intel-tabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="insider-tab" data-bs-toggle="pill" data-bs-target="#insider" type="button" role="tab">
+                🏢 Innsidehandel
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="earnings-tab" data-bs-toggle="pill" data-bs-target="#earnings" type="button" role="tab">
+                📈 Resultatkalender
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="sectors-tab" data-bs-toggle="pill" data-bs-target="#sectors" type="button" role="tab">
+                🏭 Sektoranalyse
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="news-tab" data-bs-toggle="pill" data-bs-target="#news" type="button" role="tab">
+                📰 Nyheter
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="market-intel-content">
+        <!-- Insider Trading Tab -->
+        <div class="tab-pane fade show active" id="insider" role="tabpanel">
+            <div class="row">
+                {% if insider_data %}
+                {% for ticker, trades in insider_data.items() %}
+                <div class="col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">{{ ticker }} - Nylige Innsidehandler</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Dato</th>
+                                            <th>Person</th>
+                                            <th>Type</th>
+                                            <th>Antall</th>
+                                            <th>Pris</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for trade in trades[:5] %}
+                                        <tr>
+                                            <td><small>{{ trade.transaction_date }}</small></td>
+                                            <td><small>{{ trade.reporting_name[:20] }}...</small></td>
+                                            <td>
+                                                <span class="badge {% if 'Purchase' in trade.transaction_type %}bg-success{% else %}bg-danger{% endif %}">
+                                                    {% if 'Purchase' in trade.transaction_type %}KJØP{% else %}SALG{% endif %}
+                                                </span>
+                                            </td>
+                                            <td><small>{{ "{:,}".format(trade.securities_transacted) }}</small></td>
+                                            <td><small>${{ "%.2f"|format(trade.price) }}</small></td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('analysis.insider_trading') }}?symbol={{ ticker }}" class="btn btn-sm btn-outline-primary">
+                                Se alle transaksjoner
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info">Ingen innsidehandelsdata tilgjengelig akkurat nå.</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Earnings Calendar Tab -->
+        <div class="tab-pane fade" id="earnings" role="tabpanel">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">📅 Kommende Resultater</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Dato</th>
+                                    <th>Tidspunkt</th>
+                                    <th>EPS Forventet</th>
+                                    <th>Omsetning Forventet</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if earnings_calendar %}
+                                {% for earning in earnings_calendar %}
+                                <tr>
+                                    <td><strong>{{ earning.symbol }}</strong></td>
+                                    <td>{{ earning.date }}</td>
+                                    <td>
+                                        {% if earning.when == 'bmc' %}
+                                            <span class="badge bg-info">Før åpning</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Etter stenging</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ "%.2f"|format(earning.eps_estimated) if earning.eps_estimated else '-' }}</td>
+                                    <td>{{ "{:,.0f}".format(earning.revenue_estimated/1000000) }}M kr</td>
+                                    <td>
+                                        {% if earning.eps_actual %}
+                                            <span class="badge bg-success">Rapportert</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Venter</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% else %}
+                                <tr><td colspan="6" class="text-center text-muted">Ingen resultatdata tilgjengelig.</td></tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('market_intel.earnings_calendar') }}" class="btn btn-outline-success">
+                        Se full resultatkalender
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sector Analysis Tab -->
+        <div class="tab-pane fade" id="sectors" role="tabpanel">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">🏭 Sektorytelse I Dag</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for sector in sector_performance %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100 {% if sector.change_percentage > 0 %}border-success{% elif sector.change_percentage < 0 %}border-danger{% else %}border-secondary{% endif %}">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">{{ sector.sector }}</h6>
+                                    <div class="display-6 {% if sector.change_percentage > 0 %}text-success{% elif sector.change_percentage < 0 %}text-danger{% else %}text-secondary{% endif %}">
+                                        {% if sector.change_percentage > 0 %}+{% endif %}{{ "%.2f"|format(sector.change_percentage) }}%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('market_intel.sector_analysis') }}" class="btn btn-outline-warning">
+                        Detaljert sektoranalyse
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market News Tab -->
+        <div class="tab-pane fade" id="news" role="tabpanel">
+            <div class="row">
+                {% for article in market_news[:6] %}
+                <div class="col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        {% if article.image %}
+                        <img src="{{ article.image }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="News image">
+                        {% endif %}
+                        <div class="card-body">
+                            <h6 class="card-title">{{ article.title[:80] }}{% if article.title|length > 80 %}...{% endif %}</h6>
+                            <p class="card-text small text-muted">{{ article.text[:120] }}{% if article.text|length > 120 %}...{% endif %}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">{{ article.published_date[:10] }}</small>
+                                {% if article.symbol %}
+                                <span class="badge bg-primary">{{ article.symbol }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            {% if article.url != '#' %}
+                            <a href="{{ article.url }}" target="_blank" class="btn btn-sm btn-outline-primary">Les mer</a>
+                            {% endif %}
+                            <small class="text-muted">{{ article.site }}</small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">🚀 Utforsk Mer</h5>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="{{ url_for('market_intel.insider_trading') }}" class="btn btn-outline-primary w-100 mb-2">
+                                Detaljert Innsidehandel
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('market_intel.earnings_calendar') }}" class="btn btn-outline-success w-100 mb-2">
+                                Full Resultatkalender
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('market_intel.sector_analysis') }}" class="btn btn-outline-warning w-100 mb-2">
+                                Avansert Sektoranalyse
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('market_intel.economic_indicators') }}" class="btn btn-outline-info w-100 mb-2">
+                                Økonomiske Indikatorer
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-refresh crypto fear & greed index every 5 minutes
+    setInterval(function() {
+        fetch('/market-intel/api/crypto-fear-greed')
+            .then(response => response.json())
+            .then(data => {
+                // Update the display if needed
+                console.log('Updated crypto fear & greed:', data);
+            })
+            .catch(error => console.error('Error updating crypto F&G:', error));
+    }, 300000); // 5 minutes
+});
+</script>
+{% endblock %}

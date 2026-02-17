@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Pro Tools | Aksjeradar{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Pro Tools</h1>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <button class="btn btn-outline-primary w-100" onclick="exportProData()">
+                <i class="bi bi-download"></i> Eksporter Data
+            </button>
+        </div>
+        <div class="col-md-6">
+            <a href="/api/docs" class="btn btn-outline-info w-100">
+                <i class="bi bi-file-earmark-text"></i> API Dokumentasjon
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <p class="text-muted">Bruk Pro Tools for avansert dataeksport og tilgang til API-dokumentasjon.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function exportProData() {
+    // Example: Export demo data as CSV
+    const csv = 'Ticker,Pris,Endring\nAAPL,185.70,+1.5%\nTSLA,245.80,-2.1%\nEQNR.OL,278.40,+1.2%';
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'pro_tools_data.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}

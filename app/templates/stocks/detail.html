@@ -1,0 +1,576 @@
+{% extends "base.html" %}
+
+{% block title %}{{ ticker }} - Aksjedetaljer - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header with live indicator -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1 class="h2 mb-0">
+                    {{ stock_info.shortName|default(ticker) }}
+                    <span class="badge bg-secondary ms-2">{{ ticker }}</span>
+                    <span class="live-indicator ms-2" title="Sanntidsdata">
+                        <span class="live-dot"></span> Live
+                    </span>
+                </h1>
+                <div class="btn-group">
+                    <button class="btn btn-primary add-to-watchlist" data-ticker="{{ ticker }}">
+                        <i class="bi bi-star"></i> Legg til favoritter
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('stocks.list', stock_type='all') }}">Aksjer</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ ticker }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Price and key metrics -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <!-- Price section with skeleton loading -->
+                    <div class="price-section">
+                        <div class="skeleton-wrapper" id="priceSkeletonWrapper">
+                            <div class="skeleton skeleton-price mb-2"></div>
+                            <div class="skeleton skeleton-text"></div>
+                        </div>
+                        
+                        <div class="actual-content d-none" id="priceContent">
+                            <div class="d-flex align-items-baseline mb-2">
+                                <h2 class="display-4 mb-0 me-3" 
+                                    data-format="currency" 
+                                    data-value="{{ stock_info.regularMarketPrice|default(0) }}">
+                                    {{ "{:,.2f}".format(stock_info.regularMarketPrice|default(0)).replace(',', ' ').replace('.', ',') }}
+                                </h2>
+                                <div class="{{ 'text-success' if stock_info.regularMarketChange|default(0) > 0 else 'text-danger' if stock_info.regularMarketChange|default(0) < 0 else '' }}">
+                                    <span data-format="currency" data-value="{{ stock_info.regularMarketChange|default(0) }}">
+                                        {{ "{:+,.2f}".format(stock_info.regularMarketChange|default(0)).replace(',', ' ').replace('.', ',') }}
+                                    </span>
+                                    <span data-format="percentage" data-value="{{ stock_info.regularMarketChangePercent|default(0) }}">
+                                        ({{ "{:+.2f}".format(stock_info.regularMarketChangePercent|default(0)).replace('.', ',') }}%)
+                                    </span>
+                                </div>
+                            </div>
+                            <p class="text-muted mb-0">
+                                <i class="bi bi-clock"></i> Oppdatert: 
+                                <span data-format="time">{{ stock_info.regularMarketTime|default('Akkurat nå') }}</span>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Key metrics grid -->
+                    <div class="row mt-4">
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="metric-card">
+                                <small class="text-muted d-block">Åpning</small>
+                                <strong data-format="currency" data-value="{{ stock_info.regularMarketOpen|default(0) }}">
+                                    {{ "{:,.2f}".format(stock_info.regularMarketOpen|default(0)).replace(',', ' ').replace('.', ',') }}
+                                </strong>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="metric-card">
+                                <small class="text-muted d-block">Høy</small>
+                                <strong data-format="currency" data-value="{{ stock_info.regularMarketDayHigh|default(0) }}">
+                                    {{ "{:,.2f}".format(stock_info.regularMarketDayHigh|default(0)).replace(',', ' ').replace('.', ',') }}
+                                </strong>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="metric-card">
+                                <small class="text-muted d-block">Lav</small>
+                                <strong data-format="currency" data-value="{{ stock_info.regularMarketDayLow|default(0) }}">
+                                    {{ "{:,.2f}".format(stock_info.regularMarketDayLow|default(0)).replace(',', ' ').replace('.', ',') }}
+                                </strong>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="metric-card">
+                                <small class="text-muted d-block">Volum</small>
+                                <strong data-format="volume" data-value="{{ stock_info.regularMarketVolume|default(0) }}">
+                                    {% if stock_info.regularMarketVolume %}
+                                        {% if stock_info.regularMarketVolume > 1000000 %}
+                                            {{ "{:.1f}M".format(stock_info.regularMarketVolume/1000000).replace('.', ',') }}
+                                        {% elif stock_info.regularMarketVolume > 1000 %}
+                                            {{ "{:.0f}K".format(stock_info.regularMarketVolume/1000) }}
+                                        {% else %}
+                                            {{ "{:,.0f}".format(stock_info.regularMarketVolume).replace(',', ' ') }}
+                                        {% endif %}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chart placeholder -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Prisutvikling</h5>
+                </div>
+                <div class="card-body">
+                    <div class="skeleton-wrapper" id="chartSkeletonWrapper">
+                        <div class="skeleton skeleton-chart"></div>
+                    </div>
+                    <div class="actual-content d-none" id="chartContent">
+                        <canvas id="priceChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Company info -->
+            {% if stock_info.longBusinessSummary %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Om selskapet</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ stock_info.longBusinessSummary }}</p>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <small class="text-muted">Sektor</small>
+                            <p class="mb-2">{{ stock_info.sector|default('Ikke tilgjengelig') }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">Bransje</small>
+                            <p class="mb-2">{{ stock_info.industry|default('Ikke tilgjengelig') }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">Land</small>
+                            <p class="mb-2">{{ stock_info.country|default('Ikke tilgjengelig') }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">Ansatte</small>
+                            <p class="mb-2" data-format="number" data-value="{{ stock_info.fullTimeEmployees|default(0) }}">
+                                {{ "{:,.0f}".format(stock_info.fullTimeEmployees|default(0)).replace(',', ' ') if stock_info.fullTimeEmployees else 'Ikke tilgjengelig' }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Sidebar with additional metrics -->
+        <div class="col-lg-4">
+            <!-- Technical indicators -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Tekniske indikatorer</h5>
+                </div>
+                <div class="card-body">
+                    <div class="skeleton-wrapper" id="technicalSkeletonWrapper">
+                        <div class="skeleton skeleton-text mb-3"></div>
+                        <div class="skeleton skeleton-text mb-3"></div>
+                        <div class="skeleton skeleton-text"></div>
+                    </div>
+                    
+                    <div class="actual-content d-none" id="technicalContent">
+                        {% if technical_data %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>RSI (14)</span>
+                                <span class="badge {{ 'bg-danger' if technical_data.rsi > 70 else 'bg-success' if technical_data.rsi < 30 else 'bg-secondary' }}"
+                                      data-format="number" data-value="{{ technical_data.rsi }}">
+                                    {{ "{:.1f}".format(technical_data.rsi).replace('.', ',') }}
+                                </span>
+                            </div>
+                            <div class="progress mt-1" style="height: 5px;">
+                                <div class="progress-bar {{ 'bg-danger' if technical_data.rsi > 70 else 'bg-success' if technical_data.rsi < 30 else 'bg-secondary' }}" 
+                                     style="width: {{ technical_data.rsi }}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>MACD</span>
+                                <span class="{{ 'text-success' if technical_data.macd > 0 else 'text-danger' }}"
+                                      data-format="number" data-value="{{ technical_data.macd }}" data-decimals="3">
+                                    {{ "{:.3f}".format(technical_data.macd).replace('.', ',') }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Signal</span>
+                                <span class="badge {{ 'bg-success' if technical_data.signal == 'Buy' else 'bg-danger' if technical_data.signal == 'Sell' else 'bg-secondary' }}">
+                                    {{ 'KJØP' if technical_data.signal == 'Buy' else 'SELG' if technical_data.signal == 'Sell' else 'HOLD' }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Valuation metrics -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Verdsettelse</h5>
+                </div>
+                <div class="card-body">
+                    <div class="metric-row">
+                        <span class="metric-label">Markedsverdi</span>
+                        <span class="metric-value" data-format="large-currency" data-value="{{ stock_info.marketCap|default(0) }}">
+                            {% if stock_info.marketCap %}
+                                {% if stock_info.marketCap > 1000000000 %}
+                                    {{ "{:.1f} mrd".format(stock_info.marketCap/1000000000).replace('.', ',') }}
+                                {% elif stock_info.marketCap > 1000000 %}
+                                    {{ "{:.1f} mill".format(stock_info.marketCap/1000000).replace('.', ',') }}
+                                {% else %}
+                                    {{ "{:,.0f}".format(stock_info.marketCap).replace(',', ' ') }}
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">P/E</span>
+                        <span class="metric-value" data-format="number" data-value="{{ stock_info.trailingPE|default(0) }}">
+                            {{ "{:.2f}".format(stock_info.trailingPE).replace('.', ',') if stock_info.trailingPE else '-' }}
+                        </span>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">EPS</span>
+                        <span class="metric-value" data-format="currency" data-value="{{ stock_info.trailingEps|default(0) }}">
+                            {{ "{:.2f}".format(stock_info.trailingEps).replace('.', ',') if stock_info.trailingEps else '-' }}
+                        </span>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">Utbytte</span>
+                        <span class="metric-value">
+                            {% if stock_info.dividendYield %}
+                                <span data-format="percentage" data-value="{{ stock_info.dividendYield * 100 }}">
+                                    {{ "{:.2f}".format(stock_info.dividendYield * 100).replace('.', ',') }}%
+                                </span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick actions -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Hurtighandlinger</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('analysis.technical', ticker=ticker) }}" class="btn btn-outline-primary">
+                            <i class="bi bi-graph-up"></i> Teknisk analyse
+                        </a>
+                        <a href="{{ url_for('analysis.ai', ticker=ticker) }}" class="btn btn-outline-info">
+                            <i class="bi bi-robot"></i> AI-analyse
+                        </a>
+                        <a href="{{ url_for('analysis.warren_buffett', ticker=ticker) }}" class="btn btn-outline-success">
+                            <i class="bi bi-lightbulb"></i> Få anbefaling
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.metric-card {
+    padding: 1rem;
+    background: darkblue;
+    color: white;
+    border-radius: 0.5rem;
+    text-align: center;
+}
+
+.metric-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.metric-row:last-child {
+    border-bottom: none;
+}
+
+.metric-label {
+    color: #6c757d;
+}
+
+.metric-value {
+    font-weight: 600;
+}
+
+.live-indicator {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.875rem;
+    color: #28a745;
+}
+
+.live-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #28a745;
+    border-radius: 50%;
+    margin-right: 4px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ticker = '{{ ticker }}';
+    
+    // Load technical indicators from API
+    loadTechnicalIndicators(ticker);
+    
+    // Simulate loading and show real content
+    setTimeout(() => {
+        // Hide skeleton loaders (except technical indicators)
+        document.querySelectorAll('.skeleton-wrapper:not(#technicalSkeletonWrapper)').forEach(wrapper => {
+            wrapper.style.display = 'none';
+        });
+        
+        document.querySelectorAll('.actual-content:not(#technicalContent)').forEach(content => {
+            content.classList.remove('d-none');
+        });
+        
+        // Initialize Norwegian formatter
+        if (window.norwegianFormatter) {
+            window.norwegianFormatter.formatAll();
+        }
+        
+        // Initialize price chart
+        console.log('Initializing chart...');
+        try {
+            initializePriceChart();
+            console.log('Chart initialized successfully');
+        } catch (error) {
+            console.error('Chart initialization failed:', error);
+        }
+        
+        // Start real-time updates
+        if (window.enhancedRealtimeService) {
+            window.enhancedRealtimeService.subscribeToStock(ticker, updateStockData);
+        }
+    }, 600);
+    
+    // Watchlist and portfolio buttons
+    document.querySelector('.add-to-watchlist').addEventListener('click', function() {
+        if (!window.toggleFavorite) { console.error('toggleFavorite missing'); return; }
+        const btn = this;
+        toggleFavorite(ticker, {
+            button: btn,
+            favoritedText: '<i class="bi bi-star-fill"></i> I favoritter',
+            unfavoritedText: '<i class="bi bi-star"></i> Legg til favoritt',
+            onSuccess: (d) => showToast(d.message || (d.favorited ? 'Lagt til i favoritter!' : 'Fjernet fra favoritter'), d.favorited ? 'success' : 'info'),
+            onError: () => showToast('Favoritt-feil', 'danger')
+        });
+    });
+    
+    // Removed add-to-portfolio button per requirements
+    
+    function initializePriceChart() {
+        console.log('Starting chart initialization...');
+        const canvas = document.getElementById('priceChart');
+        if (!canvas) {
+            console.error('Canvas element not found');
+            return;
+        }
+        
+        console.log('Canvas found, getting context...');
+        const ctx = canvas.getContext('2d');
+        
+        // Generate sample data for last 30 days
+        const labels = [];
+        const data = [];
+        const basePrice = {{ stock_info.regularMarketPrice|default(100) }};
+        
+        console.log('Base price:', basePrice);
+        
+        for (let i = 29; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            labels.push(date.toLocaleDateString('nb-NO', { day: 'numeric', month: 'short' }));
+            
+            // Generate realistic price movement
+            const randomChange = (Math.random() - 0.5) * 0.02; // ±2% daily change
+            const price = basePrice * (1 + randomChange * (30 - i) / 30);
+            data.push(price);
+        }
+        
+        console.log('Data generated, creating chart...');
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Pris (NOK)',
+                    data: data,
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'kr ' + context.parsed.y.toFixed(2).replace('.', ',');
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: {
+                            callback: function(value) {
+                                return 'kr ' + value.toFixed(0);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        console.log('Chart created successfully');
+    }
+    
+    function updateStockData(data) {
+        // Update price
+        const priceElement = document.querySelector('[data-format="currency"][data-value]');
+        if (priceElement && data.price) {
+            priceElement.setAttribute('data-value', data.price);
+            priceElement.textContent = window.norwegianFormatter.formatCurrency(data.price);
+        }
+        
+        // Update change
+        const changeElement = document.querySelector('.text-success, .text-danger');
+        if (changeElement && data.change !== undefined) {
+            changeElement.className = data.change >= 0 ? 'text-success' : 'text-danger';
+            // Update change values...
+        }
+        
+        // Flash update indicator
+        document.querySelector('.live-dot').style.backgroundColor = '#ffc107';
+        setTimeout(() => {
+            document.querySelector('.live-dot').style.backgroundColor = '#28a745';
+        }, 500);
+    }
+    
+    async function loadTechnicalIndicators(ticker) {
+        try {
+            console.log('Loading technical indicators for:', ticker);
+            const response = await fetch(`/api/indicators/${ticker}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log('Technical indicators loaded:', data);
+            
+            // Update RSI value
+            const rsiElement = document.querySelector('#technicalContent .text-primary.fw-bold');
+            if (rsiElement && data.rsi !== undefined) {
+                rsiElement.textContent = data.rsi.toFixed(1);
+            }
+            
+            // Update MACD values
+            const macdElements = document.querySelectorAll('#technicalContent .row .col-6');
+            if (macdElements.length >= 2 && data.macd !== undefined && data.macd_signal !== undefined) {
+                const macdElement = macdElements[0].querySelector('.fw-bold');
+                const signalElement = macdElements[1].querySelector('.fw-bold');
+                
+                if (macdElement) macdElement.textContent = data.macd.toFixed(3);
+                if (signalElement) signalElement.textContent = data.macd_signal.toFixed(3);
+            }
+            
+            // Update Bollinger Bands if available
+            if (data.bollinger_upper !== undefined && data.bollinger_lower !== undefined) {
+                const bollingerElements = document.querySelectorAll('#technicalContent .row .col-6');
+                if (bollingerElements.length >= 4) {
+                    const upperElement = bollingerElements[2].querySelector('.fw-bold');
+                    const lowerElement = bollingerElements[3].querySelector('.fw-bold');
+                    
+                    if (upperElement) upperElement.textContent = `kr ${data.bollinger_upper.toFixed(2)}`;
+                    if (lowerElement) lowerElement.textContent = `kr ${data.bollinger_lower.toFixed(2)}`;
+                }
+            }
+            
+            // Hide technical skeleton and show actual content
+            const technicalSkeleton = document.getElementById('technicalSkeletonWrapper');
+            const technicalContent = document.getElementById('technicalContent');
+            
+            if (technicalSkeleton) technicalSkeleton.style.display = 'none';
+            if (technicalContent) technicalContent.classList.remove('d-none');
+            
+        } catch (error) {
+            console.error('Failed to load technical indicators:', error);
+            
+            // Hide skeleton and show error message
+            const technicalSkeleton = document.getElementById('technicalSkeletonWrapper');
+            const technicalContent = document.getElementById('technicalContent');
+            
+            if (technicalSkeleton) technicalSkeleton.style.display = 'none';
+            if (technicalContent) {
+                technicalContent.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Tekniske indikatorer er ikke tilgjengelige for øyeblikket.
+                        <br><small class="text-muted">Feil: ${error.message}</small>
+                    </div>
+                `;
+                technicalContent.classList.remove('d-none');
+            }
+        }
+    }
+    
+    function showToast(message, type) {
+        const toast = document.createElement('div');
+        toast.className = `toast-notification toast-${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,412 @@
+{% extends "base.html" %}
+
+{% block title %}Investormuligheter - Aksjeradar | Norges ledende aksjeanalyseplattform{% endblock %}
+{% block description %}Utforsk investormuligheter i Aksjeradar - Norges hurtigst voksende aksjeanalyseplattform. Søker investorer og oppkjøpere for ekspansjon og vekst.{% endblock %}
+{% block keywords %}investor, oppkjøp, aksjeradar, fintech, Norge, aksjeanalyse, investormulighet, startup, teknologi{% endblock %}
+
+{% block head %}
+<style>
+.investor-hero {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 4rem 0;
+}
+
+.metric-card {
+    transition: transform 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+}
+
+.contact-form {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 2rem;
+}
+
+.btn-investor {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-investor:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    color: white;
+}
+</style>
+
+<!-- Structured Data for SEO -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Aksjeradar",
+  "url": "https://aksjeradar.trade",
+  "logo": "https://aksjeradar.trade/static/img/logo.png",
+  "description": "Norges ledende aksjeanalyseplattform med sanntids Oslo Børs data og avanserte analyseeverktøy",
+  "foundingDate": "2024",
+  "industry": "Financial Technology",
+  "location": {
+    "@type": "Place",
+    "addressCountry": "NO"
+  },
+  "offers": {
+    "@type": "Offer",
+    "description": "Investormuligheter i hurtigst voksende fintech-startup i Norge"
+  }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="investor-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-4">
+                    Invester i Norges Fremtid innen Aksjeanalyse
+                </h1>
+                <p class="lead mb-4">
+                    Aksjeradar er Norges hurtigst voksende fintech-plattform med fokus på Oslo Børs. 
+                    Vi søker strategiske investorer og potensielle oppkjøpere for neste vekstfase.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                                    <a href="/contact" class="btn btn-investor btn-lg">
+                                        <i class="bi bi-envelope me-2"></i>Kontakt oss
+                                    </a>
+                                    <a href="/investor/overview" class="btn btn-outline-light btn-lg">
+                                        <i class="bi bi-graph-up me-2"></i>Se nøkkeltall
+                                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center">
+                <i class="bi bi-graph-up-arrow" style="font-size: 8rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Key Metrics -->
+<section id="metrics" class="py-5">
+    <div class="container">
+        {% if metrics_error %}
+        <div class="alert alert-warning text-center" role="alert">
+            {{ metrics_error }}
+        </div>
+        {% endif %}
+        <div class="text-center mb-4">
+                <h2 class="fw-bold">Nøkkeltall og Vekstmuligheter</h2>
+                <p class="text-muted">
+                    {% if metrics.total_users is none %}
+                        Ekte brukertall midlertidig utilgjengelig. Viser siden uten tall.
+                    {% else %}
+                        Dokumentert vekst og markedspotensial
+                    {% endif %}
+                </p>
+        </div>
+        
+        <div class="row g-4 mb-5">
+            <div class="col-md-3">
+                <div class="card metric-card h-100 text-center">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="bi bi-people text-white" style="font-size: 1.5rem;"></i>
+                        </div>
+                        {% if metrics.total_users is not none %}
+                        <h3 class="text-primary">{{ metrics.total_users }}+</h3>
+                        {% else %}
+                        <h3 class="text-secondary">—</h3>
+                        {% endif %}
+                        <p class="mb-0">Registrerte brukere</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card metric-card h-100 text-center">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="bi bi-star text-white" style="font-size: 1.5rem;"></i>
+                        </div>
+                        {% if metrics.premium_users is not none %}
+                        <h3 class="text-success">{{ metrics.premium_users }}+</h3>
+                        {% else %}
+                        <h3 class="text-secondary">—</h3>
+                        {% endif %}
+                        <p class="mb-0">Betalende kunder</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card metric-card h-100 text-center">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="bi bi-calendar text-white" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <h3 class="text-info">{{ metrics.launch_date }}</h3>
+                        <p class="mb-0">Oppstart</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card metric-card h-100 text-center">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="bi bi-globe text-white" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <h3 class="text-warning">Norge</h3>
+                        <p class="mb-0">Primærmarked</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Value Proposition -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6">
+                <h2 class="fw-bold mb-4">Hvorfor Aksjeradar?</h2>
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-check-circle-fill text-success" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5>Markedsledende Teknologi</h5>
+                                <p class="text-muted">Eneste norske plattform med sanntids Oslo Børs-integrasjon og avanserte analyseeverktøy.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-graph-up text-primary" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5>Dokumentert Vekst</h5>
+                                <p class="text-muted">Stabil brukervekst og økende andel betalende kunder siden lansering.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-shield-check text-success" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5>Skalerbar Plattform</h5>
+                                <p class="text-muted">Moderne arkitektur som enkelt kan utvides til nye markeder og tjenester.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <h3 class="fw-bold mb-3">Unike Funksjoner</h3>
+                <ul class="list-unstyled">
+                    {% for feature in metrics.unique_features %}
+                    <li class="mb-2">
+                        <i class="bi bi-arrow-right text-primary me-2"></i>{{ feature }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                
+                <div class="mt-4 p-3 bg-white rounded border-start border-primary border-5">
+                    <h6 class="text-primary mb-2">Inntektsmodell</h6>
+                    <p class="mb-0 small">{{ metrics.revenue_model }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Market Opportunity -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Markedsmulighet</h2>
+            <p class="text-muted">Stort potensial i norsk og nordisk fintech-marked</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="feature-icon">
+                        <i class="bi bi-geo-alt text-white" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <h5>Norsk Marked</h5>
+                    <p class="text-muted">200,000+ aktive aksjonærer i Norge som mangler profesjonelle analyseeverktøy.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="feature-icon">
+                        <i class="bi bi-globe-europe-africa text-white" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <h5>Nordisk Ekspansjon</h5>
+                    <p class="text-muted">Naturlig utvidelse til Sverige og Danmark med tilsvarende markedsbehov.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="feature-icon">
+                        <i class="bi bi-cpu text-white" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <h5>AI & Automatisering</h5>
+                    <p class="text-muted">Fremtidig utvikling med AI-drevet aksjeanalyse og automatiserte investeringsråd.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Form -->
+<section id="contact" class="py-5 bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="contact-form">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold">Interessert i å Investere eller Kjøpe?</h2>
+                        <p class="text-muted">Ta kontakt for mer informasjon og detaljerte finansielle data</p>
+                    </div>
+                    
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <form method="POST" action="{{ url_for('investor.contact') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label">Navn *</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">E-post *</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="company" class="form-label">Selskap/Organisasjon</label>
+                                <input type="text" class="form-control" id="company" name="company">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="inquiry_type" class="form-label">Type forespørsel</label>
+                                <select class="form-select" id="inquiry_type" name="inquiry_type">
+                                    <option value="investment">Investering</option>
+                                    <option value="acquisition">Oppkjøp</option>
+                                    <option value="partnership">Partnerskap</option>
+                                    <option value="other">Annet</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label for="investment_range" class="form-label">Investeringsområde (valgfritt)</label>
+                                <select class="form-select" id="investment_range" name="investment_range">
+                                    <option value="">Velg område</option>
+                                    <option value="under_1m">Under 1 million NOK</option>
+                                    <option value="1m_5m">1-5 millioner NOK</option>
+                                    <option value="5m_25m">5-25 millioner NOK</option>
+                                    <option value="over_25m">Over 25 millioner NOK</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label for="message" class="form-label">Melding *</label>
+                                <textarea class="form-control" id="message" name="message" rows="4" required placeholder="Beskriv din interesse og eventuelle spørsmål..."></textarea>
+                            </div>
+                            <div class="col-12 text-center">
+                                <button type="submit" class="btn btn-investor btn-lg">
+                                    <i class="bi bi-send me-2"></i>Send forespørsel
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-4 text-center">
+                        <small class="text-muted">
+                            Vi behandler alle henvendelser konfidensielt og tar kontakt innen 24 timer.
+                            <br>For direkte kontakt: <a href="mailto:investor@aksjeradar.trade">investor@aksjeradar.trade</a>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-3">Klar for Neste Steg?</h2>
+        <p class="lead mb-4">
+            Aksjeradar er posisjonert for betydelig vekst i det norske fintech-markedet. 
+            Bli med på reisen mot å demokratisere aksjeanalyse i Norge.
+        </p>
+        <a href="/contact" class="btn btn-light btn-lg">
+            <i class="bi bi-rocket me-2"></i>Utforsk muligheter
+        </a>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Smooth scrolling for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+
+// Form validation and enhancement
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    
+    form.addEventListener('submit', function() {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Sender...';
+    });
+});
+</script>
+{% endblock %}

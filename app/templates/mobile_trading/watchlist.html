@@ -1,0 +1,1092 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    /* Mobile Watchlist Styles */
+    .watchlist-container {
+        padding: 20px;
+        padding-bottom: 100px;
+    }
+    
+    .watchlist-header {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 25px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .watchlist-title {
+        font-size: 1.8rem;
+        font-weight: bold;
+        margin-bottom: 8px;
+    }
+    
+    .watchlist-subtitle {
+        opacity: 0.9;
+        font-size: 1rem;
+    }
+    
+    .search-section {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .search-input-group {
+        position: relative;
+        margin-bottom: 15px;
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 15px 50px 15px 20px;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+    }
+    
+    .search-input:focus {
+        outline: none;
+        border-color: #28a745;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+    }
+    
+    .search-icon {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        font-size: 1.2rem;
+    }
+    
+    .search-results {
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        background: white;
+        display: none;
+    }
+    
+    .search-result-item {
+        padding: 12px 15px;
+        border-bottom: 1px solid #f8f9fa;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+    
+    .search-result-item:hover {
+        background: #f8f9fa;
+    }
+    
+    .search-result-item:last-child {
+        border-bottom: none;
+    }
+    
+    .result-symbol {
+        font-weight: bold;
+        color: #007bff;
+    }
+    
+    .result-name {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-top: 2px;
+    }
+    
+    .watchlist-tabs {
+        display: flex;
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 4px;
+        margin-bottom: 20px;
+    }
+    
+    .watchlist-tab {
+        flex: 1;
+        padding: 12px;
+        text-align: center;
+        border: none;
+        background: transparent;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .watchlist-tab.active {
+        background: white;
+        color: #28a745;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .watchlist-section {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .stock-item {
+        padding: 15px 0;
+        border-bottom: 1px solid #f8f9fa;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+    }
+    
+    .stock-item:last-child {
+        border-bottom: none;
+    }
+    
+    .stock-left {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex: 1;
+    }
+    
+    .stock-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+    
+    .stock-info {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        flex: 1;
+    }
+    
+    .stock-symbol {
+        font-weight: bold;
+        font-size: 1.1rem;
+        color: #343a40;
+    }
+    
+    .stock-name {
+        font-size: 0.85rem;
+        color: #6c757d;
+        line-height: 1.2;
+    }
+    
+    .stock-right {
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        align-items: flex-end;
+    }
+    
+    .stock-price {
+        font-weight: bold;
+        font-size: 1.1rem;
+        color: #343a40;
+    }
+    
+    .stock-change {
+        font-size: 0.9rem;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 4px;
+    }
+    
+    .stock-change.positive {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .stock-change.negative {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .stock-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 5px;
+    }
+    
+    .stock-action-btn {
+        padding: 4px 8px;
+        border: none;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .stock-action-btn.buy {
+        background: #28a745;
+        color: white;
+    }
+    
+    .stock-action-btn.sell {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .stock-action-btn.alert {
+        background: #ffc107;
+        color: #212529;
+    }
+    
+    .stock-action-btn.remove {
+        background: #6c757d;
+        color: white;
+    }
+
+    .stock-action-btn.star {
+        background: #ffd700;
+        color: #000;
+    }
+
+    .stock-action-btn.star .bi-star {
+        font-size: 1.1rem;
+    }
+
+    .stock-action-btn.star .bi-star-fill {
+        font-size: 1.1rem;
+        color: #000;
+    }
+    
+    .alerts-section {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .alert-item {
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        position: relative;
+    }
+    
+    .alert-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .alert-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    
+    .alert-symbol {
+        font-weight: bold;
+        color: #007bff;
+        font-size: 1.1rem;
+    }
+    
+    .alert-type {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .alert-type.price {
+        background: #e3f2fd;
+        color: #1565c0;
+    }
+    
+    .alert-type.volume {
+        background: #f3e5f5;
+        color: #7b1fa2;
+    }
+    
+    .alert-details {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 5px;
+    }
+    
+    .alert-status {
+        font-size: 0.8rem;
+        color: #28a745;
+        font-weight: 600;
+    }
+    
+    .alert-remove {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        color: #dc3545;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+    
+    .market-overview {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .market-indices {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 15px;
+    }
+    
+    .index-card {
+        text-align: center;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+    
+    .index-name {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+    
+    .index-value {
+        font-size: 1.1rem;
+        font-weight: bold;
+        margin-bottom: 3px;
+    }
+    
+    .index-change {
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .add-stock-btn {
+        position: fixed;
+        bottom: 120px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border: none;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 100;
+    }
+    
+    .toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.toast {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.toast.success {
+    border-left: 4px solid #28a745;
+}
+
+.toast.error {
+    border-left: 4px solid #dc3545;
+}
+
+.add-stock-btn:hover {
+        transform: scale(1.1);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #6c757d;
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        opacity: 0.5;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 480px) {
+        .watchlist-container {
+            padding: 15px;
+        }
+        
+        .stock-left {
+            gap: 10px;
+        }
+        
+        .stock-icon {
+            width: 40px;
+            height: 40px;
+        }
+        
+        .stock-name {
+            display: none;
+        }
+        
+        .market-indices {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<div class="watchlist-container">
+    <!-- Watchlist Header -->
+    <div class="watchlist-header">
+        <div class="watchlist-title">My Watchlist</div>
+        <div class="watchlist-subtitle">Track your favorite stocks</div>
+    </div>
+
+    <!-- Market Overview -->
+    <div class="market-overview">
+        <h6 class="mb-3">
+            <i class="bi bi-graph-up text-primary"></i>
+            Market Overview
+        </h6>
+        <div class="market-indices" id="marketIndices">
+            <!-- Market indices will be loaded here -->
+            <div class="text-center py-3">
+                <div class="spinner-border" role="status" aria-label="Loading"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Section -->
+    <div class="search-section">
+        <h6 class="mb-3">
+            <i class="bi bi-search text-success"></i>
+            Add to Watchlist
+        </h6>
+        <div class="search-input-group">
+            <input type="text" class="search-input" id="stockSearch" 
+                   placeholder="Search stocks (e.g. AAPL, Apple Inc.)" 
+                   autocomplete="off">
+            <i class="bi bi-search search-icon"></i>
+        </div>
+        <div class="search-results" id="searchResults"></div>
+    </div>
+
+    <!-- Watchlist Tabs -->
+    <div class="watchlist-tabs">
+        <button class="watchlist-tab active" onclick="switchTab('stocks')">Stocks</button>
+        <button class="watchlist-tab" onclick="switchTab('alerts')">Alerts</button>
+        <button class="watchlist-tab" onclick="switchTab('gainers')">Top Gainers</button>
+    </div>
+
+    <!-- Stocks Watchlist -->
+    <div class="watchlist-section" id="stocksSection">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">
+                <i class="bi bi-eye text-primary"></i>
+                Watching (<span id="watchlistCount">0</span>)
+            </h6>
+            <button class="btn btn-sm btn-outline-primary" onclick="sortWatchlist()">
+                <i class="bi bi-arrow-down-up"></i>
+            </button>
+        </div>
+        <div id="stocksList">
+            <!-- Stocks will be loaded here -->
+            <div class="text-center py-4">
+                <div class="spinner-border" role="status" aria-label="Loading"></div>
+                Loading watchlist...
+            </div>
+        </div>
+    </div>
+
+    <!-- Price Alerts -->
+    <div class="alerts-section" id="alertsSection" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">
+                <i class="bi bi-bell text-warning"></i>
+                Price Alerts (<span id="alertsCount">0</span>)
+            </h6>
+            <button class="btn btn-sm btn-outline-warning" onclick="addPriceAlert()">
+                <i class="bi bi-plus-lg"></i>
+            </button>
+        </div>
+        <div id="alertsList">
+            <!-- Alerts will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Top Gainers -->
+    <div class="watchlist-section" id="gainersSection" style="display: none;">
+        <h6 class="mb-3">
+            <i class="bi bi-rocket-takeoff text-success"></i>
+            Today's Top Gainers
+        </h6>
+        <div id="gainersList">
+            <!-- Top gainers will be loaded here -->
+            <div class="text-center py-4">
+                <div class="spinner-border" role="status" aria-label="Loading"></div>
+                Loading top gainers...
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Stock FAB -->
+<button class="add-stock-btn" onclick="focusSearch()">
+    <i class="bi bi-plus-lg"></i>
+</button>
+
+<!-- Bottom Navigation -->
+<div class="mobile-bottom-nav">
+    <div class="bottom-nav-items">
+        <a href="{{ url_for('mobile_trading.mobile_dashboard') }}" class="bottom-nav-item">
+            <div class="bottom-nav-icon">🏠</div>
+            <div class="bottom-nav-label">Home</div>
+        </a>
+        <a href="{{ url_for('mobile_trading.mobile_portfolio') }}" class="bottom-nav-item">
+            <div class="bottom-nav-icon">💼</div>
+            <div class="bottom-nav-label">Portfolio</div>
+        </a>
+        <a href="{{ url_for('mobile_trading.quick_trade') }}" class="bottom-nav-item">
+            <div class="bottom-nav-icon">⚡</div>
+            <div class="bottom-nav-label">Trade</div>
+        </a>
+        <a href="{{ url_for('mobile_trading.mobile_watchlist') }}" class="bottom-nav-item active">
+            <div class="bottom-nav-icon">👁️</div>
+            <div class="bottom-nav-label">Watch</div>
+        </a>
+        <a href="{{ url_for('mobile_trading.mobile_charts') }}" class="bottom-nav-item">
+            <div class="bottom-nav-icon">📊</div>
+            <div class="bottom-nav-label">Charts</div>
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let watchlistData = [];
+let alertsData = [];
+let searchTimeout = null;
+let currentTab = 'stocks';
+let sortBy = 'symbol'; // symbol, price, change
+
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <i class="bi ${type === 'success' ? 'bi-check-circle' : 'bi-exclamation-circle'}"></i>
+        <div>${message}</div>
+    `;
+    
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    
+    container.appendChild(toast);
+    
+    // Trigger reflow
+    toast.offsetHeight;
+    
+    // Show toast
+    toast.style.opacity = '1';
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => {
+            toast.remove();
+            if (container.children.length === 0) {
+                container.remove();
+            }
+        }, 300);
+    }, 3000);
+}
+
+function toggleWatchlist(symbol) {
+    fetch('/api/watchlist/toggle', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ symbol: symbol })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            loadWatchlistData(); // Reload the watchlist to reflect changes
+        } else {
+            showToast(data.message || 'Error updating watchlist', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Error updating watchlist', 'error');
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadWatchlistData();
+    loadMarketOverview();
+    setupSearch();
+});
+
+async function loadWatchlistData() {
+    try {
+        const response = await fetch('/mobile-trading/api/watchlist');
+        const data = await response.json();
+        
+        if (data.success) {
+            watchlistData = data.watchlist;
+            alertsData = data.alerts || [];
+            updateWatchlistDisplay();
+            updateAlertsDisplay();
+            document.getElementById('watchlistCount').textContent = watchlistData.length;
+            document.getElementById('alertsCount').textContent = alertsData.length;
+        } else {
+            showError('Failed to load watchlist');
+        }
+    } catch (error) {
+        console.error('Error loading watchlist:', error);
+        showError('Network error loading watchlist');
+    }
+}
+
+async function loadMarketOverview() {
+    try {
+        const response = await fetch('/mobile-trading/api/market-status');
+        const data = await response.json();
+        
+        if (data.success) {
+            updateMarketIndices(data.indices);
+        }
+    } catch (error) {
+        console.error('Error loading market overview:', error);
+    }
+}
+
+function updateMarketIndices(indices) {
+    const marketIndices = document.getElementById('marketIndices');
+    
+    if (!indices || indices.length === 0) {
+        marketIndices.innerHTML = '<div class="text-center text-muted">Market data unavailable</div>';
+        return;
+    }
+    
+    const html = indices.map(index => {
+        const changeClass = index.change >= 0 ? 'positive' : 'negative';
+        const changeSign = index.change >= 0 ? '+' : '';
+        
+        return `
+            <div class="index-card">
+                <div class="index-name">${index.name}</div>
+                <div class="index-value">${index.value.toLocaleString()}</div>
+                <div class="index-change ${changeClass}">
+                    ${changeSign}${index.change.toFixed(2)} (${index.change_percent.toFixed(2)}%)
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    marketIndices.innerHTML = html;
+}
+
+function updateWatchlistDisplay() {
+    const stocksList = document.getElementById('stocksList');
+    
+    if (watchlistData.length === 0) {
+        stocksList.innerHTML = `
+            <div class="empty-state">
+                <i class="bi bi-eye-slash"></i>
+                <div>No stocks in your watchlist</div>
+                <div class="mt-2">
+                    <small class="text-muted">Search and add stocks to start tracking</small>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    // Sort watchlist
+    const sortedData = [...watchlistData].sort((a, b) => {
+        switch (sortBy) {
+            case 'price':
+                return b.current_price - a.current_price;
+            case 'change':
+                return b.change_percent - a.change_percent;
+            default:
+                return a.symbol.localeCompare(b.symbol);
+        }
+    });
+    
+    const html = sortedData.map(stock => {
+        const changeClass = stock.change >= 0 ? 'positive' : 'negative';
+        const changeSign = stock.change >= 0 ? '+' : '';
+        const symbolInitials = stock.symbol.substring(0, 2);
+        
+        return `
+            <div class="stock-item" onclick="viewStockDetails('${stock.symbol}')">
+                <div class="stock-left">
+                    <div class="stock-icon">${symbolInitials}</div>
+                    <div class="stock-info">
+                        <div class="stock-symbol">${stock.symbol}</div>
+                        <div class="stock-name">${stock.company_name}</div>
+                    </div>
+                </div>
+                <div class="stock-right">
+                    <div class="stock-price">$${stock.current_price.toFixed(2)}</div>
+                    <div class="stock-change ${changeClass}">
+                        ${changeSign}${stock.change.toFixed(2)} (${stock.change_percent.toFixed(2)}%)
+                    </div>
+                    <div class="stock-actions">
+                        <button class="stock-action-btn buy" onclick="event.stopPropagation(); quickBuy('${stock.symbol}')">Buy</button>
+                        <button class="stock-action-btn alert" onclick="event.stopPropagation(); addAlert('${stock.symbol}')">Alert</button>
+                        <button class="stock-action-btn star" onclick="event.stopPropagation(); toggleWatchlist('${stock.symbol}')">
+                            <i class="bi ${watchlistData.some(w => w.symbol === stock.symbol) ? 'bi-star-fill' : 'bi-star'}"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    stocksList.innerHTML = html;
+}
+
+function updateAlertsDisplay() {
+    const alertsList = document.getElementById('alertsList');
+    
+    if (alertsData.length === 0) {
+        alertsList.innerHTML = `
+            <div class="empty-state">
+                <i class="bi bi-bell-slash"></i>
+                <div>No price alerts set</div>
+                <div class="mt-2">
+                    <small class="text-muted">Add alerts to get notified of price changes</small>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    const html = alertsData.map(alert => `
+        <div class="alert-item">
+            <button class="alert-remove" onclick="removeAlert('${alert.id}')">
+                <i class="bi bi-x"></i>
+            </button>
+            <div class="alert-header">
+                <div class="alert-symbol">${alert.symbol}</div>
+                <div class="alert-type ${alert.type}">${alert.type}</div>
+            </div>
+            <div class="alert-details">${alert.condition}</div>
+            <div class="alert-status">Active</div>
+        </div>
+    `).join('');
+    
+    alertsList.innerHTML = html;
+}
+
+function setupSearch() {
+    const searchInput = document.getElementById('stockSearch');
+    const searchResults = document.getElementById('searchResults');
+    
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+        
+        if (query.length < 2) {
+            searchResults.style.display = 'none';
+            return;
+        }
+        
+        searchTimeout = setTimeout(() => {
+            searchStocks(query);
+        }, 300);
+    });
+    
+    searchInput.addEventListener('blur', function() {
+        // Hide results after a delay to allow clicking
+        setTimeout(() => {
+            searchResults.style.display = 'none';
+        }, 200);
+    });
+}
+
+async function searchStocks(query) {
+    try {
+        const response = await fetch(`/mobile-trading/api/stock-search?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            displaySearchResults(data.results);
+        }
+    } catch (error) {
+        console.error('Error searching stocks:', error);
+    }
+}
+
+function displaySearchResults(results) {
+    const searchResults = document.getElementById('searchResults');
+    
+    if (!results || results.length === 0) {
+        searchResults.innerHTML = '<div class="search-result-item text-muted">No results found</div>';
+        searchResults.style.display = 'block';
+        return;
+    }
+    
+    const html = results.map(stock => `
+        <div class="search-result-item" onclick="addToWatchlist('${stock.symbol}', '${stock.name}')">
+            <div class="result-symbol">${stock.symbol}</div>
+            <div class="result-name">${stock.name}</div>
+        </div>
+    `).join('');
+    
+    searchResults.innerHTML = html;
+    searchResults.style.display = 'block';
+}
+
+async function addToWatchlist(symbol, name) {
+    try {
+        const response = await fetch('/mobile-trading/api/watchlist', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                symbol: symbol,
+                name: name
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Clear search
+            document.getElementById('stockSearch').value = '';
+            document.getElementById('searchResults').style.display = 'none';
+            
+            // Reload watchlist
+            loadWatchlistData();
+            
+            showSuccess(`${symbol} added to watchlist`);
+        } else {
+            showError(data.message || 'Failed to add to watchlist');
+        }
+    } catch (error) {
+        console.error('Error adding to watchlist:', error);
+        showError('Network error');
+    }
+}
+
+async function removeFromWatchlist(symbol) {
+    if (!confirm(`Remove ${symbol} from watchlist?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/mobile-trading/api/watchlist/${symbol}`, {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            loadWatchlistData();
+            showSuccess(`${symbol} removed from watchlist`);
+        } else {
+            showError(data.message || 'Failed to remove from watchlist');
+        }
+    } catch (error) {
+        console.error('Error removing from watchlist:', error);
+        showError('Network error');
+    }
+}
+
+function switchTab(tab) {
+    currentTab = tab;
+    
+    // Update active tab
+    document.querySelectorAll('.watchlist-tab').forEach(tabEl => tabEl.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Show/hide sections
+    document.getElementById('stocksSection').style.display = tab === 'stocks' ? 'block' : 'none';
+    document.getElementById('alertsSection').style.display = tab === 'alerts' ? 'block' : 'none';
+    document.getElementById('gainersSection').style.display = tab === 'gainers' ? 'block' : 'none';
+    
+    if (tab === 'gainers') {
+        loadTopGainers();
+    }
+}
+
+async function loadTopGainers() {
+    const gainersList = document.getElementById('gainersList');
+    
+    try {
+        const response = await fetch('/mobile-trading/api/top-gainers');
+        const data = await response.json();
+        
+        if (data.success) {
+            const html = data.gainers.map(stock => {
+                const symbolInitials = stock.symbol.substring(0, 2);
+                
+                return `
+                    <div class="stock-item" onclick="viewStockDetails('${stock.symbol}')">
+                        <div class="stock-left">
+                            <div class="stock-icon">${symbolInitials}</div>
+                            <div class="stock-info">
+                                <div class="stock-symbol">${stock.symbol}</div>
+                                <div class="stock-name">${stock.name}</div>
+                            </div>
+                        </div>
+                        <div class="stock-right">
+                            <div class="stock-price">$${stock.price.toFixed(2)}</div>
+                            <div class="stock-change positive">
+                                +${stock.change.toFixed(2)} (+${stock.change_percent.toFixed(2)}%)
+                            </div>
+                            <div class="stock-actions">
+                                <button class="stock-action-btn buy" onclick="event.stopPropagation(); quickBuy('${stock.symbol}')">Buy</button>
+                                <button class="stock-action-btn" onclick="event.stopPropagation(); addToWatchlist('${stock.symbol}', '${stock.name}')">Watch</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            gainersList.innerHTML = html;
+        }
+    } catch (error) {
+        console.error('Error loading top gainers:', error);
+        gainersList.innerHTML = '<div class="text-center text-muted py-4">Failed to load top gainers</div>';
+    }
+}
+
+function sortWatchlist() {
+    const sortOptions = ['symbol', 'price', 'change'];
+    const currentIndex = sortOptions.indexOf(sortBy);
+    sortBy = sortOptions[(currentIndex + 1) % sortOptions.length];
+    
+    updateWatchlistDisplay();
+}
+
+function viewStockDetails(symbol) {
+    // Navigate to charts page with specific symbol
+    window.location.href = `{{ url_for('mobile_trading.mobile_charts') }}?symbol=${symbol}`;
+}
+
+function quickBuy(symbol) {
+    // Navigate to quick trade with pre-filled symbol
+    window.location.href = `{{ url_for('mobile_trading.quick_trade') }}?symbol=${symbol}&action=buy`;
+}
+
+function addAlert(symbol) {
+    const price = prompt(`Set price alert for ${symbol}:`);
+    if (price && !isNaN(price)) {
+        // Add price alert logic here
+        showSuccess(`Price alert set for ${symbol} at $${price}`);
+    }
+}
+
+function addPriceAlert() {
+    alert('Price alert configuration coming soon!');
+}
+
+function removeAlert(alertId) {
+    if (confirm('Remove this alert?')) {
+        // Remove alert logic here
+        alertsData = alertsData.filter(alert => alert.id !== alertId);
+        updateAlertsDisplay();
+        document.getElementById('alertsCount').textContent = alertsData.length;
+    }
+}
+
+function focusSearch() {
+    document.getElementById('stockSearch').focus();
+}
+
+function showSuccess(message) {
+    // Show success toast
+    console.log('Success:', message);
+    alert(message);
+}
+
+function showError(message) {
+    console.error('Error:', message);
+    alert(message);
+}
+
+// Add swipe gestures for mobile
+let startX = 0;
+let startY = 0;
+
+document.addEventListener('touchstart', function(e) {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+});
+
+document.addEventListener('touchend', function(e) {
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
+    const diffX = startX - endX;
+    const diffY = startY - endY;
+    
+    // Horizontal swipe detection
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+        if (diffX > 0) {
+            // Swipe left - next page
+            window.location.href = '{{ url_for("mobile_trading.mobile_charts") }}';
+        } else {
+            // Swipe right - previous page  
+            window.location.href = '{{ url_for("mobile_trading.quick_trade") }}';
+        }
+    }
+});
+</script>
+{% endblock %}

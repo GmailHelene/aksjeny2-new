@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+{% block title %}Financial Dashboard - Aksjeny{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="h2 mb-4">Financial Dashboard</h1>
+    
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-4" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" data-bs-toggle="tab" href="#stocks-tab">Aksjer</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#insider-tab">Innsidehandel</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#news-tab">Nyheter</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#currency-tab">Valuta</a>
+        </li>
+    </ul>
+    
+    <!-- Tab Content -->
+    <div class="tab-content">
+        <!-- Stocks Tab -->
+        <div class="tab-pane fade show active" id="stocks-tab">
+            {% if stocks_data %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Navn</th>
+                                <th class="text-end">Pris</th>
+                                <th class="text-end">Endring</th>
+                                <th>Handlinger</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for symbol, stock in stocks_data.items() %}
+                                <tr>
+                                    <td><strong>{{ symbol }}</strong></td>
+                                    <td>{{ stock.name }}</td>
+                                    <td class="text-end">${{ "%.2f"|format(stock.current_price) }}</td>
+                                    <td class="text-end">
+                                        <span class="badge {% if stock.change_percent >= 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                            {% if stock.change_percent >= 0 %}+{% endif %}{{ "%.2f"|format(stock.change_percent) }}%
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('stocks.details', symbol=symbol) }}" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-info-circle"></i> Detaljer
+                                        </a>
+                                        <a href="{{ url_for('portfolio.add_stock') }}?symbol={{ symbol }}" class="btn btn-sm btn-success">
+                                            <i class="bi bi-plus-lg"></i> Kjøp
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">Ingen aksjer i porteføljen</p>
+            {% endif %}
+        </div>
+        
+        <!-- Insider Trading Tab -->
+        <div class="tab-pane fade" id="insider-tab">
+            <div class="mb-3">
+                <form id="insiderSearchForm" class="d-flex">
+                    <input type="text" class="form-control me-2" id="insiderSymbol" placeholder="Søk etter ticker..." required>
+                    <button type="submit" class="btn btn-primary">Søk</button>
+                </form>
+            </div>
+            <div id="insiderResults">
+                {% if insider_trades %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Dato</th>
+                                    <th>Symbol</th>
+                                    <th>Insider</th>
+                                    <th>Type</th>
+                                    <th class="text-end">Antall</th>
+                                    <th class="text-end">Verdi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trade in insider_trades %}
+                                    <tr>
+                                        <td>{{ trade.date }}</td>
+                                        <td><strong>{{ trade.symbol }}</strong></td>
+                                        <td>{{ trade.insider }}</td>
+                                        <td>
+                                            <span class="badge {% if trade.type == 'Kjøp' %}bg-success{% else %}bg-danger{% endif %}">
+                                                {{ trade.type }}
+                                            </span>
+                                        </td>
+                                        <td class="text-end">{{ "{:,}".format(trade.shares) }}</td>
+                                        <td class="text-end">${{ "{:,.0f}".format(trade.value) }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">Ingen innsidehandler funnet</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- News Tab -->
+        <div class="tab-pane fade" id="news-tab">
+            <div id="newsContent">
+                {% if news_items %}
+                    <div class="list-group">
+                        {% for news in news_items %}
+                            <a href="{{ news.url }}" class="list-group-item list-group-item-action" target="_blank">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ news.title }}</h6>
+                                    <small>{{ news.date }}</small>
+                                </div>
+                                <p class="mb-1">{{ news.source }}</p>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">Ingen nyheter tilgjengelig</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Currency Tab -->
+        <div class="tab-pane fade" id="currency-tab">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Valutakurser</h5>
+                    {% if currencies %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Par</th>
+                                        <th class="text-end">Kurs</th>
+                                        <th class="text-end">Endring</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for symbol, currency in currencies.items() %}
+                                        <tr>
+                                            <td>{{ currency.name }}</td>
+                                            <td class="text-end">{{ "%.4f"|format(currency.current_price) }}</td>
+                                            <td class="text-end">
+                                                <span class="badge {% if currency.change_percent >= 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                                    {% if currency.change_percent >= 0 %}+{% endif %}{{ "%.2f"|format(currency.change_percent) }}%
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <h5>Valutakalkulator</h5>
+                    <form id="currencyCalculator">
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">Beløp</label>
+                            <input type="number" class="form-control" id="amount" placeholder="100" step="0.01" value="100" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="fromCurrency" class="form-label">Fra valuta</label>
+                            <select class="form-select" id="fromCurrency">
+                                <option value="NOK" selected>NOK - Norske kroner</option>
+                                <option value="USD">USD - Amerikanske dollar</option>
+                                <option value="EUR">EUR - Euro</option>
+                                <option value="GBP">GBP - Britiske pund</option>
+                                <option value="SEK">SEK - Svenske kroner</option>
+                                <option value="DKK">DKK - Danske kroner</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="toCurrency" class="form-label">Til valuta</label>
+                            <select class="form-select" id="toCurrency">
+                                <option value="USD" selected>USD - Amerikanske dollar</option>
+                                <option value="NOK">NOK - Norske kroner</option>
+                                <option value="EUR">EUR - Euro</option>
+                                <option value="GBP">GBP - Britiske pund</option>
+                                <option value="SEK">SEK - Svenske kroner</option>
+                                <option value="DKK">DKK - Danske kroner</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-calculator me-2"></i>Konverter
+                        </button>
+                    </form>
+                    <div id="conversionResult" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Store currency rates from backend
+const currencyRates = {
+    {% for symbol, currency in currencies.items() %}
+    '{{ currency.name.split("/")[0] }}': {{ currency.current_price }},
+    {% endfor %}
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Insider search functionality
+    const insiderSearchForm = document.getElementById('insiderSearchForm');
+    if (insiderSearchForm) {
+        insiderSearchForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const symbol = document.getElementById('insiderSymbol').value.toUpperCase();
+            
+            try {
+                const response = await fetch(`/api/insider-trades/${symbol}`);
+                const data = await response.json();
+                
+                const resultsDiv = document.getElementById('insiderResults');
+                if (data.trades && data.trades.length > 0) {
+                    let html = '<div class="table-responsive"><table class="table table-hover">';
+                    html += '<thead><tr><th>Dato</th><th>Insider</th><th>Type</th><th>Antall</th><th>Verdi</th></tr></thead><tbody>';
+                    
+                    data.trades.forEach(trade => {
+                        const badgeClass = trade.type === 'Kjøp' ? 'bg-success' : 'bg-danger';
+                        html += `<tr>
+                            <td>${trade.date}</td>
+                            <td>${trade.insider}</td>
+                            <td><span class="badge ${badgeClass}">${trade.type}</span></td>
+                            <td class="text-end">${trade.shares.toLocaleString()}</td>
+                            <td class="text-end">$${trade.value.toLocaleString()}</td>
+                        </tr>`;
+                    });
+                    
+                    html += '</tbody></table></div>';
+                    resultsDiv.innerHTML = html;
+                } else {
+                    resultsDiv.innerHTML = '<p class="text-muted">Ingen innsidehandler funnet for ' + symbol + '</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching insider trades:', error);
+                document.getElementById('insiderResults').innerHTML = '<p class="text-danger">Feil ved henting av data</p>';
+            }
+        });
+    }
+    
+    // Currency calculator with real rates
+    const currencyCalculator = document.getElementById('currencyCalculator');
+    if (currencyCalculator) {
+        currencyCalculator.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const amount = parseFloat(document.getElementById('amount').value);
+            const fromCurrency = document.getElementById('fromCurrency').value;
+            const toCurrency = document.getElementById('toCurrency').value;
+            
+            if (!amount || amount <= 0) {
+                document.getElementById('conversionResult').innerHTML = 
+                    '<div class="alert alert-danger">Vennligst oppgi et gyldig beløp</div>';
+                return;
+            }
+            
+            let result;
+            
+            // Direct conversion if we have the rate
+            if (fromCurrency === 'NOK' && currencyRates[toCurrency]) {
+                result = amount / currencyRates[toCurrency];
+            } else if (toCurrency === 'NOK' && currencyRates[fromCurrency]) {
+                result = amount * currencyRates[fromCurrency];
+            } else if (fromCurrency === toCurrency) {
+                result = amount;
+            } else {
+                // Cross rate calculation through NOK
+                const toNOK = fromCurrency === 'NOK' ? amount : amount * currencyRates[fromCurrency];
+                result = toCurrency === 'NOK' ? toNOK : toNOK / currencyRates[toCurrency];
+            }
+            
+            if (result) {
+                document.getElementById('conversionResult').innerHTML = 
+                    `<div class="alert alert-success">
+                        <h5 class="alert-heading">Konverteringsresultat</h5>
+                        <p class="mb-0">
+                            <strong>${amount.toFixed(2)} ${fromCurrency}</strong> = 
+                            <strong>${result.toFixed(2)} ${toCurrency}</strong>
+                        </p>
+                        <hr>
+                        <p class="mb-0 small">
+                            Kurs: 1 ${fromCurrency} = ${(result/amount).toFixed(4)} ${toCurrency}
+                        </p>
+                    </div>`;
+            } else {
+                document.getElementById('conversionResult').innerHTML = 
+                    '<div class="alert alert-warning">Kunne ikke beregne valutakurs</div>';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

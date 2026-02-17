@@ -1,0 +1,28 @@
+.demo-section {
+    color: #000000;  /* Sort tekst */
+    background-color: transparent;  /* Transparent bakgrunn */
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.demo-feature {
+    color: #333333;  /* Mørkegrå tekst for bedre lesbarhet */
+    margin: 1rem 0;
+}
+
+.demo-heading {
+    color: #000000;  /* Sort tekst for overskrifter */
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+}
+
+.demo-description {
+    color: #333333;  /* Mørkegrå tekst */
+    line-height: 1.6;
+}
+
+.demo-highlight {
+    color: #000000;  /* Sort tekst for uthevede elementer */
+    font-weight: 500;
+}

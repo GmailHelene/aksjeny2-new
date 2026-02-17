@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+
+{% block title %}Aksjeanalyse | Innsikt basert på ekte data - Aksjeradar{% endblock %}
+{% block description %}Analysevisning basert på ekte markedsdata. Ingen simuleringer eller prediksjoner – kun tilgjengelig informasjon fra reelle kilder.{% endblock %}
+{% block keywords %}aksjeanalyse, Oslo Børs analyse, teknisk analyse, fundamental analyse, markedsinnsikt{% endblock %}
+
+{% block head %}
+<style>
+/* Mobile responsive fixes for AI analysis search */
+@media (max-width: 768px) {
+    .input-group {
+        flex-wrap: wrap;
+    }
+    
+    .input-group .form-control {
+        min-width: 0;
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 1 1 100% !important;
+        margin-bottom: 0.5rem;
+        border-radius: 0.375rem !important;
+    }
+    
+    .input-group .btn {
+        width: 100% !important;
+        flex: 1 1 100% !important;
+        border-radius: 0.375rem !important;
+    }
+    
+    .input-group-text {
+        border-radius: 0.375rem 0 0 0.375rem !important;
+    }
+    .input-group > .input-group-text { width: 100%; margin-bottom: 0.5rem; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav aria-label="breadcrumb" class="my-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Hjem</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('analysis.index') }}">Analyse</a></li>
+            <li class="breadcrumb-item active">Analyse</li>
+        </ol>
+    </nav>
+
+    {% include 'analysis/_menu.html' %}
+    
+    <div class="card border-0 shadow mb-4">
+        <div class="card-header bg-info text-white">
+            <h2 class="h5 mb-0">Analyse (ekte data)</h2>
+        </div>
+        <div class="card-body">
+            <p class="lead">Denne siden gir en nøktern oversikt basert på tilgjengelige, ekte markedsdata. Ingen prediksjoner, ingen simulert innhold.</p>
+            
+            <form method="GET" action="{{ url_for('analysis.ai') }}" class="mb-4" autocomplete="off">
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="text" class="form-control" id="ticker" name="ticker" 
+                           placeholder="Skriv inn ticker (f.eks. EQNR.OL for Equinor)" value="{{ ticker or '' }}" required>
+                    <button type="submit" class="btn btn-primary px-4">Se analyse</button>
+                </div>
+                <div class="form-text">Skriv inn en aksjeticker. For norske aksjer, legg til .OL (f.eks. EQNR.OL)</div>
+            </form>
+            
+            {% if not ticker %}
+                <!-- Popular stocks for AI analysis -->
+                <div class="mb-4">
+                    <h5 class="mb-3">Populære aksjer for analyse</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6 class="text-muted">Oslo Børs</h6>
+                            {% for stock in popular_stocks.oslo %}
+                            <a href="{{ url_for('analysis.ai', ticker=stock) }}" class="btn btn-outline-primary btn-sm me-1 mb-1">{{ stock }}</a>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted">Globale aksjer</h6>
+                            {% for stock in popular_stocks.global %}
+                            <a href="{{ url_for('analysis.ai', ticker=stock) }}" class="btn btn-outline-success btn-sm me-1 mb-1">{{ stock }}</a>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted">Krypto</h6>
+                            {% for stock in popular_stocks.crypto %}
+                            <a href="{{ url_for('analysis.ai', ticker=stock) }}" class="btn btn-outline-warning btn-sm me-1 mb-1">{{ stock }}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            
+            {% if ticker %}
+                <h3>{{ ticker }}</h3>
+                {% if analysis %}
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Aksjeinformasjon</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <p><strong>Navn:</strong> {{ analysis.name or 'N/A' }}</p>
+                                            <p><strong>Nåværende pris:</strong> 
+                                                <span class="h5 {% if analysis.change_percent and analysis.change_percent >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                                    {% if analysis.current_price is not none %}{{ "%.2f"|format(analysis.current_price) }}{% else %}N/A{% endif %}
+                                                </span>
+                                            </p>
+                                            <p><strong>Endring:</strong> 
+                                                <span class="{% if analysis.change_percent and analysis.change_percent >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                                    {% if analysis.change is not none and analysis.change_percent is not none %}{{ "%.2f"|format(analysis.change) }} ({{ "%.2f"|format(analysis.change_percent) }}%){% else %}N/A{% endif %}
+                                                </span>
+                                            </p>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <p><strong>Høy:</strong> {% if analysis.high is not none %}{{ "%.2f"|format(analysis.high) }}{% else %}N/A{% endif %}</p>
+                                            <p><strong>Lav:</strong> {% if analysis.low is not none %}{{ "%.2f"|format(analysis.low) }}{% else %}N/A{% endif %}</p>
+                                            <p><strong>Åpning:</strong> {% if analysis.open is not none %}{{ "%.2f"|format(analysis.open) }}{% else %}N/A{% endif %}</p>
+                                            <p><strong>Volum:</strong> {% if analysis.volume is not none %}{{ "{:,}".format(analysis.volume) }}{% else %}N/A{% endif %}</p>
+                                        </div>
+                                    </div>
+                                    {% if analysis.market_cap is not none %}
+                                    <p><strong>Markedsverdi:</strong> {{ "{:,}".format(analysis.market_cap) }}</p>
+                                    {% endif %}
+                                    {% if analysis.sector %}
+                                    <p><strong>Sektor:</strong> {{ analysis.sector }}</p>
+                                    {% endif %}
+                                    {% if analysis.industry %}
+                                    <p><strong>Industri:</strong> {{ analysis.industry }}</p>
+                                    {% endif %}
+                                    {% if analysis.description %}
+                                    <p><strong>Beskrivelse:</strong> {{ analysis.description[:200] }}{% if analysis.description|length > 200 %}...{% endif %}</p>
+                                    {% endif %}
+                                    {% if analysis.website %}
+                                    <p><strong>Nettside:</strong> <a href="{{ analysis.website }}" target="_blank">{{ analysis.website }}</a></p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Tekniske indikatorer</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Signal:</strong> 
+                                        <span class="badge {% if analysis.signal == 'Buy' %}bg-success{% elif analysis.signal == 'Sell' %}bg-danger{% else %}bg-warning{% endif %}">
+                                            {{ analysis.signal }}
+                                        </span>
+                                    </p>
+                                    <p><strong>RSI:</strong> {% if analysis.rsi is not none %}{{ "%.1f"|format(analysis.rsi) }}{% else %}N/A{% endif %}</p>
+                                    {% if analysis.data_source %}
+                                    <p><strong>Datakilde:</strong> {{ analysis.data_source }}</p>
+                                    {% endif %}
+                                    {% if analysis.timestamp %}
+                                    <p><strong>Sist oppdatert:</strong> {{ analysis.timestamp[:19] }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% elif error %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i> {{ error }}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        Ingen analyse tilgjengelig for valgt ticker. Prøv en annen ticker.
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-info-circle-fill me-3 fs-4"></i>
+                        <div>
+                            <h4 class="alert-heading mb-1">Hvordan bruke analysen</h4>
+                            <p class="mb-0">Skriv inn en aksjeticker ovenfor for å se tilgjengelig informasjon basert på ekte data. Ingen prediksjoner vises.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <h4 class="mb-3">Populære aksjer for analyse</h4>
+                <div class="row g-3">
+                    {% for stock in (popular_stocks or []) %}
+                    <div class="col-md-4">
+                        <a href="{{ url_for('analysis.ai', ticker=stock.symbol) }}" 
+                           class="card h-100 border-0 shadow-sm text-decoration-none hover-lift">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary mb-1">{{ stock.symbol }}</h5>
+                                <p class="card-text text-muted mb-0">{{ stock.name }}</p>
+                            </div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Enable tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Autofokus på søkefeltet
+        const input = document.getElementById('ticker');
+        input?.focus();
+
+        // Lightweight autocomplete using /analysis/ticker_suggestions
+        if (input) {
+            const wrap = document.createElement('div');
+            wrap.className = 'position-relative w-100';
+            input.parentNode.insertBefore(wrap, input);
+            wrap.appendChild(input);
+            const list = document.createElement('div');
+            list.className = 'list-group position-absolute w-100';
+            list.style.zIndex = 2000;
+            list.style.maxHeight = '220px';
+            list.style.overflowY = 'auto';
+            list.style.display = 'none';
+            wrap.appendChild(list);
+            let last = '';
+            input.addEventListener('input', async () => {
+                const q = input.value.trim();
+                if (q === last || q.length < 1) { list.style.display='none'; return; }
+                last = q;
+                try {
+                    const resp = await fetch(`/analysis/ticker_suggestions?q=${encodeURIComponent(q)}`);
+                    if (!resp.ok) return;
+                    const data = await resp.json();
+                    list.innerHTML = '';
+                    if (!data.length) { list.style.display='none'; return; }
+                    data.forEach(t => {
+                        const item = document.createElement('button');
+                        item.type='button';
+                        item.className='list-group-item list-group-item-action py-1';
+                        item.textContent = t;
+                        item.addEventListener('click', () => { input.value = t; list.style.display='none'; input.form.submit(); });
+                        list.appendChild(item);
+                    });
+                    list.style.display='block';
+                } catch(e) { /* ignore */ }
+            });
+            document.addEventListener('click', (evt) => { if(!wrap.contains(evt.target)) list.style.display='none'; });
+        }
+    });
+</script>
+{% endblock %}

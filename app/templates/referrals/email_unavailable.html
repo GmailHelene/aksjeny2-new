@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Inviter venner - E-post ikke tilgjengelig - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-1">📧 Inviter venner</h1>
+                    <p class="text-muted mb-0">Del Aksjeradar med venner og familie</p>
+                </div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.profile') }}">Profil</a></li>
+                        <li class="breadcrumb-item active">Inviter venner</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Unavailable Message -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-envelope-x me-2"></i>E-post-funksjon ikke tilgjengelig</h5>
+                </div>
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="bi bi-server display-1 text-muted"></i>
+                    </div>
+                    <h4 class="mb-3">E-post-server ikke konfigurert</h4>
+                    <p class="text-muted mb-4 lead">
+                        For å sende invitasjoner via e-post må e-post-serveren konfigureres. 
+                        Denne funksjonen er midlertidig ikke tilgjengelig da vi kun bruker ekte e-post-tjenester - ingen demo- eller mockup-funksjonalitet.
+                    </p>
+                    
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="border rounded p-3 h-100">
+                                <i class="bi bi-shield-check text-success fs-2 mb-2"></i>
+                                <h6>Kun ekte e-post</h6>
+                                <small class="text-muted">Vi sender aldri falske eller demo-e-poster for å opprettholde troverdighet</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border rounded p-3 h-100">
+                                <i class="bi bi-gear text-primary fs-2 mb-2"></i>
+                                <h6>Server-konfigurasjon</h6>
+                                <small class="text-muted">E-post-funksjonen krever korrekt SMTP-server-konfigurasjon</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading">Alternative måter å dele Aksjeradar:</h6>
+                        <ul class="list-unstyled mb-0">
+                            <li>🔗 Del lenken direkte: <strong>https://aksjeradar.trade</strong></li>
+                            <li>📱 Del via sosiale medier</li>
+                            <li>💬 Fortell venner og familie mundtlig</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{{ url_for('main.profile') }}" class="btn btn-primary me-md-2">
+                            <i class="bi bi-person me-2"></i>Tilbake til profil
+                        </a>
+                        <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-house me-2"></i>Forsiden
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Share Options -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h4 class="mb-4 text-center">Del Aksjeradar på andre måter</h4>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-link-45deg text-primary fs-1 mb-3"></i>
+                    <h5 class="card-title">Direkte lenke</h5>
+                    <p class="card-text text-muted">Kopier og del lenken direkte</p>
+                    <div class="input-group">
+                        <input type="text" class="form-control" value="https://aksjeradar.trade" readonly>
+                        <button class="btn btn-outline-primary" type="button" onclick="copyToClipboard('https://aksjeradar.trade')">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-share text-success fs-1 mb-3"></i>
+                    <h5 class="card-title">Sosiale medier</h5>
+                    <p class="card-text text-muted">Del via Facebook, Twitter, LinkedIn</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <a href="https://www.facebook.com/sharer/sharer.php?u=https://aksjeradar.trade" target="_blank" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-facebook"></i>
+                        </a>
+                        <a href="https://twitter.com/intent/tweet?url=https://aksjeradar.trade&text=Sjekk ut Aksjeradar - Norges smarteste aksjeplattform!" target="_blank" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-twitter"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://aksjeradar.trade" target="_blank" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-linkedin"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-chat-dots text-warning fs-1 mb-3"></i>
+                    <h5 class="card-title">Personlig anbefaling</h5>
+                    <p class="card-text text-muted">Fortell venner og familie om fordelene</p>
+                    <div class="small text-muted">
+                        "Jeg bruker Aksjeradar for AI-analyse, sanntidsdata og porteføljeovervåking!"
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Show success message
+        const btn = event.target.closest('button');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check"></i>';
+        btn.classList.add('text-success');
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.classList.remove('text-success');
+        }, 2000);
+    });
+}
+</script>
+
+<style>
+.hover-lift {
+    transition: transform 0.2s;
+}
+.hover-lift:hover {
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}

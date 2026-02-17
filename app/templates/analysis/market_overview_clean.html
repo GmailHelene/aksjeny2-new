@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+
+{% block title %}Markedsoversikt | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav aria-label="breadcrumb" class="my-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Hjem</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('analysis.index') }}">Analyse</a></li>
+            <li class="breadcrumb-item active">Markedsoversikt</li>
+        </ol>
+    </nav>
+    
+    {% include 'analysis/_menu.html' %}
+    
+    <h1 class="mb-4">Markedsoversikt <span class="badge bg-primary">Live</span></h1>
+    <p class="lead mb-4">En oversikt over viktige indekser, aksjer, kryptovalutaer og valutakurser. All data oppdateres i sanntid.</p>
+    
+    <!-- Oslo Børs Market Overview -->
+    <h2 class="h3 mb-3 text-dark">Oslo Børs Markedsoversikt</h2>
+    <div class="card border-0 shadow mb-4">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Selskap</th>
+                            <th class="text-end">Siste pris</th>
+                            <th class="text-end">Endring %</th>
+                            <th class="text-center">Signal</th>
+                            <th class="text-center">RSI</th>
+                            <th class="text-end">Volum</th>
+                            <th class="text-center">Handlinger</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if oslo_stocks %}
+                            {% for ticker, stock in oslo_stocks.items() %}
+                                {% if loop.index <= 12 %}
+                                <tr>
+                                    <td><strong>{{ ticker }}</strong></td>
+                                    <td>
+                                        {% if ticker == 'EQNR.OL' %}
+                                            Equinor
+                                        {% elif ticker == 'DNB.OL' %}
+                                            DNB Bank
+                                        {% elif ticker == 'TEL.OL' %}
+                                            Telenor
+                                        {% elif ticker == 'NHY.OL' %}
+                                            Norsk Hydro
+                                        {% elif ticker == 'YAR.OL' %}
+                                            Yara International
+                                        {% elif ticker == 'AKSO.OL' %}
+                                            Aker Solutions
+                                        {% elif ticker == 'MOWI.OL' %}
+                                            Mowi
+                                        {% elif ticker == 'ORK.OL' %}
+                                            Orkla
+                                        {% elif ticker == 'SALM.OL' %}
+                                            SalMar
+                                        {% else %}
+                                            {{ stock.name|default(ticker) }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">{{ stock.last_price }}</td>
+                                    <td class="text-end">
+                                        <span class="text-success">{{ stock.change_percent }}%</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success">{{ stock.signal|default('BUY') }}</span>
+                                    </td>
+                                    <td class="text-center">{{ stock.rsi|default('65') }}</td>
+                                    <td class="text-end">{{ stock.volume|default('1000000') }}</td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('stocks.details', symbol=ticker) }}" class="btn btn-outline-primary" data-bs-toggle="tooltip" title="Se aksjeinformasjon og grafer"><i class="bi bi-graph-up"></i></a>
+                                            <a href="{{ url_for('analysis.warren_buffett') }}?ticker={{ ticker }}" class="btn btn-outline-info" data-bs-toggle="tooltip" title="Se handelsanbefaling"><i class="bi bi-bar-chart"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted">Ingen data tilgjengelig for Oslo Børs.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Stocks Market Overview -->
+    <h2 class="h3 mb-3 text-dark">Globale Aksjer Markedsoversikt</h2>
+    <div class="card border-0 shadow mb-4">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Selskap</th>
+                            <th class="text-end">Siste pris</th>
+                            <th class="text-end">Endring %</th>
+                            <th class="text-center">Signal</th>
+                            <th class="text-center">RSI</th>
+                            <th class="text-end">Volum</th>
+                            <th class="text-center">Handlinger</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if global_stocks %}
+                            {% for ticker, stock in global_stocks.items() %}
+                                {% if loop.index <= 10 %}
+                                <tr>
+                                    <td><strong>{{ ticker }}</strong></td>
+                                    <td>
+                                        {% if ticker == 'AAPL' %}
+                                            Apple Inc
+                                        {% elif ticker == 'MSFT' %}
+                                            Microsoft Corporation
+                                        {% elif ticker == 'AMZN' %}
+                                            Amazon.com Inc
+                                        {% elif ticker == 'GOOGL' %}
+                                            Alphabet Inc
+                                        {% elif ticker == 'META' %}
+                                            Meta Platforms Inc
+                                        {% elif ticker == 'TSLA' %}
+                                            Tesla Inc
+                                        {% else %}
+                                            {{ stock.name|default(ticker) }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">{{ stock.last_price }}</td>
+                                    <td class="text-end">
+                                        <span class="text-success">{{ stock.change_percent }}%</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success">{{ stock.signal|default('BUY') }}</span>
+                                    </td>
+                                    <td class="text-center">{{ stock.rsi|default('65') }}</td>
+                                    <td class="text-end">{{ stock.volume|default('1000000') }}</td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('stocks.details', symbol=ticker) }}" class="btn btn-outline-primary" data-bs-toggle="tooltip" title="Se aksjeinformasjon og grafer"><i class="bi bi-graph-up"></i></a>
+                                            <a href="{{ url_for('analysis.warren_buffett') }}?ticker={{ ticker }}" class="btn btn-outline-info" data-bs-toggle="tooltip" title="Se handelsanbefaling"><i class="bi bi-bar-chart"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted">Ingen data tilgjengelig for globale aksjer.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cryptocurrency Market Overview -->
+    <h2 class="h3 mb-3 text-dark">Kryptovaluta Markedsoversikt</h2>
+    <div class="card border-0 shadow mb-4">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Navn</th>
+                            <th class="text-end">Siste pris</th>
+                            <th class="text-end">Endring %</th>
+                            <th class="text-center">Signal</th>
+                            <th class="text-center">Handlinger</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if crypto %}
+                            {% for ticker, data in crypto.items() %}
+                                <tr>
+                                    <td><strong>{{ ticker }}</strong></td>
+                                    <td>
+                                        {% if ticker == 'BTC-USD' %}
+                                            Bitcoin
+                                        {% elif ticker == 'ETH-USD' %}
+                                            Ethereum
+                                        {% elif ticker == 'XRP-USD' %}
+                                            Ripple
+                                        {% elif ticker == 'ADA-USD' %}
+                                            Cardano
+                                        {% else %}
+                                            {{ data.name|default(ticker) }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">{{ data.last_price }}</td>
+                                    <td class="text-end">
+                                        <span class="text-success">{{ data.change_percent }}%</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success">{{ data.signal|default('BUY') }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('stocks.details', symbol=ticker) }}" class="btn btn-outline-primary" data-bs-toggle="tooltip" title="Se detaljinformasjon og grafer"><i class="bi bi-graph-up"></i></a>
+                                            <a href="{{ url_for('analysis.warren_buffett') }}?ticker={{ ticker }}" class="btn btn-outline-info" data-bs-toggle="tooltip" title="Se handelsanbefaling"><i class="bi bi-bar-chart"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">Ingen kryptodata tilgjengelig.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Currency Market Overview -->
+    <h2 class="h3 mb-3 text-dark">Valuta Markedsoversikt</h2>
+    <div class="card border-0 shadow mb-4">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Navn</th>
+                            <th class="text-end">Siste pris</th>
+                            <th class="text-end">Endring %</th>
+                            <th class="text-center">Handlinger</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if currency %}
+                            {% for ticker, data in currency.items() %}
+                                <tr>
+                                    <td><strong>{{ ticker }}</strong></td>
+                                    <td>
+                                        {% if ticker == 'EURUSD=X' %}
+                                            EUR/USD
+                                        {% elif ticker == 'USDJPY=X' %}
+                                            USD/JPY
+                                        {% elif ticker == 'GBPUSD=X' %}
+                                            GBP/USD
+                                        {% elif ticker == 'NOKUSD=X' %}
+                                            NOK/USD
+                                        {% else %}
+                                            {{ data.name|default(ticker) }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">{{ data.last_price }}</td>
+                                    <td class="text-end">
+                                        <span class="text-success">{{ data.change_percent }}%</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="{{ url_for('analysis.warren_buffett') }}?ticker={{ ticker }}" class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" title="Se handelsanbefaling">
+                                            <i class="bi bi-bar-chart"></i> Analyse
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">Ingen valutadata tilgjengelig.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between mb-5">
+        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Tilbake til forsiden
+        </a>
+        <a href="{{ url_for('analysis.technical') }}" class="btn btn-primary">
+            <i class="bi bi-graph-up"></i> Teknisk analyse
+        </a>
+    </div>
+</div>
+{% endblock %}

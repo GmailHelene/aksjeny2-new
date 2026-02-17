@@ -1,0 +1,484 @@
+{% extends 'base.html' %}
+
+{% block title %}Benjamin Graham Analyse - Verdiinvestering | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('main.index') }}" class="text-decoration-none">
+                    <i class="bi bi-house-door me-1"></i>Hjem
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('analysis.index') }}" class="text-decoration-none">
+                    <i class="bi bi-graph-up me-1"></i>Analyse
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <i class="bi bi-book me-1"></i>Benjamin Graham
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i class="bi bi-book text-primary"></i> Benjamin Graham Analyse
+                    </h1>
+                    <p class="text-muted">Verdiinvestering basert på fundamentale prinsipper</p>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-success fs-6">Fundamental Analyse</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Selection -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-search"></i> Velg aksje for Graham-analyse
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-graph-up"></i>
+                                </span>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="stockSearch" 
+                                       placeholder="Søk etter aksjer (f.eks. EQNR.OL, AAPL, TSLA)"
+                                       autocomplete="off">
+                                <button class="btn btn-primary" type="button" onclick="analyzeStock()">
+                                    <i class="bi bi-calculator"></i> Analyser
+                                </button>
+                            </div>
+                            <div id="searchSuggestions" class="dropdown-menu w-100" style="display: none;"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" id="quickSelect" onchange="selectQuickStock()">
+                                <option value="">Hurtigvalg</option>
+                                <option value="EQNR.OL">Equinor (EQNR.OL)</option>
+                                <option value="DNB.OL">DNB Bank (DNB.OL)</option>
+                                <option value="AAPL">Apple (AAPL)</option>
+                                <option value="MSFT">Microsoft (MSFT)</option>
+                                <option value="BRK-B">Berkshire Hathaway (BRK-B)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Results -->
+    <div id="analysisResults" style="display: none;">
+        <div class="row">
+            <!-- Main Analysis -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clipboard-data"></i> Graham Investeringstest
+                        </h5>
+                    </div>
+                    <div class="card-body" id="grahamTest">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Graham Metrics -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-calculator"></i> Nøkkeltall
+                        </h5>
+                    </div>
+                    <div class="card-body" id="grahamMetrics">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Graham Principles -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-lightbulb"></i> Graham Prinsipper
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="principle-item mb-3">
+                            <h6 class="text-success">📊 P/E Ratio</h6>
+                            <p class="small mb-0">Bør være under 15 for konservative investeringer</p>
+                        </div>
+                        <div class="principle-item mb-3">
+                            <h6 class="text-success">💰 P/B Ratio</h6>
+                            <p class="small mb-0">Pris-til-bok under 1.5 indikerer undervurdert aksje</p>
+                        </div>
+                        <div class="principle-item mb-3">
+                            <h6 class="text-success">📈 Gjeld-til-egenkapital</h6>
+                            <p class="small mb-0">Lav gjeldsgrad reduserer finansiell risiko</p>
+                        </div>
+                        <div class="principle-item mb-3">
+                            <h6 class="text-success">💵 Utbytte</h6>
+                            <p class="small mb-0">Jevnlig utbytteutbetaling indikerer stabilitet</p>
+                        </div>
+                        <div class="principle-item">
+                            <h6 class="text-success">⏰ Konsistens</h6>
+                            <p class="small mb-0">Stabil inntjening over minst 10 år</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Investment Score -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="mb-0">
+                            <i class="bi bi-star"></i> Investeringsscore
+                        </h6>
+                    </div>
+                    <div class="card-body text-center" id="investmentScore">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Laster...</span>
+                        </div>
+                        <p class="mt-2 mb-0">Velg en aksje for analyse</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Information Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Om Benjamin Graham Metoden
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Hvem var Benjamin Graham?</h6>
+                            <p>Benjamin Graham (1894-1976) regnes som "faren til verdiinvestering". Han utviklet systematiske metoder for å identifisere undervurderte aksjer med god sikkerhet.</p>
+                            
+                            <h6 class="text-primary mt-4">Defensive Investor Kriterier</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check-circle text-success me-2"></i>Store, etablerte selskaper</li>
+                                <li><i class="bi bi-check-circle text-success me-2"></i>Konservativ finansiell struktur</li>
+                                <li><i class="bi bi-check-circle text-success me-2"></i>Kontinuerlig utbyttebetaling</li>
+                                <li><i class="bi bi-check-circle text-success me-2"></i>Moderat P/E ratio</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Graham Number</h6>
+                            <p>Graham-tallet beregnes som √(22.5 × EPS × Book Value per Share). En aksje handles ideelt under dette tallet.</p>
+                            
+                            <h6 class="text-primary mt-4">Sikkerhetsmarginen</h6>
+                            <p>Kjøp aksjer til betydelig lavere pris enn deres indre verdi for å beskytte mot tap og markedsvolatilitet.</p>
+                            
+                            <h6 class="text-primary mt-4">Langsiktig perspektiv</h6>
+                            <p>Graham anbefaler minimum 3-5 års investeringshorisont for å la verdien realiseres.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentStock = null;
+
+// Stock search functionality
+document.getElementById('stockSearch').addEventListener('input', function() {
+    const query = this.value.trim();
+    if (query.length < 2) {
+        document.getElementById('searchSuggestions').style.display = 'none';
+        return;
+    }
+    
+    // Mock suggestions for demo
+    const suggestions = [
+        'EQNR.OL - Equinor ASA',
+        'DNB.OL - DNB Bank',
+        'AAPL - Apple Inc.',
+        'MSFT - Microsoft',
+        'BRK-B - Berkshire Hathaway'
+    ].filter(s => s.toLowerCase().includes(query.toLowerCase()));
+    
+    const container = document.getElementById('searchSuggestions');
+    container.innerHTML = suggestions.map(s => 
+        `<a class="dropdown-item" href="#" onclick="selectStock('${s.split(' - ')[0]}')">${s}</a>`
+    ).join('');
+    container.style.display = suggestions.length ? 'block' : 'none';
+});
+
+function selectQuickStock() {
+    const select = document.getElementById('quickSelect');
+    if (select.value) {
+        document.getElementById('stockSearch').value = select.value;
+        analyzeStock();
+    }
+}
+
+function selectStock(symbol) {
+    document.getElementById('stockSearch').value = symbol;
+    document.getElementById('searchSuggestions').style.display = 'none';
+    analyzeStock();
+}
+
+function analyzeStock() {
+    const symbol = document.getElementById('stockSearch').value.trim();
+    if (!symbol) return;
+    
+    currentStock = symbol;
+    document.getElementById('analysisResults').style.display = 'block';
+    
+    // Show loading state
+    showLoadingState();
+    
+    // Simulate API call with realistic data
+    setTimeout(() => {
+        displayGrahamAnalysis(symbol);
+    }, 1000);
+}
+
+function showLoadingState() {
+    document.getElementById('grahamTest').innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 mb-0">Analyserer ${currentStock}...</p>
+        </div>
+    `;
+    
+    document.getElementById('grahamMetrics').innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-info" role="status"></div>
+        </div>
+    `;
+}
+
+function displayGrahamAnalysis(symbol) {
+    // Mock data based on symbol
+    const data = getGrahamData(symbol);
+    
+    // Display Graham test results
+    const testResults = calculateGrahamTest(data);
+    document.getElementById('grahamTest').innerHTML = renderGrahamTest(testResults);
+    
+    // Display metrics
+    document.getElementById('grahamMetrics').innerHTML = renderGrahamMetrics(data);
+    
+    // Display investment score
+    const score = calculateInvestmentScore(testResults);
+    document.getElementById('investmentScore').innerHTML = renderInvestmentScore(score);
+}
+
+function getGrahamData(symbol) {
+    // Realistic mock data for different stocks
+    const mockData = {
+        'EQNR.OL': {
+            pe: 12.5, pb: 1.1, debtToEquity: 0.3, currentRatio: 1.8,
+            dividend: 0.045, eps: 15.2, bookValue: 180, revenue: 890000,
+            netIncome: 65000, marketCap: 485000, price: 285.5
+        },
+        'AAPL': {
+            pe: 28.2, pb: 45.8, debtToEquity: 1.7, currentRatio: 1.0,
+            dividend: 0.0044, eps: 6.05, bookValue: 4.4, revenue: 394000,
+            netIncome: 97000, marketCap: 3000000, price: 190.2
+        },
+        'BRK-B': {
+            pe: 22.1, pb: 1.4, debtToEquity: 0.2, currentRatio: 1.2,
+            dividend: 0, eps: 15.8, bookValue: 350, revenue: 302000,
+            netIncome: 90000, marketCap: 880000, price: 410.5
+        }
+    };
+    
+    return mockData[symbol] || mockData['EQNR.OL'];
+}
+
+function calculateGrahamTest(data) {
+    return {
+        peTest: data.pe <= 15,
+        pbTest: data.pb <= 1.5,
+        debtTest: data.debtToEquity <= 0.5,
+        currentRatioTest: data.currentRatio >= 1.5,
+        dividendTest: data.dividend > 0,
+        grahamNumber: Math.sqrt(22.5 * data.eps * data.bookValue),
+        priceVsGraham: data.price <= Math.sqrt(22.5 * data.eps * data.bookValue)
+    };
+}
+
+function renderGrahamTest(results) {
+    const tests = [
+        { name: 'P/E Ratio ≤ 15', passed: results.peTest, detail: 'Rimelig verdsettelse' },
+        { name: 'P/B Ratio ≤ 1.5', passed: results.pbTest, detail: 'Handel under bokverdi' },
+        { name: 'Gjeld/Egenkapital ≤ 0.5', passed: results.debtTest, detail: 'Lav finansiell risiko' },
+        { name: 'Current Ratio ≥ 1.5', passed: results.currentRatioTest, detail: 'God likviditet' },
+        { name: 'Utbytteutbetaling', passed: results.dividendTest, detail: 'Stabil kontantstrøm' },
+        { name: 'Pris under Graham-tall', passed: results.priceVsGraham, detail: 'Sikkerhetsmarginen' }
+    ];
+    
+    const passedCount = tests.filter(t => t.passed).length;
+    
+    return `
+        <div class="mb-4">
+            <h6 class="mb-3">Test Resultater: ${passedCount}/6 kriterier oppfylt</h6>
+            <div class="progress mb-3" style="height: 20px;">
+                <div class="progress-bar ${passedCount >= 4 ? 'bg-success' : passedCount >= 2 ? 'bg-warning' : 'bg-danger'}" 
+                     style="width: ${(passedCount/6)*100}%">
+                    ${Math.round((passedCount/6)*100)}%
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            ${tests.map(test => `
+                <div class="col-md-6 mb-3">
+                    <div class="test-item p-3 border rounded ${test.passed ? 'border-success bg-light' : 'border-danger bg-light'}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">${test.name}</h6>
+                                <small class="text-muted">${test.detail}</small>
+                            </div>
+                            <i class="bi ${test.passed ? 'bi-check-circle-fill text-success' : 'bi-x-circle-fill text-danger'} fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+        
+        <div class="alert ${passedCount >= 4 ? 'alert-success' : passedCount >= 2 ? 'alert-warning' : 'alert-danger'} mt-3">
+            <h6 class="alert-heading">Graham Vurdering:</h6>
+            <p class="mb-0">
+                ${passedCount >= 4 ? 'Sterkt anbefalt - Oppfyller de fleste Graham-kriterier' :
+                  passedCount >= 2 ? 'Moderat anbefalt - Noen Graham-kriterier er oppfylt' :
+                  'Ikke anbefalt - Få Graham-kriterier er oppfylt'}
+            </p>
+        </div>
+    `;
+}
+
+function renderGrahamMetrics(data) {
+    return `
+        <div class="row">
+            <div class="col-md-6">
+                <div class="metric-item mb-3">
+                    <label class="form-label text-muted">P/E Ratio</label>
+                    <div class="h4 ${data.pe <= 15 ? 'text-success' : 'text-danger'}">${data.pe}</div>
+                </div>
+                <div class="metric-item mb-3">
+                    <label class="form-label text-muted">P/B Ratio</label>
+                    <div class="h4 ${data.pb <= 1.5 ? 'text-success' : 'text-danger'}">${data.pb}</div>
+                </div>
+                <div class="metric-item mb-3">
+                    <label class="form-label text-muted">Gjeld/Egenkapital</label>
+                    <div class="h4 ${data.debtToEquity <= 0.5 ? 'text-success' : 'text-danger'}">${data.debtToEquity}</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="metric-item mb-3">
+                    <label class="form-label text-muted">Current Ratio</label>
+                    <div class="h4 ${data.currentRatio >= 1.5 ? 'text-success' : 'text-danger'}">${data.currentRatio}</div>
+                </div>
+                <div class="metric-item mb-3">
+                    <label class="form-label text-muted">Utbytterendement</label>
+                    <div class="h4 ${data.dividend > 0 ? 'text-success' : 'text-warning'}">${(data.dividend * 100).toFixed(1)}%</div>
+                </div>
+                <div class="metric-item mb-3">
+                    <label class="form-label text-muted">Graham-tall</label>
+                    <div class="h4 text-info">${Math.sqrt(22.5 * data.eps * data.bookValue).toFixed(2)}</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function calculateInvestmentScore(results) {
+    const tests = [results.peTest, results.pbTest, results.debtTest, results.currentRatioTest, results.dividendTest, results.priceVsGraham];
+    return (tests.filter(Boolean).length / tests.length) * 100;
+}
+
+function renderInvestmentScore(score) {
+    const color = score >= 70 ? 'success' : score >= 40 ? 'warning' : 'danger';
+    const recommendation = score >= 70 ? 'Kjøp' : score >= 40 ? 'Hold' : 'Selg';
+    
+    return `
+        <div class="score-display">
+            <div class="display-4 text-${color} mb-2">${Math.round(score)}</div>
+            <div class="h6 text-muted mb-3">Graham Score</div>
+            <div class="badge bg-${color} fs-6 mb-3">${recommendation}</div>
+            <p class="small text-muted mb-0">Basert på 6 Graham-kriterier</p>
+        </div>
+    `;
+}
+
+// Initialize with demo data if coming from another page with a symbol
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const symbol = urlParams.get('symbol');
+    if (symbol) {
+        document.getElementById('stockSearch').value = symbol;
+        analyzeStock();
+    }
+});
+</script>
+
+<style>
+.principle-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.principle-item:last-child {
+    border-bottom: none;
+}
+
+.test-item {
+    transition: all 0.3s ease;
+}
+
+.test-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.metric-item .form-label {
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.score-display {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-menu {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+#searchSuggestions .dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}

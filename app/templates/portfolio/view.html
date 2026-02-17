@@ -1,0 +1,517 @@
+{% extends "base.html" %}
+
+{% block title %}{{ portfolio.name }} - Portefølje | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <style>
+    /* Ensure green buttons have white readable text */
+    .btn-success, .btn-success:focus, .btn-success:hover { color: #fff !important; }
+    </style>
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3">{{ portfolio.name }}</h1>
+                    <p class="text-muted">{{ portfolio.description or 'Ingen beskrivelse' }}</p>
+                </div>
+                <div>
+                        <a href="{{ url_for('portfolio.portfolio_overview') }}" class="btn btn-outline-secondary me-2">
+                            <i class="bi bi-arrow-left"></i> Tilbake
+                        </a>
+                        <a href="{{ url_for('portfolio.add_stock_to_portfolio', id=portfolio.id) }}" class="btn btn-outline-primary me-2">
+                            <i class="bi bi-plus"></i> Legg til aksje
+                        </a>
+                        <button class="btn btn-outline-danger" onclick="deletePortfolio({{ portfolio.id }})">
+                            <i class="bi bi-trash"></i> Slett portefølje
+                        </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Portfolio selector if multiple #}
+    {% if portfolios|length > 1 %}
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <label for="portfolioSelect" class="form-label">Velg portefølje:</label>
+          <select class="form-select" id="portfolioSelect" onchange="switchPortfolio(this.value)">
+            {% for p in portfolios %}
+              <option value="{{ p.id }}" {% if portfolio and p.id == portfolio.id %}selected{% endif %}>{{ p.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Portfolio Summary -->
+    <div class="row mb-4 portfolio-summary">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Total verdi</h6>
+                    <h3 class="text-primary total-value">
+                        {{ "{:,.0f}".format(total_value|default(0)).replace(',', ' ') }} {{ portfolio.currency|default('NOK') }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Total avkastning</h6>
+                    <h3 class="gain-loss {{ 'text-success' if total_gain_loss >= 0 else 'text-danger' }}">
+                        {{ "{:+,.0f}".format(total_gain_loss|default(0)).replace(',', ' ') }} {{ portfolio.currency|default('NOK') }}
+                    </h3>
+                    <small class="gain-loss-percent {{ 'text-success' if total_gain_loss_percent >= 0 else 'text-danger' }}">
+                        {{ "{:+.1f}".format(total_gain_loss_percent|default(0)) }}%
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Antall posisjoner</h6>
+                    <h3 class="holdings-count">{{ holdings|length if holdings else 0 }}</h3>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Siste oppdatering</h6>
+                    <h6 class="last-updated">{{ portfolio.updated_at.strftime('%d.%m.%Y') if portfolio.updated_at else 'N/A' }}</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Holdings Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card portfolio-content">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Beholdninger</h5>
+                    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addHoldingModal">
+                        <i class="bi bi-plus"></i> Legg til aksje
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if holdings %}
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="holdingsTable">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Navn</th>
+                                    <th>Antall</th>
+                                    <th>Gjennomsnittspris</th>
+                                    <th>Nåværende pris</th>
+                                    <th>Markedsverdi</th>
+                                    <th>Avkastning</th>
+                                    <th>Avkastning %</th>
+                                    <th>Handlinger</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for holding in holdings %}
+                                <tr>
+                                    <td><strong>{{ holding.symbol }}</strong></td>
+                                    <td>{{ holding.company_name|default(holding.symbol) }}</td>
+                                    <td>{{ holding.quantity }}</td>
+                                    <td>{{ "{:.2f}".format(holding.average_price).replace('.', ',') }} {{ portfolio.currency }}</td>
+                                    <td>{{ "{:.2f}".format(holding.current_price|default(0)).replace('.', ',') }} {{ portfolio.currency }}</td>
+                                    <td>{{ "{:,.0f}".format(holding.market_value|default(0)).replace(',', ' ') }} {{ portfolio.currency }}</td>
+                                    <td class="{{ 'text-success' if holding.unrealized_gain >= 0 else 'text-danger' }}">
+                                        {{ "{:+,.0f}".format(holding.unrealized_gain|default(0)).replace(',', ' ') }} {{ portfolio.currency }}
+                                    </td>
+                                    <td class="{{ 'text-success' if holding.unrealized_gain_percent >= 0 else 'text-danger' }}">
+                                        {{ "{:+.1f}".format(holding.unrealized_gain_percent|default(0)) }}%
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary" onclick="editHolding('{{ holding.id }}')">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger" onclick="deleteHolding('{{ holding.id }}')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-pie-chart fs-1 text-muted mb-3"></i>
+                        <h5>Ingen beholdninger ennå</h5>
+                        <p class="text-muted">Klikk "Legg til aksje" for å begynne å bygge porteføljen din.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Holding Modal -->
+<div class="modal fade" id="addHoldingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Legg til aksje</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addHoldingForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="mb-3">
+                        <label for="ticker" class="form-label">Aksjesymbol</label>
+                        <input type="text" class="form-control" id="ticker" name="ticker" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">Antall aksjer</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" min="1" step="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Kjøpspris per aksje</label>
+                        <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Avbryt</button>
+                <button type="button" class="btn btn-primary" onclick="submitHolding()">Legg til</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Holding Modal -->
+<div class="modal fade" id="editHoldingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Rediger beholdning</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editHoldingForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" id="editHoldingId" name="holding_id" value="">
+                    <div class="mb-3">
+                        <label for="editTicker" class="form-label">Aksjesymbol</label>
+                        <input type="text" class="form-control" id="editTicker" name="ticker" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editQuantity" class="form-label">Antall aksjer</label>
+                        <input type="number" class="form-control" id="editQuantity" name="quantity" min="1" step="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editPrice" class="form-label">Kjøpspris per aksje</label>
+                        <input type="number" class="form-control" id="editPrice" name="price" step="0.01" min="0" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Avbryt</button>
+                <button type="button" class="btn btn-primary" onclick="submitEditHolding()">Oppdater</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize global holdings variable with template data
+window.holdings = {{ holdings | tojson | safe }};
+
+function deletePortfolio(portfolioId) {
+    if (confirm('Er du sikker på at du vil slette hele porteføljen? Dette kan ikke angres!')) {
+    fetch(`/portfolio/delete/${portfolioId}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': (window.csrfHelper ? window.csrfHelper.getToken() : '')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Porteføljen ble slettet!');
+                window.location.href = '/portfolio';
+            } else {
+                alert('Feil ved sletting: ' + (data.error || 'Ukjent feil'));
+            }
+        })
+        .catch(error => {
+            alert('Feil ved sletting: ' + error);
+        });
+    }
+}
+function submitHolding() {
+    const form = document.getElementById('addHoldingForm');
+    const formData = new FormData(form);
+    
+    fetch(`/portfolio/{{ portfolio.id }}/add`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            location.reload(); // Reload page to show updated portfolio
+        } else {
+            throw new Error('Feil ved lagring');
+        }
+    })
+    .catch(error => {
+        alert('Feil ved lagring: ' + error.message);
+    });
+}
+
+function editHolding(holdingId) {
+    // Find holding data from either global variable or template data
+    let holdings = window.holdings || {{ holdings | tojson | safe }};
+    const holding = holdings.find(h => h.id == holdingId);
+    
+    if (!holding) {
+        alert('Feil: Kunne ikke finne beholdningsdata');
+        return;
+    }
+    
+    // Populate edit modal with current values
+    document.getElementById('editHoldingId').value = holdingId;
+    document.getElementById('editTicker').value = holding.symbol;
+    document.getElementById('editQuantity').value = holding.quantity;
+    document.getElementById('editPrice').value = holding.average_price;
+    
+    // Show the edit modal
+    const editModal = new bootstrap.Modal(document.getElementById('editHoldingModal'));
+    editModal.show();
+}
+
+function submitEditHolding() {
+    const form = document.getElementById('editHoldingForm');
+    const formData = new FormData(form);
+    const holdingId = document.getElementById('editHoldingId').value;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || formData.get('csrf_token');
+    
+    fetch(`/portfolio/{{ portfolio.id }}/edit/${holdingId}`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': csrfToken
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Beholdning oppdatert!');
+            location.reload(); // Reload page to show updated data
+        } else {
+            alert('Feil ved oppdatering: ' + (data.error || 'Ukjent feil'));
+        }
+    })
+    .catch(error => {
+        alert('Feil ved oppdatering: ' + error);
+    })
+    .finally(() => {
+        // Hide the modal
+        const editModal = bootstrap.Modal.getInstance(document.getElementById('editHoldingModal'));
+        if (editModal) {
+            editModal.hide();
+        }
+    });
+}
+
+function deleteHolding(holdingId) {
+    if (confirm('Er du sikker på at du vil slette denne beholdningen?')) {
+        // Send POST request to backend to delete holding
+        fetch(`/portfolio/${portfolio.id}/remove/${holdingId}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': (window.csrfHelper ? window.csrfHelper.getToken() : '')
+            }
+        })
+        .then(response => response.text())
+        .then(data => {
+            // Remove row from table
+            const row = document.querySelector(`button[onclick="deleteHolding('${holdingId}')"]`).closest('tr');
+            if (row) row.remove();
+            // Optionally show notification
+            alert('Beholdning slettet!');
+        })
+        .catch(error => {
+            alert('Feil ved sletting: ' + error);
+        });
+    }
+}
+
+function switchPortfolio(portfolioId) {
+    // Show loading indicator
+    showPortfolioLoading();
+    
+    // Fetch portfolio data via AJAX
+    fetch(`/portfolio/api/portfolio/${portfolioId}`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update the page content with new portfolio data
+            updatePortfolioContent(data);
+        } else {
+            alert('Feil ved lasting av portefølje: ' + (data.error || 'Ukjent feil'));
+        }
+    })
+    .catch(error => {
+        console.error('Error loading portfolio:', error);
+        alert('Feil ved lasting av portefølje: ' + error);
+    })
+    .finally(() => {
+        hidePortfolioLoading();
+    });
+}
+
+function showPortfolioLoading() {
+    // Add loading indicator to the portfolio content area
+    const contentArea = document.querySelector('.portfolio-content');
+    if (contentArea) {
+        contentArea.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Laster...</span>
+                </div>
+                <p class="mt-2 text-muted">Laster portefølje...</p>
+            </div>
+        `;
+    }
+}
+
+function hidePortfolioLoading() {
+    // Loading is hidden automatically when content is updated
+}
+
+function updatePortfolioContent(data) {
+    // Update portfolio header
+    const portfolioHeader = document.querySelector('h1.h3');
+    if (portfolioHeader) {
+        portfolioHeader.textContent = data.portfolio.name;
+    }
+    
+    const portfolioDescription = document.querySelector('.text-muted');
+    if (portfolioDescription) {
+        portfolioDescription.textContent = data.portfolio.description;
+    }
+    
+    // Update portfolio summary cards
+    updateSummaryCards(data.summary, data.holdings.length);
+    
+    // Update holdings table
+    updateHoldingsTable(data.holdings, data.portfolio);
+    
+    // Update the browser URL without reloading (optional)
+    history.pushState(null, '', `/portfolio/view/${data.portfolio.id}`);
+}
+
+function updateSummaryCards(summary, holdingsCount) {
+    // Update total value
+    const totalValueCard = document.querySelector('.portfolio-summary .total-value');
+    if (totalValueCard) {
+        totalValueCard.textContent = formatCurrency(summary.total_value);
+    }
+    
+    // Update total gain/loss
+    const gainLossCard = document.querySelector('.portfolio-summary .gain-loss');
+    if (gainLossCard) {
+        gainLossCard.textContent = formatCurrency(summary.total_gain_loss);
+        gainLossCard.className = 'gain-loss ' + (summary.total_gain_loss >= 0 ? 'text-success' : 'text-danger');
+    }
+    
+    // Update gain/loss percentage
+    const gainLossPercentCard = document.querySelector('.portfolio-summary .gain-loss-percent');
+    if (gainLossPercentCard) {
+        gainLossPercentCard.textContent = summary.total_gain_loss_percent.toFixed(1) + '%';
+        gainLossPercentCard.className = 'gain-loss-percent ' + (summary.total_gain_loss_percent >= 0 ? 'text-success' : 'text-danger');
+    }
+    
+    // Update holdings count
+    const holdingsCountCard = document.querySelector('.portfolio-summary .holdings-count');
+    if (holdingsCountCard) {
+        holdingsCountCard.textContent = holdingsCount;
+    }
+}
+
+function updateHoldingsTable(holdings, portfolio) {
+    const tableBody = document.querySelector('#holdingsTable tbody');
+    if (!tableBody) return;
+    
+    if (holdings.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center py-5">
+                    <i class="bi bi-pie-chart fs-1 text-muted mb-3"></i>
+                    <h5>Ingen beholdninger ennå</h5>
+                    <p class="text-muted">Klikk "Legg til aksje" for å begynne å bygge porteføljen din.</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tableBody.innerHTML = holdings.map(holding => `
+        <tr>
+            <td>${holding.symbol}</td>
+            <td>${holding.company_name}</td>
+            <td>${formatNumber(holding.quantity)}</td>
+            <td>${formatCurrency(holding.average_price)}</td>
+            <td>${formatCurrency(holding.current_price)}</td>
+            <td>${formatCurrency(holding.market_value)}</td>
+            <td class="${holding.unrealized_gain >= 0 ? 'text-success' : 'text-danger'}">
+                ${formatCurrency(holding.unrealized_gain)}
+            </td>
+            <td class="${holding.unrealized_gain_percent >= 0 ? 'text-success' : 'text-danger'}">
+                ${holding.unrealized_gain_percent.toFixed(1)}%
+            </td>
+            <td>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-primary" onclick="editHolding('${holding.id}')">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" onclick="deleteHolding('${holding.id}')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+    
+    // Update global holdings variable for edit functionality
+    window.holdings = holdings;
+}
+
+function formatCurrency(value) {
+    return new Intl.NumberFormat('nb-NO', {
+        style: 'currency',
+        currency: 'NOK',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(value);
+}
+
+function formatNumber(value) {
+    return new Intl.NumberFormat('nb-NO').format(value);
+}
+</script>
+{% endblock %}

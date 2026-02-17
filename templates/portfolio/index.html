@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Portefølje - Aksjeny{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Portefølje</h1>
+    {% if portfolio %}
+      <span class="text-muted small">Portefølje-ID: {{ portfolio.id }}</span>
+    {% endif %}
+  </div>
+
+  {% if portfolios and portfolios|length > 0 %}
+    <div class="row g-3">
+      <div class="col-lg-4">
+        <div class="card h-100">
+          <div class="card-header">Mine porteføljer</div>
+          <div class="list-group list-group-flush">
+            {% for p in portfolios %}
+              <a class="list-group-item list-group-item-action {{ portfolio and portfolio.id == p.id and 'active' or '' }}" href="{{ url_for('portfolio.portfolio_overview', selected=p.id) }}">
+                {{ p.name or ('Portefølje ' ~ p.id) }}
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>Oversikt</strong>
+            <div class="text-muted small">Verdi: {{ '%.2f'|format(total_value|default(0)|float) }}</div>
+          </div>
+          <div class="card-body">
+            {% if stocks and stocks|length > 0 %}
+            <div class="table-responsive">
+              <table class="table table-sm align-middle">
+                <thead>
+                  <tr>
+                    <th>Ticker</th>
+                    <th class="text-end">Antall</th>
+                    <th class="text-end">Kjøpspris</th>
+                    <th class="text-end">Siste</th>
+                    <th class="text-end">Avkastning</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for sym, s in stocks.items() %}
+                  <tr>
+                    <td><a href="{{ url_for('stocks.details', symbol=sym) }}">{{ sym }}</a></td>
+                    <td class="text-end">{{ s.shares }}</td>
+                    <td class="text-end">{{ '%.2f'|format(s.purchase_price|default(0)|float) }}</td>
+                    <td class="text-end">{{ '%.2f'|format(s.last_price|default(0)|float) }}</td>
+                    <td class="text-end">
+                      {% set pl = s.profit_loss_percent|default(0)|float %}
+                      <span class="badge {{ pl >= 0 and 'bg-success' or 'bg-danger' }}">
+                        {{ pl >= 0 and '+' or '' }}{{ '%.2f'|format(pl) }}%
+                      </span>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+              <div class="text-muted">Ingen aksjer i valgt portefølje.</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="alert alert-info">Du har ingen porteføljer ennå. Legg til en aksje fra en detaljside for å opprette en.</div>
+  {% endif %}
+
+  {% if error %}
+    <div class="alert alert-warning mt-3">{{ error }}</div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Ressurser - Aksjeradar{% endblock %}
+
+{% block head %}
+<style>
+/* Resources page specific styling fixes */
+.hover-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+/* Force proper colors for resources page elements */
+.bg-primary-soft {
+    background-color: #e3f2fd !important;
+    color: #1976d2 !important;
+}
+
+.text-primary {
+    color: #1976d2 !important;
+}
+
+.text-success {
+    color: #388e3c !important;
+}
+
+.text-info {
+    color: #0288d1 !important;
+}
+
+.text-warning {
+    color: #f57c00 !important;
+}
+
+/* Ensure card headers have proper colors */
+.card-body .fs-3 {
+    font-size: 2rem !important;
+}
+
+/* Force button colors */
+.btn-primary {
+    background-color: #1976d2 !important;
+    border-color: #1976d2 !important;
+    color: #ffffff !important;
+}
+
+.btn-outline-success {
+    background-color: #2e7d32 !important;
+    border-color: #2e7d32 !important;
+    color: #ffffff !important;
+}
+
+.btn-outline-info {
+    background-color: #0277bd !important;
+    border-color: #0277bd !important;
+    color: #ffffff !important;
+}
+
+.btn-outline-warning {
+    background-color: #ef6c00 !important;
+    border-color: #ef6c00 !important;
+    color: #ffffff !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto text-center mb-5">
+            <h1 class="display-4 fw-bold mb-3">
+                <i class="bi bi-folder me-3 text-primary"></i>Ressurser
+            </h1>
+            <p class="lead text-muted">
+                Utforsk vårt omfattende bibliotek av verktøy, guider og ressurser for å forbedre dine investeringsferdigheter og ta bedre investeringsbeslutninger.
+            </p>
+        </div>
+    </div>
+
+    <!-- Resource Categories Grid -->
+    <div class="row g-4">
+        {% for category in categories %}
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm hover-card">
+                <div class="card-body text-center p-4">
+                    <div class="mb-4">
+                        <i class="{{ category.icon }} display-4 text-primary"></i>
+                    </div>
+                    <h5 class="card-title fw-bold mb-3">{{ category.title }}</h5>
+                    <p class="card-text text-muted mb-4">{{ category.description }}</p>
+                    <div class="mb-4">
+                        <span class="badge bg-primary-soft px-3 py-2">{{ category.count }}</span>
+                    </div>
+                    <a href="{{ category.link }}" class="btn btn-primary btn-sm w-100">
+                        Utforsk <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Featured Resources Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <hr class="my-5">
+            <h2 class="text-center mb-5">
+                <i class="bi bi-star-fill text-warning me-2"></i>Utvalgte Ressurser
+            </h2>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-graph-up-arrow text-success fs-3 me-3"></i>
+                        <div>
+                            <h6 class="mb-0 fw-bold">TradingView Integrasjon</h6>
+                            <small class="text-muted">Avanserte charts</small>
+                        </div>
+                    </div>
+                    <p class="text-muted small">Få tilgang til profesjonelle charts og teknisk analyse direkte i Aksjeradar.</p>
+                    <a href="/analysis/tradingview" class="btn btn-outline-success btn-sm">Se Charts</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-mortarboard text-info fs-3 me-3"></i>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Investeringskurs</h6>
+                            <small class="text-muted">Gratis utdanning</small>
+                        </div>
+                    </div>
+                    <p class="text-muted small">Lær grunnleggende og avanserte investeringsstrategier gjennom våre strukturerte kurs.</p>
+                    <a href="/investment-guides" class="btn btn-outline-info btn-sm">Start Læring</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-database text-white fs-3 me-3"></i>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Santtidsdata</h6>
+                            <small class="text-muted">Live markedsdata</small>
+                        </div>
+                    </div>
+                    <p class="text-muted small">Tilgang til santtids aksjekurser, valutakurser og kryptovaluta-data.</p>
+                    <a href="/financial-dashboard" class="btn btn-outline-warning btn-sm">Se Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links Section with Individual Colored Cards -->
+    <div class="row mt-5">
+        <div class="col-12 mb-4">
+            <h5 class="text-center mb-4">
+                <i class="bi bi-lightning-charge text-primary me-2"></i>Hurtiglenker
+            </h5>
+        </div>
+    </div>
+    
+    <div class="row g-3">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);">
+                <div class="card-body text-center text-white p-3">
+                    <i class="bi bi-graph-up fs-2 d-block mb-2"></i>
+                    <h6 class="fw-bold mb-0">Oslo Børs</h6>
+                    <a href="/stocks" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);">
+                <div class="card-body text-center text-dark p-3">
+                    <i class="bi bi-currency-bitcoin fs-2 d-block mb-2"></i>
+                    <h6 class="fw-bold mb-0">Kryptovaluta</h6>
+                    <a href="/stocks/crypto" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);">
+                <div class="card-body text-center text-white p-3">
+                    <i class="bi bi-robot fs-2 d-block mb-2"></i>
+                    <h6 class="fw-bold mb-0">AI Analyse</h6>
+                    <a href="/analysis" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                <div class="card-body text-center text-white p-3">
+                    <i class="bi bi-newspaper fs-2 d-block mb-2"></i>
+                    <h6 class="fw-bold mb-0">Finansnyheter</h6>
+                    <a href="/news" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

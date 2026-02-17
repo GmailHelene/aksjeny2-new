@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Watchlist Detaljer - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Watchlist Detaljer</h1>
+            
+            <!-- Watchlist Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Watchlist: {{ watchlist.name }}</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Beskrivelse:</strong> {{ watchlist.description }}</p>
+                    <p><strong>Opprettet:</strong> {{ watchlist.created_at }}</p>
+                </div>
+            </div>
+
+            <!-- Stocks in Watchlist -->
+            <h2>Aksjer i listen</h2>
+            {% if watchlist.stocks and watchlist.stocks|length > 0 %}
+                <ul>
+                {% for stock in watchlist.stocks %}
+                    <li>{{ stock.symbol }}</li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <div class="alert alert-info">Ingen aksjer lagt til ennå.<br>Start med å bygge overvåkningslisten din ved å legge til aksjer du vil følge.</div>
+            {% endif %}
+
+            <!-- AI Insights Section -->
+            <h3>AI-Innsikt</h3>
+            {% if aiInsights and aiInsights|length > 0 %}
+                <ul>
+                {% for insight in aiInsights %}
+                    <li>{{ insight.text }}</li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <div class="alert alert-secondary">Ingen AI-innsikt tilgjengelig for denne listen.</div>
+            {% endif %}
+
+            <!-- Market Trends Section -->
+            <h3>Markedstrender</h3>
+            {% if marketTrends and marketTrends|length > 0 %}
+                <ul>
+                {% for trend in marketTrends %}
+                    <li>{{ trend.text }}</li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <div class="alert alert-secondary">Ingen markedstrender tilgjengelig for denne listen.</div>
+            {% endif %}
+
+            <h3>📊 Watchlist Ytelse</h3>
+            {% if watchlist.performance %}
+                <div>{{ watchlist.performance }}</div>
+            {% else %}
+                <div class="alert alert-secondary">Ingen ytelsesdata tilgjengelig.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

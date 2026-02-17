@@ -1,0 +1,337 @@
+{% extends 'base.html' %}
+
+{% block title %}Prøveperiode utløpt | Aksjeradar{% endblock %}
+
+{% block styles %}
+<style>
+/* Trial expired page specific styles */
+.trial-expired-hero {
+    background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+    color: white;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+}
+
+.pricing-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.pricing-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+    background: #ffffff;
+}
+
+.pricing-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.pricing-card.featured {
+    border: 3px solid #0d6efd;
+    transform: scale(1.05);
+    position: relative;
+    z-index: 10;
+}
+
+.pricing-card.featured .card-header {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    color: white;
+    border-radius: 12px 12px 0 0;
+}
+
+.price-amount {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #0d6efd;
+}
+
+.price-period {
+    font-size: 1rem;
+    color: #6c757d;
+}
+
+.feature-list {
+    padding-left: 0;
+    list-style: none;
+}
+
+.feature-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f8f9fa;
+    display: flex;
+    align-items: center;
+}
+
+.feature-list li:last-child {
+    border-bottom: none;
+}
+
+.feature-list .bi {
+    color: #28a745;
+    margin-right: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.btn-pricing {
+    padding: 12px 30px;
+    font-weight: 600;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+}
+
+.btn-pricing:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.popular-badge {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.comparison-table {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.demo-info-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid #dee2e6;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+}
+
+.demo-info-card .card-header {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+    border-radius: 13px 13px 0 0;
+    font-weight: 600;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .pricing-card.featured {
+        transform: none;
+        margin-bottom: 2rem;
+    }
+    
+    .pricing-hero h1 {
+        font-size: 2rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="trial-expired-hero py-5 text-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="bi bi-hourglass-bottom me-3"></i>Prøveperioden din er utløpt
+                </h1>
+                <p class="lead mb-4 text-white">
+                    Takk for at du testet Aksjeradar! For å fortsette å bruke våre avanserte funksjoner, velg et abonnement nedenfor.
+                </p>
+                <div class="d-flex justify-content-center align-items-center mb-4">
+                    <span class="badge bg-dark text-white fs-6 px-3 py-2">
+                        <i class="bi bi-shield-check me-2"></i>Trygg og sikker betaling
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="pricing-container py-5">
+    <div class="container">
+        
+        <!-- What you experienced during trial -->
+        <div class="demo-info-card mb-5">
+            <div class="card-header text-center py-3">
+                <h4 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Det du opplevde under prøveperioden</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center mb-3">
+                        <div class="fs-1 text-primary mb-2"><i class="bi bi-robot"></i></div>
+                        <h6>AI-Drevne Analyser</h6>
+                        <p class="small text-muted">Smartere investeringsbeslutninger</p>
+                    </div>
+                    <div class="col-md-4 text-center mb-3">
+                        <div class="fs-1 text-success mb-2"><i class="bi bi-graph-up-arrow"></i></div>
+                        <h6>Realtids Markedsdata</h6>
+                        <p class="small text-muted">Oslo Børs og globale markeder</p>
+                    </div>
+                    <div class="col-md-4 text-center mb-3">
+                        <div class="fs-1 text-info mb-2"><i class="bi bi-briefcase"></i></div>
+                        <h6>Porteføljeovervåking</h6>
+                        <p class="small text-muted">Følg dine investeringer</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error handling -->
+        {% if error %}
+        <div class="text-center">
+            <div class="alert alert-warning">
+                <h4>Det oppstod en feil ved lasting av abonnementsinformasjon.</h4>
+                <p>Vennligst kontakt support eller prøv igjen senere.</p>
+                <a href="{{ url_for('main.contact') }}" class="btn btn-outline-primary">Kontakt support</a>
+            </div>
+        </div>
+        {% else %}
+
+        <!-- Pricing Cards -->
+        <div class="row justify-content-center g-4 mb-5">
+            <!-- Monthly Plan -->
+            {% if monthly_plan %}
+            <div class="col-lg-5 col-md-6">
+                <div class="pricing-card h-100">
+                    <div class="card-header bg-primary text-white text-center py-4">
+                        <h4 class="card-title mb-0">{{ monthly_plan.name }}</h4>
+                        <p class="card-text opacity-75 mb-0">{{ monthly_plan.description }}</p>
+                    </div>
+                    <div class="card-body d-flex flex-column p-4">
+                        <div class="text-center mb-4">
+                            <div class="price-amount">{{ monthly_plan.price }} kr</div>
+                            <div class="price-period">per {{ monthly_plan.period }}</div>
+                        </div>
+                        
+                        <ul class="feature-list flex-grow-1 mb-4">
+                            {% for feature in monthly_plan.features %}
+                            <li>
+                                <i class="bi bi-check-circle-fill"></i>
+                                {{ feature }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        
+                        <div class="text-center">
+                            <form method="post" action="{{ url_for('main.create_checkout_session') }}">
+                                {{ csrf_token() }}
+                                <input type="hidden" name="subscription_type" value="{{ monthly_plan.id }}">
+                                <button type="submit" class="btn btn-primary btn-pricing w-100">
+                                    Velg {{ monthly_plan.name }}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Yearly Plan -->
+            {% if yearly_plan %}
+            <div class="col-lg-5 col-md-6">
+                <div class="pricing-card featured h-100">
+                    <div class="popular-badge">
+                        <i class="bi bi-star-fill"></i> Mest populær
+                    </div>
+                    <div class="card-header text-center py-4">
+                        <h4 class="card-title mb-0">{{ yearly_plan.name }}</h4>
+                        <p class="card-text opacity-75 mb-0">{{ yearly_plan.description }}</p>
+                        {% if yearly_plan.discount %}
+                        <div class="badge bg-warning text-dark mt-2">Spar {{ yearly_plan.discount }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="card-body d-flex flex-column p-4">
+                        <div class="text-center mb-4">
+                            <div class="price-amount">{{ yearly_plan.price }} kr</div>
+                            <div class="price-period">per {{ yearly_plan.period }}</div>
+                            {% if yearly_plan.discount %}
+                            <small class="text-success d-block">Kun 208 kr per måned!</small>
+                            {% endif %}
+                        </div>
+                        
+                        <ul class="feature-list flex-grow-1 mb-4">
+                            {% for feature in yearly_plan.features %}
+                            <li>
+                                <i class="bi bi-check-circle-fill"></i>
+                                {{ feature }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        
+                        <div class="text-center">
+                            <form method="post" action="{{ url_for('main.create_checkout_session') }}">
+                                {{ csrf_token() }}
+                                <input type="hidden" name="subscription_type" value="{{ yearly_plan.id }}">
+                                <button type="submit" class="btn btn-primary btn-pricing w-100">
+                                    Velg {{ yearly_plan.name }}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        {% endif %}
+
+        <!-- Bottom CTA -->
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <div class="card border-0 bg-light">
+                    <div class="card-body py-4">
+                        <h5 class="text-dark">Har du spørsmål?</h5>
+                        <p class="text-muted mb-3">Vi er her for å hjelpe deg med å finne riktig abonnement.</p>
+                        <div class="d-flex justify-content-center gap-2 flex-wrap">
+                            <a href="{{ url_for('main.contact') }}" class="btn btn-outline-primary">
+                                <i class="bi bi-envelope me-2"></i>Kontakt oss
+                            </a>
+                            <a href="{{ url_for('main.demo') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-eye me-2"></i>Se demo igjen
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Trust signals -->
+<div class="bg-light py-4">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-4 mb-3">
+                <div class="text-primary fs-2 mb-2"><i class="bi bi-shield-check"></i></div>
+                <h6 class="text-dark">Sikker betaling</h6>
+                <small class="text-muted">SSL-kryptert og beskyttet</small>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="text-success fs-2 mb-2"><i class="bi bi-arrow-repeat"></i></div>
+                <h6 class="text-dark">Fleksibelt abonnement</h6>
+                <small class="text-muted">Avslutt når du vil</small>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="text-info fs-2 mb-2"><i class="bi bi-headset"></i></div>
+                <h6 class="text-dark">Norsk support</h6>
+                <small class="text-muted">Vi snakker samme språk</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

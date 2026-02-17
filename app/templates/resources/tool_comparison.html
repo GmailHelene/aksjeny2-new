@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block head %}
+<style>
+.comparison-table {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.comparison-table th {
+    background:  background: #344686;
+;
+    color: white;
+    font-weight: 600;
+    text-align: center;
+    padding: 20px 15px;
+    border: none;
+}
+
+.comparison-table td {
+    padding: 15px;
+    text-align: center;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+
+.feature-check {
+    color: #28a745;
+    font-size: 1.2rem;
+}
+
+.feature-cross {
+    color: #dc3545;
+    font-size: 1.2rem;
+}
+
+.price-badge {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.rating-stars {
+    color: #ffc107;
+}
+
+.section-header {
+    background:  background: #344686;
+;
+    color: white;
+    padding: 40px;
+    border-radius: 15px;
+    margin-bottom: 40px;
+    text-align: center;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="section-header">
+        <h1><i class="bi bi-table"></i> Verktøy-sammenligning</h1>
+        <p class="lead mb-0">Sammenlign funksjoner og priser for ulike analyseverktøy</p>
+    </div>
+
+    <!-- Global Tools Comparison -->
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">Globale analyseverktøy</h2>
+            <div class="table-responsive">
+                <table class="table comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Verktøy</th>
+                            <th>Teknisk analyse</th>
+                            <th>Fundamental data</th>
+                            <th>Sanntidsdata</th>
+                            <th>Screening</th>
+                            <th>AI-funksjoner</th>
+                            <th>Mobilapp</th>
+                            <th>Startpris</th>
+                            <th>Rating</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>TradingView</strong></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-dash feature-cross"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><span class="price-badge">$14.95/mnd</span></td>
+                            <td>
+                                <div class="rating-stars">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
+                                </div>
+                                4.8/5
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>MarketBeat</strong></td>
+                            <td><i class="bi bi-dash feature-cross"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-dash feature-cross"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><span class="price-badge">$25/mnd</span></td>
+                            <td>
+                                <div class="rating-stars">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
+                                </div>
+                                4.5/5
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>TipRanks</strong></td>
+                            <td><i class="bi bi-dash feature-cross"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><span class="price-badge">$29.95/mnd</span></td>
+                            <td>
+                                <div class="rating-stars">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
+                                </div>
+                                4.6/5
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Yahoo Finance</strong></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-dash feature-cross"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><span class="price-badge">Gratis</span></td>
+                            <td>
+                                <div class="rating-stars">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i>
+                                </div>
+                                4.3/5
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Insider Trading Tools Comparison -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h2 class="mb-4">Innsidehandel-verktøy</h2>
+            <div class="table-responsive">
+                <table class="table comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Verktøy</th>
+                            <th>Sanntids-filer</th>
+                            <th>Historiske data</th>
+                            <th>Varsler</th>
+                            <th>AI-analyse</th>
+                            <th>Screening</th>
+                            <th>API-tilgang</th>
+                            <th>Startpris</th>
+                            <th>Rating</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>InsiderInsights</strong></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-dash feature-cross"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-dash feature-cross"></i></td>
+                            <td><span class="price-badge">$49/mnd</span></td>
+                            <td>
+                                <div class="rating-stars">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i>
+                                </div>
+                                4.2/5
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>SmartInsiderTrades</strong></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><span class="price-badge">$79/mnd</span></td>
+                            <td>
+                                <div class="rating-stars">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i>
+                                </div>
+                                4.3/5
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Norwegian Tools Comparison -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h2 class="mb-4">Norske verktøy</h2>
+            <div class="table-responsive">
+                <table class="table comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Verktøy</th>
+                            <th>Oslo Børs fokus</th>
+                            <th>Norsk språk</th>
+                            <th>Teknisk analyse</th>
+                            <th>Fundamental data</th>
+                            <th>Utdanning</th>
+                            <th>Startpris</th>
+                            <th>Rating</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Aksje.io</strong></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-dash feature-cross"></i></td>
+                            <td><span class="price-badge">399 NOK/mnd</span></td>
+                            <td>
+                                <div class="rating-stars">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i>
+                                </div>
+                                4.2/5
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Netfonds</strong></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-check-circle feature-check"></i></td>
+                            <td><i class="bi bi-dash feature-cross"></i></td>
+                            <td><span class="price-badge">Gratis data</span></td>
+                            <td>
+                                <div class="rating-stars">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i>
+                                </div>
+                                4.3/5
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendation Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h3><i class="bi bi-lightbulb"></i> Våre anbefalinger</h3>
+                    <div class="row mt-4">
+                        <div class="col-md-4">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">Nybegynner</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Yahoo Finance</strong> - Gratis og omfattende</p>
+                                    <p><strong>Netfonds</strong> - For norske aksjer</p>
+                                    <small class="text-muted">Start med gratis verktøy for å lære grunnleggende</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning text-dark">
+                                    <h5 class="mb-0">Viderekommen</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>TradingView</strong> - Teknisk analyse</p>
+                                    <p><strong>Aksje.io</strong> - Norske markeder</p>
+                                    <small class="text-muted">Kombinér teknisk og fundamental analyse</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">Profesjonell</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>TipRanks</strong> - AI-analyse</p>
+                                    <p><strong>SmartInsiderTrades</strong> - Innsidehandel</p>
+                                    <small class="text-muted">Avanserte AI-verktøy og datainnsikt</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

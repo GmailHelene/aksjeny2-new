@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Mine Varsler og Overvåkningslister - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="mb-4">Mine Varsler og Overvåkningslister</h1>
+            
+            {% if errors %}
+            <div class="alert alert-warning">
+                <h4 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> Noen data kunne ikke lastes</h4>
+                <p class="mb-0">Deler av informasjonen er ikke tilgjengelig akkurat nå:</p>
+                <ul class="mb-0 mt-2">
+                    {% if 'watchlist_stats_failed' in errors %}
+                    <li>Statistikk for overvåkningslister er midlertidig utilgjengelig</li>
+                    {% endif %}
+                    {% if 'alerts_failed' in errors %}
+                    <li>Varsler kunne ikke lastes</li>
+                    {% endif %}
+                </ul>
+                <hr>
+                <p class="mb-0">
+                    <small>Prøv å laste siden på nytt eller kom tilbake senere.</small>
+                </p>
+            </div>
+            {% endif %}
+            
+            <!-- Active Alerts Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0 text-dark fw-bold">Aktive Varsler</h5>
+                </div>
+                <div class="card-body">
+                    {% if alerts and alerts|length > 0 %}
+                        <ul class="list-group">
+                        {% for alert in alerts %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ alert.symbol }}: {{ alert.price }} ({{ alert.direction }})
+                                <button class="btn btn-sm btn-danger remove-alert-btn" data-symbol="{{ alert.symbol }}">
+                                    <i class="bi bi-trash"></i> Fjern
+                                </button>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-info">Ingen aktive varsler.</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Watchlists Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0 text-dark fw-bold">Dine Overvåkningslister</h5>
+                </div>
+                <div class="card-body">
+                    {% if lists and lists|length > 0 %}
+                        <ul class="list-group">
+                        {% for wl in lists %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ wl.name }} ({{ wl.stocks|length if wl.stocks else 0 }} aksjer)
+                                <a href="{{ url_for('watchlist_detail', id=wl.id) }}" class="btn btn-sm btn-primary ms-2">
+                                    <i class="bi bi-eye"></i> Vis detaljer
+                                </a>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-info">Du har ingen overvåkningslister.</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Create Watchlist Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0 text-dark fw-bold">Opprett Ny Overvåkningsliste</h5>
+                </div>
+                <div class="card-body">
+                    <form id="createWatchlistForm" method="POST" action="{{ url_for('create_watchlist') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="mb-3">
+                            <label for="watchlistName" class="form-label">Navn på overvåkningsliste</label>
+                            <input type="text" class="form-control" id="watchlistName" name="name" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-plus-circle"></i> Opprett overvåkningsliste
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle alert removal
+    document.querySelectorAll('.remove-alert-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const symbol = this.getAttribute('data-symbol');
+            
+            if (!confirm(`Er du sikker på at du vil fjerne varslet for ${symbol}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/alerts/remove', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
+                    },
+                    body: JSON.stringify({ symbol: symbol })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Remove the alert from the list
+                    const alertItem = this.closest('li');
+                    if (alertItem) {
+                        alertItem.style.transition = 'all 0.3s ease';
+                        alertItem.style.opacity = '0';
+                        alertItem.style.transform = 'translateY(-10px)';
+                        setTimeout(() => {
+                            alertItem.remove();
+                        }, 300);
+                    }
+                    
+                    // Show success message
+                    showSuccessToast(data.message || `Varsel for ${symbol} fjernet`);
+                } else {
+                    showErrorToast(data.error || 'Kunne ikke fjerne varsel');
+                }
+            } catch (error) {
+                console.error('Error removing alert:', error);
+                showErrorToast('Kunne ikke fjerne varsel');
+            }
+        });
+    });
+
+    // Handle watchlist form submission
+    const createWatchlistForm = document.getElementById('createWatchlistForm');
+    if (createWatchlistForm) {
+        createWatchlistForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const actionUrl = this.getAttribute('action');
+            
+            fetch(actionUrl, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCsrfToken()
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Reload the page or update the UI to show the new watchlist
+                    location.reload();
+                } else {
+                    showErrorToast(data.error || 'Kunne ikke opprette overvåkningsliste');
+                }
+            })
+            .catch(error => {
+                console.error('Error creating watchlist:', error);
+                showErrorToast('Kunne ikke opprette overvåkningsliste');
+            });
+        });
+    }
+});
+
+// Toast notifications
+function showSuccessToast(message) {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = 'toast align-items-center text-white bg-success border-0 position-fixed';
+    toast.style.top = '20px';
+    toast.style.right = '20px';
+    toast.style.zIndex = '9999';
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-check-circle me-2"></i>${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Initialize and show toast
+    const bootstrapToast = new bootstrap.Toast(toast);
+    bootstrapToast.show();
+    
+    // Remove from DOM after hiding
+    toast.addEventListener('hidden.bs.toast', function() {
+        toast.remove();
+    });
+}
+
+function showErrorToast(message) {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = 'toast align-items-center text-white bg-danger border-0 position-fixed';
+    toast.style.top = '20px';
+    toast.style.right = '20px';
+    toast.style.zIndex = '9999';
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-exclamation-circle me-2"></i>${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Initialize and show toast
+    const bootstrapToast = new bootstrap.Toast(toast);
+    bootstrapToast.show();
+    
+    // Remove from DOM after hiding
+    toast.addEventListener('hidden.bs.toast', function() {
+        toast.remove();
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,511 @@
+{% extends "base.html" %}
+
+{% block title %}{{ topic.title }} | Forum | Aksjeradar{% endblock %}
+{% block description %}{{ topic.preview_text }} - Diskusjon på Aksjeradar forum{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('forum.index') }}" class="text-decoration-none">
+                    <i class="bi bi-house"></i> Forum
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('forum.category', category_name=topic.category) }}" class="text-decoration-none">
+                    {{ topic.category_display_name }}
+                </a>
+            </li>
+            <li class="breadcrumb-item active">{{ topic.title }}</li>
+        </ol>
+    </nav>
+
+    <!-- Topic Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center mb-2">
+                                {% if topic.is_pinned %}
+                                    <i class="bi bi-pin-fill text-warning me-2" title="Festet"></i>
+                                {% endif %}
+                                {% if topic.is_locked %}
+                                    <i class="bi bi-lock-fill text-danger me-2" title="Låst"></i>
+                                {% endif %}
+                                <h1 class="h3 mb-0">{{ topic.title }}</h1>
+                            </div>
+                            
+                            <div class="d-flex align-items-center text-muted small">
+                                <img src="{{ topic.author.avatar_url or '/static/img/default-avatar.png' }}" 
+                                     alt="{{ topic.author.username }}" 
+                                     class="rounded-circle me-2" 
+                                     style="width: 24px; height: 24px;">
+                                <span class="me-3">
+                                    Startet av <strong>{{ topic.author.username }}</strong>
+                                </span>
+                                <span class="me-3">
+                                    <i class="bi bi-clock me-1"></i>{{ topic.created_at.strftime('%d.%m.%Y %H:%M') }}
+                                </span>
+                                <span class="me-3">
+                                    <i class="bi bi-chat-dots me-1"></i>{{ topic.reply_count }} svar
+                                </span>
+                                <span>
+                                    <i class="bi bi-eye me-1"></i>{{ topic.view_count }} visninger
+                                </span>
+                            </div>
+                            
+                            {% if topic.tags %}
+                            <div class="mt-2">
+                                {% for tag in topic.tags %}
+                                <span class="badge bg-light text-dark me-1">{{ tag }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="text-end">
+                            {% if current_user.is_authenticated %}
+                                {% if not topic.is_locked %}
+                                <a href="#reply-form" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-reply me-1"></i>Svar
+                                </a>
+                                {% endif %}
+                                
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                            onclick="toggleWatchTopic({{ topic.id }})" 
+                                            id="watch-btn">
+                                        <i class="bi bi-{{ 'eye-slash' if topic.is_watched else 'eye' }}"></i>
+                                        {{ 'Slutt å følge' if topic.is_watched else 'Følg' }}
+                                    </button>
+                                    
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                            onclick="toggleLikeTopic({{ topic.id }})" 
+                                            id="like-btn">
+                                        <i class="bi bi-heart{{ '-fill' if topic.is_liked else '' }}"></i>
+                                        <span id="like-count">{{ topic.like_count }}</span>
+                                    </button>
+                                </div>
+                                
+                                {% if current_user.is_admin or current_user.id == topic.author_id %}
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" 
+                                            type="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        {% if current_user.id == topic.author_id %}
+                                        <li><a class="dropdown-item" href="{{ url_for('forum.edit_topic', topic_id=topic.id) }}">
+                                            <i class="bi bi-pencil me-2"></i>Rediger
+                                        </a></li>
+                                        {% endif %}
+                                        {% if current_user.is_admin %}
+                                        <li><a class="dropdown-item" href="#" onclick="togglePin({{ topic.id }})">
+                                            <i class="bi bi-pin me-2"></i>{{ 'Fjern festing' if topic.is_pinned else 'Fest' }}
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="toggleLock({{ topic.id }})">
+                                            <i class="bi bi-lock me-2"></i>{{ 'Lås opp' if topic.is_locked else 'Lås' }}
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="#" onclick="deleteTopic({{ topic.id }})">
+                                            <i class="bi bi-trash me-2"></i>Slett
+                                        </a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Posts -->
+    <div class="row">
+        <div class="col-12">
+            {% for post in posts %}
+            <div class="card border-0 shadow-sm mb-3" id="post-{{ post.id }}">
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Author Info -->
+                        <div class="col-md-2 text-center border-end">
+                            <img src="{{ post.author.avatar_url or '/static/img/default-avatar.png' }}" 
+                                 alt="{{ post.author.username }}" 
+                                 class="rounded-circle mb-2" 
+                                 style="width: 60px; height: 60px;">
+                            <div class="fw-bold">{{ post.author.username }}</div>
+                            <div class="small text-muted">{{ post.author.title or 'Medlem' }}</div>
+                            <div class="small text-success">
+                                <i class="bi bi-star-fill"></i> {{ post.author.reputation or 0 }}
+                            </div>
+                            <div class="small text-muted mt-1">
+                                Innlegg: {{ post.author.post_count or 0 }}
+                            </div>
+                            <div class="small text-muted">
+                                Medlem siden: {{ post.author.joined_date.strftime('%m/%Y') if post.author.joined_date else 'N/A' }}
+                            </div>
+                        </div>
+                        
+                        <!-- Post Content -->
+                        <div class="col-md-10">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="small text-muted">
+                                    <a href="#post-{{ post.id }}" class="text-decoration-none">
+                                        <i class="bi bi-link-45deg"></i>
+                                        #{{ loop.index }}
+                                    </a>
+                                    <span class="ms-2">{{ post.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                                    {% if post.edited_at %}
+                                    <span class="ms-2 text-warning">
+                                        <i class="bi bi-pencil"></i> Redigert {{ post.edited_at.strftime('%d.%m.%Y %H:%M') }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                
+                                {% if current_user.is_authenticated %}
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                            type="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" onclick="quotePost({{ post.id }})">
+                                            <i class="bi bi-quote me-2"></i>Siter
+                                        </a></li>
+                                        {% if current_user.id == post.author_id %}
+                                        <li><a class="dropdown-item" href="#" onclick="editPost({{ post.id }})">
+                                            <i class="bi bi-pencil me-2"></i>Rediger
+                                        </a></li>
+                                        {% endif %}
+                                        <li><a class="dropdown-item" href="#" onclick="reportPost({{ post.id }})">
+                                            <i class="bi bi-flag me-2"></i>Rapporter
+                                        </a></li>
+                                        {% if current_user.is_admin or current_user.id == post.author_id %}
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="#" onclick="deletePost({{ post.id }})">
+                                            <i class="bi bi-trash me-2"></i>Slett
+                                        </a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Post Body -->
+                            <div class="post-content" id="post-content-{{ post.id }}">
+                                {{ post.content|safe }}
+                            </div>
+                            
+                            <!-- Post Reactions -->
+                            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                                <div class="d-flex align-items-center">
+                                    {% if current_user.is_authenticated %}
+                                    <button class="btn btn-sm btn-outline-primary me-2" 
+                                            onclick="toggleLikePost({{ post.id }})" 
+                                            id="post-like-{{ post.id }}">
+                                        <i class="bi bi-heart{{ '-fill' if post.is_liked else '' }}"></i>
+                                        <span class="like-count">{{ post.like_count }}</span>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" 
+                                            onclick="replyToPost({{ post.id }})">
+                                        <i class="bi bi-reply"></i> Svar
+                                    </button>
+                                    {% endif %}
+                                </div>
+                                
+                                {% if post.signature %}
+                                <div class="small text-muted border-top pt-2 mt-2">
+                                    {{ post.signature|safe }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Pagination -->
+            {% if posts.pages > 1 %}
+            <nav aria-label="Posts pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if posts.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('forum.topic', topic_id=topic.id, page=posts.prev_num) }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in posts.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != posts.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('forum.topic', topic_id=topic.id, page=page_num) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if posts.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('forum.topic', topic_id=topic.id, page=posts.next_num) }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            <!-- Reply Form -->
+            {% if current_user.is_authenticated and not topic.is_locked %}
+            <div class="card border-0 shadow-sm mt-4" id="reply-form">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-reply me-2"></i>Skriv svar
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('forum.reply_to_topic', topic_id=topic.id) }}">
+                        {{ csrf_token() }}
+                        <div class="mb-3">
+                            <textarea name="content" class="form-control" rows="6" 
+                                      placeholder="Skriv ditt svar her..." required
+                                      id="reply-content"></textarea>
+                            <div class="form-text">
+                                Du kan bruke Markdown-formatering. <a href="#" data-bs-toggle="modal" data-bs-target="#markdown-help">Se hjelpeguide</a>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="watch_topic" id="watch_topic" 
+                                       {{ 'checked' if topic.is_watched }}>
+                                <label class="form-check-label" for="watch_topic">
+                                    Følg dette temaet
+                                </label>
+                            </div>
+                            
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary me-2" onclick="previewReply()">
+                                    <i class="bi bi-eye me-1"></i>Forhåndsvis
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-send me-1"></i>Send svar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% elif not current_user.is_authenticated %}
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-body text-center">
+                    <h5>Logg inn for å delta i diskusjonen</h5>
+                    <p class="text-muted">Du må være innlogget for å svare på innlegg.</p>
+                    <a href="{{ url_for('main.login') }}" class="btn btn-primary me-2">Logg inn</a>
+                    <a href="{{ url_for('main.register') }}" class="btn btn-outline-primary">Registrer deg</a>
+                </div>
+            </div>
+            {% elif topic.is_locked %}
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-body text-center">
+                    <i class="bi bi-lock-fill text-danger" style="font-size: 2rem;"></i>
+                    <h5 class="mt-2">Dette temaet er låst</h5>
+                    <p class="text-muted">Ingen nye svar kan legges til.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Markdown Help Modal -->
+<div class="modal fade" id="markdown-help" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Markdown Hjelpeguide</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Formatering</th>
+                            <th>Skriv</th>
+                            <th>Resultat</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Fet tekst</td>
+                            <td>**fet tekst**</td>
+                            <td><strong>fet tekst</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Kursiv tekst</td>
+                            <td>*kursiv tekst*</td>
+                            <td><em>kursiv tekst</em></td>
+                        </tr>
+                        <tr>
+                            <td>Lenke</td>
+                            <td>[tekst](url)</td>
+                            <td><a href="#">tekst</a></td>
+                        </tr>
+                        <tr>
+                            <td>Sitat</td>
+                            <td>&gt; sitat</td>
+                            <td><blockquote>sitat</blockquote></td>
+                        </tr>
+                        <tr>
+                            <td>Kode</td>
+                            <td>`kode`</td>
+                            <td><code>kode</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Forum interaction functions
+function toggleLikeTopic(topicId) {
+    fetch(`/forum/topic/${topicId}/like`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const btn = document.getElementById('like-btn');
+        const icon = btn.querySelector('i');
+        const count = document.getElementById('like-count');
+        
+        if (data.liked) {
+            icon.classList.add('bi-heart-fill');
+            icon.classList.remove('bi-heart');
+        } else {
+            icon.classList.add('bi-heart');
+            icon.classList.remove('bi-heart-fill');
+        }
+        count.textContent = data.like_count;
+    });
+}
+
+function toggleWatchTopic(topicId) {
+    fetch(`/forum/topic/${topicId}/watch`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const btn = document.getElementById('watch-btn');
+        const icon = btn.querySelector('i');
+        
+        if (data.watching) {
+            icon.className = 'bi bi-eye-slash';
+            btn.innerHTML = icon.outerHTML + ' Slutt å følge';
+        } else {
+            icon.className = 'bi bi-eye';
+            btn.innerHTML = icon.outerHTML + ' Følg';
+        }
+    });
+}
+
+function toggleLikePost(postId) {
+    fetch(`/forum/post/${postId}/like`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const btn = document.getElementById(`post-like-${postId}`);
+        const icon = btn.querySelector('i');
+        const count = btn.querySelector('.like-count');
+        
+        if (data.liked) {
+            icon.classList.add('bi-heart-fill');
+            icon.classList.remove('bi-heart');
+        } else {
+            icon.classList.add('bi-heart');
+            icon.classList.remove('bi-heart-fill');
+        }
+        count.textContent = data.like_count;
+    });
+}
+
+function quotePost(postId) {
+    // Get the post content and add it as a quote to the reply form
+    const postContent = document.getElementById(`post-content-${postId}`).textContent;
+    const replyTextarea = document.getElementById('reply-content');
+    const quotedText = `> ${postContent.trim().split('\n').join('\n> ')}\n\n`;
+    
+    replyTextarea.value = quotedText + replyTextarea.value;
+    replyTextarea.focus();
+    replyTextarea.scrollIntoView({ behavior: 'smooth' });
+}
+
+function replyToPost(postId) {
+    // Scroll to reply form and focus
+    document.getElementById('reply-content').focus();
+    document.getElementById('reply-form').scrollIntoView({ behavior: 'smooth' });
+}
+
+function previewReply() {
+    const content = document.getElementById('reply-content').value;
+    // Here you would implement markdown preview functionality
+    alert('Preview functionality would be implemented here');
+}
+
+// Auto-save draft functionality
+let draftTimeout;
+document.getElementById('reply-content')?.addEventListener('input', function() {
+    clearTimeout(draftTimeout);
+    draftTimeout = setTimeout(() => {
+        const content = this.value;
+        if (content.length > 10) {
+            localStorage.setItem(`forum_draft_topic_{{ topic.id }}`, content);
+        }
+    }, 2000);
+});
+
+// Load draft on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const replyTextarea = document.getElementById('reply-content');
+    if (replyTextarea) {
+        const draft = localStorage.getItem(`forum_draft_topic_{{ topic.id }}`);
+        if (draft && replyTextarea.value === '') {
+            replyTextarea.value = draft;
+        }
+    }
+});
+</script>
+{% endblock %}

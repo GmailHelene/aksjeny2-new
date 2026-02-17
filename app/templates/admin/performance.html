@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Ytelsesstatistikk{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1>Ytelsesstatistikk</h1>
+            <p class="text-muted">Systemytelse og feillogging</p>
+        </div>
+    </div>
+
+    <!-- Statistikk Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Gjennomsnittlig responstid</h5>
+                    <h2 class="text-primary">{{ "%.2f"|format(stats.avg_response_time) }}ms</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Totale forespørsler</h5>
+                    <h2 class="text-info">{{ stats.total_requests }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Feil</h5>
+                    <h2 class="text-danger">{{ stats.error_count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Feilrate</h5>
+                    <h2 class="text-warning">{{ "%.2f"|format(stats.error_rate) }}%</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tidsperiode-kontroller -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary" onclick="loadStats(1)">Siste time</button>
+                <button type="button" class="btn btn-outline-primary active" onclick="loadStats(24)">Siste 24t</button>
+                <button type="button" class="btn btn-outline-primary" onclick="loadStats(168)">Siste uke</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toppendepunkter -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Tregeste endepunkter</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Endepunkt</th>
+                                    <th>Gj.snitt (ms)</th>
+                                    <th>Forespørsler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for endpoint in stats.slowest_endpoints %}
+                                <tr>
+                                    <td>{{ endpoint.endpoint }}</td>
+                                    <td>{{ "%.2f"|format(endpoint.avg_time) }}</td>
+                                    <td>{{ endpoint.count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Mest brukte endepunkter</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Endepunkt</th>
+                                    <th>Forespørsler</th>
+                                    <th>Gj.snitt (ms)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for endpoint in stats.most_used_endpoints %}
+                                <tr>
+                                    <td>{{ endpoint.endpoint }}</td>
+                                    <td>{{ endpoint.count }}</td>
+                                    <td>{{ "%.2f"|format(endpoint.avg_time) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feillog -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Nyeste feil</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Tidspunkt</th>
+                                    <th>Endepunkt</th>
+                                    <th>Feilmelding</th>
+                                    <th>Bruker</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for error in error_log %}
+                                <tr>
+                                    <td>{{ error.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    <td>{{ error.endpoint }}</td>
+                                    <td>{{ error.error_message }}</td>
+                                    <td>{{ error.user_id or 'Anonym' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function loadStats(hours) {
+    // Oppdater aktiv knapp
+    document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Last inn nye data
+    fetch(`/admin/api/performance?hours=${hours}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Enkel oppdatering - kan forbedres med AJAX
+            }
+        });
+}
+</script>
+{% endblock %}

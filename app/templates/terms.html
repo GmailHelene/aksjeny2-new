@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Vilkår - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="mb-4">Vilkår for bruk</h1>
+            
+            <div class="card">
+                <div class="card-body">
+                    <p class="lead">Sist oppdatert: {{ now.strftime('%d.%m.%Y') }}</p>
+                    
+                    <h2 class="h4 mt-4">1. Aksept av vilkår</h2>
+                    <p>Ved å bruke Aksjeradar godtar du disse vilkårene. Hvis du ikke godtar vilkårene, vennligst ikke bruk tjenesten.</p>
+                    
+                    <h2 class="h4 mt-4">2. Beskrivelse av tjenesten</h2>
+                    <p>Aksjeradar tilbyr aksjeanalyse, markedsdata og investeringsverktøy. Tjenesten er kun ment som informasjon og ikke som investeringsrådgivning.</p>
+                    
+                    <h2 class="h4 mt-4">3. Ansvarsfraskrivelse</h2>
+                    <p><strong>Viktig:</strong> All informasjon på Aksjeradar er kun for informasjonsformål. Vi gir ikke investeringsråd. Du er selv ansvarlig for dine investeringsbeslutninger.</p>
+                    
+                    <h2 class="h4 mt-4">4. Brukerkontoer</h2>
+                    <ul>
+                        <li>Du må oppgi korrekt informasjon</li>
+                        <li>Du er ansvarlig for å holde passordet ditt sikkert</li>
+                        <li>Du kan ikke dele kontoen din med andre</li>
+                    </ul>
+                    
+                    <h2 class="h4 mt-4">5. Betaling og abonnement</h2>
+                    <p>Premium-abonnementer fornyes automatisk. Du kan avbryte når som helst.</p>
+                    
+                    <h2 class="h4 mt-4">6. Immaterielle rettigheter</h2>
+                    <p>Alt innhold på Aksjeradar er beskyttet av opphavsrett. Du kan ikke kopiere eller redistribuere innhold uten tillatelse.</p>
+                    
+                    <h2 class="h4 mt-4">7. Endringer i vilkårene</h2>
+                            <li>Følge alle gjeldende lover og forskrifter</li>
+                        </ul>
+                        
+                        <h2>5. Priser og betalingsvilkår</h2>
+                        <p>Aksjeradar tilbyr følgende abonnementsplaner:</p>
+                        <ul>
+                            <li><strong>Månedlig abonnement:</strong> 399 NOK per måned</li>
+                            <li><strong>Årlig abonnement:</strong> 2499 NOK per år (17% rabatt)</li>
+                        </ul>
+                        <p>Alle priser er oppgitt inkludert MVA. Betaling behandles sikkert gjennom Stripe.</p>
+                        
+                        <h2>6. Kansellering og refusjon</h2>
+                        <p>Du kan kansellere ditt abonnement når som helst. Ved kansellering vil du ha tilgang til tjenesten til slutten av den betalte perioden. Refusjon gis ikke for delvis brukte perioder.</p>
+                        
+                        <h2>7. Personvern og databehandling</h2>
+                        <p>Behandling av dine personopplysninger er regulert av vår <a href="{{ url_for('main.privacy') }}">personvernpolicy</a>, som er en del av disse vilkårene.</p>
+                        
+                        <h2>8. Ansvarsbegrensning</h2>
+                        <p>Aksjeradar og dets eiere kan ikke holdes ansvarlige for:</p>
+                        <ul>
+                            <li>Økonomiske tap som følge av investeringsbeslutninger</li>
+                            <li>Tekniske problemer eller tjenesteavbrudd</li>
+                            <li>Feil eller unøyaktigheter i data eller analyser</li>
+                            <li>Indirekte, tilfeldige eller følgeskader</li>
+                        </ul>
+                        
+                        <h2>9. Immaterielle rettigheter</h2>
+                        <p>Alt innhold på Aksjeradar, inkludert design, tekst, bilder, logo og programvare, er beskyttet av opphavsrett og andre immaterielle rettigheter som tilhører Aksjeradar eller dets lisensgivere.</p>
+                        
+                        <h2>10. Endringer i vilkår</h2>
+                        <p>Vi forbeholder oss retten til å endre disse vilkårene med rimelig varsel. Fortsatt bruk av tjenesten etter endringer betyr aksept av de nye vilkårene.</p>
+                        
+                        <h2>11. Oppsigelse av tjenesten</h2>
+                        <p>Vi kan suspendere eller avslutte din tilgang til tjenesten ved brudd på disse vilkårene eller av andre berettigede grunner.</p>
+                        
+                        <h2>12. Gjeldende lov</h2>
+                        <p>Disse vilkårene er underlagt norsk lov. Eventuelle tvister skal løses ved norske domstoler.</p>
+                        
+                        <h2>13. Kontaktinformasjon</h2>
+                        <p>For spørsmål om disse vilkårene, kontakt oss:</p>
+                        <ul>
+                            <li>E-post: <a href="mailto:kontakt@aksjeradar.trade">kontakt@aksjeradar.trade</a></li>
+                            <li>Kontaktskjema: <a href="{{ url_for('main.contact') }}">Kontakt oss</a></li>
+                        </ul>
+                        
+                        <div class="mt-4 pt-3 border-top">
+                            <p class="text-muted small">
+                                <strong>Viktig påminnelse:</strong> Aksjeradar er et verktøy for markedsanalyse og ikke en autorisert finansiell rådgiver. 
+                                All informasjon og anbefalinger skal ikke tolkes som investeringsrådgivning. 
+                                Investeringer i aksjer og andre finansielle instrumenter innebærer risiko for tap.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.terms-content h2 {
+    color: #007bff;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 0.5rem;
+}
+
+.terms-content h2:first-of-type {
+    margin-top: 1rem;
+}
+
+.terms-content p {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.terms-content ul {
+    margin-bottom: 1rem;
+}
+
+.terms-content li {
+    margin-bottom: 0.5rem;
+}
+</style>
+{% endblock %}

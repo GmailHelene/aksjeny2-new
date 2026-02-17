@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Varsler - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5 fw-bold">Varsler</h1>
+            <p class="lead">Alle dine varsler og meldinger vises her. Beløp og tall vises med norsk formatering.</p>
+        </div>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Totalt</h5>
+                    <p id="total-count" class="display-6">{{ summary.total if summary else 0 }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Uleste</h5>
+                    <p id="unread-count" class="display-6">{{ summary.unread if summary else 0 }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Siste 7 dager</h5>
+                    <p class="display-6">{{ summary.recent_activity if summary else 0 }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Høy prioritet</h5>
+                    <p class="display-6">{{ summary.priority_breakdown.high if summary and summary.priority_breakdown else 0 }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Options -->
+    <div class="row mb-3">
+        <div class="col-12 d-flex align-items-center gap-3">
+            <button id="markAllReadBtn" class="btn btn-outline-primary">Marker alle som lest</button>
+            <button id="clearAllBtn" class="btn btn-outline-danger">Fjern alle leste</button>
+            <div class="form-check form-switch ms-3">
+                <input class="form-check-input" type="checkbox" id="unreadOnlyFilter">
+                <label class="form-check-label" for="unreadOnlyFilter">Vis kun uleste</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications List -->
+    <div class="row">
+        <div class="col-12">
+            {% for notification in notifications %}
+            <div class="notification-item border {% if not notification.read %}border-primary{% endif %} rounded p-3 mb-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ notification.title }}</strong>
+                        <div class="text-muted small">{{ notification.timestamp.strftime('%d.%m.%Y %H:%M') }}</div>
+                        <div>{{ notification.message }}</div>
+                        {% if notification.amount is not none %}
+                        <div class="mt-1">Beløp: <span class="fw-bold">{{ notification.amount|format_currency('NOK') }}</span></div>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex flex-column gap-2 align-items-end">
+                        <button class="btn btn-sm btn-outline-success mark-read-btn" data-id="{{ notification.id }}">Marker som lest</button>
+                        <button class="btn btn-sm btn-outline-danger delete-btn" data-id="{{ notification.id }}">Slett</button>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-info">Ingen varsler funnet.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Toast for feedback -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="feedbackToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">Varsel</strong>
+            <small>Nå</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Lukk"></button>
+        </div>
+        <div class="toast-body"></div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mark as read functionality
+    document.querySelectorAll('.mark-read-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const notificationId = btn.getAttribute('data-id');
+            markAsRead(notificationId);
+        });
+    });
+
+    // Delete functionality
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const notificationId = btn.getAttribute('data-id');
+            deleteNotification(notificationId);
+        });
+    });
+
+    // Mark all as read
+    const markAllBtn = document.getElementById('markAllReadBtn');
+    if (markAllBtn) {
+        markAllBtn.addEventListener('click', function() {
+            markAllAsRead();
+        });
+    }
+
+    // Unread only filter
+    const unreadFilter = document.getElementById('unreadOnlyFilter');
+    if (unreadFilter) {
+        unreadFilter.addEventListener('change', function() {
+            // Implement filter logic here
+            // For demo: just reload
+            window.location.reload();
+        });
+    }
+
+    // Clear all read notifications
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', function() {
+            clearAllRead();
+        });
+    }
+});
+
+function markAsRead(notificationId) {
+    fetch(`/notifications/api/mark-read/${notificationId}`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCSRFToken() }
+    })
+    .then(response => response.json())
+    .then(data => {
+        showToast('Varselet er markert som lest', 'success');
+        window.location.reload();
+    })
+    .catch(error => {
+        showToast('En feil oppstod', 'error');
+    });
+}
+
+function markAllAsRead() {
+    fetch('/notifications/api/mark-all-read', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCSRFToken() }
+    })
+    .then(response => response.json())
+    .then(data => {
+        showToast('Alle varsler er markert som lest', 'success');
+        window.location.reload();
+    })
+    .catch(error => {
+        showToast('En feil oppstod', 'error');
+    });
+}
+
+function deleteNotification(notificationId) {
+    if (!confirm('Er du sikker på at du vil slette dette varselet?')) {
+        return;
+    }
+    fetch(`/notifications/api/delete/${notificationId}`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCSRFToken() }
+    })
+    .then(response => response.json())
+    .then(data => {
+        showToast('Varsel slettet', 'success');
+        window.location.reload();
+    })
+    .catch(error => {
+        showToast('En feil oppstod', 'error');
+    });
+}
+
+function clearAllRead() {
+    fetch('/notifications/api/clear-read', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCSRFToken() }
+    })
+    .then(response => response.json())
+    .then(data => {
+        showToast('Alle leste varsler er fjernet', 'success');
+        window.location.reload();
+    })
+    .catch(error => {
+        showToast('En feil oppstod', 'error');
+    });
+}
+
+// Use global showToast from base.html
+
+function getCSRFToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+}
+
+// Auto-update notification count every 30 seconds
+setInterval(() => {
+    fetch('/notifications/api/count')
+        .catch(error => console.error('Error updating count:', error));
+}, 30000);
+</script>
+{% endblock %}

@@ -1,0 +1,16 @@
+[providers]
+python = "3.11"
+
+[variables]
+FLASK_ENV = "production"
+PYTHONPATH = "/app"
+
+[phases.install]
+cmds = ["pip install -r requirements.txt"]
+
+[phases.build]
+dependsOn = ["install"]
+cmds = ["echo 'Build phase completed'"]
+
+[start]
+cmd = "bash ./start.sh"

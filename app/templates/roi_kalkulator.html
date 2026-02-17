@@ -1,0 +1,401 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>Få mer igjen for pengene med Aksjeradar.trade - ROI Kalkulator | Norge</title>
+<meta name="description" content="Beregn avkastningen på din investering i Aksjeradar.trade. Sanntidsdata, AI-analyse og porteføljeoptimalisering gir ROI på over 140%. Test gratis nå!">
+<meta name="keywords" content="aksjeradar, ROI kalkulator, investeringsverktøy, sanntidsdata, AI analyse, Oslo Børs, aksjer Norge, portefølje, aksjescreening">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="Få mer igjen for pengene med Aksjeradar.trade - ROI Kalkulator">
+<meta property="og:description" content="Beregn din ROI med Aksjeradar.trade - Sanntidsdata og AI-analyse gir 140%+ avkastning på investeringen">
+<meta property="og:image" content="{{ url_for('static', filename='images/roi-calculator-preview.jpg') }}">
+<meta property="og:url" content="{{ url_for('main.roi_kalkulator', _external=True) }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Få mer igjen for pengene med Aksjeradar.trade">
+<meta name="twitter:description" content="ROI Kalkulator - Se hvor mye du tjener på bedre investeringsbeslutninger">
+
+<!-- Structured Data for SEO -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Calculator",
+  "name": "Aksjeradar ROI Kalkulator",
+  "description": "Beregn avkastningen på din investering i Aksjeradar.trade",
+  "url": "{{ url_for('main.roi_kalkulator', _external=True) }}",
+  "provider": {
+    "@type": "Organization",
+    "name": "Aksjeradar.trade",
+    "url": "https://aksjeradar.trade"
+  }
+}
+</script>
+
+<style>
+.roi-hero {
+    background: linear-gradient(135deg, #2d5016 0%, #1a3009 100%); /* Dark green gradient instead of purple */
+    color: white;
+    padding: 60px 0;
+}
+
+.roi-calculator-card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    margin-top: -40px;
+    position: relative;
+    z-index: 2;
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #2d5016 0%, #1a3009 100%); /* Dark green gradient instead of purple */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    color: white;
+    font-size: 24px;
+}
+
+.roi-result {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.benefit-card {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 25px;
+    height: 100%;
+    border-left: 4px solid #2d5016; /* Dark green instead of purple */
+}
+
+.cta-section {
+    background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
+    color: white;
+    padding: 60px 0;
+    margin-top: 50px;
+}
+
+.roi-table th {
+    background: #2d5016; /* Dark green instead of purple */
+    color: white;
+    border: none;
+}
+
+.roi-table td {
+    border-color: #e9ecef;
+    padding: 15px;
+}
+
+.highlight-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #4CAF50;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="roi-hero">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 font-weight-bold mb-4">
+                    Få mer igjen for pengene med Aksjeradar.trade
+                </h1>
+                <p class="lead mb-4">
+                    Sanntidsdata, AI-analyse og investeringsverktøy – test ROI nå
+                </p>
+                <div class="row mt-5">
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="feature-icon">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <h6>Sanntidsdata</h6>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="feature-icon">
+                            <i class="bi bi-robot"></i>
+                        </div>
+                        <h6>AI-Analyse</h6>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="feature-icon">
+                            <i class="bi bi-search"></i>
+                        </div>
+                        <h6>Screening</h6>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="feature-icon">
+                            <i class="bi bi-pie-chart"></i>
+                        </div>
+                        <h6>Optimalisering</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<section class="py-5">
+    <div class="container">
+        <!-- Why Choose Aksjeradar -->
+        <div class="row mb-5">
+            <div class="col-lg-6">
+                <h2 class="mb-4">Hvorfor velge Aksjeradar.trade?</h2>
+                <div class="mb-3">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    <strong>Sanntidsdata</strong> fra Oslo Børs, globale markeder, krypto og valuta
+                </div>
+                <div class="mb-3">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    <strong>Avansert AI-analyse</strong> med prediksjoner og anbefalinger
+                </div>
+                <div class="mb-3">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    <strong>Teknisk og fundamental screening</strong>
+                </div>
+                <div class="mb-3">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    <strong>Porteføljeoptimalisering</strong> og verdibaserte strategier
+                </div>
+                <div class="mb-3">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    <strong>Ingen registrering nødvendig</strong> for testing
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center">
+                    <div style="width: 100%; height: 300px; background: linear-gradient(135deg, #2d5016 0%, #1a3009 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white;" class="shadow">
+                        <div>
+                            <i class="bi bi-graph-up fs-1 mb-3"></i>
+                            <h5>AI-analyse og sanntidsdata</h5>
+                            <p class="small">Avanserte verktøy for bedre investeringsbeslutninger</p>
+                        </div>
+                    </div>
+                    <p class="small text-muted mt-2">AI-analyse og sanntidsdata i aksjon</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROI Calculator -->
+        <div class="roi-calculator-card">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <h2 class="text-center mb-4">ROI Kalkulator – Hva får du igjen?</h2>
+                    <p class="text-center text-muted mb-4">
+                        Basert på typiske gevinster fra bedre beslutninger og innsikt:
+                    </p>
+                    
+                    <!-- ROI Table -->
+                    <div class="table-responsive mb-4">
+                        <table class="table roi-table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Abonnementstype</th>
+                                    <th>Kostnad</th>
+                                    <th>Estimert gevinst</th>
+                                    <th>ROI</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Månedlig</strong></td>
+                                    <td>249 kr</td>
+                                    <td>600 kr</td>
+                                    <td><span class="highlight-number">141%</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Årlig</strong></td>
+                                    <td>2499 kr</td>
+                                    <td>7200 kr</td>
+                                    <td><span class="highlight-number">188%</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="roi-result">
+                        <h4 class="mb-3">Hva betyr dette?</h4>
+                        <p class="mb-0">
+                            Med Aksjeradar.trade får du mer igjen for hver krone – både i innsikt, tid og avkastning. 
+                            <strong>ROI på over 100% betyr at verktøyet betaler seg selv flere ganger.</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Benefits Grid -->
+        <div class="row mt-5">
+            <div class="col-md-4 mb-4">
+                <div class="benefit-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-clock"></i>
+                    </div>
+                    <h5>Spar tid</h5>
+                    <p>Automatisert analyse sparer deg for timer med research hver uke. Få alt du trenger på ett sted.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="benefit-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-brain"></i>
+                    </div>
+                    <h5>Bedre beslutninger</h5>
+                    <p>AI-drevet innsikt og teknisk analyse hjelper deg ta smartere investeringsbeslutninger.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="benefit-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <h5>Økt avkastning</h5>
+                    <p>Porteføljeoptimalisering og timing kan øke din årlige avkastning betydelig.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio Image -->
+        <div class="row mt-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <div style="width: 100%; height: 400px; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white;" class="shadow mb-3">
+                    <div>
+                        <i class="bi bi-pie-chart fs-1 mb-3"></i>
+                        <h4>Porteføljeoptimalisering</h4>
+                        <p>Avansert screening og optimalisering</p>
+                    </div>
+                </div>
+                <p class="text-muted">Porteføljeoptimalisering og avansert screening</p>
+            </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="row mt-5">
+            <div class="col-lg-8 mx-auto">
+                <h3 class="mb-4">Vanlige spørsmål</h3>
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faq1">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1">
+                                Er dataene sanntid?
+                            </button>
+                        </h2>
+                        <div id="collapse1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <strong>Ja</strong>, både Oslo Børs, globale aksjer, krypto og valuta leveres i sanntid.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faq2">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2">
+                                Er AI-funksjonene inkludert?
+                            </button>
+                        </h2>
+                        <div id="collapse2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <strong>Ja</strong>, prediksjoner og screening er inkludert i abonnementet.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faq3">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3">
+                                Kan jeg teste gratis?
+                            </button>
+                        </h2>
+                        <div id="collapse3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <strong>Ja</strong>, du kan teste alle funksjoner uten registrering.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="mb-4">🚀 Start din gratis test nå – ingen registrering nødvendig</h2>
+                <p class="lead mb-4">
+                    Test alle funksjoner gratis og se selv hvordan Aksjeradar.trade kan forbedre dine investeringer
+                </p>
+                <div class="d-flex flex-column flex-md-row gap-3 justify-content-center">
+                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-light btn-lg px-5">
+                        <i class="bi bi-play-fill me-2"></i>Test gratis nå
+                    </a>
+                    <a href="https://buy.stripe.com/5kQcN503z30z2oL35wfYY03" target="_blank" class="btn btn-outline-light btn-lg px-5">
+                        <i class="bi bi-credit-card me-2"></i>Månedlig - 249 kr
+                    </a>
+                    <a href="https://buy.stripe.com/dRm3cvbMh1WvbZldKafYY04" target="_blank" class="btn btn-outline-light btn-lg px-5">
+                        <i class="bi bi-star-fill me-2"></i>Årlig - 2499 kr
+                    </a>
+                </div>
+                <p class="mt-3 small">
+                    👉 <strong>Besøk Aksjeradar.trade</strong> og start din investeringsreise i dag
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Add smooth scrolling and animations
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate numbers on scroll
+    const observerOptions = {
+        threshold: 0.5,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const element = entry.target;
+                if (element.classList.contains('highlight-number')) {
+                    animateNumber(element);
+                }
+            }
+        });
+    }, observerOptions);
+    
+    document.querySelectorAll('.highlight-number').forEach(el => {
+        observer.observe(el);
+    });
+    
+    function animateNumber(element) {
+        const targetText = element.textContent;
+        const targetNumber = parseInt(targetText.replace('%', ''));
+        let currentNumber = 0;
+        const increment = targetNumber / 30; // 30 frames
+        
+        const timer = setInterval(() => {
+            currentNumber += increment;
+            if (currentNumber >= targetNumber) {
+                currentNumber = targetNumber;
+                clearInterval(timer);
+            }
+            element.textContent = Math.round(currentNumber) + '%';
+        }, 50);
+    }
+});
+</script>
+{% endblock %}

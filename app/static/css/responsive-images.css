@@ -1,0 +1,106 @@
+/* Responsive Images - Ensures all images are mobile-friendly */
+
+/* Global image constraints */
+img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+/* Mobile-specific image adjustments */
+@media (max-width: 576px) {
+    /* Logo in navigation */
+    .navbar-brand img {
+        max-height: 24px !important;
+        max-width: 120px !important;
+    }
+    
+    /* News images on mobile */
+    .news-image,
+    .card-img-top {
+        height: 120px !important;
+        max-height: 120px !important;
+    }
+    
+    /* Article images */
+    .article-content img,
+    .news-content img {
+        max-height: 150px !important;
+    }
+    
+    /* Chart images */
+    .chart-container img,
+    .tradingview-widget img {
+        max-height: 200px !important;
+    }
+    
+    /* Icons and small images */
+    .icon,
+    svg,
+    .fa,
+    .bi {
+        max-width: 20px !important;
+        max-height: 20px !important;
+    }
+    
+    /* Flag images */
+    img[alt*="flag"],
+    img[src*="flags/"] {
+        max-width: 16px !important;
+        max-height: 12px !important;
+    }
+}
+
+/* Tablet adjustments */
+@media (min-width: 577px) and (max-width: 768px) {
+    .news-image,
+    .card-img-top {
+        height: 160px !important;
+        max-height: 160px !important;
+    }
+    
+    .navbar-brand img {
+        max-height: 28px !important;
+        max-width: 140px !important;
+    }
+}
+
+/* Ensure responsive behavior for all card images */
+.card img {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    object-fit: cover !important;
+}
+
+/* Fix any remaining oversized images */
+.container img,
+.container-fluid img,
+.col img,
+.row img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+/* Widget images */
+.widget img,
+.news-widget img {
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: 100px !important;
+}
+
+/* Specific fixes for embedded content */
+iframe,
+embed,
+object {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+@media (max-width: 576px) {
+    iframe,
+    embed,
+    object {
+        max-height: 200px !important;
+    }
+}

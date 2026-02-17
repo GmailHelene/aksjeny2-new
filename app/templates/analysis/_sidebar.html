@@ -1,0 +1,26 @@
+<div class="analysis-nav">
+    <h5>Analysemeny</h5>
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'analysis.index' %}active{% endif %}" href="{{ url_for('analysis.index') }}">Markedsoversikt</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'analysis.technical' %}active{% endif %}" href="{{ url_for('analysis.technical') }}">Teknisk Analyse</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'analysis.warren_buffett' %}active{% endif %}" href="{{ url_for('analysis.warren_buffett') }}">Warren Buffett Analyse</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'analysis.benjamin_graham' %}active{% endif %}" href="{{ url_for('analysis.benjamin_graham') }}">Benjamin Graham Analyse</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'analysis.short_analysis' %}active{% endif %}" href="{{ url_for('analysis.short_analysis') }}">Korttidsanalyse</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'analysis.prediction' %}active{% endif %}" href="{{ url_for('analysis.prediction') }}">Prisprediksjon</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'analysis.ai' %}active{% endif %}" href="{{ url_for('analysis.ai') }}">AI Analyse</a>
+        </li>
+    </ul>
+</div>

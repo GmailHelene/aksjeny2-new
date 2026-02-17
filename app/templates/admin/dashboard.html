@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1>Admin Dashboard</h1>
+            <p class="text-muted">Systemadministrasjon og overvåkning</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Ytelsesstatistikk</h5>
+                    <p class="card-text">Overvåk systemytelse, responstider og feilrater</p>
+                    <a href="{{ url_for('admin.performance_stats') }}" class="btn btn-primary">Vis statistikk</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Brukerhåndtering</h5>
+                    <p class="card-text">Administrer brukere, tilganger og abonnementer</p>
+                    <a href="{{ url_for('admin.user_management') }}" class="btn btn-primary">Administrer brukere</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Systemstatus</h5>
+                    <p class="card-text">Overvåk systemhelse og tjenestestatus</p>
+                    <a href="{{ url_for('admin.system_status') }}" class="btn btn-primary">Vis status</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

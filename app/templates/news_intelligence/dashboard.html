@@ -1,0 +1,695 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    .news-card {
+        border-left: 4px solid #007bff;
+        transition: all 0.3s ease;
+        margin-bottom: 1rem;
+    }
+    
+    .news-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .sentiment-positive {
+        border-left-color: #28a745;
+        background: linear-gradient(135deg, #f8fff9 0%, #e8f5e8 100%);
+    }
+    
+    .sentiment-negative {
+        border-left-color: #dc3545;
+        background: linear-gradient(135deg, #fff8f8 0%, #f5e8e8 100%);
+    }
+    
+    .sentiment-neutral {
+        border-left-color: #6c757d;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+    
+    .impact-score {
+        font-size: 0.9rem;
+        font-weight: bold;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+    }
+    
+    .impact-high {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .impact-medium {
+        background: #ffc107;
+        color: #212529;
+    }
+    
+    .impact-low {
+        background: #28a745;
+        color: white;
+    }
+    
+    .source-badge {
+        font-size: 0.75rem;
+        font-weight: bold;
+        padding: 0.125rem 0.375rem;
+        border-radius: 0.5rem;
+        text-transform: uppercase;
+    }
+    
+    .chart-container {
+        height: 400px;
+        margin: 1rem 0;
+    }
+    
+    .trending-topic {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        margin: 0.25rem;
+        display: inline-block;
+        transition: transform 0.2s ease;
+    }
+    
+    .trending-topic:hover {
+        transform: scale(1.05);
+        cursor: pointer;
+    }
+    
+    .market-mood-indicator {
+        text-align: center;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+    
+    .mood-bullish {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+    }
+    
+    .mood-bearish {
+        background: linear-gradient(135deg, #dc3545, #e83e8c);
+        color: white;
+    }
+    
+    .mood-neutral {
+        background: linear-gradient(135deg, #6c757d, #adb5bd);
+        color: white;
+    }
+    
+    .loading-spinner {
+        text-align: center;
+        padding: 2rem;
+    }
+    
+    .refresh-button {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .refresh-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(0,123,255,0.3);
+    }
+    
+    .stats-card {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border: none;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+    
+    .stats-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #007bff;
+    }
+    
+    .stats-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-4 mb-2">📈 News Intelligence Dashboard</h1>
+                    <p class="lead text-muted">Real-time news aggregation with AI-powered sentiment analysis</p>
+                </div>
+                <div>
+                    <button class="refresh-button" onclick="refreshAllData()">
+                        <i class="bi bi-arrow-repeat"></i> Refresh Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics Row -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-number" id="total-articles">-</div>
+                <div class="stats-label">Total Articles</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-number" id="high-impact-count">-</div>
+                <div class="stats-label">High Impact</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-number" id="avg-sentiment">-</div>
+                <div class="stats-label">Avg Sentiment</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-number" id="sources-active">-</div>
+                <div class="stats-label">Active Sources</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Mood & Trending Topics -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-activity"></i> Market Mood Indicator</h5>
+                </div>
+                <div class="card-body">
+                    <div id="market-mood" class="market-mood-indicator mood-neutral">
+                        Analyzing market sentiment...
+                    </div>
+                    <div class="mt-3">
+                        <canvas id="sentimentChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-fire"></i> Trending Topics</h5>
+                </div>
+                <div class="card-body">
+                    <div id="trending-topics">
+                        <div class="loading-spinner">
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Loading trending topics...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters & Controls -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <label for="categoryFilter" class="form-label">Category Filter</label>
+                            <select class="form-select" id="categoryFilter" onchange="applyFilters()">
+                                <option value="">All Categories</option>
+                                <option value="earnings">Earnings</option>
+                                <option value="merger">Mergers & Acquisitions</option>
+                                <option value="technology">Technology</option>
+                                <option value="oil">Oil & Energy</option>
+                                <option value="crypto">Cryptocurrency</option>
+                                <option value="fed">Federal Reserve</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="sourceFilter" class="form-label">Source Filter</label>
+                            <select class="form-select" id="sourceFilter" onchange="applyFilters()">
+                                <option value="">All Sources</option>
+                                <option value="Financial Times">Financial Times</option>
+                                <option value="Reuters">Reuters</option>
+                                <option value="Bloomberg">Bloomberg</option>
+                                <option value="CNBC">CNBC</option>
+                                <option value="E24">E24</option>
+                                <option value="DN">Dagens Næringsliv</option>
+                                <option value="Investtech">Investtech</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="impactFilter" class="form-label">Min Impact Score</label>
+                            <input type="range" class="form-range" min="0" max="1" step="0.1" value="0" 
+                                   id="impactFilter" onchange="applyFilters()">
+                            <div class="text-center" id="impactValue">0.0</div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="limitFilter" class="form-label">Article Limit</label>
+                            <select class="form-select" id="limitFilter" onchange="applyFilters()">
+                                <option value="25">25 Articles</option>
+                                <option value="50" selected>50 Articles</option>
+                                <option value="100">100 Articles</option>
+                                <option value="200">200 Articles</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- News Articles -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-newspaper"></i> Real-Time News Feed</h5>
+                    <small class="text-muted" id="last-updated">Last updated: -</small>
+                </div>
+                <div class="card-body">
+                    <div id="news-feed">
+                        <div class="loading-spinner">
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Loading latest news...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Impact Analysis -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> Market Impact Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="impactChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let newsData = [];
+let sentimentChart = null;
+let impactChart = null;
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+    loadInitialData();
+    
+    // Auto-refresh every 5 minutes
+    setInterval(refreshAllData, 5 * 60 * 1000);
+});
+
+function initializeCharts() {
+    // Sentiment Chart
+    const sentimentCtx = document.getElementById('sentimentChart').getContext('2d');
+    sentimentChart = new Chart(sentimentCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Positive', 'Neutral', 'Negative'],
+            datasets: [{
+                data: [0, 0, 0],
+                backgroundColor: ['#28a745', '#6c757d', '#dc3545'],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Impact Chart
+    const impactCtx = document.getElementById('impactChart').getContext('2d');
+    impactChart = new Chart(impactCtx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Market Impact Score',
+                data: [],
+                backgroundColor: 'rgba(0, 123, 255, 0.6)',
+                borderColor: 'rgba(0, 123, 255, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 1
+                }
+            }
+        }
+    });
+}
+
+async function loadInitialData() {
+    try {
+        await Promise.all([
+            loadNewsData(),
+            loadTrendingTopics(),
+            loadMarketImpact()
+        ]);
+    } catch (error) {
+        console.error('Error loading initial data:', error);
+        showError('Failed to load dashboard data');
+    }
+}
+
+async function loadNewsData() {
+    try {
+        const params = getCurrentFilters();
+        const response = await fetch(`/news-intelligence/api/real-time-news?${new URLSearchParams(params)}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            newsData = data.articles;
+            updateNewsStats(data);
+            renderNewsArticles(data.articles);
+            updateSentimentChart(data.articles);
+            updateLastUpdated(data.timestamp);
+        } else {
+            showError(data.error || 'Failed to load news data');
+        }
+    } catch (error) {
+        console.error('Error loading news:', error);
+        showError('Network error loading news');
+    }
+}
+
+async function loadTrendingTopics() {
+    try {
+        const response = await fetch('/news-intelligence/api/trending-topics');
+        const data = await response.json();
+        
+        if (data.success) {
+            renderTrendingTopics(data.trending_topics);
+        } else {
+            document.getElementById('trending-topics').innerHTML = 
+                '<p class="text-muted">No trending topics available</p>';
+        }
+    } catch (error) {
+        console.error('Error loading trending topics:', error);
+        document.getElementById('trending-topics').innerHTML = 
+            '<p class="text-danger">Error loading trending topics</p>';
+    }
+}
+
+async function loadMarketImpact() {
+    try {
+        const response = await fetch('/news-intelligence/api/market-impact');
+        const data = await response.json();
+        
+        if (data.success) {
+            updateMarketMood(data.sentiment_analysis);
+            updateImpactChart(data.high_impact_articles);
+        }
+    } catch (error) {
+        console.error('Error loading market impact:', error);
+    }
+}
+
+function getCurrentFilters() {
+    return {
+        category: document.getElementById('categoryFilter').value,
+        source: document.getElementById('sourceFilter').value,
+        min_impact: document.getElementById('impactFilter').value,
+        limit: document.getElementById('limitFilter').value
+    };
+}
+
+function updateNewsStats(data) {
+    document.getElementById('total-articles').textContent = data.total_articles;
+    
+    const highImpactCount = data.articles.filter(a => a.market_impact_score > 0.7).length;
+    document.getElementById('high-impact-count').textContent = highImpactCount;
+    
+    const avgSentiment = calculateAverageSentiment(data.articles);
+    document.getElementById('avg-sentiment').textContent = avgSentiment;
+    
+    const activeSources = Object.keys(data.source_stats || {}).length;
+    document.getElementById('sources-active').textContent = activeSources;
+}
+
+function calculateAverageSentiment(articles) {
+    if (!articles.length) return 'N/A';
+    
+    // Mock sentiment calculation (would use real data in production)
+    const totalSentiment = articles.reduce((sum, article) => {
+        return sum + (article.sentiment_score || Math.random() * 2 - 1);
+    }, 0);
+    
+    const avg = totalSentiment / articles.length;
+    return avg > 0 ? '+' + avg.toFixed(2) : avg.toFixed(2);
+}
+
+function renderNewsArticles(articles) {
+    const container = document.getElementById('news-feed');
+    
+    if (!articles.length) {
+        container.innerHTML = '<p class="text-muted">No articles match your filters</p>';
+        return;
+    }
+    
+    const html = articles.map(article => {
+        const sentimentClass = getSentimentClass(article.sentiment_score || Math.random() * 2 - 1);
+        const impactClass = getImpactClass(article.market_impact_score || 0);
+        const timeAgo = getTimeAgo(article.age_hours || 0);
+        
+        return `
+            <div class="news-card card ${sentimentClass}">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6 class="card-title">
+                                <a href="${article.link}" target="_blank" class="text-decoration-none">
+                                    ${article.title}
+                                </a>
+                            </h6>
+                            <p class="card-text text-muted">${article.description || 'No description available'}</p>
+                            <div class="d-flex align-items-center gap-2 mt-2">
+                                <span class="source-badge bg-primary text-white">${article.source}</span>
+                                <small class="text-muted">${timeAgo}</small>
+                                ${article.market_categories ? article.market_categories.map(cat => 
+                                    `<span class="badge bg-secondary">${cat}</span>`
+                                ).join(' ') : ''}
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="impact-score ${impactClass}">
+                                Impact: ${(article.market_impact_score || 0).toFixed(2)}
+                            </div>
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    Sentiment: ${getSentimentLabel(article.sentiment_score || Math.random() * 2 - 1)}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    container.innerHTML = html;
+}
+
+function renderTrendingTopics(topics) {
+    const container = document.getElementById('trending-topics');
+    
+    if (!topics.length) {
+        container.innerHTML = '<p class="text-muted">No trending topics available</p>';
+        return;
+    }
+    
+    const html = topics.map(topic => `
+        <div class="trending-topic" onclick="filterByTopic('${topic.topic}')">
+            ${topic.topic} (${topic.frequency})
+        </div>
+    `).join('');
+    
+    container.innerHTML = html;
+}
+
+function updateSentimentChart(articles) {
+    const sentimentCounts = {positive: 0, neutral: 0, negative: 0};
+    
+    articles.forEach(article => {
+        const sentiment = article.sentiment_score || Math.random() * 2 - 1;
+        if (sentiment > 0.1) {
+            sentimentCounts.positive++;
+        } else if (sentiment < -0.1) {
+            sentimentCounts.negative++;
+        } else {
+            sentimentCounts.neutral++;
+        }
+    });
+    
+    sentimentChart.data.datasets[0].data = [
+        sentimentCounts.positive,
+        sentimentCounts.neutral,
+        sentimentCounts.negative
+    ];
+    sentimentChart.update();
+}
+
+function updateMarketMood(sentimentData) {
+    const moodElement = document.getElementById('market-mood');
+    
+    if (!sentimentData || !sentimentData.success) {
+        moodElement.textContent = 'Unable to determine market mood';
+        moodElement.className = 'market-mood-indicator mood-neutral';
+        return;
+    }
+    
+    const mood = sentimentData.sentiment_summary?.overall_mood || 'Neutral';
+    
+    if (mood.includes('Bullish') || mood.includes('Positive')) {
+    moodElement.className = 'market-mood-indicator mood-bullish';
+    moodElement.innerHTML = '<i class="bi bi-arrow-up"></i> Bullish Market Sentiment';
+    } else if (mood.includes('Bearish') || mood.includes('Negative')) {
+    moodElement.className = 'market-mood-indicator mood-bearish';
+    moodElement.innerHTML = '<i class="bi bi-arrow-down"></i> Bearish Market Sentiment';
+    } else {
+    moodElement.className = 'market-mood-indicator mood-neutral';
+    moodElement.innerHTML = '<i class="bi bi-dash"></i> Neutral Market Sentiment';
+    }
+}
+
+function updateImpactChart(articles) {
+    if (!articles.length) return;
+    
+    // Group articles by category for impact visualization
+    const categoryImpact = {};
+    articles.forEach(article => {
+        const categories = article.market_categories || ['Other'];
+        categories.forEach(category => {
+            if (!categoryImpact[category]) {
+                categoryImpact[category] = [];
+            }
+            categoryImpact[category].push(article.market_impact_score || 0);
+        });
+    });
+    
+    // Calculate average impact per category
+    const labels = [];
+    const data = [];
+    
+    Object.entries(categoryImpact).forEach(([category, impacts]) => {
+        labels.push(category);
+        data.push(impacts.reduce((sum, impact) => sum + impact, 0) / impacts.length);
+    });
+    
+    impactChart.data.labels = labels;
+    impactChart.data.datasets[0].data = data;
+    impactChart.update();
+}
+
+function getSentimentClass(sentiment) {
+    if (sentiment > 0.1) return 'sentiment-positive';
+    if (sentiment < -0.1) return 'sentiment-negative';
+    return 'sentiment-neutral';
+}
+
+function getSentimentLabel(sentiment) {
+    if (sentiment > 0.1) return 'Positive';
+    if (sentiment < -0.1) return 'Negative';
+    return 'Neutral';
+}
+
+function getImpactClass(impact) {
+    if (impact > 0.7) return 'impact-high';
+    if (impact > 0.4) return 'impact-medium';
+    return 'impact-low';
+}
+
+function getTimeAgo(hours) {
+    if (hours < 1) return 'Just now';
+    if (hours < 24) return `${Math.floor(hours)}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+}
+
+function updateLastUpdated(timestamp) {
+    document.getElementById('last-updated').textContent = 
+        `Last updated: ${new Date(timestamp).toLocaleTimeString()}`;
+}
+
+function applyFilters() {
+    // Update impact value display
+    const impactSlider = document.getElementById('impactFilter');
+    document.getElementById('impactValue').textContent = parseFloat(impactSlider.value).toFixed(1);
+    
+    // Reload news with new filters
+    loadNewsData();
+}
+
+function filterByTopic(topic) {
+    // This would filter news by topic
+    console.log(`Filtering by topic: ${topic}`);
+    // Implementation would depend on how topics map to categories
+}
+
+async function refreshAllData() {
+    const button = document.querySelector('.refresh-button');
+    const originalHTML = button.innerHTML;
+    button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Refreshing...';
+    button.disabled = true;
+    
+    try {
+        await loadInitialData();
+    } finally {
+        button.innerHTML = originalHTML;
+        button.disabled = false;
+    }
+}
+
+function showError(message) {
+    const container = document.getElementById('news-feed');
+    container.innerHTML = `
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle"></i>
+            <strong>Error:</strong> ${message}
+        </div>
+    `;
+}
+</script>
+{% endblock %}

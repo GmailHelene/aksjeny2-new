@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-center mb-2">Velg din plan</h1>
+            <p class="text-center text-muted mb-5">Start med 14 dagers gratis prøveperiode på alle planer</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        {% for plan in plans %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 {% if plan.recommended %}border-success shadow-lg{% endif %}">
+                {% if plan.recommended %}
+                <div class="card-header text-center" style="background-color: #1b5e20 !important; color: #ffffff !important; border: none;">
+                    <small style="color: #ffffff !important; font-weight: bold;">MEST POPULÆR</small>
+                </div>
+                {% elif plan.name == 'Månedlig' %}
+                <div class="card-header text-center" style="background-color: #c62828 !important; color: #ffffff !important; border: none;">
+                    <small style="color: #ffffff !important; font-weight: bold;">STANDARD</small>
+                </div>
+                {% elif plan.name == 'Årlig' %}
+                <div class="card-header text-center" style="background-color: #1b5e20 !important; color: #ffffff !important; border: none;">
+                    <small style="color: #ffffff !important; font-weight: bold;">PREMIUM</small>
+                </div>
+                {% else %}
+                <div class="card-header text-center" style="background-color: #424242 !important; color: #ffffff !important; border: none;">
+                    <small style="color: #ffffff !important; font-weight: bold;">PLAN</small>
+                </div>
+                {% endif %}
+                <div class="card-body d-flex flex-column">
+                    <h3 class="card-title text-center">{{ plan.name }}</h3>
+                    <div class="text-center mb-4">
+                        <h2 class="mb-0">{{ plan.price }}</h2>
+                        {% if plan.price_yearly %}
+                        <small class="text-muted">eller {{ plan.price_yearly }}</small>
+                        {% endif %}
+                    </div>
+                    
+                    <ul class="list-unstyled flex-grow-1">
+                        {% for feature in plan.features %}
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i> {{ feature }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    
+                    <div class="mt-auto">
+                        {% if current_user.is_authenticated and user_subscription == plan.name.lower() %}
+                        <button class="btn btn-secondary btn-lg btn-block" disabled>
+                            <i class="bi bi-check-circle"></i> Din nåværende plan
+                        </button>
+                        {% elif plan.name == 'Enterprise' %}
+                        <a href="{{ url_for('main.contact') }}" class="btn btn-{{ plan.color }} btn-lg btn-block">
+                            Kontakt oss
+                        </a>
+                        {% elif plan.name == 'Månedlig' %}
+                        <a href="https://buy.stripe.com/5kQcN503z30z2oL35wfYY03" target="_blank" class="btn btn-{{ plan.color }} btn-lg btn-block">
+                            Kom i gang - 249 kr/mnd
+                        </a>
+                        {% elif plan.name == 'Årlig' %}
+                        <a href="https://buy.stripe.com/dRm3cvbMh1WvbZldKafYY04" target="_blank" class="btn btn-{{ plan.color }} btn-lg btn-block">
+                            Kom i gang - 2499 kr/år
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3 class="text-center mb-4">Ofte stilte spørsmål</h3>
+            <div class="accordion" id="faqAccordion">
+                <div class="card">
+                    <div class="card-header" id="faq1">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse1">
+                                Hvordan fungerer plattformen med abonnement?
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="collapse1" class="collapse show" data-parent="#faqAccordion">
+                        <div class="card-body">
+                            Du får full tilgang til alle funksjoner med ditt abonnement, og det er ingen forskjell
+                            i tilgang til full funksjonalitet om du har Premium måneds-abonnement, eller Premium års-abonnement.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header" id="faq2">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse2">
+                                Hvordan betaler jeg?
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="collapse2" class="collapse" data-parent="#faqAccordion">
+                        <div class="card-body">
+                            Du kan betale med kort (Visa, Mastercard). Alle priser vises i norske kroner (kr) og er inkl. mva.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header" id="faq3">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse3">
+                                Er det bindingstid og kan jeg si opp når som helst?
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="collapse3" class="collapse" data-parent="#faqAccordion">
+                        <div class="card-body">
+                            Ditt abonnement fortsetter til slutten av betalingsperioden. Hvis du avslutter abonnementet ditt, løper det ut perioden du har betalt for (månedlig eller årlig), og fornyes automatisk neste periode hvis det ikke sies opp i forkant av utløpsdato for abonnert periode.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+        
+        <!-- Teams Plan -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-dark text-white text-center py-4">
+                    <h3 class="mb-0">Teams</h3>
+                    <div class="display-4 fw-bold my-3">
+                        <i class="bi bi-envelope-at me-2 text-white"></i>Kontakt
+                        <span class="fs-6 fw-normal">oss</span>
+                    </div>
+                    <span class="badge bg-dark text-white">For bedrifter</span>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            <strong>Alt fra årlig plan</strong>
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            <strong>Flere brukere per konto</strong>
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Sentralisert administrasjon
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Dedikert kundeservice
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Tilpassede rapporter
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Tilpassede priser
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-footer bg-white border-0 p-4">
+                    <div class="d-grid">
+                        <a href="{{ url_for('main.contact') }}" class="btn btn-outline-info btn-lg">
+                            Kontakt oss
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-center mt-5">
+        <p class="text-muted">
+            <i class="bi bi-shield-check me-2"></i>
+            Trygg betaling med Stripe • Avbryt når som helst
+        </p>
+    </div>
+</div>
+{% endblock %}

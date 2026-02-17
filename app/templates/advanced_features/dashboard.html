@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('advanced_features.title', fallback='Avanserte Funksjoner') }} - Aksjeradar{% endblock %}
+
+{% block extra_css %}
+<style>
+.feature-card {
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.market-widget {
+    background:  background: #344686;
+;
+    color: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.crypto-widget {
+    background: linear-gradient(135deg, #007bff 0%, #28a745 100%); /* Blue to green gradient instead of pink/purple */
+    color: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.currency-widget {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.economic-widget {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.positive { color: #28a745; }
+.negative { color: #dc3545; }
+
+.real-time-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: #28a745;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+    margin-right: 8px;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.language-switcher {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    z-index: 1000;
+    background: white;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.competitive-feature {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid #e91e63;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-5 mb-1">
+                        <i class="bi bi-lightning-charge me-2"></i>
+                        {{ t('advanced_features.title', fallback='Avanserte Funksjoner') }}
+                    </h1>
+                    <p class="text-muted">
+                        <span class="real-time-indicator"></span>
+                        {{ t('advanced_features.subtitle', fallback='Inspirert av de største konkurrentene i markedet') }}
+                    </p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="#" class="btn btn-outline-primary" onclick="location.reload()">
+                        <i class="bi bi-arrow-clockwise me-2"></i>{{ t('common.refresh', fallback='Oppdater') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Market Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="market-widget">
+                <h6><i class="bi bi-graph-up me-2"></i>Oslo Børs</h6>
+                {% if market_data.oslo_bors %}
+                    <div class="d-flex justify-content-between">
+                        <span>{{ t('stocks.count', fallback='Antall aksjer') }}:</span>
+                        <strong>{{ market_data.oslo_bors|length }}</strong>
+                    </div>
+                {% else %}
+                    <small>{{ t('common.loading', fallback='Laster...') }}</small>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="crypto-widget">
+                <h6><i class="bi bi-currency-bitcoin me-2"></i>Krypto</h6>
+                {% if market_data.crypto %}
+                    <div class="d-flex justify-content-between">
+                        <span>{{ t('crypto.tracked', fallback='Sporet') }}:</span>
+                        <strong>{{ market_data.crypto|length }}</strong>
+                    </div>
+                {% else %}
+                    <small>{{ t('common.loading', fallback='Laster...') }}</small>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="currency-widget">
+                <h6><i class="bi bi-currency-exchange me-2"></i>Valuta</h6>
+                {% if market_data.currencies %}
+                    <div class="d-flex justify-content-between">
+                        <span>USD/NOK:</span>
+                        <strong>{{ market_data.currencies.get('USD/NOK', 'Ikke tilgjengelig') }}</strong>
+                    </div>
+                {% else %}
+                    <small>{{ t('common.loading', fallback='Laster...') }}</small>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="economic-widget">
+                <h6><i class="bi bi-graph-down me-2"></i>Økonomi</h6>
+                {% if market_data.economic_indicators %}
+                    <div class="d-flex justify-content-between">
+                        <span>{{ t('indicators.count', fallback='Indikatorer') }}:</span>
+                        <strong>{{ market_data.economic_indicators|length }}</strong>
+                    </div>
+                {% else %}
+                    <small>{{ t('common.loading', fallback='Laster...') }}</small>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature Cards -->
+    <div class="row">
+        <!-- Live Market Data -->
+        <div class="col-lg-4 mb-4">
+            <div class="card feature-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-activity me-2 text-primary"></i>
+                        {{ t('features.real_time_data', fallback='Sanntids Markedsdata') }}
+                    </h5>
+                    <p class="card-text">{{ t('features.real_time_description', fallback='Live data fra Oslo Børs, globale markeder og kryptovaluta - akkurat som E24 og DN Børs.') }}</p>
+                    <a href="{{ url_for('advanced_features.market_overview') }}" class="btn btn-primary">
+                        <i class="bi bi-bar-chart me-2"></i>{{ t('common.view', fallback='Se oversikt') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cryptocurrency Dashboard -->
+        <div class="col-lg-4 mb-4">
+            <div class="card feature-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-currency-bitcoin me-2 text-warning"></i>
+                        {{ t('features.crypto_dashboard', fallback='Krypto Dashboard') }}
+                    </h5>
+                    <p class="card-text">{{ t('features.crypto_description', fallback='Omfattende cryptocurrency tracking inspirert av CoinMarketCap og TradingView.') }}</p>
+                    <a href="{{ url_for('advanced_features.crypto_dashboard') }}" class="btn btn-warning text-white">
+                        <i class="bi bi-graph-up-arrow me-2"></i>{{ t('common.explore', fallback='Utforsk') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Currency Converter -->
+        <div class="col-lg-4 mb-4">
+            <div class="card feature-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-arrows-angle-expand me-2 text-info"></i>
+                        {{ t('features.currency_converter', fallback='Valutakonverter') }}
+                    </h5>
+                    <p class="card-text">{{ t('features.currency_description', fallback='Profesjonell valutakonverter med data fra Norges Bank og internasjonale kilder.') }}</p>
+                    <a href="{{ url_for('advanced_features.currency_converter') }}" class="btn btn-info text-white">
+                        <i class="bi bi-calculator me-2"></i>{{ t('common.convert', fallback='Konverter') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Economic Calendar -->
+        <div class="col-lg-6 mb-4">
+            <div class="card feature-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-calendar-event me-2 text-success"></i>
+                        {{ t('features.economic_calendar', fallback='Økonomisk Kalender') }}
+                    </h5>
+                    <p class="card-text">{{ t('features.economic_description', fallback='Viktige økonomiske indikatorer og hendelser - inspirert av Bloomberg og Investing.com.') }}</p>
+                    <a href="{{ url_for('advanced_features.economic_calendar') }}" class="btn btn-success">
+                        <i class="bi bi-calendar-check me-2"></i>{{ t('common.view_calendar', fallback='Se kalender') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Competitive Analysis -->
+        <div class="col-lg-6 mb-4">
+            <div class="card feature-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-trophy me-2 text-danger"></i>
+                        {{ t('features.competitive_analysis', fallback='Konkurrentanalyse') }}
+                    </h5>
+                    <p class="card-text">{{ t('features.competitive_description', fallback='Se hvordan vi sammenligner med E24, DN, Yahoo Finance, TradingView og andre.') }}</p>
+                    <a href="{{ url_for('advanced_features.competitive_analysis') }}" class="btn btn-danger">
+                        <i class="bi bi-graph-up me-2"></i>{{ t('common.analyze', fallback='Analyser') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Missing Features Implementation Plan -->
+    {% if competitive_features %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3 class="mb-4">
+                <i class="bi bi-lightbulb me-2"></i>
+                {{ t('features.missing_features', fallback='Funksjoner under utvikling') }}
+            </h3>
+            <div class="row">
+                {% for feature in competitive_features[:6] %}
+                <div class="col-lg-6 mb-3">
+                    <div class="competitive-feature">
+                        <h6><i class="bi bi-star me-2"></i>{{ feature.name }}</h6>
+                        <p class="mb-1 small">{{ feature.description }}</p>
+                        <small class="text-muted">
+                            <i class="bi bi-clock me-1"></i>{{ t('features.status', fallback='Status') }}: 
+                            <span class="badge bg-warning">{{ t('features.in_development', fallback='Under utvikling') }}</span>
+                        </small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Translation Status -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-success d-flex align-items-center">
+                <i class="bi bi-check-circle-fill me-3 fs-4"></i>
+                <div>
+                    <h6 class="mb-1">{{ t('translation.active', fallback='Oversettelsessystem aktivt') }}</h6>
+                    <small>{{ t('translation.current_language', fallback='Nåværende språk') }}: 
+                        <strong>{{ get_current_language()|upper }}</strong> |
+                        <a href="{{ url_for('main.set_language', language='en' if get_current_language() == 'no' else 'no') }}" class="text-decoration-none">
+                            {{ t('translation.switch_to', fallback='Bytt til') }} {{ 'English' if get_current_language() == 'no' else 'Norsk' }}
+                        </a>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-refresh market data every 5 minutes
+setInterval(function() {
+    fetch('{{ url_for("advanced_features.market_overview") }}')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Market data updated:', data);
+            // Update UI elements here if needed
+        })
+        .catch(error => console.error('Market data update failed:', error));
+}, 300000); // 5 minutes
+
+// Language switcher functionality
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Advanced features dashboard loaded');
+    console.log('Current language:', '{{ get_current_language() }}');
+});
+</script>
+{% endblock %}

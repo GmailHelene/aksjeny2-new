@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Oslo Børs - Aksjeny{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-4 mb-2">
+                <i class="bi bi-graph-up text-primary me-3"></i>Oslo Børs
+            </h1>
+            <p class="lead text-muted">Oversikt over aksjer på Oslo Børs</p>
+        </div>
+    </div>
+
+    {% if stocks_data and stocks_data|length > 0 %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Ticker</th>
+                        <th>Navn</th>
+                        <th class="text-end">Pris (NOK)</th>
+                        <th class="text-end">Endring</th>
+                        <th class="text-end">Volum</th>
+                        <th class="text-end">Sektor</th>
+                        <th>Handlinger</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for symbol, stock in stocks_data.items() %}
+                        <tr>
+                            <td><strong>{{ stock.symbol }}</strong></td>
+                            <td>{{ stock.name }}</td>
+                            <td class="text-end">{{ "%.2f"|format(stock.current_price) }}</td>
+                            <td class="text-end">
+                                <span class="badge {% if stock.change_percent >= 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                    {% if stock.change_percent >= 0 %}+{% endif %}{{ "%.2f"|format(stock.change_percent) }}%
+                                </span>
+                            </td>
+                            <td class="text-end">{{ "{:,.0f}".format(stock.volume) }}</td>
+                            <td>{{ stock.sector }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-warning favorite-btn" 
+                                        data-ticker="{{ stock.symbol }}" 
+                                        onclick="toggleFavorite('{{ stock.symbol }}')">
+                                    <i class="bi bi-star"></i>
+                                </button>
+                                <a href="{{ url_for('stocks.details', symbol=stock.symbol) }}" 
+                                   class="btn btn-sm btn-primary">
+                                    <i class="bi bi-info-circle"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            <i class="bi bi-info-circle me-2"></i>
+            Ingen data tilgjengelig for Oslo Børs.
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function toggleFavorite(symbol) {
+    fetch(`/stocks/api/favorites/toggle/${symbol}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update button appearance
+            const btn = document.querySelector(`[data-ticker="${symbol}"]`);
+            if (data.favorited) {
+                btn.classList.add('btn-warning');
+                btn.classList.remove('btn-outline-warning');
+            } else {
+                btn.classList.remove('btn-warning');
+                btn.classList.add('btn-outline-warning');
+            }
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+// Check favorite status on page load
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.favorite-btn').forEach(btn => {
+        const ticker = btn.getAttribute('data-ticker');
+        if (ticker) {
+            fetch(`/stocks/api/favorites/check/${ticker}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.favorited) {
+                        btn.classList.add('btn-warning');
+                        btn.classList.remove('btn-outline-warning');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    });
+});
+</script>
+{% endblock %}

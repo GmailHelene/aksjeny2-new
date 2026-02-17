@@ -1,0 +1,475 @@
+{% extends 'base.html' %}
+
+{% block title %}Warren Buffett Analyse - Aksjeradar{% endblock %}
+{% block description %}Utfør fundamental analyse basert på Warren Buffett's investeringsprinsipper. Finn kvalitetsselskaper med varig konkurransefortrinn.{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    {% include 'analysis/_menu.html' %}
+    
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h2 mb-0">
+                    <i class="bi bi-lightbulb text-primary"></i> Warren Buffett Analyse
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="/">Hjem</a></li>
+                        <li class="breadcrumb-item"><a href="/analysis">Analyse</a></li>
+                        <li class="breadcrumb-item active">Warren Buffett</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    {% if analysis and analysis.ticker %}
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex gap-2">
+                <a href="/stocks/details/{{ analysis.ticker }}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-info-circle me-1"></i>Detaljer
+                </a>
+                <a href="/analysis/technical?ticker={{ analysis.ticker }}" class="btn btn-outline-info btn-sm">
+                    <i class="bi bi-graph-up me-1"></i>Teknisk analyse
+                </a>
+                <a href="/analysis/benjamin-graham?ticker={{ analysis.ticker }}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-calculator me-1"></i>Graham-analyse
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Intro Section -->
+    {% if not analysis %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h4 class="alert-heading">
+                    <i class="bi bi-trophy"></i> Warren Buffett Analyse
+                </h4>
+                <p class="mb-0">
+                    Analyser aksjer basert på Warren Buffett's investeringsfilosofi. 
+                    Finn kvalitetsselskaper med sterke konkurransefortrinn og forutsigbar inntjening.
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Stock Selection Form -->
+    {% if not analysis %}
+    <div class="row mb-4">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-search"></i> Velg aksje for analyse
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('analysis.warren_buffett') }}" id="warren-buffett-form">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label for="ticker" class="form-label">Aksjesymbol</label>
+                                <div class="ticker-autocomplete-container position-relative">
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="ticker" 
+                                           name="ticker" 
+                                           placeholder="F.eks: EQNR.OL, KO, JNJ"
+                                           value="{{ ticker }}"
+                                           autocomplete="off"
+                                           required>
+                                </div>
+                                <div class="form-text">Skriv inn ticker-symbol for aksjen du vil analysere</div>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="submit" class="btn btn-success w-100" id="analyze-button">
+                                    <i class="bi bi-graph-up"></i> Analyser
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Analysis Results -->
+    {% if analysis %}
+    <div class="row">
+        <!-- Main Analysis -->
+        <div class="col-lg-8">
+            <!-- Company Info -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-building"></i> {{ analysis.company_name }} ({{ analysis.ticker }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Buffett Score</h6>
+                            <div class="progress mb-3" style="height: 25px;">
+                                <div class="progress-bar 
+                                    {% if analysis.buffett_score >= 80 %}bg-success
+                                    {% elif analysis.buffett_score >= 60 %}bg-warning
+                                    {% else %}text-white{% endif %}"
+                                    {% if analysis.buffett_score < 60 %}style="background-color: #b91c1c;"{% endif %} 
+                                     role="progressbar" 
+                                     style="width: {{ analysis.buffett_score }}%">
+                                    {{ analysis.buffett_score|round(1) }}%
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Kvalitetsvurdering</h6>
+                            <span class="badge 
+                                {% if analysis.get('quality_score', 'Average') == 'Excellent' %}bg-success
+                                {% elif analysis.get('quality_score', 'Average') == 'Good' %}bg-info
+                                {% elif analysis.get('quality_score', 'Average') == 'Average' %}bg-warning
+                                {% else %}text-white{% endif %} fs-6"
+                                {% if analysis.get('quality_score', 'Average') not in ['Excellent', 'Good', 'Average'] %}style="background-color: #b91c1c;"{% endif %}>
+                                {{ analysis.get('quality_score', 'Average') }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Moat Analysis -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-shield-check"></i> Konkurransefortrinn ("Moat")
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <div class="text-center p-3 border rounded">
+                                {% if moat_data %}
+                                    {% set brand_val = moat_data.brand_strength|default(75) %}
+                                {% else %}
+                                    {% set brand_val = 75 %}
+                                {% endif %}
+                                <div class="h4 mb-2 text-success">{{ brand_val }}%</div>
+                                <div class="small text-muted">Merkestyrke</div>
+                                <div class="badge {% if brand_val > 70 %}bg-success{% else %}bg-warning{% endif %}">
+                                    {% if brand_val > 70 %}Sterk{% else %}Moderat{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="text-center p-3 border rounded">
+                                {% if moat_data %}
+                                    {% set market_val = moat_data.market_position|default(80) %}
+                                {% else %}
+                                    {% set market_val = 80 %}
+                                {% endif %}
+                                <div class="h4 mb-2 text-success">{{ market_val }}%</div>
+                                <div class="small text-muted">Markedsposisjon</div>
+                                <div class="badge {% if market_val > 70 %}bg-success{% else %}bg-warning{% endif %}">
+                                    {% if market_val > 70 %}Dominerende{% else %}Konkurransedyktig{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="alert alert-light">
+                                {% if moat_data %}
+                                    <strong>Moat Type:</strong> {{ moat_data.type|default('Economic Moat') }}<br>
+                                    <strong>Varige fordeler:</strong> {{ moat_data.advantages|default(['Merkestyrke', 'Nettverk effekt'])|join(', ') }}
+                                {% else %}
+                                    <strong>Moat Type:</strong> Economic Moat<br>
+                                    <strong>Varige fordeler:</strong> Merkestyrke, Nettverk effekt
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Metrics -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-graph-up"></i> Finansielle Nøkkeltall
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="text-center p-3 border rounded">
+                                <div class="h4 mb-2 text-primary">{{ analysis.metrics.get('roe', 0)|default(0) }}%</div>
+                                <div class="small text-muted">ROE (10-års snitt)</div>
+                                <div class="badge {% if analysis.metrics.get('roe', 0)|default(0) > 15 %}bg-success{% else %}bg-warning{% endif %}">
+                                    {% if analysis.metrics.get('roe', 0)|default(0) > 15 %}Utmerket{% else %}Bra{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="text-center p-3 border rounded">
+                                <div class="h4 mb-2 text-primary">{{ analysis.metrics.get('profit_margin', 0)|default(0) }}%</div>
+                                <div class="small text-muted">Fortjenestemargin</div>
+                                <div class="badge {% if analysis.metrics.get('profit_margin', 0)|default(0) > 20 %}bg-success{% else %}bg-warning{% endif %}">
+                                    {% if analysis.metrics.get('profit_margin', 0)|default(0) > 20 %}Høy{% else %}Moderat{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="text-center p-3 border rounded">
+                                <div class="h4 mb-2 text-primary">{{ analysis.metrics.get('revenue_growth', 0)|default(0) }}%</div>
+                                <div class="small text-muted">Inntektsvekst (5 år)</div>
+                                <div class="badge {% if analysis.metrics.get('revenue_growth', 0)|default(0) > 5 %}bg-success{% else %}bg-warning{% endif %}">
+                                    {% if analysis.metrics.get('revenue_growth', 0)|default(0) > 5 %}Stabil{% else %}Lav{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="text-center p-3 border rounded">
+                                <div class="h4 mb-2 text-primary">{{ analysis.metrics.get('debt_ratio', 0)|default(0) }}%</div>
+                                <div class="small text-muted">Gjeldsgrad</div>
+                                <div class="badge {% if analysis.metrics.get('debt_ratio', 0)|default(0) < 30 %}bg-success{% else %}bg-warning{% endif %}">
+                                    {% if analysis.metrics.get('debt_ratio', 0)|default(0) < 30 %}Lav{% else %}Høy{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Management Quality -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-people"></i> Ledelseskvalitet
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Kapitalallokering</h6>
+                            <div class="progress mb-3">
+                          <div class="progress-bar bg-info" 
+                              role="progressbar" 
+                              style="width: {{ analysis.management.get('capital_allocation', 0)|default(0) }}%">
+                             {{ analysis.management.get('capital_allocation', 0)|default(0) }}%
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Aksjonærvennlighet</h6>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-success" 
+                                     role="progressbar" 
+                                     style="width: {{ analysis.management.get('shareholder_friendly', 0)|default(0) }}%">
+                                    {{ analysis.management.get('shareholder_friendly', 0)|default(0) }}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-light">
+                        <strong>Ledelsesvurdering:</strong> {{ analysis.management.assessment }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Investment Summary -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bi bi-clipboard-check"></i> Investeringssammendrag
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <h5>Anbefaling</h5>
+                        <span class="badge 
+                            {% if 'Buy' in analysis.recommendation %}bg-success
+                            {% elif analysis.recommendation == 'Hold' %}bg-warning
+                            {% else %}text-white{% endif %} fs-5"
+                            {% if 'Buy' not in analysis.recommendation and analysis.recommendation != 'Hold' %}style="background-color: #b91c1c; border: 2px solid #b91c1c;"{% endif %}>
+                                {{ analysis.recommendation }}
+                            </span>
+                            {% if 'Buy' not in analysis.recommendation and analysis.recommendation != 'Hold' %}
+                            <div class="mt-2 text-danger small">
+                                <i class="bi bi-exclamation-triangle"></i> <strong>Rød strek</strong> under anbefalingen betyr at aksjen <strong>ikke anbefales kjøpt</strong> basert på Buffetts investeringskriterier.<br>
+                                Dette indikerer <strong>høy risiko</strong>, <strong>svak kvalitet</strong> eller <strong>overpris</strong>. Vurder nøye før du investerer.
+                            </div>
+                            {% endif %}
+                    </div>
+                    <hr>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="h6 text-primary">${{ analysis.fair_value }}</div>
+                            <div class="small text-muted">Rimelig verdi</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="h6 text-success">{{ analysis.confidence }}%</div>
+                            <div class="small text-muted">Konfidens</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bi bi-lightning"></i> Hurtighandlinger
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('stocks.details', symbol=analysis.ticker) }}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-info-circle"></i> Aksjedetaljer
+                        </a>
+                        <a href="{{ url_for('analysis.technical', ticker=analysis.ticker) }}" class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-graph-up"></i> Teknisk analyse
+                        </a>
+                        <a href="{{ url_for('analysis.benjamin_graham', ticker=analysis.ticker) }}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-book"></i> Graham analyse
+                        </a>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="newAnalysis()">
+                            <i class="bi bi-arrow-clockwise"></i> Ny analyse
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buffett Principles -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bi bi-lightbulb"></i> Buffett's Prinsipper
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled small">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            <strong>Forstå virksomheten:</strong> Invester kun i det du forstår
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            <strong>Konkurransefortrinn:</strong> Selskaper med "moat"
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            <strong>Forutsigbar inntjening:</strong> Stabile og voksende kontantstrømmer
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            <strong>Kompetent ledelse:</strong> God kapitalallokering
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            <strong>Attraktiv pris:</strong> Kjøp under indre verdi
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Analysis Button -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <button class="btn btn-success btn-lg" onclick="newAnalysis()">
+                <i class="bi bi-plus-circle"></i> Analyser ny aksje
+            </button>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function newAnalysis() {
+    window.location.href = "{{ url_for('analysis.warren_buffett') }}";
+}
+
+function analyzeCustomTicker() {
+    const ticker = document.getElementById('ticker-input').value.trim().toUpperCase();
+    if (ticker) {
+        window.location.href = "{{ url_for('analysis.warren_buffett') }}?ticker=" + encodeURIComponent(ticker);
+    }
+}
+
+// Manual form submission handling
+function directSubmitTickerForm() {
+    const ticker = document.getElementById('ticker').value.trim().toUpperCase();
+    if (ticker) {
+        window.location.href = "{{ url_for('analysis.warren_buffett') }}?ticker=" + encodeURIComponent(ticker);
+        return false;
+    } else {
+        alert('Vennligst skriv inn et aksjesymbol');
+        return false;
+    }
+}
+
+// Auto-complete for ticker input
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Warren Buffett template script loaded");
+    
+    // Handle form submission directly
+    const warrenForm = document.getElementById('warren-buffett-form');
+    if (warrenForm) {
+        warrenForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            return directSubmitTickerForm();
+        });
+    }
+    
+    // Handle analyze button click directly
+    const analyzeBtn = document.getElementById('analyze-button');
+    if (analyzeBtn) {
+        analyzeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            return directSubmitTickerForm();
+        });
+    }
+    
+    const tickerInput = document.getElementById('ticker');
+    if (tickerInput) {
+        tickerInput.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+        
+        // Handle Enter key press
+        tickerInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                return directSubmitTickerForm();
+            }
+        });
+    }
+    
+    // Also handle the menu ticker input
+    const menuTickerInput = document.getElementById('ticker-input');
+    if (menuTickerInput) {
+        menuTickerInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                analyzeCustomTicker();
+            }
+        });
+    }
+});
+</script>
+
+<!-- Hidden data for autocomplete -->
+<div id="oslo-stocks-data" data-stocks="{{ oslo_stocks|tojson }}"></div>
+<div id="global-stocks-data" data-stocks="{{ global_stocks|tojson }}"></div>
+
+<!-- Include Warren Buffett search script -->
+<script src="/static/js/warren-buffett-search.js"></script>
+{% endblock %}

@@ -1,0 +1,33 @@
+<!-- GDPR og cookies banner -->
+<style>
+#cookie-banner {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  max-width: 400px;
+  z-index: 9999;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  background: #212529 !important; /* Much darker background for contrast */
+  color: #fff !important;
+  border: 1px solid #495057 !important;
+}
+</style>
+<div id="cookie-banner" class="alert alert-info alert-dismissible fade show" role="alert">
+  <div class="d-flex flex-column">
+    <span class="mb-2">
+      Vi bruker informasjonskapsler (cookies) for å forbedre din opplevelse og for å møte GDPR-krav. <a href="/gdpr" class="alert-link">Les mer</a>.
+    </span>
+    <button type="button" class="btn btn-primary btn-sm" id="accept-cookies">Godta</button>
+  </div>
+</div>
+<script>
+  if (!localStorage.getItem('cookiesAccepted')) {
+    document.getElementById('cookie-banner').style.display = 'block';
+  }
+  document.getElementById('accept-cookies').onclick = function() {
+    localStorage.setItem('cookiesAccepted', 'true');
+    document.getElementById('cookie-banner').style.display = 'none';
+  };
+</script>

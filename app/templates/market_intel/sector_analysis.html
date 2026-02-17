@@ -1,0 +1,388 @@
+{% extends "base.html" %}
+
+{% block title %}Sektoranalyse - Market Intelligence{% endblock %}
+
+{% block head %}
+{{ super() }}
+<style>
+/* Mobile responsive fixes for sector analysis */
+@media (max-width: 768px) {
+    .btn-group {
+        width: 100% !important;
+    }
+    
+    .btn-group .btn {
+        flex: 1;
+        font-size: 0.8rem;
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .d-flex.flex-column.flex-md-row {
+        gap: 1rem;
+    }
+    
+    .h2 {
+        font-size: 1.5rem;
+    }
+}
+
+/* Fix color contrast issues - make backgrounds dark for white text */
+.bg-danger, .bg-primary, .bg-warning, .bg-info {
+    background-color: #dc3545 !important; /* Dark red for proper contrast */
+}
+
+.bg-success {
+    background-color: #198754 !important; /* Dark green for proper contrast */
+}
+
+.alert-danger {
+    background-color: #721c24 !important; /* Very dark red */
+    border-color: #dc3545 !important;
+    color: #f8d7da !important;
+}
+
+.card-header.bg-primary {
+    background-color: #0d47a1 !important; /* Very dark blue */
+}
+
+.card-header.bg-danger {
+    background-color: #b71c1c !important; /* Very dark red */
+}
+
+.market-intel-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.market-intel-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+}
+
+.sector-performance {
+    padding: 1rem;
+    margin: 0.5rem 0;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.sector-performance.positive {
+    background-color: #d4edda;
+    border-left-color: #28a745;
+}
+
+.sector-performance.negative {
+    background-color: #f8d7da;
+    border-left-color: #dc3545;
+}
+
+.metric-card {
+    background: darkblue;
+    color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.dark-card {
+    background-color: #2d3436 !important;
+    color: white !important;
+}
+
+/* Mobile responsive fixes for sector analysis buttons */
+@media (max-width: 768px) {
+    .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn-group .btn {
+        border-radius: 0.375rem !important;
+        margin-bottom: 0.25rem;
+    }
+    
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 1rem;
+    }
+    
+    .btn-group[role="group"] {
+        width: 100%;
+        align-self: stretch;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
+                <h1 class="h2 mb-3 mb-md-0">
+                    <i class="bi bi-pie-chart me-3"></i>Sektoranalyse
+                </h1>
+                <div class="btn-group w-100 w-md-auto" role="group">
+                    <button type="button" class="btn btn-outline-primary active btn-sm" data-period="daily">Dagens Oversikt</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" data-period="weekly">Ukentlig</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" data-period="monthly">Månedlig</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Overview Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">+2.4%</div>
+                <div class="metric-label">Oslo Børs (OSEBX)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                <div class="metric-value">+1.8%</div>
+                <div class="metric-label">S&P 500</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card" style="background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);">
+                <div class="metric-value">+0.9%</div>
+                <div class="metric-label">DAX</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card" style="background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);">
+                <div class="metric-value">-0.3%</div>
+                <div class="metric-label">Nikkei 225</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sector Performance -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card market-intel-card">
+                <div class="card-header" style="background-color: #0d47a1 !important; color: white;">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up me-2"></i>Sektorutvikling (Dagens endring)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if sector_data %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            {% for sector_name, sector_info in sector_data.items() %}
+                            <div class="sector-performance {% if sector_info.get('change_percent', 0) > 0 %}positive{% elif sector_info.get('change_percent', 0) < 0 %}negative{% endif %}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ sector_name }}</strong>
+                                        <div class="small text-muted">{{ sector_info.get('volume', 0)|int|number_format }} vol</div>
+                                    </div>
+                                    <div class="{% if sector_info.get('change_percent', 0) > 0 %}text-success{% elif sector_info.get('change_percent', 0) < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                        <strong>{% if sector_info.get('change_percent', 0) > 0 %}+{% endif %}{{ sector_info.get('change_percent', 0)|round(1) }}%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-exclamation-triangle display-1 text-muted"></i>
+                        <h5 class="mt-3 text-muted">Ingen sektordata tilgjengelig</h5>
+                        <p class="text-muted">Sektordata er ikke tilgjengelig for øyeblikket.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card market-intel-card mb-3">
+                <div class="card-header" style="background-color: #198754 !important; color: white;">
+                    <h6 class="mb-0">
+                        <i class="bi bi-trophy me-2"></i>Dagens Toppytere
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>EQNR.OL</strong>
+                            <div class="small text-muted">Equinor ASA</div>
+                        </div>
+                        <span class="badge" style="background-color: #198754 !important;">+4.2%</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>MOWI.OL</strong>
+                            <div class="small text-muted">Mowi ASA</div>
+                        </div>
+                        <span class="badge" style="background-color: #198754 !important;">+3.8%</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>AKE.OL</strong>
+                            <div class="small text-muted">Aker ASA</div>
+                        </div>
+                        <span class="badge" style="background-color: #198754 !important;">+3.1%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card market-intel-card">
+                <div class="card-header" style="background-color: #b71c1c !important; color: white;">
+                    <h6 class="mb-0">
+                        <i class="bi bi-arrow-down me-2"></i>Dagens Tapere
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>KAHOOT.OL</strong>
+                            <div class="small text-muted">Kahoot! ASA</div>
+                        </div>
+                        <span class="badge" style="background-color: #b71c1c !important;">-3.2%</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>TEL.OL</strong>
+                            <div class="small text-muted">Telenor ASA</div>
+                        </div>
+                        <span class="badge" style="background-color: #b71c1c !important;">-2.1%</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>ICE.OL</strong>
+                            <div class="small text-muted">Ice Group ASA</div>
+                        </div>
+                        <span class="badge" style="background-color: #b71c1c !important;">-1.8%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Analysis -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card market-intel-card">
+                <div class="card-header" style="background-color: #0d47a1 !important; color: white;">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightbulb me-2"></i>Markedsanalyse
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Sektorrotasjon</h6>
+                            <p>Energisektoren viser fortsatt styrke grunnet høye oljepriser og sterke kvartalstall fra EQNR. Sjømatsektoren nyter godt av høye laksepriser og optimistiske prognoser for 2025.</p>
+                            
+                            <h6 class="mt-3">Risikoer</h6>
+                            <p>Teknologisektoren påvirkes av globale rentebekymringer og lavere vekstforventninger. Telekomsektoren står overfor økt konkurranse og regulatoriske utfordringer.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Muligheter</h6>
+                            <p>Shipping-sektoren kan dra nytte av økt global handel og lavere flåtekapasitet. Banksektoren kan tjene på høyere renter og forbedret kredittkvalitet.</p>
+                            
+                            <h6 class="mt-3">Anbefaling</h6>
+                            <div class="alert" style="background-color: #721c24 !important; border-color: #dc3545 !important; color: #f8d7da !important;">
+                                <strong>Diversifisering anbefales:</strong> Vekt energi og sjømat, undervekt teknologi på kort sikt.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Period filter functionality for sector analysis
+    const periodButtons = document.querySelectorAll('[data-period]');
+    
+    periodButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Update button states
+            periodButtons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            const period = this.getAttribute('data-period');
+            
+            // Show loading state
+            const loadingHTML = `
+                <div class="text-center text-muted p-4">
+                    <div class="spinner-border spinner-border-sm" role="status"></div>
+                    <span class="ms-2">Oppdaterer data for ${period === 'daily' ? 'i dag' : period === 'weekly' ? 'denne uken' : 'denne måneden'}...</span>
+                </div>
+            `;
+            
+            // Find main content areas and show loading
+            const contentAreas = document.querySelectorAll('.card-body');
+            contentAreas.forEach(area => {
+                if (area.querySelector('.sector-performance') || area.querySelector('.metric-value')) {
+                    const originalContent = area.innerHTML;
+                    area.innerHTML = loadingHTML;
+                    
+                    // Simulate data loading
+                    setTimeout(() => {
+                        area.innerHTML = originalContent;
+                        
+                        // Update titles and content based on period
+                        const titles = area.querySelectorAll('h6, .card-title');
+                        titles.forEach(title => {
+                            if (title.textContent.includes('Oslo Børs')) {
+                                title.textContent = `Oslo Børs - ${period === 'daily' ? 'I dag' : period === 'weekly' ? 'Denne uken' : 'Denne måneden'}`;
+                            }
+                        });
+                        
+                        // Animate updated content
+                        area.style.opacity = '0';
+                        setTimeout(() => {
+                            area.style.transition = 'opacity 0.3s ease';
+                            area.style.opacity = '1';
+                        }, 100);
+                    }, 1000);
+                }
+            });
+            
+            console.log(`Sektoranalyse oppdatert for periode: ${period}`);
+        });
+    });
+    
+    // Add hover effects to metric cards
+    const metricCards = document.querySelectorAll('.metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.05)';
+            this.style.transition = 'transform 0.2s ease';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% endblock %}

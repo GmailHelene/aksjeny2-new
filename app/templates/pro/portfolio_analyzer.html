@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+
+{% block title %}Porteføljeanalyse - Pro | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i class="bi bi-pie-chart text-info"></i> Avansert Porteføljeanalyse
+                    </h1>
+                    <p class="text-muted">Detaljert analyse og optimalisering av dine porteføljer</p>
+                </div>
+                <span class="badge bg-warning text-dark fs-6">PRO</span>
+            </div>
+        </div>
+    </div>
+
+    {% if portfolios %}
+    <!-- Portfolio Selector -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('pro_tools.portfolio_analyzer') }}">
+                        <div class="row align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label">Velg portefølje</label>
+                                <select class="form-select" name="portfolio_id" onchange="this.form.submit()">
+                                    <option value="">Alle porteføljer</option>
+                                    {% for portfolio in portfolios %}
+                                    <option value="{{ portfolio.id }}" {% if request.args.get('portfolio_id') == portfolio.id|string %}selected{% endif %}>
+                                        {{ portfolio.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Analyseperiode</label>
+                                <select class="form-select" name="period">
+                                    <option value="1m">1 måned</option>
+                                    <option value="3m" selected>3 måneder</option>
+                                    <option value="6m">6 måneder</option>
+                                    <option value="1y">1 år</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-arrow-clockwise"></i> Oppdater analyse
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if analysis %}
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body">
+                    <h5 class="text-primary">Total verdi</h5>
+                    <h3>{{ "{:,.0f}".format(analysis.total_value).replace(',', ' ') }} kr</h3>
+                    <small class="text-muted">{{ analysis.currency }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body">
+                    <h5 class="{% if analysis.total_return >= 0 %}text-success{% else %}text-danger{% endif %}">
+                        Total avkastning
+                    </h5>
+                    <h3 class="{% if analysis.total_return >= 0 %}text-success{% else %}text-danger{% endif %}">
+                        {{ "{:+.1f}".format(analysis.total_return) }}%
+                    </h3>
+                    <small class="text-muted">Siden oppstart</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body">
+                    <h5 class="text-info">Sharpe Ratio</h5>
+                    <h3>{{ "{:.2f}".format(analysis.sharpe_ratio) }}</h3>
+                    <small class="text-muted">Risikojustert avkastning</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body">
+                    <h5 class="text-warning">Volatilitet</h5>
+                    <h3>{{ "{:.1f}".format(analysis.volatility) }}%</h3>
+                    <small class="text-muted">Årlig volatilitet</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Sections -->
+    <div class="row">
+        <!-- Asset Allocation -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5><i class="bi bi-pie-chart me-2"></i>Aktivafordeling</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="allocationChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sector Allocation -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5><i class="bi bi-grid me-2"></i>Sektorfordeling</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="sectorChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Analysis -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5><i class="bi bi-shield-exclamation me-2"></i>Risikoanalyse</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Value at Risk (VaR)</h6>
+                            <p class="h4 text-danger">{{ "{:.1f}".format(analysis.var_95) }}%</p>
+                            <small class="text-muted">95% konfidens (1 dag)</small>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Beta</h6>
+                            <p class="h4 text-info">{{ "{:.2f}".format(analysis.beta) }}</p>
+                            <small class="text-muted">Markedssensitivitet</small>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Korrelasjon</h6>
+                            <p class="h4 text-warning">{{ "{:.2f}".format(analysis.correlation) }}</p>
+                            <small class="text-muted">Med benchmarks</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Holdings Analysis -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5><i class="bi bi-list-ul me-2"></i>Beholdningsanalyse</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Aksje</th>
+                                    <th>Vekt</th>
+                                    <th>Verdi</th>
+                                    <th>Avkastning</th>
+                                    <th>Bid/Ask Spread</th>
+                                    <th>Risikobidrag</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for holding in analysis.holdings %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ holding.ticker }}</strong><br>
+                                        <small class="text-muted">{{ holding.name }}</small>
+                                    </td>
+                                    <td>{{ "{:.1f}".format(holding.weight) }}%</td>
+                                    <td>{{ "{:,.0f}".format(holding.value).replace(',', ' ') }} kr</td>
+                                    <td class="{% if holding.return >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {{ "{:+.1f}".format(holding.return) }}%
+                                    </td>
+                                    <td>{{ "{:.2f}".format(holding.spread) }}%</td>
+                                    <td>{{ "{:.1f}".format(holding.risk_contribution) }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Optimization Suggestions -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5><i class="bi bi-lightbulb me-2"></i>Optimaliseringsforslag</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="bi bi-info-circle me-2"></i>Anbefalinger</h6>
+                        <ul class="mb-0">
+                            <li>Vurder å redusere vekten i {{ analysis.overweight_stock }} ({{ analysis.overweight_percentage }}% av portefølje)</li>
+                            <li>Øk diversifiseringen ved å legge til aksjer i {{ analysis.underweight_sector }} sektoren</li>
+                            <li>Din porteføljes beta på {{ "{:.2f}".format(analysis.beta) }} indikerer {{ 'høyere' if analysis.beta > 1 else 'lavere' }} risiko enn markedet</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- No portfolios -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-pie-chart display-1 text-muted"></i>
+                    <h4 class="text-muted mt-3">Ingen porteføljer funnet</h4>
+                    <p class="text-muted">Opprett en portefølje først for å bruke avansert analyse</p>
+                    <a href="{{ url_for('portfolio.create_portfolio') }}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Opprett portefølje
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{% if analysis %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Asset Allocation Chart
+const allocationCtx = document.getElementById('allocationChart').getContext('2d');
+new Chart(allocationCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ analysis.allocation_labels|tojson }},
+        datasets: [{
+            data: {{ analysis.allocation_data|tojson }},
+            backgroundColor: [
+                '#0d6efd', '#6610f2', '#6f42c1', '#d63384', '#dc3545',
+                '#fd7e14', '#ffc107', '#198754', '#20c997', '#0dcaf0'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
+    }
+});
+
+// Sector Chart
+const sectorCtx = document.getElementById('sectorChart').getContext('2d');
+new Chart(sectorCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ analysis.sector_labels|tojson }},
+        datasets: [{
+            data: {{ analysis.sector_data|tojson }},
+            backgroundColor: [
+                '#198754', '#0d6efd', '#ffc107', '#dc3545', '#6610f2',
+                '#fd7e14', '#20c997', '#6f42c1', '#d63384', '#0dcaf0'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

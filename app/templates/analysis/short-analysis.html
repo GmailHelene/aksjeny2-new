@@ -1,0 +1,385 @@
+{% extends "base.html" %}
+
+{% block title %}Shortanalyse - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    {% include 'analysis/_menu.html' %}
+    <!-- Analysis menu is now always rendered at the top -->
+    <div class="row">
+        <div class="col-md-9">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h2 class="mb-0">
+                        <i class="bi bi-graph-down text-danger me-2"></i>
+                        Short Analyse
+                        {% if stock_data %}
+                        - {{ stock_data.ticker }}
+                        {% endif %}
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <!-- Stock Selection Form -->
+                    <form method="POST" action="{{ url_for('analysis.short_analysis') }}" class="mb-4">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <label for="ticker" class="form-label">Velg aksje for short-analyse:</label>
+                                <select name="ticker" id="ticker" class="form-select" required>
+                                    <option value="">-- Velg aksje --</option>
+                                    <optgroup label="Oslo Børs">
+                                        <option value="EQNR.OL" {% if stock_data and stock_data.ticker == 'EQNR.OL' %}selected{% endif %}>Equinor (EQNR.OL)</option>
+                                        <option value="DNB.OL" {% if stock_data and stock_data.ticker == 'DNB.OL' %}selected{% endif %}>DNB (DNB.OL)</option>
+                                        <option value="TEL.OL" {% if stock_data and stock_data.ticker == 'TEL.OL' %}selected{% endif %}>Telenor (TEL.OL)</option>
+                                        <option value="YAR.OL" {% if stock_data and stock_data.ticker == 'YAR.OL' %}selected{% endif %}>Yara (YAR.OL)</option>
+                                        <option value="MOWI.OL" {% if stock_data and stock_data.ticker == 'MOWI.OL' %}selected{% endif %}>Mowi (MOWI.OL)</option>
+                                        <option value="REC.OL" {% if stock_data and stock_data.ticker == 'REC.OL' %}selected{% endif %}>REC Silicon (REC.OL)</option>
+                                        <option value="KAHOOT.OL" {% if stock_data and stock_data.ticker == 'KAHOOT.OL' %}selected{% endif %}>Kahoot (KAHOOT.OL)</option>
+                                    </optgroup>
+                                    <optgroup label="US Aksjer">
+                                        <option value="AAPL" {% if stock_data and stock_data.ticker == 'AAPL' %}selected{% endif %}>Apple (AAPL)</option>
+                                        <option value="MSFT" {% if stock_data and stock_data.ticker == 'MSFT' %}selected{% endif %}>Microsoft (MSFT)</option>
+                                        <option value="TSLA" {% if stock_data and stock_data.ticker == 'TSLA' %}selected{% endif %}>Tesla (TSLA)</option>
+                                        <option value="GOOGL" {% if stock_data and stock_data.ticker == 'GOOGL' %}selected{% endif %}>Alphabet (GOOGL)</option>
+                                        <option value="AMZN" {% if stock_data and stock_data.ticker == 'AMZN' %}selected{% endif %}>Amazon (AMZN)</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="submit" class="btn btn-danger d-block w-100">
+                                    <i class="bi bi-search"></i> Analyser Short
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    {% if stock_data %}
+                    <!-- Warning Alert -->
+                    <div class="alert alert-warning mb-4">
+                        <h5><i class="bi bi-exclamation-triangle me-2"></i>Advarsel: Høy Risiko Investering</h5>
+                        <p class="mb-0">Short-salg er en høyrisiko strategi som kan resultere i ubegrensede tap. Denne analysen er kun for utdanningsformål.</p>
+                    </div>
+
+                    <!-- Short Analysis Metrics -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card text-center border-danger">
+                                <div class="card-body">
+                                    <h6 class="text-danger">Short Interesse</h6>
+                                    <h4>{{ "%.1f"|format(stock_data.short_interest * 100) if stock_data.short_interest else 'Ikke tilgjengelig' }}%</h4>
+                                    <small class="text-muted">
+                                        {% if stock_data.short_interest %}
+                                            {% if stock_data.short_interest > 0.20 %}
+                                                <span class="text-success">Høy shorts</span>
+                                            {% elif stock_data.short_interest > 0.10 %}
+                                                <span class="text-warning">Moderat</span>
+                                            {% else %}
+                                                <span class="text-danger">Lav shorts</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center border-warning">
+                                <div class="card-body">
+                                    <h6 class="text-warning">P/E Ratio</h6>
+                                    <h4>{{ "%.1f"|format(stock_data.pe_ratio) if stock_data.pe_ratio else 'Ikke tilgjengelig' }}</h4>
+                                    <small class="text-muted">
+                                        {% if stock_data.pe_ratio %}
+                                            {% if stock_data.pe_ratio > 30 %}
+                                                <span class="text-success">Oververdsatt</span>
+                                            {% elif stock_data.pe_ratio > 20 %}
+                                                <span class="text-warning">Høy</span>
+                                            {% else %}
+                                                <span class="text-danger">Rimelig</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center border-info">
+                                <div class="card-body">
+                                    <h6 class="text-info">Beta</h6>
+                                    <h4>{{ "%.2f"|format(stock_data.beta) if stock_data.beta else 'Ikke tilgjengelig' }}</h4>
+                                    <small class="text-muted">
+                                        {% if stock_data.beta %}
+                                            {% if stock_data.beta > 1.5 %}
+                                                <span class="text-success">Høy volatilitet</span>
+                                            {% elif stock_data.beta > 1.0 %}
+                                                <span class="text-warning">Moderat</span>
+                                            {% else %}
+                                                <span class="text-danger">Lav volatilitet</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center border-success">
+                                <div class="card-body">
+                                    <h6 class="text-success">Short Score</h6>
+                                    <h4>{{ stock_data.short_score if stock_data.short_score else 'N/A' }}/10</h4>
+                                    <small class="text-muted">
+                                        {% if stock_data.short_score %}
+                                            {% if stock_data.short_score >= 7 %}
+                                                <span class="text-success">Sterkt short</span>
+                                            {% elif stock_data.short_score >= 5 %}
+                                                <span class="text-warning">Moderat</span>
+                                            {% else %}
+                                                <span class="text-danger">Svakt short</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Technical Indicators -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="bi bi-graph-down text-danger me-2"></i>Negative Signaler</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        {% if stock_data.rsi and stock_data.rsi > 70 %}
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>RSI Overkjøpt</span>
+                                            <span class="badge bg-danger">{{ "%.1f"|format(stock_data.rsi) }}</span>
+                                        </li>
+                                        {% endif %}
+                                        {% if stock_data.pe_ratio and stock_data.pe_ratio > 25 %}
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>Høy P/E Ratio</span>
+                                            <span class="badge bg-warning">{{ "%.1f"|format(stock_data.pe_ratio) }}</span>
+                                        </li>
+                                        {% endif %}
+                                        {% if stock_data.debt_to_equity and stock_data.debt_to_equity > 0.6 %}
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>Høy gjeldsgrad</span>
+                                            <span class="badge bg-danger">{{ "%.1f"|format(stock_data.debt_to_equity * 100) }}%</span>
+                                        </li>
+                                        {% endif %}
+                                        {% if stock_data.revenue_growth and stock_data.revenue_growth < 0 %}
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>Negativ vekst</span>
+                                            <span class="badge bg-danger">{{ "%.1f"|format(stock_data.revenue_growth * 100) }}%</span>
+                                        </li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="bi bi-shield-exclamation text-warning me-2"></i>Risikofaktorer</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>Volatilitet (Beta)</span>
+                                            <span class="badge bg-info">{{ "%.2f"|format(stock_data.beta) if stock_data.beta else 'N/A' }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>Likviditet</span>
+                                            <span class="badge bg-secondary">{{ stock_data.liquidity if stock_data.liquidity else 'Moderat' }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>Sektor risiko</span>
+                                            <span class="badge bg-warning">{{ stock_data.sector_risk if stock_data.sector_risk else 'Moderat' }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>Lånekostnad</span>
+                                            <span class="badge bg-info">{{ stock_data.borrow_cost if stock_data.borrow_cost else '2-5%' }}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Short Strategy Analysis -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5><i class="bi bi-strategy text-primary me-2"></i>Short Strategi Vurdering</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h6>Teknisk Analyse</h6>
+                                    <ul class="small">
+                                        <li>RSI: {{ "%.1f"|format(stock_data.rsi) if stock_data.rsi else 'N/A' }}</li>
+                                        <li>MACD: {{ stock_data.macd_signal if stock_data.macd_signal else 'Nøytral' }}</li>
+                                        <li>Moving Average: {{ stock_data.ma_signal if stock_data.ma_signal else 'Under 50-dag' }}</li>
+                                        <li>Support/Resistance: {{ stock_data.support_resistance if stock_data.support_resistance else 'Avventer breakout' }}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>Fundamental Svakheter</h6>
+                                    <ul class="small">
+                                        <li>Gjeldsgrad: {{ "%.1f"|format(stock_data.debt_to_equity * 100) if stock_data.debt_to_equity else 'N/A' }}%</li>
+                                        <li>Fortjenestevekst: {{ "%.1f"|format(stock_data.earnings_growth * 100) if stock_data.earnings_growth else 'N/A' }}%</li>
+                                        <li>ROE: {{ "%.1f"|format(stock_data.roe * 100) if stock_data.roe else 'N/A' }}%</li>
+                                        <li>Margin utvikling: {{ stock_data.margin_trend if stock_data.margin_trend else 'Stabil' }}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>Markedssentiment</h6>
+                                    <ul class="small">
+                                        <li>Analytiker anbef.: {{ stock_data.analyst_rating if stock_data.analyst_rating else 'Hold' }}</li>
+                                        <li>Institusjonell eierskap: {{ "%.1f"|format(stock_data.institutional_ownership * 100) if stock_data.institutional_ownership else 'N/A' }}%</li>
+                                        <li>Insider trading: {{ stock_data.insider_sentiment if stock_data.insider_sentiment else 'Nøytral' }}</li>
+                                        <li>Media sentiment: {{ stock_data.media_sentiment if stock_data.media_sentiment else 'Blandet' }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Short Recommendation -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="bi bi-target text-danger me-2"></i>Short Anbefaling</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if stock_data.short_score %}
+                            {% if stock_data.short_score >= 7 %}
+                            <div class="alert alert-success">
+                                <strong><i class="bi bi-arrow-down me-2"></i>STERKT SHORT</strong><br>
+                                Høy sannsynlighet for kursnedgang. Aksjen viser sterke negative signaler på både teknisk og fundamental analyse.
+                                <br><small class="text-muted">Risiko: Høy | Potensial: Høy</small>
+                            </div>
+                            {% elif stock_data.short_score >= 5 %}
+                            <div class="alert alert-warning">
+                                <strong><i class="bi bi-dash-circle me-2"></i>MODERAT SHORT</strong><br>
+                                Noen negative signaler, men blandede indikatorer. Vurder andre muligheter eller mindre posisjon.
+                                <br><small class="text-muted">Risiko: Moderat | Potensial: Moderat</small>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-danger">
+                                <strong><i class="bi bi-shield-x me-2"></i>UNNGÅ SHORT</strong><br>
+                                Få eller svake negative signaler. Høy risiko for tap på short-posisjon.
+                                <br><small class="text-muted">Risiko: Meget høy | Potensial: Lav</small>
+                            </div>
+                            {% endif %}
+                            {% else %}
+                            <div class="alert alert-info">
+                                <h6>Short-salg innebærer følgende risikoer:</h6>
+                                <ul class="mb-0">
+                                    <li><strong>Ubegrensede tap:</strong> Kursen kan teoretisk stige ubegrenset</li>
+                                    <li><strong>Lånekostnader:</strong> Må betale renter for lånte aksjer</li>
+                                    <li><strong>Short squeeze:</strong> Plutselig kursstigning kan tvinge frem dekking</li>
+                                    <li><strong>Utbytte:</strong> Må betale utbytte til aksjeeier</li>
+                                    <li><strong>Timing:</strong> Marked kan være irrasjonelt lenge</li>
+                                </ul>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="mt-3">
+                                <h6>Viktige hensyn:</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <ul class="small">
+                                            <li>Sett stopp-tap på 20-30% over short-pris</li>
+                                            <li>Overvåk short squeeze risiko daglig</li>
+                                            <li>Vurder lånekostnader mot forventet avkastning</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <ul class="small">
+                                            <li>Bruk kun 1-5% av portefølje på shorts</li>
+                                            <li>Ha kontanter tilgjengelig for margin calls</li>
+                                            <li>Følg nøye med på selskapsnytt</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-graph-down display-1 text-danger"></i>
+                        <h4 class="text-muted mt-3">Velg en aksje for short-analyse</h4>
+                        <p class="text-muted">Analyser potensielle short-muligheter basert på teknisk og fundamental analyse</p>
+                        <div class="alert alert-warning">
+                            <strong>Advarsel:</strong> Short-salg er høy risiko og kun for erfarne investorer
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="bi bi-exclamation-triangle me-2"></i>Om Short-salg</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small">Short-salg innebærer å låne aksjer og selge dem med håp om å kjøpe tilbake til lavere pris.</p>
+                    <p class="small"><strong>Risiko:</strong> Tap kan være ubegrensede hvis kursen stiger.</p>
+                    <p class="small"><strong>Kun for erfarne investorer</strong> med god risikostyring.</p>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6><i class="bi bi-shield-exclamation me-2"></i>Risikowarninger</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="small">
+                        <li>Maksimale tap er ubegrensede</li>
+                        <li>Short squeeze kan skje plutselig</li>
+                        <li>Lånekostnader påløper daglig</li>
+                        <li>Margin requirements kan endres</li>
+                        <li>Utbytte må dekkes av shorter</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6><i class="bi bi-graph-up me-2"></i>Alternative Analyser</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('analysis.warren_buffett') }}" class="btn btn-outline-success btn-sm">
+                            Warren Buffett Analyse
+                        </a>
+                        <a href="{{ url_for('analysis.benjamin_graham') }}" class="btn btn-outline-primary btn-sm">
+                            Benjamin Graham Analyse
+                        </a>
+                        <a href="{{ url_for('analysis.technical') }}" class="btn btn-outline-info btn-sm">
+                            Teknisk Analyse
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add warning for short analysis
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!confirm('Short-salg er høyrisiko. Er du sikker på at du vil fortsette?')) {
+                e.preventDefault();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

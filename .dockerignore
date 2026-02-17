@@ -1,0 +1,72 @@
+# Ignore development files
+.git
+.gitignore
+README.md
+.env
+.env.local
+.env.production
+.vscode/
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Ignore build artifacts
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# Ignore IDE files
+*.swp
+*.swo
+*~
+
+# Ignore temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# Ignore node modules if any
+node_modules/
+
+# Ignore test files
+*test*.py
+test_*
+tests/
+
+# Ignore documentation
+docs/
+*.md
+
+# Ignore development scripts
+check_*.py
+debug_*.py
+*_test.py
+*test*.log
+*.log

@@ -1,0 +1,568 @@
+{% extends "base.html" %}
+
+{% block title %}Professional Trading Dashboard - Aksjeradar{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/professional-theme.css') }}">
+<style>
+.dashboard-professional {
+    padding: 0;
+    background: var(--primary-light);
+}
+
+.dashboard-header {
+    background: linear-gradient(135deg, var(--primary-navy) 0%, #243B53 100%);
+    color: white;
+    padding: var(--space-lg) 0;
+}
+
+.market-status-indicator {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--border-radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.market-status-indicator.open {
+    background: rgba(16, 185, 129, 0.2);
+}
+
+.market-status-indicator.closed {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.quick-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-lg);
+    margin: var(--space-lg) 0;
+}
+
+.advanced-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-lg);
+    margin-top: var(--space-xl);
+}
+
+.tool-card {
+    background: white;
+    border-radius: var(--border-radius-lg);
+    padding: var(--space-lg);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+}
+
+.tool-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.tool-card .tool-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--primary-teal) 0%, #008B8B 100%);
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+    margin-bottom: var(--space-md);
+}
+
+.performance-chart {
+    height: 300px;
+    background: white;
+    border-radius: var(--border-radius-lg);
+    padding: var(--space-lg);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: var(--space-lg);
+}
+
+.market-overview-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: var(--space-lg);
+    margin-top: var(--space-lg);
+}
+
+.news-feed {
+    background: white;
+    border-radius: var(--border-radius-lg);
+    padding: var(--space-lg);
+    box-shadow: var(--shadow-sm);
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.news-item {
+    padding: var(--space-md) 0;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.news-item:last-child {
+    border-bottom: none;
+}
+
+.news-time {
+    color: var(--secondary-gray);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.news-title {
+    color: var(--primary-navy);
+    font-weight: 600;
+    margin: var(--space-xs) 0;
+    line-height: 1.4;
+}
+
+.watchlist-professional {
+    background: white;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.watchlist-header {
+    background: var(--primary-light);
+    padding: var(--space-md) var(--space-lg);
+    font-weight: 600;
+    color: var(--primary-navy);
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.watchlist-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md) var(--space-lg);
+    border-bottom: 1px solid #E5E7EB;
+    transition: all 0.2s ease;
+}
+
+.watchlist-item:hover {
+    background: var(--primary-light);
+}
+
+.stock-symbol {
+    font-weight: 700;
+    color: var(--primary-navy);
+    font-size: 0.875rem;
+}
+
+.stock-name {
+    color: var(--secondary-gray);
+    font-size: 0.75rem;
+    margin-top: 2px;
+}
+
+.stock-price {
+    text-align: right;
+}
+
+.price-value {
+    font-weight: 700;
+    font-size: 0.875rem;
+}
+
+.price-change {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.price-change.positive {
+    color: var(--success-green);
+}
+
+.price-change.negative {
+    color: var(--danger-red);
+}
+
+@media (max-width: 768px) {
+    .market-overview-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .advanced-tools-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-professional">
+    <!-- Professional Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="h2 mb-2">Professional Trading Dashboard</h1>
+                    <p class="mb-0 opacity-75">Avanserte verktøy for profesjonelle tradere og investorer</p>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    <div class="market-status-indicator {{ 'open' if market_data.get('market_open', False) else 'closed' }}">
+                        <i class="bi bi-circle-fill me-2"></i>
+                        {{ "Markedet er åpent" if market_data.get('market_open', False) else "Markedet er stengt" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-4">
+        <!-- Quick Performance Stats -->
+        <div class="quick-stats">
+            <div class="stat-professional {{ 'positive' if market_data.get('osebx', {}).get('change', 0) > 0 else 'negative' }}">
+                <div class="stat-value">{{ "{:,.0f}".format(market_data.get('osebx', {}).get('value', 1234)) }}</div>
+                <div class="stat-label">OSEBX</div>
+                <div class="price-change {{ 'positive' if market_data.get('osebx', {}).get('change', 0) > 0 else 'negative' }}">
+                    {{ "+{:.1f}%".format(market_data.get('osebx', {}).get('change_percent', 0)) if market_data.get('osebx', {}).get('change_percent', 0) > 0 else "{:.1f}%".format(market_data.get('osebx', {}).get('change_percent', 0)) }}
+                </div>
+            </div>
+            
+            <div class="stat-professional {{ 'positive' if market_data.get('sp500', {}).get('change', 0) > 0 else 'negative' }}">
+                <div class="stat-value">{{ "{:,.0f}".format(market_data.get('sp500', {}).get('value', 4567)) }}</div>
+                <div class="stat-label">S&P 500</div>
+                <div class="price-change {{ 'positive' if market_data.get('sp500', {}).get('change', 0) > 0 else 'negative' }}">
+                    {{ "+{:.1f}%".format(market_data.get('sp500', {}).get('change_percent', 0)) if market_data.get('sp500', {}).get('change_percent', 0) > 0 else "{:.1f}%".format(market_data.get('sp500', {}).get('change_percent', 0)) }}
+                </div>
+            </div>
+            
+            <div class="stat-professional {{ 'positive' if market_data.get('btc', {}).get('change', 0) > 0 else 'negative' }}">
+                <div class="stat-value">${{ "{:,.0f}".format(market_data.get('btc', {}).get('price', 43210)) }}</div>
+                <div class="stat-label">Bitcoin</div>
+                <div class="price-change {{ 'positive' if market_data.get('btc', {}).get('change', 0) > 0 else 'negative' }}">
+                    {{ "+{:.1f}%".format(market_data.get('btc', {}).get('change_percent', 0)) if market_data.get('btc', {}).get('change_percent', 0) > 0 else "{:.1f}%".format(market_data.get('btc', {}).get('change_percent', 0)) }}
+                </div>
+            </div>
+            
+            <div class="stat-professional">
+                <div class="stat-value">{{ "{:.2f}".format(market_data.get('usd_nok', {}).get('rate', 10.85)) }}</div>
+                <div class="stat-label">USD/NOK</div>
+                <div class="price-change {{ 'positive' if market_data.get('usd_nok', {}).get('change', 0) > 0 else 'negative' }}">
+                    {{ "+{:.3f}".format(market_data.get('usd_nok', {}).get('change', 0)) if market_data.get('usd_nok', {}).get('change', 0) > 0 else "{:.3f}".format(market_data.get('usd_nok', {}).get('change', 0)) }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Grid -->
+        <div class="market-overview-grid">
+            <!-- Left Column: Performance Chart & Watchlist -->
+            <div>
+                <!-- Portfolio Performance Chart -->
+                <div class="performance-chart">
+                    <h3 class="h5 mb-3 text-professional-primary">Portfolio Performance</h3>
+                    <div id="performanceChart" style="height: 250px;">
+                        <!-- Chart placeholder - would integrate with Chart.js or similar -->
+                        <div class="d-flex align-items-center justify-content-center h-100 text-professional-secondary">
+                            <div class="text-center">
+                                <i class="bi bi-graph-up fs-1 mb-3 text-professional-teal"></i>
+                                <p>Avanserte charting-funksjoner kommer snart</p>
+                                <p class="small">Integrerer med TradingView og real-time data</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Professional Watchlist -->
+                <div class="watchlist-professional">
+                    <div class="watchlist-header">
+                        <i class="bi bi-star-fill me-2"></i>
+                        Din Watchlist
+                    </div>
+                    {% if user_favorites %}
+                        {% for stock in user_favorites[:8] %}
+                        <div class="watchlist-item">
+                            <div>
+                                <a href="{{ url_for('stocks.details', symbol=stock.symbol) }}" class="text-decoration-none">
+                                    <div class="stock-symbol">{{ stock.symbol }}</div>
+                                    <div class="stock-name">{{ stock.name or stock.symbol }}</div>
+                                </a>
+                            </div>
+                            <div class="stock-price">
+                                <div class="price-value">{{ "{:.2f}".format(stock.current_price or 0) }}</div>
+                                <div class="price-change {{ 'positive' if (stock.change_percent or 0) > 0 else 'negative' }}">
+                                    {{ "+{:.1f}%".format(stock.change_percent or 0) if (stock.change_percent or 0) > 0 else "{:.1f}%".format(stock.change_percent or 0) }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="watchlist-item">
+                            <div class="text-center w-100 text-professional-secondary">
+                                <i class="bi bi-plus-circle me-2"></i>
+                                Legg til aksjer i watchlist for å følge dem her
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right Column: News & Tools -->
+            <div>
+                <!-- Market News Feed -->
+                <div class="news-feed">
+                    <h3 class="h5 mb-3 text-professional-primary">
+                        <i class="bi bi-newspaper me-2"></i>
+                        Markedsnyheter
+                    </h3>
+                    
+                    <div class="news-item">
+                        <div class="news-time">2 timer siden</div>
+                        <div class="news-title">OSEBX stiger på sterke kvartalstall fra Equinor</div>
+                    </div>
+                    
+                    <div class="news-item">
+                        <div class="news-time">4 timer siden</div>
+                        <div class="news-title">Fed signaliserer mulige rentekutt i andre halvår</div>
+                    </div>
+                    
+                    <div class="news-item">
+                        <div class="news-time">6 timer siden</div>
+                        <div class="news-title">Telenor rapporterer bedre enn ventet inntjening</div>
+                    </div>
+                    
+                    <div class="news-item">
+                        <div class="news-time">8 timer siden</div>
+                        <div class="news-title">Bitcoin når nye høyder etter institusjonelle investeringer</div>
+                    </div>
+                    
+                    <div class="news-item">
+                        <div class="news-time">1 dag siden</div>
+                        <div class="news-title">Hydro investerer milliardbeløp i grønn teknologi</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Trading Tools -->
+        <div class="advanced-tools-grid">
+            <!-- Pattern Recognition -->
+            <div class="tool-card">
+                <div class="tool-icon">
+                    <i class="bi bi-search"></i>
+                </div>
+                <h4 class="h6 text-professional-primary">Pattern Recognition</h4>
+                <p class="small text-professional-secondary mb-3">Automatisk gjenkjenning av tekniske mønstre som triangler, kiler og hode-skulder formasjoner.</p>
+                <a href="{{ url_for('analysis.technical') }}" class="btn btn-professional-primary btn-sm">
+                    Utforsk mønstre
+                </a>
+            </div>
+
+            <!-- Professional Analytics Dashboard -->
+            <div class="tool-card">
+                <div class="tool-icon">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <h4 class="h6 text-professional-primary">Professional Analytics</h4>
+                <p class="small text-professional-secondary mb-3">Avansert MT4-stil dashboard med Expert Advisors, pattern recognition, risikostyring og automatisert handel.</p>
+                <a href="{{ url_for('analytics.analytics_dashboard') }}" class="btn btn-professional-primary btn-sm">
+                    Åpne Analytics
+                </a>
+            </div>
+
+            <!-- Risk Calculator -->
+            <div class="tool-card">
+                <div class="tool-icon">
+                    <i class="bi bi-calculator"></i>
+                </div>
+                <h4 class="h6 text-professional-primary">Risiko Kalkulator</h4>
+                <p class="small text-professional-secondary mb-3">Beregn posisjonsstørrelse, stop-loss og take-profit nivåer basert på din risikotoleranse.</p>
+                <button class="btn btn-professional-primary btn-sm" onclick="openRiskCalculator()">
+                    Åpne kalkulator
+                </button>
+            </div>
+
+            <!-- Sentiment Analysis -->
+            <div class="tool-card">
+                <div class="tool-icon">
+                    <i class="bi bi-cpu"></i>
+                </div>
+                <h4 class="h6 text-professional-primary">AI Sentiment Analyse</h4>
+                <p class="small text-professional-secondary mb-3">Avansert sentiment-analyse av nyheter, sosiale medier og markedsdata med AI.</p>
+                <a href="{{ url_for('analysis.sentiment') }}" class="btn btn-professional-primary btn-sm">
+                    Se sentiment
+                </a>
+            </div>
+
+            <!-- Portfolio Optimizer -->
+            <div class="tool-card">
+                <div class="tool-icon">
+                    <i class="bi bi-sliders"></i>
+                </div>
+                <h4 class="h6 text-professional-primary">Portfolio Optimering</h4>
+                <p class="small text-professional-secondary mb-3">Optimaliser porteføljen din basert på moderne porteføljeteori og risiko-avkastning profiler.</p>
+                <a href="{{ url_for('portfolio.optimization') }}" class="btn btn-professional-primary btn-sm">
+                    Optimaliser portefølje
+                </a>
+            </div>
+
+            <!-- Backtesting -->
+            <div class="tool-card">
+                <div class="tool-icon">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <h4 class="h6 text-professional-primary">Strategy Backtesting</h4>
+                <p class="small text-professional-secondary mb-3">Test handelsstrategier mot historiske data for å validere potensial og risiko.</p>
+                <a href="{{ url_for('analysis.backtest') }}" class="btn btn-professional-primary btn-sm">
+                    Test strategier
+                </a>
+            </div>
+
+            <!-- Economic Calendar -->
+            <div class="tool-card">
+                <div class="tool-icon">
+                    <i class="bi bi-calendar3"></i>
+                </div>
+                <h4 class="h6 text-professional-primary">Økonomisk Kalender</h4>
+                <p class="small text-professional-secondary mb-3">Oversikt over kommende økonomiske begivenheter, resultatrapporter og viktige markedsdatoer.</p>
+                <button class="btn btn-professional-primary btn-sm" onclick="openEconomicCalendar()">
+                    Åpne kalender
+                </button>
+            </div>
+        </div>
+
+        <!-- Professional Trust Indicators -->
+        <div class="trust-indicators mt-5">
+            <div class="trust-indicator">
+                <i class="bi bi-shield-check"></i>
+                Sikker & trygg plattform
+            </div>
+            <div class="trust-indicator">
+                <i class="bi bi-clock"></i>
+                Sanntids markedsdata
+            </div>
+            <div class="trust-indicator">
+                <i class="bi bi-people"></i>
+                300+ aktive brukere
+            </div>
+            <div class="trust-indicator">
+                <i class="bi bi-award"></i>
+                Profesjonelle analyser
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Risk Calculator Modal -->
+<div class="modal fade" id="riskCalculatorModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Professional Risk Calculator</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form class="form-professional">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Kontosaldo (NOK)</label>
+                                <input type="number" class="form-control" id="accountBalance" value="100000">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Risiko per handel (%)</label>
+                                <input type="number" class="form-control" id="riskPercentage" value="2" step="0.1">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Innkjøpspris</label>
+                                <input type="number" class="form-control" id="entryPrice" step="0.01">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Stop Loss pris</label>
+                                <input type="number" class="form-control" id="stopLossPrice" step="0.01">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Take Profit pris</label>
+                                <input type="number" class="form-control" id="takeProfitPrice" step="0.01">
+                            </div>
+                            <button type="button" class="btn btn-professional-primary" onclick="calculateRisk()">
+                                Beregn posisjon
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row mt-4" id="riskResults" style="display: none;">
+                        <div class="col-12">
+                            <div class="alert-professional alert-info">
+                                <h6>Anbefalt posisjonsstørrelse:</h6>
+                                <div id="positionSize"></div>
+                                <div id="maxLoss"></div>
+                                <div id="potentialProfit"></div>
+                                <div id="riskRewardRatio"></div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openRiskCalculator() {
+    $('#riskCalculatorModal').modal('show');
+}
+
+function calculateRisk() {
+    const accountBalance = parseFloat(document.getElementById('accountBalance').value);
+    const riskPercentage = parseFloat(document.getElementById('riskPercentage').value);
+    const entryPrice = parseFloat(document.getElementById('entryPrice').value);
+    const stopLossPrice = parseFloat(document.getElementById('stopLossPrice').value);
+    const takeProfitPrice = parseFloat(document.getElementById('takeProfitPrice').value);
+    
+    if (!entryPrice || !stopLossPrice) {
+        alert('Vennligst fyll inn alle obligatoriske felt');
+        return;
+    }
+    
+    const riskAmount = accountBalance * (riskPercentage / 100);
+    const riskPerShare = Math.abs(entryPrice - stopLossPrice);
+    const positionSize = Math.floor(riskAmount / riskPerShare);
+    const maxLoss = positionSize * riskPerShare;
+    
+    let potentialProfit = 0;
+    let riskRewardRatio = 0;
+    
+    if (takeProfitPrice) {
+        const profitPerShare = Math.abs(takeProfitPrice - entryPrice);
+        potentialProfit = positionSize * profitPerShare;
+        riskRewardRatio = profitPerShare / riskPerShare;
+    }
+    
+    document.getElementById('positionSize').innerHTML = `<strong>${positionSize.toLocaleString()} aksjer</strong>`;
+    document.getElementById('maxLoss').innerHTML = `Maksimal tap: ${maxLoss.toLocaleString('nb-NO', {style: 'currency', currency: 'NOK'})}`;
+    
+    if (potentialProfit > 0) {
+        document.getElementById('potentialProfit').innerHTML = `Potensiell gevinst: ${potentialProfit.toLocaleString('nb-NO', {style: 'currency', currency: 'NOK'})}`;
+        document.getElementById('riskRewardRatio').innerHTML = `Risiko/gevinst ratio: 1:${riskRewardRatio.toFixed(2)}`;
+    }
+    
+    document.getElementById('riskResults').style.display = 'block';
+}
+
+function openEconomicCalendar() {
+    // Implementation for economic calendar
+    alert('Økonomisk kalender kommer snart! Dette vil vise kommende resultatrapporter, rentemøter og andre viktige markedshendelser.');
+}
+
+// Auto-refresh market data every 30 seconds
+setInterval(function() {
+    // In a real implementation, this would fetch updated market data
+    console.log('Refreshing market data...');
+}, 30000);
+</script>
+{% endblock %}

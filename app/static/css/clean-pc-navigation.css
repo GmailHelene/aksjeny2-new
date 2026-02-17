@@ -1,0 +1,200 @@
+/* 
+ * CLEAN PC NAVIGATION - OVERRIDE ALL PROBLEMATIC STYLES
+ * This file fixes the messy PC navigation once and for all
+ */
+
+/* DESKTOP ONLY - PC Navigation Fixes */
+@media (min-width: 769px) {
+    /* Reset navbar to standard Bootstrap */
+    .navbar {
+        background-color: #343a40 !important;
+        padding: 0.5rem 1rem !important;
+    }
+    
+    /* Clean navigation links */
+    .navbar-nav .nav-link {
+        color: rgba(255, 255, 255, 0.85) !important;
+        font-size: 0.9rem !important;
+        font-weight: 400 !important;
+        padding: 0.5rem 1rem !important;
+        margin: 0 !important;
+        text-shadow: none !important;
+        background: transparent !important;
+        border-radius: 0 !important;
+        min-height: auto !important;
+        transition: color 0.2s ease !important;
+    }
+    
+    .navbar-nav .nav-link:hover {
+        color: #ffffff !important;
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        text-shadow: none !important;
+        transform: none !important;
+        box-shadow: none !important;
+        border-radius: 4px !important;
+    }
+    
+    /* Clean dropdown toggles */
+    .navbar-nav .dropdown-toggle {
+        color: rgba(255, 255, 255, 0.85) !important;
+        font-size: 0.9rem !important;
+        font-weight: 400 !important;
+        padding: 0.5rem 1rem !important;
+        margin: 0 !important;
+        text-shadow: none !important;
+        background: transparent !important;
+        border-radius: 0 !important;
+        min-height: auto !important;
+        position: relative !important;
+        cursor: pointer !important;
+    }
+    
+    .navbar-nav .dropdown-toggle:hover {
+        color: #ffffff !important;
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        border-radius: 4px !important;
+    }
+    
+    /* Show dropdown arrows clearly */
+    .navbar-nav .dropdown-toggle::after {
+        display: inline-block !important;
+        margin-left: 0.5rem !important;
+        vertical-align: middle !important;
+        content: "" !important;
+        border-top: 4px solid !important;
+        border-right: 4px solid transparent !important;
+        border-bottom: 0 !important;
+        border-left: 4px solid transparent !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+    
+    .navbar-nav .dropdown-toggle[aria-expanded="true"]::after {
+        border-top: 0 !important;
+        border-bottom: 4px solid !important;
+    }
+    
+    /* Clean dropdown menus */
+    .navbar-nav .dropdown-menu {
+        background-color: rgba(255, 255, 255, 0.95) !important;
+        border: 1px solid rgba(0, 0, 0, 0.15) !important;
+        border-radius: 8px !important;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175) !important;
+        margin: 0 !important;
+        padding: 0.5rem 0 !important;
+        min-width: 250px !important;
+        position: absolute !important;
+        top: 100% !important;
+        left: 0 !important;
+        z-index: 1000 !important;
+        float: left !important;
+        display: none !important;
+        font-size: 0.9rem !important;
+    }
+    
+    .navbar-nav .dropdown.show .dropdown-menu {
+        display: block !important;
+    }
+    
+    /* Clean dropdown items */
+    .navbar-nav .dropdown-item {
+        display: block !important;
+        width: 100% !important;
+        padding: 0.5rem 1rem !important;
+        margin: 0 !important;
+        clear: both !important;
+        font-weight: 400 !important;
+        color: #212529 !important;
+        text-align: inherit !important;
+        text-decoration: none !important;
+        white-space: nowrap !important;
+        background-color: transparent !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        font-size: 0.9rem !important;
+        min-height: auto !important;
+        text-shadow: none !important;
+        box-shadow: none !important;
+        transform: none !important;
+        transition: background-color 0.2s ease !important;
+    }
+    
+    .navbar-nav .dropdown-item:hover {
+        color: #16181b !important;
+        background-color: #f8f9fa !important;
+        text-decoration: none !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+    
+    .navbar-nav .dropdown-item i {
+        color: #6c757d !important;
+        margin-right: 0.75rem !important;
+        font-size: 0.9rem !important;
+        width: 16px !important;
+        text-align: center !important;
+        font-weight: normal !important;
+    }
+    
+    .navbar-nav .dropdown-item:hover i {
+        color: #16181b !important;
+    }
+    
+    /* Hide all mobile-specific elements */
+    .mobile-nav-section {
+        display: none !important;
+    }
+    
+    /* Remove mobile section styling */
+    .nav-item.market-section,
+    .nav-item.analysis-section,
+    .nav-item.tools-section,
+    .nav-item.user-section,
+    .nav-item.stocks-section {
+        background: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        border-left: none !important;
+        box-shadow: none !important;
+    }
+    
+    /* Clean navbar brand */
+    .navbar-brand {
+        color: #ffffff !important;
+        font-size: 1.25rem !important;
+        text-decoration: none !important;
+    }
+    
+    .navbar-brand:hover {
+        color: #ffffff !important;
+    }
+    
+    /* Clean toggler (shouldn't be visible on desktop anyway) */
+    .navbar-toggler {
+        display: none !important;
+    }
+    
+    /* Dropdown dividers */
+    .navbar-nav .dropdown-divider {
+        height: 0 !important;
+        margin: 0.5rem 0 !important;
+        overflow: hidden !important;
+        border-top: 1px solid #e9ecef !important;
+    }
+    
+    /* Clean dropdown headers */
+    .navbar-nav .dropdown-header {
+        display: block !important;
+        padding: 0.5rem 1rem !important;
+        margin-bottom: 0 !important;
+        font-size: 0.875rem !important;
+        color: #6c757d !important;
+        white-space: nowrap !important;
+    }
+}
+
+/* Don't affect mobile at all */
+@media (max-width: 768px) {
+    /* Mobile styles handled by existing CSS */
+}

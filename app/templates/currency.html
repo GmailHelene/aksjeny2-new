@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Valutakurser | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4 text-dark">Valutakurser</h1>
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr class="text-dark">
+                            <th>Valutapar</th>
+                            <th>Kurs</th>
+                            <th>Endring %</th>
+                            <th>Sist oppdatert</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="text-dark"><td>USD/NOK</td><td>10.45</td><td class="text-danger">-0.15%</td><td>2025-06-24 10:00</td></tr>
+                        <tr class="text-dark"><td>EUR/NOK</td><td>11.25</td><td class="text-success">+0.12%</td><td>2025-06-24 10:00</td></tr>
+                        <tr class="text-dark"><td>GBP/NOK</td><td>13.20</td><td class="text-success">+0.08%</td><td>2025-06-24 10:00</td></tr>
+                        <tr class="text-dark"><td>SEK/NOK</td><td>0.96</td><td class="text-danger">-0.05%</td><td>2025-06-24 10:00</td></tr>
+                        <tr class="text-dark"><td>DKK/NOK</td><td>1.51</td><td class="text-success">+0.03%</td><td>2025-06-24 10:00</td></tr>
+                        <tr class="text-dark"><td>CHF/NOK</td><td>11.45</td><td class="text-success">+0.09%</td><td>2025-06-24 10:00</td></tr>
+                        <tr class="text-dark"><td>JPY/NOK</td><td>0.066</td><td class="text-danger">-0.22%</td><td>2025-06-24 10:00</td></tr>
+                        <tr class="text-dark"><td>AUD/NOK</td><td>6.85</td><td class="text-success">+0.18%</td><td>2025-06-24 10:00</td></tr>
+                        <tr class="text-dark"><td>CAD/NOK</td><td>7.65</td><td class="text-success">+0.11%</td><td>2025-06-24 10:00</td></tr>
+                        <tr class="text-dark"><td>CNY/NOK</td><td>1.44</td><td class="text-danger">-0.07%</td><td>2025-06-24 10:00</td></tr>
+                        <tr class="text-dark"><td>PLN/NOK</td><td>2.62</td><td class="text-success">+0.05%</td><td>2025-06-24 10:00</td></tr>
+                        <!-- Flere rader kan legges til her -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

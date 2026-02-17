@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}Sammenligning - Aksjeradar{% endblock %}
+
+{% block content %}
+{% include 'analysis/_menu.html' %}
+
+<div class="container py-4">ds "base.html" %}
+
+{% block title %}Peer-sammenligning | Aksjeradar{% endblock %}
+
+{% block content %}
+{% include 'analysis/_menu.html' %}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i class="bi bi-graph-up-arrow text-info"></i> Peer-sammenligning
+                    </h1>
+                    <p class="text-muted">Sammenlign nøkkeltall med lignende selskaper</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle"></i> {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- Symbol Input -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <form method="GET">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="symbol" 
+                                   value="{{ symbol or 'EQNR.OL' }}" 
+                                   placeholder="Skriv inn aksjesymbol (f.eks. EQNR.OL)">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="bi bi-search"></i> Analyser
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if comparison_data %}
+    <!-- Target Stock -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-primary border-2">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-star"></i> {{ comparison_data.target_stock.name }} ({{ comparison_data.target_stock.symbol }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="h4 text-primary">{{ comparison_data.target_stock.pe_ratio }}</div>
+                                <p class="text-muted">P/E Ratio</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="h4 text-info">{{ comparison_data.target_stock.pb_ratio }}</div>
+                                <p class="text-muted">P/B Ratio</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="h4 text-success">{{ comparison_data.target_stock.roe }}%</div>
+                                <p class="text-muted">ROE</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="h4 text-warning">{{ (comparison_data.target_stock.debt_ratio * 100) | round }}%</div>
+                                <p class="text-muted">Gjeld/Egenkapital</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Peer Comparison Table -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-table"></i> Sammenligning med konkurrenter</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Selskap</th>
+                                    <th>Symbol</th>
+                                    <th>P/E Ratio</th>
+                                    <th>P/B Ratio</th>
+                                    <th>ROE (%)</th>
+                                    <th>Gjeld/EK (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Target Stock -->
+                                <tr class="table-primary">
+                                    <td><strong>{{ comparison_data.target_stock.name }}</strong></td>
+                                    <td><strong>{{ comparison_data.target_stock.symbol }}</strong></td>
+                                    <td><strong>{{ comparison_data.target_stock.pe_ratio }}</strong></td>
+                                    <td><strong>{{ comparison_data.target_stock.pb_ratio }}</strong></td>
+                                    <td><strong>{{ comparison_data.target_stock.roe }}%</strong></td>
+                                    <td><strong>{{ (comparison_data.target_stock.debt_ratio * 100) | round }}%</strong></td>
+                                </tr>
+                                <!-- Peers -->
+                                {% for peer in comparison_data.peers %}
+                                <tr>
+                                    <td>{{ peer.name }}</td>
+                                    <td>{{ peer.symbol }}</td>
+                                    <td>{{ peer.pe_ratio }}</td>
+                                    <td>{{ peer.pb_ratio }}</td>
+                                    <td>{{ peer.roe }}%</td>
+                                    <td>{{ (peer.debt_ratio * 100) | round }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Summary -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card bg-light border-0">
+                <div class="card-body">
+                    <h5><i class="bi bi-lightbulb text-warning"></i> Analysesammendrag</h5>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h6>Relative styrker:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check-circle text-success"></i> Konkurransedyktig verdivurdering</li>
+                                <li><i class="bi bi-check-circle text-success"></i> Solid finansiell posisjon</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Områder for forbedring:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-exclamation-circle text-warning"></i> Lønnsomhet sammenlignet med peers</li>
+                                <li><i class="bi bi-exclamation-circle text-warning"></i> Gjeldsmanagement</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-graph-up-arrow text-muted" style="font-size: 4rem;"></i>
+        <h3 class="mt-3 text-muted">Ingen sammenligningsdata tilgjengelig</h3>
+        <p class="text-muted">Skriv inn et gyldig aksjesymbol for å starte sammenligningen</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

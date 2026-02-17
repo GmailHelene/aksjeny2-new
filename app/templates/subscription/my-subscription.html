@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Mitt Abonnement - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <h1 class="mb-4">Mitt Abonnement</h1>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Gjeldende Abonnement</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>{{ 'Premium' if subscription and subscription.is_active else 'Standard' }}</h4>
+                            <p class="text-muted">Din nåværende plan</p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            {% if subscription and subscription.is_active %}
+                                <p><strong>Status:</strong> <span class="badge bg-success">Aktiv</span></p>
+                                {% if subscription.end_date %}
+                                <p><strong>Fornyes:</strong> {{ subscription.end_date.strftime('%d.%m.%Y') if subscription.end_date else 'N/A' }}</p>
+                                {% endif %}
+                            {% else %}
+                                <a href="{{ url_for('pricing.pricing_page') }}" class="btn btn-primary">
+                                    Oppgrader til Premium
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0">Funksjoner i ditt abonnement</h3>
+                </div>
+                <div class="card-body">
+                    {% if subscription and subscription.is_active %}
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Ubegrenset tilgang til alle analyser</li>
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Sanntidsdata</li>
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Avanserte tekniske indikatorer</li>
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> AI-drevne prediksjoner</li>
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Ubegrenset antall porteføljer</li>
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Prioritert kundestøtte</li>
+                            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Eksport av data</li>
+                        </ul>
+                    {% else %}
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="bi bi-check-circle text-primary me-2"></i> Grunnleggende analyser</li>
+                            <li class="mb-2"><i class="bi bi-check-circle text-primary me-2"></i> Forsinkede markedsdata</li>
+                            <li class="mb-2"><i class="bi bi-check-circle text-primary me-2"></i> Opptil 3 porteføljer</li>
+                            <li class="mb-2"><i class="bi bi-x-circle text-muted me-2"></i> AI-prediksjoner (kun Premium)</li>
+                            <li class="mb-2"><i class="bi bi-x-circle text-muted me-2"></i> Sanntidsdata (kun Premium)</li>
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if not subscription or not subscription.is_active %}
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h3 class="mb-0">Oppgrader til Premium</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5>Månedlig</h5>
+                                    <h3 class="text-primary">299 kr</h3>
+                                    <p class="text-muted">per måned</p>
+                                    <a href="{{ url_for('pricing.pricing_page') }}" class="btn btn-outline-primary">Velg</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="card h-100 border-primary">
+                                <div class="card-body">
+                                    <span class="badge bg-primary mb-2">Mest populær</span>
+                                    <h5>Årlig</h5>
+                                    <h3 class="text-primary">2499 kr</h3>
+                                    <p class="text-muted">per år (spar 30%)</p>
+                                    <a href="{{ url_for('pricing.pricing_page') }}" class="btn btn-primary">Velg</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5>Livstid</h5>
+                                    <h3 class="text-primary">9999 kr</h3>
+                                    <p class="text-muted">engangsbetaling</p>
+                                    <a href="{{ url_for('pricing.pricing_page') }}" class="btn btn-outline-primary">Velg</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if subscription and subscription.is_active %}
+            <div class="mt-4 text-center">
+                <a href="{{ url_for('main.cancel_subscription') }}" class="btn btn-outline-danger">
+                    Avbryt abonnement
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

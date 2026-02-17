@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Warren Buffett Analysis - Stock Selection | Aksjeradar{% endblock %}
+
+{% block content %}
+{% include 'analysis/_menu.html' %}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4" data-i18n="analysis.buffett">Warren Buffett Analysis</h1>
+            
+            <div class="alert alert-info border-0 shadow-sm mb-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="alert-heading mb-2">
+                            <i class="bi bi-lightbulb"></i> Warren Buffett Investment Philosophy
+                        </h5>
+                        <p class="mb-0">
+                            Analyze stocks using Warren Buffett's proven value investing principles: focus on quality companies with competitive advantages, strong financial health, and reasonable valuations.
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <img src="https://via.placeholder.com/80x80/007bff/ffffff?text=WB" alt="Warren Buffett" class="rounded-circle">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-search"></i> Select a Stock for Buffett Analysis
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Search functionality -->
+                    <div class="mb-4">
+                        <input type="text" class="form-control form-control-lg" id="stockSearch" 
+                               placeholder="Search for stocks..." data-i18n-placeholder="search.placeholder">
+                    </div>
+                    
+                    <div class="row">
+                        <!-- Oslo Børs Stocks -->
+                        <div class="col-md-6 mb-4">
+                            <h6 class="text-primary mb-3">
+                                <i class="bi bi-flag"></i> Oslo Børs
+                            </h6>
+                            <div class="stock-list" style="max-height: 400px; overflow-y: auto;">
+                                {% for ticker, data in oslo_stocks.items() %}
+                                <div class="stock-item mb-2 p-3 border rounded hover-shadow" 
+                                     style="cursor: pointer;" 
+                                     onclick="analyzeStock('{{ ticker }}')">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>{{ ticker }}</strong>
+                                            <div class="text-muted small">{{ data.get('name', 'N/A') }}</div>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="fw-bold">{{ data.get('price', 0)|round(2) }} NOK</div>
+                                            <div class="small {% if data.get('change', 0) >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                                {% if data.get('change', 0) >= 0 %}+{% endif %}{{ data.get('change', 0)|round(2) }}%
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Global Stocks -->
+                        <div class="col-md-6 mb-4">
+                            <h6 class="text-success mb-3">
+                                <i class="bi bi-globe"></i> Global Markets
+                            </h6>
+                            <div class="stock-list" style="max-height: 400px; overflow-y: auto;">
+                                {% for ticker, data in global_stocks.items() %}
+                                <div class="stock-item mb-2 p-3 border rounded hover-shadow" 
+                                     style="cursor: pointer;" 
+                                     onclick="analyzeStock('{{ ticker }}')">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>{{ ticker }}</strong>
+                                            <div class="text-muted small">{{ data.get('name', 'N/A') }}</div>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="fw-bold">${{ data.get('price', 0)|round(2) }}</div>
+                                            <div class="small {% if data.get('change', 0) >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                                {% if data.get('change', 0) >= 0 %}+{% endif %}{{ data.get('change', 0)|round(2) }}%
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Key Principles Info -->
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body text-center">
+                            <i class="bi bi-shield-check text-primary fs-2 mb-2"></i>
+                            <h6>Quality Companies</h6>
+                            <p class="small text-muted">Focus on businesses with strong competitive advantages and proven track records.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body text-center">
+                            <i class="bi bi-graph-up text-success fs-2 mb-2"></i>
+                            <h6>Financial Strength</h6>
+                            <p class="small text-muted">Analyze debt levels, cash flow, and return on equity to ensure financial health.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body text-center">
+                            <i class="bi bi-calculator text-warning fs-2 mb-2"></i>
+                            <h6>Reasonable Valuation</h6>
+                            <p class="small text-muted">Buy wonderful companies at fair prices, focusing on intrinsic value.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function analyzeStock(ticker) {
+    window.location.href = "{{ url_for('analysis.warren_buffett') }}?ticker=" + ticker;
+}
+
+// Stock search functionality
+document.getElementById('stockSearch').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const stockItems = document.querySelectorAll('.stock-item');
+    
+    stockItems.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        if (text.includes(searchTerm)) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+});
+</script>
+
+<style>
+.hover-shadow {
+    transition: all 0.2s ease;
+}
+
+.hover-shadow:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+}
+
+.stock-item {
+    transition: all 0.2s ease;
+}
+
+.stock-item:hover {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}

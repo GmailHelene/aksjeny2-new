@@ -1,0 +1,18 @@
+HTTP/1.1 302 FOUND
+Server: Werkzeug/3.0.3 Python/3.9.23
+Date: Sat, 27 Sep 2025 22:57:41 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 199
+Location: /index
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Headers: Content-Type,Authorization
+Access-Control-Allow-Methods: GET,PUT,POST,DELETE,OPTIONS
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-XSS-Protection: 1; mode=block
+Strict-Transport-Security: max-age=0
+Set-Cookie: aksjeradar_remember=4|d12b8c4bc637c1f84d409796b97fadab85c460eb0374eaa190b94859a5ec83b4778f868db94ce5b06076632e6138118d80f2b4dc521585f32067c98927544fdd; Expires=Mon, 27 Oct 2025 22:57:41 GMT; HttpOnly; Path=/
+Vary: Cookie
+Set-Cookie: aksjeradar_session=.eJw9jltqwzAQRbeS6jsfo5dlZQddQwlG85AT7CrFsgslZO8dKPRrmJlzuedpprqWfpNuLh9Pc9p1mH4QSe_mbN5bWx_zfG_z6VvW9WdZZH8z19f1rLlN-s1c9u0Q3e5sLobG7L2kIMJDdhWwgCXBhDQy24LgGGPCEj0EcFCLoDIjhhJ5qMWzVB9DyYxQbA4JA1bxA-U02AjZg_U0QlSS9DuAZQWqc1TJ-mxJjacv2T5Lk7b_qx1dtj-_oAD1rU77Y5GmB-trCgg5QR4tuVSCULLJsUpWhsQehqzt5vULIgVZ5Q.aNhr5Q.ZnD7Hz9r2AFN6lVjfLtrqn1usxk; Expires=Sun, 28 Sep 2025 02:57:41 GMT; HttpOnly; Path=/; SameSite=Lax
+Connection: close
+

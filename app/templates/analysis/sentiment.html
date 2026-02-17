@@ -1,0 +1,680 @@
+{% extends "base.html" %}
+
+{% block title %}Markedsstemning - Aksjeradar{% endblock %}
+
+{% block content %}
+{% include 'analysis/_menu.html' %}
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">Analyser markedsstemning og investor sentiment for aksjer</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('analysis.index') }}">Analyse</a></li>
+                        <li class="breadcrumb-item active">Sentiment</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        {{ error if error is not none else 'Ikke tilgjengelig' }}
+    </div>
+    {% endif %}
+
+    <!-- Stock Selection -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Velg aksje for sentiment analyse</h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('analysis.sentiment') }}">
+                        <div class="mb-3">
+                            <label for="symbol" class="form-label">Aksjesymbol</label>
+                            <select class="form-select" id="symbol" name="symbol" required>
+                                <option value="">Velg aksje</option>
+                                <optgroup label="Oslo Børs">
+                                    <option value="EQNR.OL" {% if selected_symbol == 'EQNR.OL' %}selected{% endif %}>Equinor (EQNR.OL)</option>
+                                    <option value="DNB.OL" {% if selected_symbol == 'DNB.OL' %}selected{% endif %}>DNB (DNB.OL)</option>
+                                    <option value="TEL.OL" {% if selected_symbol == 'TEL.OL' %}selected{% endif %}>Telenor (TEL.OL)</option>
+                                    <option value="NHY.OL" {% if selected_symbol == 'NHY.OL' %}selected{% endif %}>Norsk Hydro (NHY.OL)</option>
+                                    <option value="MOWI.OL" {% if selected_symbol == 'MOWI.OL' %}selected{% endif %}>Mowi (MOWI.OL)</option>
+                                    <option value="YAR.OL" {% if selected_symbol == 'YAR.OL' %}selected{% endif %}>Yara International (YAR.OL)</option>
+                                    <option value="REC.OL" {% if selected_symbol == 'REC.OL' %}selected{% endif %}>REC Silicon (REC.OL)</option>
+                                    <option value="NEL.OL" {% if selected_symbol == 'NEL.OL' %}selected{% endif %}>Nel (NEL.OL)</option>
+                                    <option value="AFG.OL" {% if selected_symbol == 'AFG.OL' %}selected{% endif %}>AutoStore (AFG.OL)</option>
+                                    <option value="FRO.OL" {% if selected_symbol == 'FRO.OL' %}selected{% endif %}>Frontline (FRO.OL)</option>
+                                    <option value="NOR.OL" {% if selected_symbol == 'NOR.OL' %}selected{% endif %}>Norwegian Air (NOR.OL)</option>
+                                    <option value="KAHOT.OL" {% if selected_symbol == 'KAHOT.OL' %}selected{% endif %}>Kahoot! (KAHOT.OL)</option>
+                                    <option value="AKER.OL" {% if selected_symbol == 'AKER.OL' %}selected{% endif %}>Aker (AKER.OL)</option>
+                                    <option value="AKSOS.OL" {% if selected_symbol == 'AKSOS.OL' %}selected{% endif %}>Aker Solutions (AKSOS.OL)</option>
+                                    <option value="BWLPG.OL" {% if selected_symbol == 'BWLPG.OL' %}selected{% endif %}>BW LPG (BWLPG.OL)</option>
+                                    <option value="CRAYN.OL" {% if selected_symbol == 'CRAYN.OL' %}selected{% endif %}>Crayon Group (CRAYN.OL)</option>
+                                    <option value="FLNG.OL" {% if selected_symbol == 'FLNG.OL' %}selected{% endif %}>Flex LNG (FLNG.OL)</option>
+                                    <option value="GOGL.OL" {% if selected_symbol == 'GOGL.OL' %}selected{% endif %}>Golden Ocean (GOGL.OL)</option>
+                                    <option value="MPCC.OL" {% if selected_symbol == 'MPCC.OL' %}selected{% endif %}>MPC Container Ships (MPCC.OL)</option>
+                                    <option value="ORK.OL" {% if selected_symbol == 'ORK.OL' %}selected{% endif %}>Orkla (ORK.OL)</option>
+                                    <option value="PGS.OL" {% if selected_symbol == 'PGS.OL' %}selected{% endif %}>Petroleum Geo-Services (PGS.OL)</option>
+                                    <option value="SALM.OL" {% if selected_symbol == 'SALM.OL' %}selected{% endif %}>SalMar (SALM.OL)</option>
+                                    <option value="SSO.OL" {% if selected_symbol == 'SSO.OL' %}selected{% endif %}>Scatec (SSO.OL)</option>
+                                    <option value="STB.OL" {% if selected_symbol == 'STB.OL' %}selected{% endif %}>Storebrand (STB.OL)</option>
+                                    <option value="TOM.OL" {% if selected_symbol == 'TOM.OL' %}selected{% endif %}>Tomra Systems (TOM.OL)</option>
+                                </optgroup>
+                                <optgroup label="Amerikanske aksjer - Teknologi">
+                                    <option value="AAPL" {% if selected_symbol == 'AAPL' %}selected{% endif %}>Apple (AAPL)</option>
+                                    <option value="MSFT" {% if selected_symbol == 'MSFT' %}selected{% endif %}>Microsoft (MSFT)</option>
+                                    <option value="GOOGL" {% if selected_symbol == 'GOOGL' %}selected{% endif %}>Alphabet (GOOGL)</option>
+                                    <option value="TSLA" {% if selected_symbol == 'TSLA' %}selected{% endif %}>Tesla (TSLA)</option>
+                                    <option value="NVDA" {% if selected_symbol == 'NVDA' %}selected{% endif %}>NVIDIA (NVDA)</option>
+                                    <option value="META" {% if selected_symbol == 'META' %}selected{% endif %}>Meta Platforms (META)</option>
+                                    <option value="AMZN" {% if selected_symbol == 'AMZN' %}selected{% endif %}>Amazon (AMZN)</option>
+                                    <option value="NFLX" {% if selected_symbol == 'NFLX' %}selected{% endif %}>Netflix (NFLX)</option>
+                                    <option value="ADBE" {% if selected_symbol == 'ADBE' %}selected{% endif %}>Adobe (ADBE)</option>
+                                    <option value="CRM" {% if selected_symbol == 'CRM' %}selected{% endif %}>Salesforce (CRM)</option>
+                                    <option value="ORCL" {% if selected_symbol == 'ORCL' %}selected{% endif %}>Oracle (ORCL)</option>
+                                    <option value="INTC" {% if selected_symbol == 'INTC' %}selected{% endif %}>Intel (INTC)</option>
+                                    <option value="AMD" {% if selected_symbol == 'AMD' %}selected{% endif %}>AMD (AMD)</option>
+                                    <option value="UBER" {% if selected_symbol == 'UBER' %}selected{% endif %}>Uber (UBER)</option>
+                                    <option value="SNAP" {% if selected_symbol == 'SNAP' %}selected{% endif %}>Snap (SNAP)</option>
+                                    <option value="SPOT" {% if selected_symbol == 'SPOT' %}selected{% endif %}>Spotify (SPOT)</option>
+                                    <option value="ZOOM" {% if selected_symbol == 'ZOOM' %}selected{% endif %}>Zoom (ZOOM)</option>
+                                    <option value="SHOP" {% if selected_symbol == 'SHOP' %}selected{% endif %}>Shopify (SHOP)</option>
+                                    <option value="SQ" {% if selected_symbol == 'SQ' %}selected{% endif %}>Block (SQ)</option>
+                                    <option value="ROKU" {% if selected_symbol == 'ROKU' %}selected{% endif %}>Roku (ROKU)</option>
+                                    <option value="DOCU" {% if selected_symbol == 'DOCU' %}selected{% endif %}>DocuSign (DOCU)</option>
+                                    <option value="TWLO" {% if selected_symbol == 'TWLO' %}selected{% endif %}>Twilio (TWLO)</option>
+                                    <option value="PLTR" {% if selected_symbol == 'PLTR' %}selected{% endif %}>Palantir (PLTR)</option>
+                                </optgroup>
+                                <optgroup label="Amerikanske aksjer - Bank og finans">
+                                    <option value="JPM" {% if selected_symbol == 'JPM' %}selected{% endif %}>JPMorgan Chase (JPM)</option>
+                                    <option value="BAC" {% if selected_symbol == 'BAC' %}selected{% endif %}>Bank of America (BAC)</option>
+                                    <option value="WFC" {% if selected_symbol == 'WFC' %}selected{% endif %}>Wells Fargo (WFC)</option>
+                                    <option value="C" {% if selected_symbol == 'C' %}selected{% endif %}>Citigroup (C)</option>
+                                    <option value="GS" {% if selected_symbol == 'GS' %}selected{% endif %}>Goldman Sachs (GS)</option>
+                                    <option value="MS" {% if selected_symbol == 'MS' %}selected{% endif %}>Morgan Stanley (MS)</option>
+                                    <option value="V" {% if selected_symbol == 'V' %}selected{% endif %}>Visa (V)</option>
+                                    <option value="MA" {% if selected_symbol == 'MA' %}selected{% endif %}>Mastercard (MA)</option>
+                                    <option value="PYPL" {% if selected_symbol == 'PYPL' %}selected{% endif %}>PayPal (PYPL)</option>
+                                </optgroup>
+                                <optgroup label="Amerikanske aksjer - Forbruksvarer">
+                                    <option value="WMT" {% if selected_symbol == 'WMT' %}selected{% endif %}>Walmart (WMT)</option>
+                                    <option value="TGT" {% if selected_symbol == 'TGT' %}selected{% endif %}>Target (TGT)</option>
+                                    <option value="HD" {% if selected_symbol == 'HD' %}selected{% endif %}>Home Depot (HD)</option>
+                                    <option value="LOW" {% if selected_symbol == 'LOW' %}selected{% endif %}>Lowe's (LOW)</option>
+                                    <option value="COST" {% if selected_symbol == 'COST' %}selected{% endif %}>Costco (COST)</option>
+                                    <option value="NKE" {% if selected_symbol == 'NKE' %}selected{% endif %}>Nike (NKE)</option>
+                                    <option value="SBUX" {% if selected_symbol == 'SBUX' %}selected{% endif %}>Starbucks (SBUX)</option>
+                                    <option value="MCD" {% if selected_symbol == 'MCD' %}selected{% endif %}>McDonald's (MCD)</option>
+                                    <option value="KO" {% if selected_symbol == 'KO' %}selected{% endif %}>Coca-Cola (KO)</option>
+                                    <option value="PEP" {% if selected_symbol == 'PEP' %}selected{% endif %}>PepsiCo (PEP)</option>
+                                </optgroup>
+                                <optgroup label="Amerikanske aksjer - Energi">
+                                    <option value="XOM" {% if selected_symbol == 'XOM' %}selected{% endif %}>Exxon Mobil (XOM)</option>
+                                    <option value="CVX" {% if selected_symbol == 'CVX' %}selected{% endif %}>Chevron (CVX)</option>
+                                    <option value="COP" {% if selected_symbol == 'COP' %}selected{% endif %}>ConocoPhillips (COP)</option>
+                                    <option value="SLB" {% if selected_symbol == 'SLB' %}selected{% endif %}>Schlumberger (SLB)</option>
+                                    <option value="BP" {% if selected_symbol == 'BP' %}selected{% endif %}>BP (BP)</option>
+                                </optgroup>
+                                <optgroup label="Amerikanske aksjer - Helse">
+                                    <option value="JNJ" {% if selected_symbol == 'JNJ' %}selected{% endif %}>Johnson & Johnson (JNJ)</option>
+                                    <option value="PFE" {% if selected_symbol == 'PFE' %}selected{% endif %}>Pfizer (PFE)</option>
+                                    <option value="MRNA" {% if selected_symbol == 'MRNA' %}selected{% endif %}>Moderna (MRNA)</option>
+                                    <option value="UNH" {% if selected_symbol == 'UNH' %}selected{% endif %}>UnitedHealth (UNH)</option>
+                                    <option value="ABT" {% if selected_symbol == 'ABT' %}selected{% endif %}>Abbott Laboratories (ABT)</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Analyser sentiment
+                        </button>
+                    </form>
+                    
+                    <!-- Custom Symbol Input -->
+                    <div class="mt-3">
+                        <small class="text-muted">Eller skriv inn symbol manuelt:</small>
+                        <div class="input-group mt-1">
+                            <input type="text" class="form-control" id="customSymbol" placeholder="f.eks. AAPL, NOK">
+                            <button class="btn btn-outline-secondary" onclick="analyzeCustomSymbol()">Analyser</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Sentiment oversikt</h5>
+                </div>
+                <div class="card-body">
+                    {% if sentiment %}
+                    <div class="row">
+                        <div class="col-md-3 text-center mb-3">
+                            <h6 class="text-muted">Overordnet</h6>
+                            {% set overall_val = sentiment_data.get('overall_score', 0) %}
+                            <h3 class="{{ 'text-success' if overall_val > 60 else 'text-danger' if overall_val < 40 else 'text-warning' }}">
+                                {{ overall_val }}%
+                            </h3>
+                            <span class="badge bg-{{ 'success' if overall_val > 60 else 'danger' if overall_val < 40 else 'warning' }}">
+                                {{ sentiment_data.get('sentiment_label', 'Nøytral') }}
+                            </span>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <h6 class="text-muted">Nyheter</h6>
+                            <h4>{{ sentiment_data.get('news_score', 'Ikke tilgjengelig') }}%</h4>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <h6 class="text-muted">Sosiale medier</h6>
+                            <h4>{{ sentiment_data.get('social_score', 'Ikke tilgjengelig') }}%</h4>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <h6 class="text-muted">Volum</h6>
+                            <h4>{{ sentiment_data.get('volume_trend', 'Ikke tilgjengelig') }}</h4>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-graph-up fs-2 text-muted mb-3"></i>
+                        <p class="text-muted">Velg en aksje over for å se sentiment analyse.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if correlation_id %}
+    <div class="alert alert-secondary small py-2">Correlation ID: {{ correlation_id }}</div>
+    {% endif %}
+
+    {% if sentiment_data %}
+    <!-- Detailed Analysis -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Sentiment Trend - {{ selected_symbol }}</h5>
+                </div>
+                <div class="card-body position-relative">
+                    <canvas id="sentimentChart" height="300"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Nyheter & Social Media Sentiment</h5>
+                </div>
+                <div class="card-body">
+                    {% if sentiment_data and sentiment_data.get('news_sentiment_articles') %}
+                    <div class="row">
+                        {% for news in sentiment_data.get('news_sentiment_articles')[:5] %}
+                        <div class="col-md-6 mb-3">
+                            <div class="border rounded p-3">
+                                <h6>{{ news.title }}</h6>
+                                <p class="small text-muted">{{ news.summary }}</p>
+                                <div class="d-flex justify-content-between">
+                                    <span class="badge bg-{{ 'success' if news.sentiment == 'positive' else 'danger' if news.sentiment == 'negative' else 'warning' }}">
+                                        {{ news.sentiment }}
+                                    </span>
+                                    <small class="text-muted">{{ news.date }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">Ingen nyheter tilgjengelig for analyse.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Sentiment Indikatorer</h5>
+                </div>
+                <div class="card-body">
+                    {% if sentiment_data.get('indicators') %}
+                    {% for indicator in sentiment_data.get('indicators') %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span>{{ indicator.name }}</span>
+                        <div>
+                            <span class="badge bg-{{ 'success' if indicator.value > 0.6 else 'warning' if indicator.value > 0.4 else 'danger' }}">
+                                {{ "{:.1%}".format(indicator.value) }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted">Ingen indikatorer tilgjengelig.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Anbefaling</h5>
+                </div>
+                <div class="card-body">
+                    {% if sentiment_data.get('recommendation') %}
+                    <div class="alert alert-{{ 'success' if sentiment_data.get('recommendation').get('type') == 'buy' else 'danger' if sentiment_data.get('recommendation').get('type') == 'sell' else 'warning' }}">
+                        <h6 class="fw-bold">{{ sentiment_data.get('recommendation').get('action', '')|title }}</h6>
+                        <p>{{ sentiment_data.get('recommendation').get('reasoning', '') }}</p>
+                        <small>Konfidensgrad: {{ "{:.0%}".format(sentiment_data.get('recommendation').get('confidence', 0)) }}</small>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Ingen anbefaling tilgjengelig.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% if sentiment_data and sentiment_data.get('history') %}
+<script type="application/json" id="sentiment-chart-data">
+{{ sentiment_data.get('history')|tojson }}
+</script>
+{% endif %}
+
+<script>
+function analyzeCustomSymbol() {
+    const symbol = document.getElementById('customSymbol').value.trim().toUpperCase();
+    if (symbol) {
+        window.location.href = `{{ url_for('analysis.sentiment') }}?symbol=${symbol}`;
+    }
+}
+
+// Initialize sentiment chart if data exists
+document.addEventListener('DOMContentLoaded', function() {
+    const chartData = document.getElementById('sentiment-chart-data');
+    if (chartData && window.Chart) {
+        const data = JSON.parse(chartData.textContent);
+        const ctx = document.getElementById('sentimentChart').getContext('2d');
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.dates,
+                datasets: [{
+                    label: 'Sentiment Score',
+                    data: data.scores,
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: {
+                                size: window.innerWidth < 768 ? 12 : 14
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: 'rgb(75, 192, 192)',
+                        borderWidth: 1,
+                        displayColors: true,
+                        callbacks: {
+                            title: function(context) {
+                                return 'Datum: ' + context[0].label;
+                            },
+                            label: function(context) {
+                                return 'Sentiment: ' + context.parsed.y.toFixed(2) + '/10';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Datum',
+                            font: {
+                                size: window.innerWidth < 768 ? 12 : 14
+                            }
+                        },
+                        ticks: {
+                            maxTicksLimit: window.innerWidth < 768 ? 5 : 10,
+                            font: {
+                                size: window.innerWidth < 768 ? 10 : 12
+                            }
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: 10,
+                        title: {
+                            display: true,
+                            text: 'Sentiment Score (0-10)',
+                            font: {
+                                size: window.innerWidth < 768 ? 12 : 14
+                            }
+                        },
+                        ticks: {
+                            stepSize: 1,
+                            font: {
+                                size: window.innerWidth < 768 ? 10 : 12
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    }
+                },
+                animation: {
+                    duration: window.innerWidth < 768 ? 1000 : 1500,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
+    }
+});
+</script>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-3">
+                        <small class="text-muted">Eller skriv inn symbol manuelt:</small>
+                        <div class="input-group mt-1">
+                            <input type="text" class="form-control" id="customSymbol" placeholder="f.eks. AAPL, NOK">
+                            <button class="btn btn-outline-secondary" onclick="analyzeCustomSymbol()">Analyser</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if selected_symbol and sentiment_data %}
+    <!-- Sentiment Results -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Sentiment Analyse: {{ selected_symbol }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3">
+                            <h6 class="text-muted">Overordnet Sentiment</h6>
+                            {% set overall_val2 = sentiment_data.get('overall_score', sentiment_data.overall_score if sentiment_data.overall_score is defined else 0) %}
+                            <h2 class="sentiment-score {{ 'text-success' if overall_val2 > 0 else 'text-danger' if overall_val2 < 0 else 'text-warning' }}">
+                                {{ overall_val2|default(0)|round(1) }}
+                            </h2>
+                            <span class="badge bg-{{ 'success' if overall_val2 > 0.2 else 'danger' if overall_val2 < -0.2 else 'warning' }}">
+                                {{ sentiment_data.get('sentiment_label', sentiment_data.sentiment_label if sentiment_data.sentiment_label is defined else 'Nøytral') }}
+                            </span>
+                        </div>
+                        
+                        <div class="col-md-4 text-center mb-3">
+                            <h6 class="text-muted">Nyhetssentiment</h6>
+                            <h3 class="{{ 'text-success' if sentiment_data.news_score > 0 else 'text-danger' if sentiment_data.news_score < 0 else 'text-muted' }}">
+                                {{ sentiment_data.news_score|default(0)|round(1) }}
+                            </h3>
+                            <small class="text-muted">{{ sentiment_data.news_count|default(0) }} artikler</small>
+                        </div>
+                        
+                        <div class="col-md-4 text-center mb-3">
+                            <h6 class="text-muted">Sosiale medier</h6>
+                            <h3 class="{{ 'text-success' if sentiment_data.social_sentiment > 0 else 'text-danger' if sentiment_data.social_sentiment < 0 else 'text-muted' }}">
+                                {{ sentiment_data.social_sentiment|default(0)|round(1) }}
+                            </h3>
+                            <small class="text-muted">{{ sentiment_data.social_mentions|default(0) }} omtaler</small>
+                        </div>
+                    </div>
+                    
+                    {% if sentiment_data.get('key_themes') %}
+                    <hr>
+                    <h6>Nøkkeltemaer</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for theme in sentiment_data.get('key_themes') %}
+                        <span class="badge bg-light text-dark">{{ theme }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    {% if sentiment_data.get('summary') %}
+                    <hr>
+                    <h6>Sammendrag</h6>
+                    <p>{{ sentiment_data.get('summary') }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Sentiment History Chart -->
+            {% if sentiment_data.get('history') %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Sentiment Utvikling (30 dager)</h5>
+                </div>
+                <div class="card-body position-relative">
+                    <canvas id="sentimentChart" height="200"></canvas>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Recent News -->
+            {% if sentiment_data.get('recent_news') %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Nylige Nyheter</h5>
+                </div>
+                <div class="card-body">
+                    {% for article in sentiment_data.get('recent_news')[:5] %}
+                    <div class="mb-3 pb-3 border-bottom">
+                        <h6 class="mb-1">
+                            <a href="{{ article.url }}" target="_blank" class="text-decoration-none">
+                                {{ article.title|truncate(60) }}
+                            </a>
+                        </h6>
+                        <small class="text-muted">{{ article.source }} - {{ article.date }}</small>
+                        <div class="mt-1">
+                            <span class="badge bg-{{ 'success' if article.sentiment > 0.1 else 'danger' if article.sentiment < -0.1 else 'secondary' }} badge-sm">
+                                {{ 'Positiv' if article.sentiment > 0.1 else 'Negativ' if article.sentiment < -0.1 else 'Nøytral' }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Sentiment Metrics -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Sentiment Detaljer</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-6">Volatilitet:</dt>
+                        <dd class="col-6">{{ sentiment_data.volatility|default('Ikke tilgjengelig') }}</dd>
+                        
+                        <dt class="col-6">Trend:</dt>
+                        <dd class="col-6">
+                            <span class="badge bg-{{ 'success' if sentiment_data.trend == 'positive' else 'danger' if sentiment_data.trend == 'negative' else 'secondary' }}">
+                                {{ sentiment_data.trend|default('stable')|title }}
+                            </span>
+                        </dd>
+                        
+                        <dt class="col-6">Konfidens:</dt>
+                        <dd class="col-6">{{ (sentiment_data.confidence|default(0) * 100)|round }}%</dd>
+                        
+                        <dt class="col-6">Sist oppdatert:</dt>
+                        <dd class="col-6">{{ sentiment_data.last_updated|default('Ikke tilgjengelig') }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% elif selected_symbol %}
+    <!-- No Data Available -->
+        <div class="alert alert-info d-flex align-items-center" role="alert" aria-live="polite">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-info-circle-fill me-3" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+            </svg>
+            <div>
+                <span class="fw-bold">Ingen sentiment data tilgjengelig for {{ selected_symbol }}.</span>
+                <span class="visually-hidden">Info: Sentiment data mangler. Prøv en annen aksje.</span>
+                <br>
+                <span>Prøv en annen aksje eller kom tilbake senere.</span>
+            </div>
+        </div>
+    {% else %}
+    <!-- Market Sentiment Overview -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Markedsstemning Oversikt</h5>
+                </div>
+                <div class="card-body">
+                    {% if sentiment_data %}
+                    <div class="row">
+                        <div class="col-md-3 text-center mb-3">
+                            <h6 class="text-muted">Generell Stemning</h6>
+                            <h2 class="{{ 'text-success' if sentiment_data.market_sentiment > 0 else 'text-danger' if sentiment_data.market_sentiment < 0 else 'text-warning' }}">
+                                {{ sentiment_data.market_sentiment|default(0)|round(1) }}
+                            </h2>
+                        </div>
+                        
+                        <div class="col-md-3 text-center mb-3">
+                            <h6 class="text-muted">Frykt & Grådighetsindeks</h6>
+                            <h2 class="text-primary">{{ sentiment_data.fear_greed_index|default('N/A') }}</h2>
+                        </div>
+                        
+                        <div class="col-md-3 text-center mb-3">
+                            <h6 class="text-muted">VIX (Volatilitet)</h6>
+                            <h2 class="text-warning">{{ sentiment_data.vix|default('N/A') }}</h2>
+                        </div>
+                        
+                        <div class="col-md-3 text-center mb-3">
+                            <h6 class="text-muted">Markedstrend</h6>
+                            <span class="badge bg-{{ 'success' if sentiment_data.market_trend == 'bullish' else 'danger' if sentiment_data.market_trend == 'bearish' else 'secondary' }} fs-6">
+                                {{ sentiment_data.market_trend|default('neutral')|title }}
+                            </span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-graph-up fs-2 text-muted mb-3"></i>
+                        <p class="text-muted">Velg en aksje over for å se sentiment analyse.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% if sentiment_data and sentiment_data.get('history') %}
+<script type="application/json" id="sentiment-chart-data">
+{{ sentiment_data.get('history')|tojson }}
+</script>
+{% endif %}
+
+<script>
+function analyzeCustomSymbol() {
+    const symbol = document.getElementById('customSymbol').value.trim().toUpperCase();
+    if (symbol) {
+        window.location.href = "{{ url_for('analysis.sentiment') }}?symbol=" + symbol;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const chartElement = document.getElementById('sentimentChart');
+    const chartDataElement = document.getElementById('sentiment-chart-data');
+    if (!chartElement || !chartDataElement || !window.Chart) {
+        return; // EKTE-only: do nothing if server did not provide data
+    }
+    let dates = [];
+    let scores = [];
+    try {
+        const chartData = JSON.parse(chartDataElement.textContent);
+        dates = chartData.dates || [];
+        scores = chartData.scores || [];
+    } catch (error) {
+        console.error('Error parsing chart data:', error);
+        return; // Do not synthesize client-side
+    }
+    if (!dates.length || !scores.length) {
+        return; // No data -> skip rendering
+    }
+    try {
+        const ctx = chartElement.getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Sentiment Score',
+                    data: scores,
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                    tension: 0.1,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        min: 0,
+                        max: 100,
+                        grid: { color: 'rgba(0, 0, 0, 0.1)' }
+                    }
+                }
+            }
+        });
+    } catch (e) {
+        console.error('Error creating sentiment chart:', e);
+    }
+});
+</script>
+
+<style>
+.sentiment-score {
+    font-size: 3rem;
+    font-weight: bold;
+}
+
+.badge-sm {
+    font-size: 0.75em;
+}
+</style>
+{% endblock %}

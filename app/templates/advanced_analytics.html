@@ -1,0 +1,443 @@
+{% extends "base.html" %}
+
+{% block title %}Avanserte Analyser - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Avanserte Analyser</h1>
+            
+            <!-- Navigation Tabs -->
+            <ul class="nav nav-tabs mb-4" id="analyticsTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="ml-tab" data-bs-toggle="tab" data-bs-target="#ml-predictions" 
+                            type="button" role="tab" aria-controls="ml-predictions" aria-selected="true">
+                        <i class="fas fa-brain me-2"></i>ML Prediksjoner
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="portfolio-tab" data-bs-toggle="tab" data-bs-target="#portfolio-optimization" 
+                            type="button" role="tab" aria-controls="portfolio-optimization" aria-selected="false">
+                        <i class="fas fa-chart-pie me-2"></i>Porteføljeoptimalisering
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="risk-tab" data-bs-toggle="tab" data-bs-target="#risk-management" 
+                            type="button" role="tab" aria-controls="risk-management" aria-selected="false">
+                        <i class="fas fa-shield-alt me-2"></i>Risikostyring
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Message Containers -->
+            <div id="error-messages"></div>
+            <div id="success-messages"></div>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="analyticsTabContent">
+                
+                <!-- ML Predictions Tab -->
+                <div class="tab-pane fade show active" id="ml-predictions" role="tabpanel" aria-labelledby="ml-tab">
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Aksjeprediksjoner</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="ml-prediction-form">
+                                        <div class="mb-3">
+                                            <label for="prediction-symbol" class="form-label">Aksjesymbol</label>
+                                            <input type="text" class="form-control" id="prediction-symbol" 
+                                                   placeholder="f.eks. AAPL" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="prediction-days" class="form-label">Dager frem i tid</label>
+                                            <select class="form-select" id="prediction-days">
+                                                <option value="7">7 dager</option>
+                                                <option value="14">14 dager</option>
+                                                <option value="30" selected>30 dager</option>
+                                                <option value="60">60 dager</option>
+                                                <option value="90">90 dager</option>
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="fas fa-magic me-2"></i>Generer Prediksjon
+                                        </button>
+                                    </form>
+                                    
+                                    <hr>
+                                    
+                                    <div class="mb-3">
+                                        <h6>Batch Prediksjoner</h6>
+                                        <textarea class="form-control" id="batch-symbols" rows="3" 
+                                                  placeholder="Skriv inn symboler separert med komma: AAPL,GOOGL,MSFT"></textarea>
+                                        <button type="button" class="btn btn-outline-primary mt-2 w-100" id="batch-predict-btn">
+                                            <i class="fas fa-layer-group me-2"></i>Batch Prediksjoner
+                                        </button>
+                                    </div>
+                                    
+                                    <button type="button" class="btn btn-info w-100" id="market-analysis-btn">
+                                        <i class="fas fa-chart-line me-2"></i>Markedsanalyse
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-8">
+                            <div id="ml-prediction-results">
+                                <!-- Results from backend will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Portfolio Optimization Tab -->
+                <div class="tab-pane fade" id="portfolio-optimization" role="tabpanel" aria-labelledby="portfolio-tab">
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Porteføljeoptimalisering</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="portfolio-optimization-form">
+                                        <div class="mb-3">
+                                            <label for="portfolio-symbols" class="form-label">Aksjesymboler</label>
+                                            <textarea class="form-control" id="portfolio-symbols" rows="3" 
+                                                      placeholder="AAPL,GOOGL,MSFT,TSLA" required></textarea>
+                                            <small class="form-text text-muted">Separér symboler med komma</small>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="optimization-method" class="form-label">Optimeringsmetode</label>
+                                            <select class="form-select" id="optimization-method">
+                                                <option value="sharpe">Maksimer Sharpe Ratio</option>
+                                                <option value="min_volatility">Minimer Volatilitet</option>
+                                                <option value="max_return">Maksimer Avkastning</option>
+                                                <option value="risk_parity">Risk Parity</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="fas fa-cogs me-2"></i>Optimaliser Portefølje
+                                        </button>
+                                    </form>
+                                    
+                                    <hr>
+                                    
+                                    <button type="button" class="btn btn-outline-primary w-100 mb-2" id="efficient-frontier-btn">
+                                        <i class="fas fa-chart-area me-2"></i>Generer Effisient Frontier
+                                    </button>
+                                    
+                                    <button type="button" class="btn btn-outline-secondary w-100" id="rebalance-btn">
+                                        <i class="fas fa-balance-scale me-2"></i>Rebalansering
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-8">
+                            <div id="portfolio-optimization-results">
+                                <!-- Results from backend will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Risk Management Tab -->
+                <div class="tab-pane fade" id="risk-management" role="tabpanel" aria-labelledby="risk-tab">
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Risikoanalyse</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="risk-analysis-form">
+                                        <div class="mb-3">
+                                            <label for="risk-portfolio" class="form-label">Portefølje (JSON)</label>
+                                            <textarea class="form-control" id="risk-portfolio" rows="4" 
+                                                      placeholder='{"AAPL": 0.3, "GOOGL": 0.3, "MSFT": 0.4}' required></textarea>
+                                            <small class="form-text text-muted">Format: {"symbol": vekt, ...}</small>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="risk-timeframe" class="form-label">Tidsramme (dager)</label>
+                                            <select class="form-select" id="risk-timeframe">
+                                                <option value="30">30 dager</option>
+                                                <option value="60">60 dager</option>
+                                                <option value="252" selected>1 år (252 dager)</option>
+                                                <option value="504">2 år</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="fas fa-calculator me-2"></i>Beregn Risiko
+                                        </button>
+                                    </form>
+                                    
+                                    <hr>
+                                    
+                                    <h6>Avanserte Analyser</h6>
+                                    
+                                    <div class="mb-2">
+                                        <label for="var-confidence" class="form-label">VaR Konfidensnivå</label>
+                                        <select class="form-select form-select-sm" id="var-confidence">
+                                            <option value="0.90">90%</option>
+                                            <option value="0.95" selected>95%</option>
+                                            <option value="0.99">99%</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <button type="button" class="btn btn-outline-warning w-100 mb-2" id="var-analysis-btn">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>VaR Analyse
+                                    </button>
+                                    
+                                    <div class="mb-2">
+                                        <label for="stress-scenario" class="form-label">Stress Scenario</label>
+                                        <select class="form-select form-select-sm" id="stress-scenario">
+                                            <option value="market_crash">Markedskrasj</option>
+                                            <option value="interest_rate_shock">Rentesjokkk</option>
+                                            <option value="recession">Resesjon</option>
+                                            <option value="high_volatility">Høy Volatilitet</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <button type="button" class="btn btn-outline-danger w-100 mb-2" id="stress-test-btn">
+                                        <i class="fas fa-heartbeat me-2"></i>Stress Test
+                                    </button>
+                                    
+                                    <button type="button" class="btn btn-outline-info w-100" id="monte-carlo-btn">
+                                        <i class="fas fa-dice me-2"></i>Monte Carlo Simulering
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-8">
+                            <div id="risk-analysis-results">
+                                <!-- Results from backend will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Advanced Analytics Scripts -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // CSRF token setup
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    if (!csrfMeta) {
+        console.error('CSRF token meta tag not found');
+        return;
+    }
+    const csrfToken = csrfMeta.getAttribute('content');
+
+    // ML Prediction Form Handler (AJAX)
+    document.getElementById('ml-prediction-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const symbol = document.getElementById('prediction-symbol').value.toUpperCase();
+        const days = parseInt(document.getElementById('prediction-days').value);
+        const results = document.getElementById('ml-prediction-results');
+        results.innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin"></i> Henter prediksjon...</div>';
+        fetch('/advanced-analytics/generate-prediction', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ ticker: symbol, days: days })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.prediction) {
+                // Render real prediction data
+                results.innerHTML = `<div class='alert alert-success'><strong>Prediksjon for ${symbol}:</strong><br>${data.prediction}</div>`;
+            } else {
+                results.innerHTML = `<div class='alert alert-danger'><strong>Feil:</strong> ${data.error || 'Kunne ikke generere prediksjon.'}</div>`;
+            }
+        })
+        .catch(error => {
+            results.innerHTML = `<div class='alert alert-danger'><strong>Nettverksfeil:</strong> ${error.message}</div>`;
+        });
+    });
+
+    // Batch Prediction Button (AJAX)
+    document.getElementById('batch-predict-btn').addEventListener('click', function() {
+        const symbolsText = document.getElementById('batch-symbols').value;
+        const symbols = symbolsText.split(',').map(s => s.trim().toUpperCase()).filter(s => s);
+        if (symbols.length === 0) {
+            alert('Vennligst skriv inn minst ett aksjesymbol');
+            return;
+        }
+        const days = parseInt(document.getElementById('prediction-days').value);
+        const results = document.getElementById('ml-prediction-results');
+        results.innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin"></i> Henter batch prediksjoner...</div>';
+        fetch('/advanced-analytics/batch-predictions', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ tickers: symbols, days: days })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.predictions) {
+                let html = '<div class="alert alert-success"><strong>Batch Prediksjoner:</strong><ul class="mb-0 mt-2">';
+                for (const [sym, pred] of Object.entries(data.predictions)) {
+                    html += `<li><strong>${sym}:</strong> ${pred}</li>`;
+                }
+                html += '</ul></div>';
+                results.innerHTML = html;
+            } else {
+                results.innerHTML = `<div class='alert alert-danger'><strong>Feil:</strong> ${data.error || 'Ingen data.'}</div>`;
+            }
+        })
+        .catch(error => {
+            results.innerHTML = `<div class='alert alert-danger'><strong>Nettverksfeil:</strong> ${error.message}</div>`;
+        });
+    });
+
+    // Market Analysis Button (AJAX)
+    const marketAnalysisBtn = document.getElementById('market-analysis-btn');
+    if (marketAnalysisBtn) {
+        marketAnalysisBtn.addEventListener('click', function() {
+            const results = document.getElementById('ml-prediction-results');
+            results.innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin"></i> Henter markedsanalyse...</div>';
+            fetch('/advanced-analytics/market-analysis', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                credentials: 'same-origin'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.analysis) {
+                    results.innerHTML = `<div class='alert alert-success'><strong>Markedsanalyse:</strong><br>${data.analysis}</div>`;
+                } else {
+                    results.innerHTML = `<div class='alert alert-danger'><strong>Feil:</strong> ${data.error || 'Kunne ikke generere markedsanalyse.'}</div>`;
+                }
+            })
+            .catch(error => {
+                results.innerHTML = `<div class='alert alert-danger'><strong>Nettverksfeil:</strong> ${error.message}</div>`;
+            });
+        });
+    }
+
+    // Portfolio Optimization Button
+    document.getElementById('efficient-frontier-btn').addEventListener('click', function() {
+        const results = document.getElementById('portfolio-optimization-results');
+        results.innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin"></i> Henter optimalisering...</div>';
+        // TODO: Integrate with backend for real data
+        fetch('/portfolio-analytics/optimization-recommendations/1', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            credentials: 'same-origin'
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.optimization) {
+                results.innerHTML = `<div class='alert alert-success'><strong>Optimalisering:</strong><br>${data.optimization}</div>`;
+            } else {
+                results.innerHTML = `<div class='alert alert-danger'><strong>Feil:</strong> ${data.error || 'Ingen data.'}</div>`;
+            }
+        })
+        .catch(error => {
+            results.innerHTML = `<div class='alert alert-danger'><strong>Nettverksfeil:</strong> ${error.message}</div>`;
+        });
+    });
+
+    // Risk Analysis Button
+    document.getElementById('var-analysis-btn').addEventListener('click', function() {
+        const results = document.getElementById('risk-analysis-results');
+        results.innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin"></i> Henter risikoanalyse...</div>';
+        // TODO: Integrate with backend for real data
+        fetch('/advanced-analytics/api/risk/analysis', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            credentials: 'same-origin'
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.risk) {
+                results.innerHTML = `<div class='alert alert-success'><strong>Risikoanalyse:</strong><br>${data.risk}</div>`;
+            } else {
+                results.innerHTML = `<div class='alert alert-danger'><strong>Feil:</strong> ${data.error || 'Ingen data.'}</div>`;
+            }
+        })
+        .catch(error => {
+            results.innerHTML = `<div class='alert alert-danger'><strong>Nettverksfeil:</strong> ${error.message}</div>`;
+        });
+    });
+
+    // Stress Test Button
+    document.getElementById('stress-test-btn').addEventListener('click', function() {
+        const results = document.getElementById('risk-analysis-results');
+        results.innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin"></i> Henter stresstest...</div>';
+        // TODO: Integrate with backend for real data
+        fetch('/advanced-analytics/api/portfolio/optimize', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            credentials: 'same-origin'
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.stress) {
+                results.innerHTML = `<div class='alert alert-success'><strong>Stresstest:</strong><br>${data.stress}</div>`;
+            } else {
+                results.innerHTML = `<div class='alert alert-danger'><strong>Feil:</strong> ${data.error || 'Ingen data.'}</div>`;
+            }
+        })
+        .catch(error => {
+            results.innerHTML = `<div class='alert alert-danger'><strong>Nettverksfeil:</strong> ${error.message}</div>`;
+        });
+    });
+
+    // Monte Carlo Button
+    document.getElementById('monte-carlo-btn').addEventListener('click', function() {
+        const results = document.getElementById('risk-analysis-results');
+        results.innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin"></i> Henter Monte Carlo simulering...</div>';
+        // TODO: Integrate with backend for real data
+        fetch('/advanced-analytics/api/ml/predict/AAPL', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            credentials: 'same-origin'
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.simulation) {
+                results.innerHTML = `<div class='alert alert-success'><strong>Monte Carlo Simulering:</strong><br>${data.simulation}</div>`;
+            } else {
+                results.innerHTML = `<div class='alert alert-danger'><strong>Feil:</strong> ${data.error || 'Ingen data.'}</div>`;
+            }
+        })
+        .catch(error => {
+            results.innerHTML = `<div class='alert alert-danger'><strong>Nettverksfeil:</strong> ${error.message}</div>`;
+        });
+    });
+});
+</script>
+{% endblock %}

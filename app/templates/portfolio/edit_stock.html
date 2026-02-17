@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Rediger aksje{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="mb-0">
+            <i class="bi bi-pencil me-2"></i>Rediger aksje
+            {% if stock %}
+            - {{ stock.ticker }}
+            {% endif %}
+          </h4>
+        </div>
+        <div class="card-body">
+          {% if stock %}
+          <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <!-- Felt: antall aksjer (bruk 'quantity' for konsistent backend-navn) -->
+            <div class="mb-3">
+              <label for="quantity" class="form-label">Antall aksjer</label>
+              <input type="number" 
+                     class="form-control" 
+                     id="quantity" 
+                     name="quantity" 
+                     value="{{ stock.shares }}"
+                     step="0.001" 
+                     min="0" 
+                     required>
+            </div>
+            
+            <div class="mb-3">
+              <label for="purchase_price" class="form-label">Kjøpspris (NOK)</label>
+              <input type="number" 
+                     class="form-control" 
+                     id="purchase_price" 
+                     name="purchase_price" 
+                     value="{{ stock.purchase_price }}"
+                     step="0.01" 
+                     min="0" 
+                     required>
+            </div>
+            
+            <div class="mb-3">
+              <label for="purchase_date" class="form-label">Kjøpsdato</label>
+              <input type="date" 
+                     class="form-control" 
+                     id="purchase_date" 
+                     name="purchase_date" 
+                     value="{{ stock.purchase_date.strftime('%Y-%m-%d') if stock.purchase_date else '' }}">
+            </div>
+            
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-circle me-2"></i>Lagre endringer
+              </button>
+              <a href="{{ url_for('portfolio.portfolio_overview') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Tilbake
+              </a>
+            </div>
+          </form>
+          {% else %}
+          <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Aksjen ble ikke funnet i din portefølje.
+          </div>
+          <a href="{{ url_for('portfolio.portfolio_overview') }}" class="btn btn-primary">
+            <i class="bi bi-arrow-left me-2"></i>Tilbake til portefølje
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

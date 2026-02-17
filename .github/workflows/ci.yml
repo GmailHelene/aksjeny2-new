@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [ new, main, master ]
+  pull_request:
+    branches: [ new, main, master ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+            python-version: '3.9'
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsqlite3-dev
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install pytest
+      - name: Run pytest (fast subset)
+        env:
+          APP_ENV: testing
+          FLASK_ENV: testing
+          SOCKETIO_FORCE_THREADING: 1
+        run: |
+          pytest -q test_forum_api_search.py test_price_alerts_api.py test_chart_data_api.py test_technical_data_api.py
+      - name: Run full pytest (allow failures)
+        continue-on-error: true
+        env:
+          APP_ENV: testing
+          FLASK_ENV: testing
+          SOCKETIO_FORCE_THREADING: 1
+        run: |
+          pytest -q

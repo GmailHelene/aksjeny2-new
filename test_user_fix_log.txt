@@ -1,0 +1,49 @@
+Test User Fix Log - 2025-09-08 16:12:28
+==================================================
+
+Looking for database at: C:\Users\helen\Documents\GitHub\aksjeny2\app.db
+✅ Database found: C:\Users\helen\Documents\GitHub\aksjeny2\app.db
+Connected to database
+✅ Users table found
+
+Fixing user: test@aksjeradar.trade
+- Generated password hash: pbkdf2:sha256:260000...
+- User exists with ID: None
+- Updated username, password and subscription details
+
+Fixing user: investor@aksjeradar.trade
+- Generated password hash: pbkdf2:sha256:260000...
+- User exists with ID: None
+- Updated username, password and subscription details
+
+✅ Changes committed to database
+
+===== VERIFICATION =====
+
+User: test@aksjeradar.trade
+- ID: None
+- Username: testuser
+- Has password hash: Yes
+
+User: investor@aksjeradar.trade
+- ID: None
+- Username: investor
+- Has password hash: Yes
+
+✅ FIX COMPLETED SUCCESSFULLY
+
+Test User Credentials:
+1. Email: test@aksjeradar.trade
+   Username: testuser
+   Password: aksjeradar2024
+
+2. Email: investor@aksjeradar.trade
+   Username: investor
+   Password: aksjeradar2024
+
+Please restart the Flask server before trying to login again.
+
+Database connection closed
+
+Log file saved at: C:\Users\helen\Documents\GitHub\aksjeny2\test_user_fix_log.txt
+Please check this file for detailed results of the fix operation.

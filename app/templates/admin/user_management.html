@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Brukeradministrasjon | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Brukeradministrasjon</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Admin-verktøy</h3>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('main.test_email') }}" class="btn btn-info">Test e-post</a>
+                        <a href="{{ url_for('main.check_trial') }}" class="btn btn-secondary">Sjekk trial-status</a>
+                        <a href="{{ url_for('main.admin_clean_trials') }}" class="btn btn-warning">Rydd opp trial-sesjoner</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3>Registrerte brukere</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Brukernavn</th>
+                            <th>E-post</th>
+                            <th>Opprettet</th>
+                            <th>Abonnement</th>
+                            <th>Trial brukt</th>
+                            <th>Handlinger</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.created_at.strftime('%d.%m.%Y %H:%M') if user.created_at else 'Ikke tilgjengelig' }}</td>
+                            <td>
+                                {% if user.has_subscription %}
+                                    {% if user.subscription_type == 'yearly' %}
+                                        <span class="badge bg-success">Premium Årlig</span>
+                                    {% elif user.subscription_type == 'monthly' %}
+                                        <span class="badge bg-success">Premium Månedlig</span>
+                                    {% elif user.subscription_type == 'lifetime' %}
+                                        <span class="badge bg-warning text-dark">Premium Livstid</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Premium</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary">Gratis</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.trial_used %}
+                                    <span class="badge bg-warning">Brukt</span>
+                                    {% if user.trial_start %}
+                                        <br><small>{{ user.trial_start.strftime('%d.%m.%Y %H:%M') }}</small>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-success">Tilgjengelig</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('main.admin_reset_user', user_id=user.id) }}" 
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Er du sikker på at du vil tilbakestille denne brukeren?')">
+                                    Tilbakestill
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

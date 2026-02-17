@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Nytt foruminnlegg{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Nytt foruminnlegg</h1>
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div class="mb-3">
+            <label for="title" class="form-label">Tittel</label>
+            <input type="text" class="form-control" id="title" name="title" required>
+        </div>
+        <div class="mb-3">
+            <label for="content" class="form-label">Innhold</label>
+            <textarea class="form-control" id="content" name="content" rows="6" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-success">Publiser</button>
+        <a href="{{ url_for('forum.index') }}" class="btn btn-secondary ms-2">Avbryt</a>
+    </form>
+</div>
+{% endblock %}

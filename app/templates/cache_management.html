@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}Cache Management - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <h1><i class="bi bi-arrow-clockwise"></i> Cache Management</h1>
+            <p class="text-muted">Manage and refresh cache across the entire Aksjeradar application.</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="badge bg-info fs-6">Current Time: {{ g.current_time }}</div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5><i class="bi bi-gear"></i> Cache Control Panel</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6>Current Cache Status</h6>
+                        <div id="cache-status">
+                            <span class="badge bg-secondary">Loading...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-3">
+                        <button class="btn btn-warning btn-lg" onclick="quickCacheRefresh()">
+                            <i class="bi bi-lightning"></i> Quick Cache Refresh
+                            <small class="d-block">Refreshes browser cache + forces reload</small>
+                        </button>
+                        
+                        <button class="btn btn-info btn-lg" onclick="bustServerCache()">
+                            <i class="bi bi-server"></i> Server Cache Bust
+                            <small class="d-block">Triggers server-side cache invalidation</small>
+                        </button>
+                        
+                        <button class="btn btn-danger btn-lg" onclick="fullCacheRefresh()">
+                            <i class="bi bi-arrow-repeat"></i> Nuclear Cache Reset
+                            <small class="d-block">Clears everything + hard reload (Use if nothing else works)</small>
+                        </button>
+                    </div>
+                    
+                    <div id="cache-results" class="mt-4"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="bi bi-speedometer2"></i> Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-sm btn-outline-primary" onclick="checkCacheStatus()">
+                            <i class="bi bi-info-circle"></i> Check Status
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="window.location.reload(true)">
+                            <i class="bi bi-arrow-clockwise"></i> Hard Reload
+                        </button>
+                        <button class="btn btn-sm btn-outline-dark" onclick="clearBrowserStorage()">
+                            <i class="bi bi-trash"></i> Clear Browser Storage
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" onclick="testCacheBypass()">
+                            <i class="bi bi-shield-check"></i> Test Cache Bypass
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6><i class="bi bi-info"></i> Cache Info</h6>
+                </div>
+                <div class="card-body small">
+                    <p><strong>Environment:</strong> Production</p>
+                    <p><strong>Cache Version:</strong> <span id="cache-version">{{ g.current_time }}</span></p>
+                    <p><strong>Browser:</strong> <span id="browser-info">Loading...</span></p>
+                    <p><strong>Last Refresh:</strong> <span id="last-refresh">Never</span></p>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6><i class="bi bi-keyboard"></i> Keyboard Shortcuts</h6>
+                </div>
+                <div class="card-body small">
+                    <p><code>Ctrl+Shift+F5</code> - Super Cache Refresh</p>
+                    <p><code>Ctrl+F5</code> - Hard Reload</p>
+                    <p><code>F5</code> - Normal Reload</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="bi bi-journal-text"></i> Cache Activity Log</h6>
+                </div>
+                <div class="card-body">
+                    <div id="cache-log" style="max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.85rem;">
+                        <div class="text-muted">Cache activity will appear here...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize browser info
+document.getElementById('browser-info').textContent = navigator.userAgent.split(' ').slice(-2).join(' ');
+
+// Cache management functions
+async function checkCacheStatus() {
+    logActivity('Checking cache status...');
+    try {
+        const response = await fetch('/admin/api/cache/status');
+        const data = await response.json();
+        
+        document.getElementById('cache-status').innerHTML = 
+            `<span class="badge bg-success">${data.cache_version}</span>`;
+        document.getElementById('cache-version').textContent = data.cache_version;
+        logActivity(`✅ Cache status: ${data.status}`);
+    } catch (error) {
+        document.getElementById('cache-status').innerHTML = 
+            `<span class="badge bg-danger">Error: ${error.message}</span>`;
+        logActivity(`❌ Cache status error: ${error.message}`);
+    }
+}
+
+async function bustServerCache() {
+    const resultsDiv = document.getElementById('cache-results');
+    resultsDiv.innerHTML = '<div class="alert alert-info"><i class="bi bi-hourglass-split"></i> Busting server cache...</div>';
+    logActivity('Triggering server cache bust...');
+    
+    try {
+        const response = await fetch('/admin/api/cache/bust', { method: 'POST' });
+        const result = await response.json();
+        
+        if (result.success) {
+            resultsDiv.innerHTML = 
+                `<div class="alert alert-success"><i class="bi bi-check-circle"></i> ✅ Server cache busted! New version: ${result.timestamp}</div>`;
+            logActivity(`✅ Server cache busted: ${result.timestamp}`);
+            checkCacheStatus();
+            
+            if (result.reload_recommended) {
+                setTimeout(() => {
+                    if (confirm('Server cache busted! Reload page to see changes?')) {
+                        window.location.reload(true);
+                    }
+                }, 2000);
+            }
+        } else {
+            resultsDiv.innerHTML = 
+                `<div class="alert alert-danger"><i class="bi bi-x-circle"></i> ❌ Failed to bust server cache: ${result.error}</div>`;
+            logActivity(`❌ Server cache bust failed: ${result.error}`);
+        }
+    } catch (error) {
+        resultsDiv.innerHTML = 
+            `<div class="alert alert-danger"><i class="bi bi-x-circle"></i> ❌ Error: ${error.message}</div>`;
+        logActivity(`❌ Server cache bust error: ${error.message}`);
+    }
+}
+
+function quickCacheRefresh() {
+    const resultsDiv = document.getElementById('cache-results');
+    resultsDiv.innerHTML = '<div class="alert alert-warning"><i class="bi bi-arrow-clockwise"></i> Quick cache refresh in progress...</div>';
+    logActivity('Starting quick cache refresh...');
+    
+    // Use the global cache refresh function
+    window.refreshCache();
+}
+
+function fullCacheRefresh() {
+    const resultsDiv = document.getElementById('cache-results');
+    resultsDiv.innerHTML = '<div class="alert alert-danger"><i class="bi bi-nuclear"></i> Nuclear cache reset initiated...</div>';
+    logActivity('🚨 Nuclear cache reset initiated...');
+    
+    // Clear everything
+    clearBrowserStorage();
+    
+    // Clear service worker cache
+    if ('serviceWorker' in navigator && 'caches' in window) {
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => caches.delete(cacheName))
+            );
+        });
+    }
+    
+    // Force reload with multiple cache-busting parameters
+    const url = new URL(window.location);
+    url.searchParams.set('v', Date.now());
+    url.searchParams.set('cache_bust', 'nuclear');
+    url.searchParams.set('force_refresh', '1');
+    url.searchParams.set('timestamp', new Date().toISOString());
+    
+    setTimeout(() => {
+        window.location.href = url.toString();
+    }, 1000);
+}
+
+function clearBrowserStorage() {
+    logActivity('Clearing browser storage...');
+    
+    // Clear localStorage and sessionStorage
+    if (typeof Storage !== "undefined") {
+        localStorage.clear();
+        sessionStorage.clear();
+    }
+    
+    // Clear cookies (if possible)
+    document.cookie.split(";").forEach(function(c) { 
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+    });
+    
+    logActivity('✅ Browser storage cleared');
+    
+    document.getElementById('cache-results').innerHTML = 
+        '<div class="alert alert-success"><i class="bi bi-check-circle"></i> ✅ Browser storage cleared!</div>';
+}
+
+function testCacheBypass() {
+    logActivity('Testing cache bypass...');
+    const testUrl = `${window.location.origin}/?cache_test=${Date.now()}`;
+    window.open(testUrl, '_blank');
+    logActivity(`✅ Opened cache bypass test: ${testUrl}`);
+}
+
+function logActivity(message) {
+    const logDiv = document.getElementById('cache-log');
+    const timestamp = new Date().toLocaleTimeString();
+    const logEntry = document.createElement('div');
+    logEntry.innerHTML = `<span class="text-muted">[${timestamp}]</span> ${message}`;
+    logDiv.appendChild(logEntry);
+    logDiv.scrollTop = logDiv.scrollHeight;
+    
+    // Update last refresh time
+    document.getElementById('last-refresh').textContent = timestamp;
+}
+
+// Load cache status on page load
+document.addEventListener('DOMContentLoaded', function() {
+    checkCacheStatus();
+    logActivity('Cache management interface loaded');
+});
+
+// Add some helpful tips
+setTimeout(() => {
+    logActivity('💡 Tip: Use Quick Cache Refresh for most issues');
+    setTimeout(() => {
+        logActivity('💡 Tip: Nuclear Reset is for stubborn cache problems');
+    }, 2000);
+}, 1000);
+</script>
+{% endblock %}

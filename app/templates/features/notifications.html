@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Varsling & Alerts - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8">
+            <h2 class="mb-4">📬 Varsling & Alerts</h2>
+            
+            <div class="alert alert-info">
+                <h5>🚀 Kommende funksjon!</h5>
+                <p class="mb-0">Varslinger og alerts er under utvikling og vil snart være tilgjengelig. Her kan du sette opp:</p>
+                <ul class="mt-2 mb-0">
+                    <li>Prisvarsler for dine favorittaksjer</li>
+                    <li>Volumendringer og markedsmeldinger</li>
+                    <li>AI-baserte handelsignaler</li>
+                    <li>Nyhetsoppdateringer for spesifikke selskaper</li>
+                    <li><strong>Push-varsler direkte til telefonen din</strong></li>
+                </ul>
+            </div>
+
+            <!-- Push Notification Setup -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-phone"></i> Push-varsler</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>📱 Aktiver push-varsler</h6>
+                            <p class="text-muted small">Få øyeblikkelige varsler direkte til telefonen eller nettleseren din.</p>
+                            <button id="enablePushBtn" class="btn btn-success" onclick="requestPushPermission()">
+                                <i class="bi bi-bell"></i> Aktiver push-varsler
+                            </button>
+                            <div id="pushStatus" class="mt-2"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>🔔 Varselinnstillinger</h6>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="priceAlerts" checked disabled>
+                                <label class="form-check-label" for="priceAlerts">
+                                    Prisvarsler
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="volumeAlerts" checked disabled>
+                                <label class="form-check-label" for="volumeAlerts">
+                                    Volumvarsler
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="aiSignals" checked disabled>
+                                <label class="form-check-label" for="aiSignals">
+                                    AI-signaler
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="newsAlerts" disabled>
+                                <label class="form-check-label" for="newsAlerts">
+                                    Nyhetsvarsler
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Aktive varsler</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-4">
+                        <i class="bi bi-bell-slash" style="font-size: 3rem; color: #6c757d;"></i>
+                        <h5 class="mt-3 text-muted">Ingen aktive varsler</h5>
+                        <p class="text-muted">Du har ikke satt opp noen varsler ennå.</p>
+                        <button class="btn btn-primary" disabled>
+                            <i class="bi bi-plus-circle"></i> Legg til varsel (kommer snart)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Varseltyper</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6><i class="bi bi-phone text-success"></i> Push-varsler</h6>
+                        <small class="text-muted">Øyeblikkelige varsler til telefon og nettleser</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6><i class="bi bi-envelope text-info"></i> E-postvarsler</h6>
+                        <small class="text-muted">Detaljerte rapporter og sammendrag</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6><i class="bi bi-graph-up text-success"></i> Prisvarsler</h6>
+                        <small class="text-muted">Få beskjed når aksjer når dine målpriser</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6><i class="bi bi-volume-up text-info"></i> Volumvarsler</h6>
+                        <small class="text-muted">Varsler ved unormalt høyt handelsvolum</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6><i class="bi bi-newspaper text-warning"></i> Nyhetsvarsler</h6>
+                        <small class="text-muted">Viktige nyheter om dine aksjer</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6><i class="bi bi-robot text-primary"></i> AI-signaler</h6>
+                        <small class="text-muted">Intelligente handelssignaler basert på AI</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Kom i gang</h5>
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0">
+                        <li class="mb-2">Registrer deg for full tilgang</li>
+                        <li class="mb-2">Velg dine favorittaksjer</li>
+                        <li class="mb-2">Sett opp prisvarsler</li>
+                        <li>Motta varsler på e-post og push</li>
+                    </ol>
+                    <div class="mt-3">
+                        <a href="{{ url_for('pricing.index') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-star"></i> Se abonnement
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function requestPushPermission() {
+    if (!('Notification' in window)) {
+        document.getElementById('pushStatus').innerHTML = '<div class="alert alert-warning small mt-2">Din nettleser støtter ikke push-varsler.</div>';
+        return;
+    }
+    
+    if (Notification.permission === 'granted') {
+        document.getElementById('pushStatus').innerHTML = '<div class="alert alert-success small mt-2"><i class="bi bi-check-circle"></i> Push-varsler er aktivert!</div>';
+        document.getElementById('enablePushBtn').innerHTML = '<i class="bi bi-check"></i> Aktivert';
+        document.getElementById('enablePushBtn').classList.remove('btn-success');
+        document.getElementById('enablePushBtn').classList.add('btn-secondary');
+        document.getElementById('enablePushBtn').disabled = true;
+        return;
+    }
+    
+    if (Notification.permission === 'denied') {
+        document.getElementById('pushStatus').innerHTML = '<div class="alert alert-danger small mt-2">Push-varsler er blokkert. Aktiver dem i nettleserinnstillingene.</div>';
+        return;
+    }
+    
+    // Request permission
+    Notification.requestPermission().then(function(permission) {
+        if (permission === 'granted') {
+            document.getElementById('pushStatus').innerHTML = '<div class="alert alert-success small mt-2"><i class="bi bi-check-circle"></i> Push-varsler er aktivert!</div>';
+            document.getElementById('enablePushBtn').innerHTML = '<i class="bi bi-check"></i> Aktivert';
+            document.getElementById('enablePushBtn').classList.remove('btn-success');
+            document.getElementById('enablePushBtn').classList.add('btn-secondary');
+            document.getElementById('enablePushBtn').disabled = true;
+            
+            // Show a test notification
+            setTimeout(() => {
+                new Notification('Aksjeradar', {
+                    body: 'Push-varsler er nå aktivert! Du vil motta viktige markedsoppdateringer her.',
+                    icon: '/static/favicon.ico'
+                });
+            }, 1000);
+        } else {
+            document.getElementById('pushStatus').innerHTML = '<div class="alert alert-warning small mt-2">Push-varsler ble ikke aktivert.</div>';
+        }
+    });
+}
+
+// Check permission status on page load
+document.addEventListener('DOMContentLoaded', function() {
+    if ('Notification' in window) {
+        if (Notification.permission === 'granted') {
+            document.getElementById('pushStatus').innerHTML = '<div class="alert alert-success small mt-2"><i class="bi bi-check-circle"></i> Push-varsler er aktivert!</div>';
+            document.getElementById('enablePushBtn').innerHTML = '<i class="bi bi-check"></i> Aktivert';
+            document.getElementById('enablePushBtn').classList.remove('btn-success');
+            document.getElementById('enablePushBtn').classList.add('btn-secondary');
+            document.getElementById('enablePushBtn').disabled = true;
+        } else if (Notification.permission === 'denied') {
+            document.getElementById('pushStatus').innerHTML = '<div class="alert alert-danger small mt-2">Push-varsler er blokkert i nettleseren.</div>';
+            document.getElementById('enablePushBtn').innerHTML = '<i class="bi bi-x-circle"></i> Blokkert';
+            document.getElementById('enablePushBtn').classList.remove('btn-success');
+            document.getElementById('enablePushBtn').classList.add('btn-warning');
+        }
+    } else {
+        document.getElementById('pushStatus').innerHTML = '<div class="alert alert-warning small mt-2">Din nettleser støtter ikke push-varsler.</div>';
+        document.getElementById('enablePushBtn').disabled = true;
+    }
+});
+</script>
+{% endblock %}

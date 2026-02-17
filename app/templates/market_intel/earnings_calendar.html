@@ -1,0 +1,480 @@
+{% extends "base.html" %}
+
+{% block title %}Resultatkalender - Market Intelligence{% endblock %}
+
+{% block head %}
+{{ super() }}
+<style>
+/* Fix color contrast issues */
+.bg-danger, .bg-primary, .bg-warning, .bg-info {
+    background-color: #dc3545 !important;
+}
+
+.bg-success {
+    background-color: #198754 !important;
+}
+
+.card-header.bg-primary {
+    background-color: #0d47a1 !important;
+    color: white !important;
+}
+
+/* Ensure all card headers with inline bg-primary style have white text */
+.card-header[style*="background-color: #0d47a1"] {
+    color: white !important;
+}
+
+.earnings-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+.earnings-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+}
+
+.earnings-today {
+    border-left: 4px solid #28a745;
+}
+
+.earnings-upcoming {
+    border-left: 4px solid #ffc107;
+}
+
+.earnings-past {
+    border-left: 4px solid #6c757d;
+}
+
+.calendar-nav {
+    background: linear-gradient(135deg, #667eea 0%, #000000 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+}
+
+.date-selector {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    color: white;
+    padding: 0.5rem;
+}
+
+.date-selector:focus {
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.4);
+    color: white;
+    box-shadow: none;
+}
+
+.earnings-estimate {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.earnings-actual {
+    font-weight: bold;
+    color: #28a745;
+}
+
+.earnings-miss {
+    font-weight: bold;
+    color: #dc3545;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">
+                    <i class="bi bi-calendar-event me-3"></i>Resultatkalender
+                </h1>
+                <div class="btn-group" role="group" id="timeRangeButtons">
+                    <button type="button" class="btn btn-outline-primary active" data-range="this-week">Denne Uken</button>
+                    <button type="button" class="btn btn-outline-primary" data-range="next-week">Neste Uke</button>
+                    <button type="button" class="btn btn-outline-primary" data-range="month">Måned</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar Navigation -->
+    <div class="calendar-nav">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h4 class="mb-0">Uke 34, 2025</h4>
+                <p class="mb-0">19. - 25. August 2025</p>
+            </div>
+            <div class="col-md-6 text-end">
+                <div class="d-flex justify-content-end align-items-center">
+                    <label class="me-2">Fra:</label>
+                    <input type="date" class="form-control date-selector me-3" value="2025-08-19" style="width: auto;">
+                    <label class="me-2">Til:</label>
+                    <input type="date" class="form-control date-selector" value="2025-08-25" style="width: auto;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Earnings -->
+    <div class="row">
+        <div class="col-12">
+            <h3 class="mb-3">
+                <i class="bi bi-clock me-2"></i>I dag - 20. August 2025
+            </h3>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card earnings-card earnings-today">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="card-title">
+                                <strong>EQNR.OL</strong>
+                                <span class="badge bg-success ms-2">Pre-market</span>
+                            </h5>
+                            <p class="card-text">Equinor ASA - Q2 2025 Kvartalstall</p>
+                            <div class="earnings-estimate">Forventet EPS: 4.25 NOK</div>
+                            <div class="earnings-actual">Faktisk EPS: 4.67 NOK (+9.9%)</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="h4 text-success">+3.2%</div>
+                            <small class="text-muted">08:00</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card earnings-card earnings-today">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="card-title">
+                                <strong>MOWI.OL</strong>
+                                <span class="badge bg-warning">After-market</span>
+                            </h5>
+                            <p class="card-text">Mowi ASA - Q2 2025 Kvartalstall</p>
+                            <div class="earnings-estimate">Forventet EPS: 2.15 NOK</div>
+                            <div class="text-muted">Publiseres: 17:00</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="h4 text-muted">--</div>
+                            <small class="text-muted">17:00</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- This Week's Earnings -->
+    <div class="row">
+        <div class="col-12">
+            <h3 class="mb-3">
+                <i class="bi bi-calendar-week me-2"></i>Resten av uken
+            </h3>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4 mb-3">
+            <div class="card earnings-card earnings-upcoming">
+                <div class="card-header" style="background-color: #0d47a1 !important; color: white;">
+                    <h6 class="mb-0">Onsdag 21. August</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>DNB.OL</strong> - Q2 2025
+                        <div class="small text-muted">DNB Bank ASA</div>
+                        <div class="earnings-estimate">Forventet EPS: 6.80 NOK</div>
+                        <small class="text-muted">Pre-market: 07:00</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>TEL.OL</strong> - Q2 2025
+                        <div class="small text-muted">Telenor ASA</div>
+                        <div class="earnings-estimate">Forventet EPS: 1.45 NOK</div>
+                        <small class="text-muted">Pre-market: 08:00</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-3">
+            <div class="card earnings-card earnings-upcoming">
+                <div class="card-header" style="background-color: #0d47a1 !important; color: white;">
+                    <h6 class="mb-0">Torsdag 22. August</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>NHY.OL</strong> - Q2 2025
+                        <div class="small text-muted">Norsk Hydro ASA</div>
+                        <div class="earnings-estimate">Forventet EPS: 1.20 NOK</div>
+                        <small class="text-muted">Pre-market: 07:30</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>AKER.OL</strong> - Q2 2025
+                        <div class="small text-muted">Aker ASA</div>
+                        <div class="earnings-estimate">Forventet EPS: 8.50 NOK</div>
+                        <small class="text-muted">After-market: 16:30</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-3">
+            <div class="card earnings-card earnings-upcoming">
+                <div class="card-header" style="background-color: #0d47a1 !important; color: white;">
+                    <h6 class="mb-0">Fredag 23. August</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>YAR.OL</strong> - Q2 2025
+                        <div class="small text-muted">Yara International ASA</div>
+                        <div class="earnings-estimate">Forventet EPS: 3.25 NOK</div>
+                        <small class="text-muted">Pre-market: 08:00</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>SALM.OL</strong> - Q2 2025
+                        <div class="small text-muted">SalMar ASA</div>
+                        <div class="earnings-estimate">Forventet EPS: 4.80 NOK</div>
+                        <small class="text-muted">After-market: 17:00</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Previous Results -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <h3 class="mb-3">
+                <i class="bi bi-check-circle me-2"></i>Tidligere resultater denne uken
+            </h3>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card earnings-card earnings-past">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Selskap</th>
+                                    <th>Dato</th>
+                                    <th>Forventet EPS</th>
+                                    <th>Faktisk EPS</th>
+                                    <th>Forskjell</th>
+                                    <th>Reaksjon</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <strong>EQNR.OL</strong>
+                                        <div class="small text-muted">Equinor ASA</div>
+                                    </td>
+                                    <td>20. Aug</td>
+                                    <td>4.25 NOK</td>
+                                    <td class="earnings-actual">4.67 NOK</td>
+                                    <td><span class="badge bg-success">+9.9%</span></td>
+                                    <td><span class="text-success">+3.2%</span></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>ASA.OL</strong>
+                                        <div class="small text-muted">Atlantic Sapphire ASA</div>
+                                    </td>
+                                    <td>19. Aug</td>
+                                    <td>-2.80 NOK</td>
+                                    <td class="earnings-miss">-3.45 NOK</td>
+                                    <td><span class="badge bg-danger">-23.2%</span></td>
+                                    <td><span class="text-danger">-8.1%</span></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>KAHOOT.OL</strong>
+                                        <div class="small text-muted">Kahoot! ASA</div>
+                                    </td>
+                                    <td>18. Aug</td>
+                                    <td>0.15 NOK</td>
+                                    <td class="earnings-miss">0.08 NOK</td>
+                                    <td><span class="badge bg-danger">-46.7%</span></td>
+                                    <td><span class="text-danger">-12.4%</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar View Option -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="#" class="btn btn-primary btn-lg">
+                <i class="bi bi-calendar3 me-2"></i>Vis Full Kalender
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Earnings calendar time range buttons functionality
+    const timeRangeButtons = document.querySelectorAll('#timeRangeButtons button');
+    const earningsContainer = document.querySelector('.earnings-container') || document.querySelector('[class*="earnings"]');
+    
+    timeRangeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove active class from all buttons
+            timeRangeButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            const range = this.getAttribute('data-range');
+            filterEarningsByRange(range);
+        });
+    });
+    
+    function filterEarningsByRange(range) {
+        // Show loading state
+        if (earningsContainer) {
+            earningsContainer.innerHTML = '<div class="text-center p-4"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">Laster resultater...</p></div>';
+        }
+        
+        // Simulate filtering with demo data
+        setTimeout(() => {
+            let content = '';
+            const today = new Date();
+            
+            switch(range) {
+                case 'this-week':
+                    content = generateEarningsData('Denne uken', getThisWeekDates());
+                    break;
+                case 'next-week':
+                    content = generateEarningsData('Neste uke', getNextWeekDates());
+                    break;
+                case 'month':
+                    content = generateEarningsData('Denne måneden', getThisMonthDates());
+                    break;
+            }
+            
+            if (earningsContainer) {
+                earningsContainer.innerHTML = content;
+            }
+        }, 800);
+    }
+    
+    function generateEarningsData(title, dates) {
+        const companies = [
+            { name: 'DNB ASA', symbol: 'DNB.OL', sector: 'Finansielle tjenester' },
+            { name: 'Equinor ASA', symbol: 'EQNR.OL', sector: 'Energi' },
+            { name: 'Telenor ASA', symbol: 'TEL.OL', sector: 'Telekom' },
+            { name: 'Norsk Hydro ASA', symbol: 'NHY.OL', sector: 'Materialer' },
+            { name: 'Mowi ASA', symbol: 'MOWI.OL', sector: 'Konsumvarer' }
+        ];
+        
+        let html = `<h3 class="mb-4">${title}</h3><div class="row">`;
+        
+        dates.forEach((date, index) => {
+            if (index < companies.length) {
+                const company = companies[index];
+                const expectedEPS = (Math.random() * 10 + 1).toFixed(2);
+                const expectedRevenue = (Math.random() * 1000 + 100).toFixed(0);
+                
+                html += `
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card earnings-card earnings-upcoming">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="card-title mb-0">${company.name}</h6>
+                                <span class="badge bg-primary">${company.symbol}</span>
+                            </div>
+                            <p class="text-muted small mb-2">${company.sector}</p>
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <small class="text-muted">Forventet EPS</small>
+                                    <div class="fw-bold">${expectedEPS} NOK</div>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Forventet omsetning</small>
+                                    <div class="fw-bold">${expectedRevenue}M NOK</div>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <small class="text-muted">Dato: ${date}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+        });
+        
+        html += '</div>';
+        return html;
+    }
+    
+    function getThisWeekDates() {
+        const dates = [];
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - dayOfWeek + 1);
+        
+        for (let i = 0; i < 5; i++) {
+            const date = new Date(startOfWeek);
+            date.setDate(startOfWeek.getDate() + i);
+            dates.push(date.toLocaleDateString('no-NO'));
+        }
+        return dates;
+    }
+    
+    function getNextWeekDates() {
+        const dates = [];
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        const startOfNextWeek = new Date(today);
+        startOfNextWeek.setDate(today.getDate() - dayOfWeek + 8);
+        
+        for (let i = 0; i < 5; i++) {
+            const date = new Date(startOfNextWeek);
+            date.setDate(startOfNextWeek.getDate() + i);
+            dates.push(date.toLocaleDateString('no-NO'));
+        }
+        return dates;
+    }
+    
+    function getThisMonthDates() {
+        const dates = [];
+        const today = new Date();
+        const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+        const numberOfDates = Math.min(10, daysInMonth - today.getDate());
+        
+        for (let i = 1; i <= numberOfDates; i++) {
+            const date = new Date(today);
+            date.setDate(today.getDate() + i);
+            dates.push(date.toLocaleDateString('no-NO'));
+        }
+        return dates;
+    }
+});
+</script>
+{% endblock %}

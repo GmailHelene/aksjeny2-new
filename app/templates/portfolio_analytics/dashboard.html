@@ -1,0 +1,1142 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} - Aksjeradar{% endblock %}
+
+{% block extra_css %}
+<style>
+    .analytics-dashboard {
+        background: linear-gradient(135deg, #667eea 0%, #000000 100%);
+        min-height: 100vh;
+        padding: 20px 0;
+    }
+    
+    .analytics-container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        padding: 30px;
+        margin: 20px auto;
+        max-width: 1400px;
+    }
+    
+    .analytics-header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .analytics-header h1 {
+        color: #2c3e50;
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        font-weight: 700;
+    }
+    
+    .analytics-header p {
+        color: #7f8c8d;
+        font-size: 1.2rem;
+        margin: 0;
+    }
+    
+    .portfolio-selector {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .portfolio-selector select {
+        width: 100%;
+        max-width: 400px;
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        background: white;
+    }
+    
+    .analytics-tabs {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .analytics-tab {
+        padding: 12px 24px;
+        background: #e9ecef;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .analytics-tab.active {
+        background: linear-gradient(135deg, #667eea 0%, #000000 100%);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .analytics-content {
+        display: none;
+        animation: fadeIn 0.5s ease-in;
+    }
+    
+    .analytics-content.active {
+        display: block;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+        .metric-card {
+        background: darkblue;
+        border: none;
+        border-radius: 12px;
+        color: white;
+        text-align: center;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+    
+    .metric-value {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 5px;
+    }
+    
+    .metric-label {
+        color: #7f8c8d;
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .metric-change {
+        font-size: 0.9rem;
+        margin-top: 8px;
+        padding: 4px 8px;
+        border-radius: 12px;
+        display: inline-block;
+    }
+    
+    .metric-change.positive {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .metric-change.negative {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .health-score-container {
+        background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
+        border-radius: 20px;
+        padding: 30px;
+        color: white;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .health-score-circle {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        position: relative;
+    }
+    
+    .health-score-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+    
+    .health-score-grade {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+    
+    .chart-container {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    
+    .chart-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .recommendations-list {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 25px;
+    }
+    
+    .recommendation-item {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        border-left: 4px solid #28a745;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .recommendation-action {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+        text-transform: capitalize;
+    }
+    
+    .recommendation-reason {
+        color: #6c757d;
+        font-size: 0.95rem;
+        margin-bottom: 10px;
+    }
+    
+    .recommendation-confidence {
+        background: #e7f3ff;
+        color: #0056b3;
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+    
+    .risk-indicator {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .risk-low { background: #d4edda; color: #155724; }
+    .risk-medium { background: #fff3cd; color: #856404; }
+    .risk-high { background: #f8d7da; color: #721c24; }
+    
+    .loading-spinner {
+        text-align: center;
+        padding: 40px;
+    }
+    
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .alert-item {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .alert-icon {
+        font-size: 1.2rem;
+        color: #856404;
+    }
+    
+    .alert-text {
+        color: #856404;
+        font-weight: 500;
+    }
+    
+    .sector-breakdown {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .sector-item {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .sector-name {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 5px;
+    }
+    
+    .sector-weight {
+        color: #667eea;
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+    
+    @media (max-width: 768px) {
+        .analytics-container {
+            margin: 10px;
+            padding: 20px;
+        }
+        
+        .analytics-header h1 {
+            font-size: 2rem;
+        }
+        
+        .analytics-tabs {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .analytics-tab {
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+        }
+        
+        .metrics-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-dashboard">
+    <div class="analytics-container">
+        <!-- Header Section -->
+        <div class="analytics-header">
+            <h1>🧠 Avansert Porteføljeanalyse</h1>
+            <p>AI-drevne innsikter og omfattende risikoanalyse for dine investeringer</p>
+        </div>
+        
+        <!-- Portfolio Selector -->
+        <div class="portfolio-selector">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <label for="portfolioSelect" class="form-label fw-bold">Velg portefølje for analyse:</label>
+                    <select id="portfolioSelect" class="form-select">
+                        {% if portfolios %}
+                            {% for portfolio in portfolios %}
+                                <option value="{{ portfolio.id }}" 
+                                        {% if default_portfolio and portfolio.id == default_portfolio.id %}selected{% endif %}>
+                                    {{ portfolio.name }} ({{ portfolio.stocks|length }} aksjer)
+                                </option>
+                            {% endfor %}
+                        {% else %}
+                            <option value="">Ingen porteføljer funnet</option>
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="col-md-6 text-end">
+                    <button id="analyzeBtn" class="btn btn-primary btn-lg" 
+                            style="background: linear-gradient(135deg, #667eea 0%, #000000 100%); border: none; border-radius: 25px; padding: 12px 30px;">
+                        <i class="bi bi-graph-up me-2"></i>Start Analyse
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Analytics Tabs -->
+        <div class="analytics-tabs">
+            <button class="analytics-tab active" data-tab="overview">
+                <i class="bi bi-pie-chart me-2"></i>Oversikt
+            </button>
+            <button class="analytics-tab" data-tab="risk">
+                <i class="bi bi-shield-lock me-2"></i>Risikoanalyse
+            </button>
+            <button class="analytics-tab" data-tab="performance">
+                <i class="bi bi-trophy me-2"></i>Ytelsesattribusjon
+            </button>
+            <button class="analytics-tab" data-tab="optimization">
+                <i class="bi bi-sliders me-2"></i>Optimalisering
+            </button>
+            <button class="analytics-tab" data-tab="ai-insights">
+                <i class="bi bi-cpu me-2"></i>AI Innsikter
+            </button>
+            <button class="analytics-tab" data-tab="esg">
+                <i class="bi bi-leaf me-2"></i>ESG Analyse
+            </button>
+        </div>
+        
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            <p class="d-inline">Utfører avansert porteføljeanalyse...</p>
+        </div>
+        
+        <!-- Overview Tab -->
+        <div id="overview-tab" class="analytics-content active">
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Key Metrics Grid -->
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-value" id="totalReturn">-</div>
+                            <div class="metric-label">Total Avkastning</div>
+                            <div class="metric-change" id="returnChange">-</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="sharpeRatio">-</div>
+                            <div class="metric-label">Sharpe Ratio</div>
+                            <div class="metric-change" id="sharpeChange">-</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="portfolioBeta">-</div>
+                            <div class="metric-label">Portfolio Beta</div>
+                            <div class="metric-change" id="betaChange">-</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="maxDrawdown">-</div>
+                            <div class="metric-label">Maks Nedgang</div>
+                            <div class="metric-change" id="drawdownChange">-</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts Section -->
+                    <div class="chart-container">
+                        <div class="chart-title">Sektorfordeling</div>
+                        <canvas id="sectorChart" height="300"></canvas>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <!-- Portfolio Health Score -->
+                    <div class="health-score-container">
+                        <div class="health-score-circle">
+                            <div class="health-score-value" id="healthScore">-</div>
+                        </div>
+                        <div class="health-score-grade" id="healthGrade">Analyserer...</div>
+                        <p id="healthInterpretation">Venter på analyse...</p>
+                    </div>
+                    
+                    <!-- Quick Alerts -->
+                    <div class="chart-container">
+                        <div class="chart-title">📊 Viktige Varsler</div>
+                        <div id="alertsList">
+                            <p class="text-muted text-center">Ingen varsler tilgjengelig</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Risk Analysis Tab -->
+        <div id="risk-tab" class="analytics-content">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="chart-container">
+                        <div class="chart-title">Risikosammenbrudd</div>
+                        <canvas id="riskChart" height="300"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-title">Scenarioanalyse</div>
+                        <div id="scenarioAnalysis">
+                            <p class="text-muted">Utfører stresstest...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="chart-container">
+                        <div class="chart-title">Risikokategorier</div>
+                        <div id="riskMetrics">
+                            <div class="metric-card">
+                                <div class="metric-value" id="var95">-</div>
+                                <div class="metric-label">Value at Risk (95%)</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value" id="cvar95">-</div>
+                                <div class="metric-label">Conditional VaR (95%)</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-title">Konsentrasjonsrisiko</div>
+                        <div id="concentrationRisk">
+                            <p class="text-muted">Analyserer konsentrasjon...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Performance Attribution Tab -->
+        <div id="performance-tab" class="analytics-content">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="chart-container">
+                        <div class="chart-title">Ytelsesattribusjon</div>
+                        <canvas id="attributionChart" height="300"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-title">Sektorbidrag til Avkastning</div>
+                        <div id="sectorContributions" class="sector-breakdown">
+                            <p class="text-muted">Beregner sektorbidrag...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="chart-container">
+                        <div class="chart-title">Beste/Verste Ytelse</div>
+                        <div id="performanceHighlights">
+                            <p class="text-muted">Analyserer ytelse...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Optimization Tab -->
+        <div id="optimization-tab" class="analytics-content">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="recommendations-list">
+                        <h3 class="mb-4">🎯 AI-drevne Optimaliseringsanbefalinger</h3>
+                        <div id="recommendationsList">
+                            <p class="text-muted">Genererer anbefalinger...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="chart-container">
+                        <div class="chart-title">Optimaliseringsmuligheter</div>
+                        <div id="optimizationOpportunities">
+                            <p class="text-muted">Analyserer muligheter...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- AI Insights Tab -->
+        <div id="ai-insights-tab" class="analytics-content">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="chart-container">
+                        <div class="chart-title">🤖 AI Porteføljeanalyse</div>
+                        <div id="aiInsightsSummary">
+                            <p class="text-muted">Genererer AI-innsikter...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-title">Markedsposisjonering</div>
+                        <div id="marketPositioning">
+                            <p class="text-muted">Analyserer posisjonering...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="chart-container">
+                        <div class="chart-title">Diversifiseringsanalyse</div>
+                        <div id="diversificationAnalysis">
+                            <p class="text-muted">Evaluerer diversifisering...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-title">Trendanalyse</div>
+                        <div id="performanceTrends">
+                            <p class="text-muted">Analyserer trender...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ESG Analysis Tab -->
+        <div id="esg-tab" class="analytics-content">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="chart-container">
+                        <div class="chart-title">🌱 ESG og Bærekraftsscore</div>
+                        <canvas id="esgChart" height="300"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-title">Bærekraftig Allokering</div>
+                        <div id="sustainableAllocation">
+                            <p class="text-muted">Analyserer bærekraft...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="chart-container">
+                        <div class="chart-title">ESG Anbefalinger</div>
+                        <div id="esgRecommendations">
+                            <p class="text-muted">Genererer ESG-anbefalinger...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+class AdvancedPortfolioAnalytics {
+    constructor() {
+        this.currentPortfolioId = null;
+        this.analysisData = null;
+        this.charts = {};
+        this.initializeEventListeners();
+    }
+    
+    initializeEventListeners() {
+        // Tab switching
+        document.querySelectorAll('.analytics-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                this.switchTab(e.target.dataset.tab);
+            });
+        });
+        
+        // Portfolio selection
+        document.getElementById('portfolioSelect').addEventListener('change', (e) => {
+            this.currentPortfolioId = e.target.value;
+        });
+        
+        // Analyze button
+        document.getElementById('analyzeBtn').addEventListener('click', () => {
+            this.performAnalysis();
+        });
+        
+        // Auto-analyze default portfolio if available
+        const defaultPortfolio = document.getElementById('portfolioSelect').value;
+        if (defaultPortfolio) {
+            this.currentPortfolioId = defaultPortfolio;
+            setTimeout(() => this.performAnalysis(), 1000);
+        }
+    }
+    
+    switchTab(tabName) {
+        // Update tab buttons
+        document.querySelectorAll('.analytics-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        
+        // Update content
+        document.querySelectorAll('.analytics-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(`${tabName}-tab`).classList.add('active');
+        
+        // Load specific analysis if needed
+        if (this.analysisData) {
+            this.updateTabContent(tabName);
+        }
+    }
+    
+    async performAnalysis() {
+        if (!this.currentPortfolioId) {
+            alert('Vennligst velg en portefølje for analyse');
+            return;
+        }
+        
+        this.showLoading(true);
+        
+        try {
+            // Perform comprehensive analysis
+            const response = await fetch(`/portfolio-analytics/comprehensive-analysis/${this.currentPortfolioId}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                this.analysisData = data;
+                this.updateAllTabs();
+                this.showLoading(false);
+            } else {
+                throw new Error(data.error || 'Analyse feilet');
+            }
+        } catch (error) {
+            console.error('Analysis error:', error);
+            alert('Feil under analyse: ' + error.message);
+            this.showLoading(false);
+        }
+    }
+    
+    showLoading(show) {
+        document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none';
+        document.querySelectorAll('.analytics-content').forEach(content => {
+            content.style.opacity = show ? '0.5' : '1';
+        });
+    }
+    
+    updateAllTabs() {
+        if (!this.analysisData) return;
+        
+        this.updateOverviewTab();
+        this.updateRiskTab();
+        this.updatePerformanceTab();
+        this.updateOptimizationTab();
+        this.updateAIInsightsTab();
+        this.updateESGTab();
+    }
+    
+    updateOverviewTab() {
+        const metrics = this.analysisData.portfolio_metrics;
+        const healthScore = this.analysisData.ai_insights.portfolio_health_score;
+        
+        // Update key metrics
+        this.updateElement('totalReturn', this.formatPercentage(metrics.total_return));
+        this.updateElement('sharpeRatio', metrics.sharpe_ratio.toFixed(2));
+        this.updateElement('portfolioBeta', metrics.beta.toFixed(2));
+        this.updateElement('maxDrawdown', this.formatPercentage(metrics.max_drawdown));
+        
+        // Update health score
+        this.updateElement('healthScore', Math.round(healthScore.overall_score));
+        this.updateElement('healthGrade', healthScore.grade);
+        this.updateElement('healthInterpretation', healthScore.interpretation);
+        
+        // Update alerts
+        this.updateAlerts(this.analysisData.ai_insights.alerts);
+        
+        // Create sector chart
+        this.createSectorChart();
+    }
+    
+    updateRiskTab() {
+        const riskData = this.analysisData.risk_decomposition;
+        const metrics = this.analysisData.portfolio_metrics;
+        
+        // Update risk metrics
+        this.updateElement('var95', this.formatPercentage(metrics.var_95));
+        this.updateElement('cvar95', this.formatPercentage(metrics.cvar_95));
+        
+        // Create risk charts
+        this.createRiskChart();
+        this.updateScenarioAnalysis();
+        this.updateConcentrationRisk();
+    }
+    
+    updatePerformanceTab() {
+        const attribution = this.analysisData.performance_attribution;
+        
+        this.createAttributionChart();
+        this.updateSectorContributions(attribution.sector_contributions);
+        this.updatePerformanceHighlights();
+    }
+    
+    updateOptimizationTab() {
+        const recommendations = this.analysisData.optimization_recommendations;
+        this.updateRecommendations(recommendations);
+        this.updateOptimizationOpportunities();
+    }
+    
+    updateAIInsightsTab() {
+        const insights = this.analysisData.ai_insights;
+        
+        this.updateAIInsightsSummary(insights);
+        this.updateMarketPositioning(insights.market_positioning);
+        this.updateDiversificationAnalysis(insights.diversification_analysis);
+        this.updatePerformanceTrends(insights.performance_trends);
+    }
+    
+    updateESGTab() {
+        const esgData = this.analysisData.esg_metrics;
+        
+        this.createESGChart(esgData);
+        this.updateSustainableAllocation();
+        this.updateESGRecommendations();
+    }
+    
+    updateTabContent(tabName) {
+        switch(tabName) {
+            case 'overview': this.updateOverviewTab(); break;
+            case 'risk': this.updateRiskTab(); break;
+            case 'performance': this.updatePerformanceTab(); break;
+            case 'optimization': this.updateOptimizationTab(); break;
+            case 'ai-insights': this.updateAIInsightsTab(); break;
+            case 'esg': this.updateESGTab(); break;
+        }
+    }
+    
+    // Chart creation methods
+    createSectorChart() {
+        const ctx = document.getElementById('sectorChart').getContext('2d');
+        const sectorRisk = this.analysisData.risk_decomposition.sector_risk;
+        
+        if (this.charts.sector) {
+            this.charts.sector.destroy();
+        }
+        
+        this.charts.sector = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(sectorRisk),
+                datasets: [{
+                    data: Object.values(sectorRisk),
+                    backgroundColor: [
+                        '#667eea', '#000000', '#f093fb', '#f5576c',
+                        '#4facfe', '#00f2fe', '#43e97b', '#38f9d7'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+    
+    createRiskChart() {
+        const ctx = document.getElementById('riskChart').getContext('2d');
+        const riskData = this.analysisData.risk_decomposition;
+        
+        if (this.charts.risk) {
+            this.charts.risk.destroy();
+        }
+        
+        this.charts.risk = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Systematisk Risiko', 'Idiosynkratisk Risiko', 'Konsentrasjonsrisiko'],
+                datasets: [{
+                    label: 'Risikobidrag',
+                    data: [
+                        riskData.systematic_risk,
+                        riskData.idiosyncratic_risk,
+                        riskData.concentration_risk
+                    ],
+                    backgroundColor: ['#667eea', '#000000', '#f5576c']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+    
+    createAttributionChart() {
+        const ctx = document.getElementById('attributionChart').getContext('2d');
+        const attribution = this.analysisData.performance_attribution;
+        
+        if (this.charts.attribution) {
+            this.charts.attribution.destroy();
+        }
+        
+        this.charts.attribution = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Aksjevalg', 'Aktivaallokering', 'Interaksjon'],
+                datasets: [{
+                    label: 'Bidrag til Avkastning',
+                    data: [
+                        attribution.security_selection,
+                        attribution.asset_allocation,
+                        attribution.interaction
+                    ],
+                    backgroundColor: ['#43cea2', '#185a9d', '#667eea']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+    
+    createESGChart(esgData) {
+        const ctx = document.getElementById('esgChart').getContext('2d');
+        
+        if (this.charts.esg) {
+            this.charts.esg.destroy();
+        }
+        
+        this.charts.esg = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Miljø', 'Sosial', 'Styring'],
+                datasets: [{
+                    label: 'ESG Score',
+                    data: [
+                        esgData.environmental_score,
+                        esgData.social_score,
+                        esgData.governance_score
+                    ],
+                    backgroundColor: 'rgba(67, 206, 162, 0.2)',
+                    borderColor: '#43cea2',
+                    pointBackgroundColor: '#43cea2'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    }
+    
+    // Update methods for various sections
+    updateAlerts(alerts) {
+        const alertsList = document.getElementById('alertsList');
+        
+        if (!alerts || alerts.length === 0) {
+            alertsList.innerHTML = '<p class="text-muted text-center">Ingen kritiske varsler</p>';
+            return;
+        }
+        
+        alertsList.innerHTML = alerts.map(alert => `
+            <div class="alert-item">
+                <span class="alert-icon">${this.getAlertIcon(alert)}</span>
+                <span class="alert-text">${alert}</span>
+            </div>
+        `).join('');
+    }
+    
+    updateRecommendations(recommendations) {
+        const recommendationsList = document.getElementById('recommendationsList');
+        
+        if (!recommendations || recommendations.length === 0) {
+            recommendationsList.innerHTML = '<p class="text-muted">Ingen anbefalinger tilgjengelig</p>';
+            return;
+        }
+        
+        recommendationsList.innerHTML = recommendations.map(rec => `
+            <div class="recommendation-item">
+                <div class="recommendation-action">
+                    ${this.getActionIcon(rec.action)} ${rec.action} ${rec.symbol}
+                </div>
+                <div class="recommendation-reason">${rec.reasoning}</div>
+                <span class="recommendation-confidence">
+                    Tillit: ${Math.round(rec.confidence_score * 100)}%
+                </span>
+            </div>
+        `).join('');
+    }
+    
+    updateSectorContributions(contributions) {
+        const container = document.getElementById('sectorContributions');
+        
+        if (!contributions || Object.keys(contributions).length === 0) {
+            container.innerHTML = '<p class="text-muted">Ingen sektordata tilgjengelig</p>';
+            return;
+        }
+        
+        container.innerHTML = Object.entries(contributions).map(([sector, contribution]) => `
+            <div class="sector-item">
+                <div class="sector-name">${sector}</div>
+                <div class="sector-weight">${this.formatPercentage(contribution)}</div>
+            </div>
+        `).join('');
+    }
+    
+    // Utility methods
+    updateElement(id, value) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = value;
+        }
+    }
+    
+    formatPercentage(value) {
+        return (value * 100).toFixed(1) + '%';
+    }
+    
+    getAlertIcon(alert) {
+        if (alert.includes('risiko')) return '⚠️';
+        if (alert.includes('ytelse')) return '📉';
+        if (alert.includes('under')) return '🔴';
+        return '💡';
+    }
+    
+    getActionIcon(action) {
+        switch(action.toLowerCase()) {
+            case 'buy': return '📈';
+            case 'sell': return '📉';
+            case 'hold': return '⏸️';
+            case 'rebalance': return '⚖️';
+            default: return '📊';
+        }
+    }
+    
+    // Additional update methods (simplified for brevity)
+    updateScenarioAnalysis() {
+        document.getElementById('scenarioAnalysis').innerHTML = `
+            <div class="alert alert-info">
+                <strong>Markedskrasj (-20%):</strong> Estimert porteføljepåvirkning basert på beta
+            </div>
+        `;
+    }
+    
+    updateConcentrationRisk() {
+        const riskLevel = this.analysisData.risk_decomposition.concentration_risk;
+        const riskClass = riskLevel > 0.3 ? 'risk-high' : riskLevel > 0.15 ? 'risk-medium' : 'risk-low';
+        
+        document.getElementById('concentrationRisk').innerHTML = `
+            <div class="text-center">
+                <span class="risk-indicator ${riskClass}">
+                    ${this.formatPercentage(riskLevel)} Konsentrasjon
+                </span>
+            </div>
+        `;
+    }
+    
+    updatePerformanceHighlights() {
+        const trends = this.analysisData.ai_insights.performance_trends;
+        document.getElementById('performanceHighlights').innerHTML = `
+            <div class="metric-card">
+                <div class="metric-value text-success">${trends.winners}</div>
+                <div class="metric-label">Vinnere</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value text-danger">${trends.losers}</div>
+                <div class="metric-label">Tapere</div>
+            </div>
+        `;
+    }
+    
+    updateOptimizationOpportunities() {
+        document.getElementById('optimizationOpportunities').innerHTML = `
+            <div class="alert alert-success">
+                <strong>Optimaliseringsmuligheter identifisert!</strong><br>
+                Se anbefalinger for spesifikke handlinger.
+            </div>
+        `;
+    }
+    
+    updateAIInsightsSummary(insights) {
+        const healthScore = insights.portfolio_health_score;
+        document.getElementById('aiInsightsSummary').innerHTML = `
+            <div class="alert alert-info">
+                <h5>AI Sammendrag</h5>
+                <p><strong>Helhetsvurdering:</strong> ${healthScore.interpretation}</p>
+                <p><strong>Hovedstyrke:</strong> Balansert tilnærming</p>
+                <p><strong>Forbedringspotensial:</strong> Diversifisering</p>
+            </div>
+        `;
+    }
+    
+    updateMarketPositioning(positioning) {
+        document.getElementById('marketPositioning').innerHTML = `
+            <div class="metric-card">
+                <div class="metric-value">${positioning.market_exposure}</div>
+                <div class="metric-label">Markedseksponering</div>
+            </div>
+        `;
+    }
+    
+    updateDiversificationAnalysis(analysis) {
+        document.getElementById('diversificationAnalysis').innerHTML = `
+            <div class="metric-card">
+                <div class="metric-value">${analysis.number_of_holdings}</div>
+                <div class="metric-label">Antall Beholdninger</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">${analysis.sector_count}</div>
+                <div class="metric-label">Antall Sektorer</div>
+            </div>
+        `;
+    }
+    
+    updatePerformanceTrends(trends) {
+        document.getElementById('performanceTrends').innerHTML = `
+            <div class="alert alert-success">
+                <strong>Beste:</strong> ${trends.best_performer || 'N/A'}<br>
+                <strong>Verste:</strong> ${trends.worst_performer || 'N/A'}
+            </div>
+        `;
+    }
+    
+    updateSustainableAllocation() {
+        document.getElementById('sustainableAllocation').innerHTML = `
+            <div class="alert alert-success">
+                <strong>Bærekraftig investering:</strong> Analyserer ESG-kriterier...
+            </div>
+        `;
+    }
+    
+    updateESGRecommendations() {
+        document.getElementById('esgRecommendations').innerHTML = `
+            <div class="alert alert-info">
+                <strong>ESG Anbefalinger:</strong><br>
+                • Øk allokering til grønne teknologier<br>
+                • Vurder ESG-fond for diversifisering
+            </div>
+        `;
+    }
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    new AdvancedPortfolioAnalytics();
+});
+</script>
+{% endblock %}

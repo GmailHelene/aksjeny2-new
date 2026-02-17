@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Aksjeny App</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; text-align: center; }
+        .nav { margin-bottom: 30px; }
+        .nav a { margin: 0 10px; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Welcome to Aksjeny</h1>
+    
+    <div class="nav">
+        <a href="/login">Login</a>
+        <a href="/forgot-password">Reset Password</a>
+    </div>
+    
+    <p>Your Railway production app is running!</p>
+
+    {% if current_user.is_authenticated %}
+        <!-- Authenticated user dashboard -->
+        <div class="container-fluid py-4">
+            <h1 class="h2 mb-4">Markedsoversikt</h1>
+            
+            <!-- Quick Stats -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body">
+                            <h5 class="card-title">Oslo Børs</h5>
+                            <p class="card-text">{{ oslo_stocks|length }} aksjer</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success">
+                        <div class="card-body">
+                            <h5 class="card-title">Globale Markeder</h5>
+                            <p class="card-text">{{ global_stocks|length }} aksjer</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-dark bg-warning">
+                        <div class="card-body">
+                            <h5 class="card-title">Kryptovaluta</h5>
+                            <p class="card-text">{{ crypto|length }} valutaer</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-info">
+                        <div class="card-body">
+                            <h5 class="card-title">Valutakurser</h5>
+                            <p class="card-text">{{ currencies|length }} par</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Market Tables -->
+            <div class="row">
+                <!-- Oslo Børs -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Oslo Børs - Topp Aksjer</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Ticker</th>
+                                            <th>Selskap</th>
+                                            <th class="text-end">Pris</th>
+                                            <th class="text-end">Endring</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for symbol, stock in oslo_stocks.items() %}
+                                            {% if loop.index <= 5 %}
+                                            <tr>
+                                                <td><a href="{{ url_for('stocks.details', symbol=symbol) }}">{{ symbol }}</a></td>
+                                                <td>{{ stock.name or symbol }}</td>
+                                                <td class="text-end">{{ "%.2f"|format(stock.current_price or stock.price or stock.last_price) }} NOK</td>
+                                                <td class="text-end">
+                                                    <span class="badge {% if (stock.change_percent or stock.change or 0)|float >= 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                                        {% if (stock.change_percent or stock.change or 0)|float >= 0 %}+{% endif %}{{ "%.2f"|format((stock.change_percent or stock.change or 0)|float) }}%
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                <a href="{{ url_for('stocks.list_stocks', market='oslo') }}" class="btn btn-sm btn-primary">Se alle Oslo-aksjer</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Global Markets -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Globale Markeder</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Ticker</th>
+                                            <th>Selskap</th>
+                                            <th class="text-end">Pris</th>
+                                            <th class="text-end">Endring</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for symbol, stock in global_stocks.items() %}
+                                            {% if loop.index <= 5 %}
+                                            <tr>
+                                                <td><a href="{{ url_for('stocks.details', symbol=symbol) }}">{{ symbol }}</a></td>
+                                                <td>{{ stock.name or symbol }}</td>
+                                                <td class="text-end">${{ "%.2f"|format(stock.current_price or stock.price or stock.last_price) }}</td>
+                                                <td class="text-end">
+                                                    <span class="badge {% if (stock.change_percent or stock.change or 0)|float >= 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                                        {% if (stock.change_percent or stock.change or 0)|float >= 0 %}+{% endif %}{{ "%.2f"|format((stock.change_percent or stock.change or 0)|float) }}%
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                <a href="{{ url_for('stocks.list_stocks', market='global') }}" class="btn btn-sm btn-primary">Se alle globale aksjer</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <!-- Crypto -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Kryptovaluta</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Ticker</th>
+                                            <th>Navn</th>
+                                            <th class="text-end">Pris</th>
+                                            <th class="text-end">Endring</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for symbol, coin in crypto.items() %}
+                                            {% if loop.index <= 5 %}
+                                            <tr>
+                                                <td>{{ symbol }}</td>
+                                                <td>{{ coin.name or symbol }}</td>
+                                                <td class="text-end">${{ "%.2f"|format(coin.current_price or coin.price or coin.last_price) }}</td>
+                                                <td class="text-end">
+                                                    <span class="badge {% if (coin.change_percent or coin.change or 0)|float >= 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                                        {% if (coin.change_percent or coin.change or 0)|float >= 0 %}+{% endif %}{{ "%.2f"|format((coin.change_percent or coin.change or 0)|float) }}%
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                <a href="{{ url_for('stocks.list_stocks', market='crypto') }}" class="btn btn-sm btn-primary">Se all krypto</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Currencies -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Valutakurser</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Valutapar</th>
+                                            <th class="text-end">Kurs</th>
+                                            <th class="text-end">Endring</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for symbol, currency in currencies.items() %}
+                                            <tr>
+                                                <td>{{ symbol }}</td>
+                                                <td class="text-end">{{ "%.4f"|format(currency.current_price or currency.price or currency.last_price) }}</td>
+                                                <td class="text-end">
+                                                    <span class="badge {% if (currency.change_percent or currency.change or 0)|float >= 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                                        {% if (currency.change_percent or currency.change or 0)|float >= 0 %}+{% endif %}{{ "%.2f"|format((currency.change_percent or currency.change or 0)|float) }}%
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                <a href="{{ url_for('stocks.list_stocks', market='currency') }}" class="btn btn-sm btn-primary">Se alle valutaer</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- ...existing code... -->
+    {% endif %}
+</body>
+</html>

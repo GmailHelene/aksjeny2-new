@@ -1,0 +1,58 @@
+/* Master CSS fixes for all styling issues/* Card header styles moved to card-header-fixes.css */e all problematic gradient and image backgrounds */
+.bg-gradient,
+*[class*="gradient"],
+[class*="-gradient"],
+.bg-primary,
+.bg-dark,
+.bg-success,
+.bg-info,
+.bg-warning,
+.bg-danger {
+    background-image: none !important;
+}
+
+/* Currency page header styling */
+.currency-header h1,
+.currency-header h2 {
+    color: inherit !important;
+    background: none !important;
+    text-shadow: none !important;
+}
+
+/* Calendar navigation styling */
+.calendar-nav {
+    background: #282828 !important;
+    background-color: #282828 !important;
+    background-image: none !important;
+}
+
+/* Dropdown styling */
+.dropdown-menu {
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+
+
+/* Card header styling fixes */
+.card-header h5,
+.card-header h6,
+.card-header a {
+    color: inherit !important;
+}
+
+.card-header.bg-primary {
+    background-color: transparent !important;
+}
+
+.card-header.bg-primary h5,
+.card-header.bg-primary h6 {
+    background-color: transparent !important;
+}
+
+/* Button active state */
+.btn-check:checked+.btn,
+.btn.show,
+.btn:first-child:active,
+:not(.btn-check)+.btn:active {
+    background-color: transparent !important;
+}

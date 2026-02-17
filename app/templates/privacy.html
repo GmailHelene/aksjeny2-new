@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Personvern - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="mb-4">Personvernerklæring</h1>
+            
+            <div class="card">
+                <div class="card-body">
+                    <p class="lead">Sist oppdatert: {{ now.strftime('%d.%m.%Y') }}</p>
+                    
+                    <h2 class="h4 mt-4">1. Innledning</h2>
+                    <p>Aksjeradar tar personvern på alvor. Denne personvernerklæringen forklarer hvordan vi samler inn, bruker og beskytter dine personopplysninger.</p>
+                    
+                    <h2 class="h4 mt-4">2. Informasjon vi samler inn</h2>
+                    <ul>
+                        <li>Kontoinformasjon (navn, e-post)</li>
+                        <li>Brukerdata (porteføljer, søkehistorikk)</li>
+                        <li>Tekniske data (IP-adresse, nettlesertype)</li>
+                    </ul>
+                    
+                    <h2 class="h4 mt-4">3. Hvordan vi bruker informasjonen</h2>
+                    <p>Vi bruker dine data for å:</p>
+                    <ul>
+                        <li>Levere våre tjenester</li>
+                        <li>Forbedre brukeropplevelsen</li>
+                        <li>Sende viktige varsler</li>
+                        <li>Sikre plattformen</li>
+                    </ul>
+                    
+                    <h2 class="h4 mt-4">4. Datasikkerhet</h2>
+                    <p>Vi bruker bransjestandarder for å beskytte dine data, inkludert kryptering og sikre servere.</p>
+                    
+                    <h2 class="h4 mt-4">5. Dine rettigheter</h2>
+                    <p>Du har rett til å:</p>
+                    <ul>
+                        <li>Be om innsyn i dine data</li>
+                        <li>Korrigere unøyaktige data</li>
+                        <li>Slette din konto</li>
+                        <li>Eksportere dine data</li>
+                    </ul>
+                    
+                    <h2 class="h4 mt-4">6. Kontakt oss</h2>
+                        <li>Teknisk informasjon om hvordan du koblet til vår tjeneste</li>
+                    </ul>
+
+                    <h2 class="h4 mb-3 mt-4">Hvordan vi bruker informasjonen</h2>
+                    <p>Vi bruker den innsamlede informasjonen til:</p>
+                    <ul>
+                        <li>Å levere, vedlikeholde og forbedre vår tjeneste</li>
+                        <li>Å opprette og administrere din konto</li>
+                        <li>Å tilpasse din opplevelse</li>
+                        <li>Å kommunisere med deg, inkludert å svare på henvendelser og gi kundestøtte</li>
+                        <li>Å sende deg tekniske varsler, oppdateringer, sikkerhetsadvarsler og administrative meldinger</li>
+                        <li>Å analysere trender og overvåke appens ytelse</li>
+                        <li>Å beskytte våre tjenester mot svindel og misbruk</li>
+                    </ul>
+
+                    <h2 class="h4 mb-3 mt-4">Deling av informasjon</h2>
+                    <p>Vi deler ikke din personlige informasjon med tredjeparter, unntatt i følgende situasjoner:</p>
+                    <ul>
+                        <li>Med din uttrykkelige samtykke</li>
+                        <li>For å overholde lover, forskrifter, rettskjennelser eller andre juridiske prosesser</li>
+                        <li>Med tjenesteleverandører som hjelper oss med å drive vår tjeneste (f.eks. hosting, dataanalyse, kundeservice)</li>
+                        <li>I tilfelle en fusjon, oppkjøp, konkurs, reorganisering eller salg av eiendeler</li>
+                    </ul>
+                    
+                    <h3 class="h5 mb-2 mt-3">Tredjepartstjenester</h3>
+                    <p>Vår app bruker følgende tredjepartstjenester som kan samle inn informasjon:</p>
+                    <ul>
+                        <li>Google Analytics: For å analysere appbruk</li>
+                        <li>Firebase: For appytelse og krasjianalyse</li>
+                        <li>Yahoo Finance API: For å hente aksjedata (ingen personlige data deles)</li>
+                    </ul>
+
+                    <h2 class="h4 mb-3 mt-4">Datasikkerhet</h2>
+                    <p>Vi tar sikkerhet på alvor og implementerer passende tekniske og organisatoriske tiltak for å beskytte dine personopplysninger mot uautorisert tilgang, utilsiktet tap eller endring.</p>
+
+                    <h2 class="h4 mb-3 mt-4">Dine rettigheter</h2>
+                    <p>Avhengig av hvor du bor, kan du ha visse rettigheter knyttet til dine personopplysninger, inkludert:</p>
+                    <ul>
+                        <li>Rett til å få tilgang til dataene vi har om deg</li>
+                        <li>Rett til å korrigere unøyaktige eller ufullstendige data</li>
+                        <li>Rett til å slette dine data under visse omstendigheter</li>
+                        <li>Rett til å begrense behandlingen av dine data</li>
+                        <li>Rett til å motsette deg behandling av dine data</li>
+                        <li>Rett til dataportabilitet</li>
+                    </ul>
+                    
+                    <p>For å utøve disse rettigheter, vennligst kontakt oss på <a href="mailto:kontakt@aksjeradar.trade">kontakt@aksjeradar.trade</a>.</p>
+
+                    <h2 class="h4 mb-3 mt-4">Oppbevaring av data</h2>
+                    <p>Vi beholder dine personopplysninger så lenge kontoen din er aktiv eller så lenge det er nødvendig for å levere tjenester til deg. Vi vil også beholde og bruke dine personopplysninger i den grad det er nødvendig for å overholde våre juridiske forpliktelser, løse tvister og håndheve våre avtaler.</p>
+
+                    <h2 class="h4 mb-3 mt-4">Endringer i denne personvernerklæringen</h2>
+                    <p>Vi kan oppdatere denne personvernerklæringen fra tid til annen. Når vi gjør det, vil vi oppdatere "sist oppdatert"-datoen øverst i denne erklæringen og varsle deg via appen eller e-post for vesentlige endringer.</p>
+
+                    <h2 class="h4 mb-3 mt-4">Vilkår og betingelser</h2>
+                    <p>Ved å bruke Aksjeradar godtar du våre vilkår og betingelser. Tjenesten tilbys "som den er", uten garantier for nøyaktighet eller tilgjengelighet. All informasjon og analyse er kun ment som veiledning og ikke som investeringsråd. Brukeren er selv ansvarlig for sine investeringsbeslutninger.</p>
+                    <ul>
+                        <li>Du må være over 18 år for å bruke tjenesten.</li>
+                        <li>Du forplikter deg til å ikke misbruke tjenesten eller forsøke å omgå sikkerhetsmekanismer.</li>
+                        <li>Vi forbeholder oss retten til å endre vilkår, funksjonalitet og tilgjengelighet uten forvarsel.</li>
+                        <li>Ved misbruk kan din konto bli sperret uten varsel.</li>
+                        <li>Eventuelle tvister reguleres etter norsk lov.</li>
+                    </ul>
+
+                    <h2 class="h4 mb-3 mt-4">GDPR og cookies</h2>
+                    <p>Aksjeradar følger EUs personvernforordning (GDPR) og norsk lovgivning. Vi bruker kun nødvendige cookies for innlogging, sikkerhet og brukeropplevelse. Ved første besøk får du informasjon om bruk av cookies og kan velge å godta eller avvise ikke-nødvendige cookies.</p>
+                    <ul>
+                        <li>Du kan når som helst trekke tilbake samtykke til cookies via innstillingene i nettleseren din.</li>
+                        <li>Vi lagrer ikke sensitive personopplysninger i cookies.</li>
+                        <li>All behandling av personopplysninger skjer i henhold til gjeldende lovverk.</li>
+                    </ul>
+                    <p>For spørsmål om GDPR eller cookies, kontakt oss på <a href="mailto:kontakt@aksjeradar.trade">kontakt@aksjeradar.trade</a>.</p>
+
+                    <h2 class="h4 mb-3 mt-4">Kontakt oss</h2>
+                    <p>Hvis du har spørsmål om denne personvernerklæringen eller våre datapraksis, vennligst kontakt oss på:</p>
+                    <p><strong>E-post:</strong> <a href="mailto:kontakt@aksjeradar.trade">kontakt@aksjeradar.trade</a><br>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

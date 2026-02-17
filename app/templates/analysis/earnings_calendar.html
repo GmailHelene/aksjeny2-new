@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block title %}Resultatkalender | Aksjeradar{% endblock %}
+
+{% block content %}
+{% include 'analysis/_menu.html' %}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i class="bi bi-graph-up text-primary"></i> Resultatkalender
+                    </h1>
+                    <p class="text-muted">Oversikt over kommende og tidligere kvartalspresentasjoner</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle"></i> {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- Filter Section -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtere</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label class="form-label">Tidsperiode</label>
+                            <select class="form-select">
+                                <option value="upcoming" selected>Kommende resultater</option>
+                                <option value="this_week">Denne uken</option>
+                                <option value="next_week">Neste uke</option>
+                                <option value="this_month">Denne måneden</option>
+                                <option value="last_quarter">Forrige kvartal</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Marked</label>
+                            <select class="form-select">
+                                <option value="" selected>Alle markeder</option>
+                                <option value="OSE">Oslo Børs</option>
+                                <option value="US">Amerikanske aksjer</option>
+                                <option value="EU">Europeiske aksjer</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Sektor</label>
+                            <select class="form-select">
+                                <option value="">Alle sektorer</option>
+                                <option value="energy">Energi</option>
+                                <option value="finance">Finans</option>
+                                <option value="tech">Teknologi</option>
+                                <option value="healthcare">Helse</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-primary w-100" style="margin-top: 32px;">
+                                <i class="bi bi-search"></i> Filtrer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if earnings_events %}
+    <!-- Earnings Calendar -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-calendar-event"></i> Kommende resultater</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Dato</th>
+                                    <th>Selskap</th>
+                                    <th>Symbol</th>
+                                    <th>Kvartal</th>
+                                    <th>Estimat EPS</th>
+                                    <th>Forrige EPS</th>
+                                    <th>Endring</th>
+                                    <th>Tidspunkt</th>
+                                    <th>Aksjon</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in earnings_events %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ event.date }}</strong>
+                                    </td>
+                                    <td>
+                                        <strong>{{ event.company }}</strong>
+                                        <br><small class="text-muted">{{ event.sector }}</small>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('stocks.details', symbol=event.symbol) }}" class="text-decoration-none">
+                                            {{ event.symbol }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ event.quarter }}</span>
+                                    </td>
+                                    <td>
+                                        <strong>{{ event.eps_estimate }} {{ event.currency }}</strong>
+                                    </td>
+                                    <td>{{ event.eps_previous }} {{ event.currency }}</td>
+                                    <td>
+                                        {% if event.eps_change > 0 %}
+                                        <span class="text-success">
+                                            <i class="bi bi-arrow-up"></i> +{{ event.eps_change }}%
+                                        </span>
+                                        {% elif event.eps_change < 0 %}
+                                        <span class="text-danger">
+                                            <i class="bi bi-arrow-down"></i> {{ event.eps_change }}%
+                                        </span>
+                                        {% else %}
+                                        <span class="text-muted">Uendret</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if event.time_period == 'BMO' %}bg-primary
+                                            {% elif event.time_period == 'AMC' %}bg-secondary
+                                            {% else %}bg-warning{% endif %}">
+                                            {{ event.time_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-outline-primary btn-sm me-1">
+                                            <i class="bi bi-bell"></i> Påminnelse
+                                        </button>
+                                        <button class="btn btn-outline-success btn-sm">
+                                            <i class="bi bi-star"></i> Følg
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Earnings Summary Stats -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="text-primary">{{ earnings_events|length }}</h3>
+                    <p class="text-muted">Resultater denne perioden</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="text-success">{{ earnings_events|selectattr('eps_change', 'gt', 0)|list|length }}</h3>
+                    <p class="text-muted">Forventet vekst</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="text-warning">{{ earnings_events|selectattr('time_period', 'eq', 'BMO')|list|length }}</h3>
+                    <p class="text-muted">Før markedsåpning</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="text-info">{{ earnings_events|selectattr('time_period', 'eq', 'AMC')|list|length }}</h3>
+                    <p class="text-muted">Etter markedsslutt</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notable Earnings This Week -->
+    {% if notable_earnings %}
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-star-fill text-warning"></i> Viktige resultater denne uken</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for earning in notable_earnings %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ earning.company }}</h6>
+                                    <p class="card-text">
+                                        <span class="badge bg-primary">{{ earning.symbol }}</span>
+                                        <span class="badge bg-info">{{ earning.date }}</span>
+                                    </p>
+                                    <div class="d-flex justify-content-between">
+                                        <small class="text-muted">Estimat: {{ earning.eps_estimate }}</small>
+                                        <small class="text-muted">Forrige: {{ earning.eps_previous }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Educational Information -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card bg-light border-0">
+                <div class="card-body">
+                    <h5><i class="bi bi-info-circle text-info"></i> Om kvartalspresentasjoner</h5>
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <h6><i class="bi bi-currency-dollar text-success"></i> EPS (Earnings Per Share)</h6>
+                            <p class="small">Resultat per aksje - et nøkkeltall for lønnsomhet.</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6><i class="bi bi-clock text-primary"></i> BMO/AMC</h6>
+                            <p class="small">Before Market Open / After Market Close - når resultatene publiseres.</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6><i class="bi bi-graph-up text-warning"></i> Estimater</h6>
+                            <p class="small">Analytikernes forventninger til selskapets resultater.</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6><i class="bi bi-exclamation-triangle text-danger"></i> Volatilitet</h6>
+                            <p class="small">Aksjekursen kan bevege seg betydelig rundt resultattidspunktet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-graph-up text-muted" style="font-size: 4rem;"></i>
+        <h3 class="mt-3 text-muted">Ingen resultater planlagt</h3>
+        <p class="text-muted">Ingen kvartalspresentasjoner i den valgte perioden</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

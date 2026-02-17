@@ -1,0 +1,735 @@
+{% extends "base.html" %}
+
+{% block title %}Sammenlign Aksjer - Aksjeradar{% endblock %}
+
+{% block head %}
+<meta name="description" content="Sammenlign aksjer side-ved-side med avanserte analyser og tekniske indikatorer">
+<meta name="keywords" content="sammenlign aksjer, aktieanalyse, teknisk analyse, norske aksjer">
+
+<style>
+    .comparison-card {
+        transition: all 0.3s ease;
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+    }
+    
+    .comparison-card:hover {
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+    
+    .metric-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+    
+    .metric-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #495057;
+    }
+    
+    .metric-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .positive { color: #28a745; }
+    .negative { color: #dc3545; }
+    .neutral { color: #6c757d; }
+    
+    .chart-container {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .stock-selector {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .correlation-matrix {
+        font-size: 0.9rem;
+    }
+    
+    .correlation-cell {
+        text-align: center;
+        border-radius: 4px;
+        color: white;
+        font-weight: bold;
+    }
+    
+    .btn-compare {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        border: none;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-compare:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,123,255,0.3);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="bi bi-bar-chart-line"></i> Sammenlign Aksjer
+            </h1>
+            
+            <!-- Stock Selector -->
+            <div class="stock-selector">
+                <form method="GET" action="{{ url_for('stocks.compare') }}">
+                    <div class="row align-items-end">
+                        <div class="col-md-8">
+                            <label for="symbols" class="form-label">
+                                <strong>Velg aksjer å sammenligne:</strong>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="symbols" 
+                                   name="symbols" 
+                                   placeholder="F.eks: EQNR.OL,DNB.OL,TEL.OL (skill med komma)"
+                                   value="{{ tickers|join(',') if tickers else '' }}"
+                                   required>
+                            <div class="form-text">
+                                Skriv aksjesymbol (f.eks. EQNR.OL for Equinor). Maksimum 5 aksjer.
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="period" class="form-label">Periode:</label>
+                            <select class="form-select" name="period" id="period">
+                                <option value="1mo" {{ 'selected' if period == '1mo' else '' }}>1 måned</option>
+                                <option value="3mo" {{ 'selected' if period == '3mo' else '' }}>3 måneder</option>
+                                <option value="6mo" {{ 'selected' if period == '6mo' else '' }}>6 måneder</option>
+                                <option value="1y" {{ 'selected' if period == '1y' else '' }}>1 år</option>
+                                <option value="2y" {{ 'selected' if period == '2y' else '' }}>2 år</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-compare w-100">
+                                <i class="bi bi-search"></i> Sammenlign
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            {% if tickers and tickers|length > 0 %}
+            <!-- Current Metrics Overview -->
+            <div class="row mb-4">
+                {% for ticker in tickers %}
+                <div class="col-lg-{{ (12 / tickers|length)|int if tickers|length <= 4 else 3 }}">
+                    <div class="comparison-card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                {{ ticker }}
+                                {% if ticker_names and ticker in ticker_names %}
+                                <small class="d-block">{{ ticker_names[ticker] }}</small>
+                                {% endif %}
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                                {% if errors and ticker in errors %}
+                                <div class="alert alert-warning p-2 mb-2">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    {{ errors[ticker] }}
+                                </div>
+                                {% set show_na = true %}
+                                {% else %}
+                                {% set show_na = false %}
+                                {% endif %}
+                                <!-- Current Price -->
+                                <div class="metric-card">
+                                    <div class="metric-value">
+                                        {% if show_na %}
+                                            N/A
+                                        {% elif current_prices and ticker in current_prices and current_prices[ticker] is not none %}
+                                            {{ "%.2f"|format(current_prices[ticker]) }} NOK
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </div>
+                                    <div class="metric-label">Gjeldende pris</div>
+                                </div>
+                                <!-- Price Change -->
+                                <div class="metric-card">
+                                    {% set change_val = price_changes[ticker] if price_changes and ticker in price_changes and price_changes[ticker] is not none else None %}
+                                    {% set change_class = 'neutral' %}
+                                    {% if not show_na and change_val is not none %}
+                                        {% if change_val > 0 %}
+                                            {% set change_class = 'positive' %}
+                                        {% elif change_val < 0 %}
+                                            {% set change_class = 'negative' %}
+                                        {% endif %}
+                                    {% endif %}
+                                    <div class="metric-value {{ change_class }}">
+                                        {% if show_na %}
+                                            N/A
+                                        {% elif change_val is not none %}
+                                            {{ "%.2f"|format(change_val) }}%
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </div>
+                                    <div class="metric-label">Endring</div>
+                                </div>
+                                <!-- Volatility -->
+                                <div class="metric-card">
+                                    <div class="metric-value">
+                                        {% if show_na %}
+                                            N/A
+                                        {% elif volatility and ticker in volatility and volatility[ticker] is not none %}
+                                            {{ "%.2f"|format(volatility[ticker]) }}%
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </div>
+                                    <div class="metric-label">Volatilitet</div>
+                                </div>
+                                <!-- Volume -->
+                                <div class="metric-card">
+                                    <div class="metric-value">
+                                        {% if show_na %}
+                                            N/A
+                                        {% elif volumes and ticker in volumes and volumes[ticker] is not none %}
+                                            {{ "{:,}".format(volumes[ticker]|int) }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </div>
+                                    <div class="metric-label">Volum</div>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% else %}
+            <!-- No stocks selected -->
+            <div class="text-center py-5">
+                <i class="bi bi-graph-up" style="font-size: 4rem; color: #6c757d;"></i>
+                <h3 class="mt-3 text-muted">Sammenlign aksjer</h3>
+                <p class="text-muted">Skriv inn aksjesymbol over for å sammenligne aksjer side-ved-side</p>
+                <p class="text-muted"><strong>Eksempel:</strong> EQNR.OL,DNB.OL,TEL.OL</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Stock comparison form -->
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="stock-selector mb-4">
+                <form id="comparison-form" action="/stocks/compare" method="get">
+                <div class="row">
+                    </div>
+                    <div class="col-md-3 mb-3 mb-md-0">
+                        <label for="ticker2" class="form-label">Aksje 2:</label>
+                        <input type="text" class="form-control" id="ticker2" name="tickers" value="{{ tickers[1] if tickers and tickers|length > 1 else 'DNB.OL' }}" placeholder="f.eks. DNB.OL" required>
+                    </div>
+                    <div class="col-md-3 mb-3 mb-md-0">
+                        <label for="ticker3" class="form-label">Aksje 3 (valgfri):</label>
+                        <input type="text" class="form-control" id="ticker3" name="tickers" value="{{ tickers[2] if tickers and tickers|length > 2 else '' }}" placeholder="f.eks. TEL.OL">
+                    </div>
+                    <div class="col-md-3 mb-3 mb-md-0">
+                        <label for="ticker4" class="form-label">Aksje 4 (valgfri):</label>
+                        <input type="text" class="form-control" id="ticker4" name="tickers" value="{{ tickers[3] if tickers and tickers|length > 3 else '' }}" placeholder="f.eks. AAPL">
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <label for="period" class="form-label">Periode:</label>
+                        <select class="form-select" id="period" name="period">
+                            <option value="1mo" {% if period == '1mo' %}selected{% endif %}>1 måned</option>
+                            <option value="3mo" {% if period == '3mo' %}selected{% endif %}>3 måneder</option>
+                            <option value="6mo" {% if period == '6mo' or not period %}selected{% endif %}>6 måneder</option>
+                            <option value="1y" {% if period == '1y' %}selected{% endif %}>1 år</option>
+                            <option value="2y" {% if period == '2y' %}selected{% endif %}>2 år</option>
+                            <option value="5y" {% if period == '5y' %}selected{% endif %}>5 år</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <label for="interval" class="form-label">Intervall:</label>
+                        <select class="form-select" id="interval" name="interval">
+                            <option value="1d" {% if interval == '1d' or not interval %}selected{% endif %}>Daglig</option>
+                            <option value="1wk" {% if interval == '1wk' %}selected{% endif %}>Ukentlig</option>
+                            <option value="1mo" {% if interval == '1mo' %}selected{% endif %}>Månedlig</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <label for="normalize" class="form-label">Normalisering:</label>
+                        <select class="form-select" id="normalize" name="normalize">
+                            <option value="1" {% if normalize == '1' or normalize == True %}selected{% endif %}>Normaliser til prosent</option>
+                            <option value="0" {% if normalize == '0' or normalize == False %}selected{% endif %}>Vis faktiske priser</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-primary">Sammenlign</button>
+                    <button type="button" class="btn btn-outline-secondary" id="resetForm">Tilbakestill</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if tickers and tickers|length > 0 %}
+    <div class="card border-0 shadow mb-4">
+        <div class="card-header bg-primary text-white">
+            <h3 class="h5 mb-0">Sammenligning av {{ tickers|join(', ') }}</h3>
+        </div>
+        <div class="card-body">
+            {% if chart_data and chart_data|length > 0 %}
+                <div id="chart-status" class="mt-2 small text-muted text-center">Laster prisdiagram...</div>
+                <div class="chart-container" style="position: relative; height:500px; width:100%; min-height:500px;">
+                    <canvas id="priceChart" style="display: block; box-sizing: border-box; height: 500px; width: 100%;"></canvas>
+                </div>
+                
+                
+            {% else %}
+                {% if tickers and tickers|length > 0 %}
+                    <div class="alert alert-warning text-center my-4">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <h5>Ingen kurs- eller volumdata tilgjengelig</h5>
+                        <p>Kunne ikke hente data for valgte aksjer: {{ tickers|join(', ') }}</p>
+                        <small>Vennligst prøv igjen med gyldige Oslo Børs eller internasjonale tickere.</small>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info text-center my-4">
+                        <i class="bi bi-chart-line"></i>
+                        <h5 class="alert-heading">Sammenlign aksjer</h5>
+                        <p>Velg opptil 4 aksjer for å sammenligne priser, volum og tekniske indikatorer.</p>
+                        <hr>
+                        <p class="mb-0">
+                            <strong>Eksempler:</strong> EQNR.OL, AKER.OL, DNB.OL, AAPL, TSLA, MSFT
+                        </p>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card border-0 shadow mb-4">
+        <div class="card-header bg-primary text-white">
+            <h3 class="h5 mb-0">Nøkkeltall</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Selskap</th>
+                            <th>Dagens kurs</th>
+                            <th>Endring (periode)</th>
+                            <th>Volatilitet</th>
+                            <th>Volum (snitt)</th>
+                            <th>Korrelasjon</th>
+                            <th>Beta</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ticker in tickers %}
+                        <tr>
+                            <td><a href="{{ url_for('stocks.details', symbol=ticker) }}" class="text-decoration-none">{{ ticker }}</a></td>
+                            <td>{{ ticker_names.get(ticker, ticker) }}</td>
+                            <td>
+                                {% set cp = current_prices.get(ticker, None) %}
+                                {% if cp is not none %}
+                                    {{ "%.2f"|format(cp) }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td class="{% set pc = price_changes.get(ticker, None) %}{% if pc is not none and pc > 0 %}text-success{% elif pc is not none and pc < 0 %}text-danger{% endif %}">
+                                {% if pc is not none %}
+                                    {{ "%.2f"|format(pc) }}%
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% set vol = volatility.get(ticker, None) %}
+                                {% if vol is not none %}
+                                    {{ "%.2f"|format(vol) }}%
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% set volu = volumes.get(ticker, None) %}
+                                {% if volu is not none and volu != '' %}
+                                    {{ '{:,.0f}'.format(volu|float) }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% set corr = correlations.get(ticker, {}).get(tickers[0], None) %}
+                                {% if corr is not none %}
+                                    {{ "%.2f"|format(corr) }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% set beta = betas.get(ticker, None) %}
+                                {% if beta is not none %}
+                                    {{ "%.2f"|format(beta) }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                                <td>
+                                    <button class="btn btn-sm btn-star-favorite text-white" style="background: #007bff; border: none;" title="Legg til favoritt" onclick="toggleFavorite('{{ ticker }}', this)">
+                                        <i class="bi bi-star"></i>
+                                    </button>
+                                </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow mb-4">
+        <div class="card-header bg-primary text-white">
+            <h3 class="h5 mb-0">Tekniske indikatorer</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Ticker</th>
+                            <th>RSI (14)</th>
+                            <th>MACD</th>
+                            <th>Signal</th>
+                            <th>Bollinger Bands</th>
+                            <th>200 SMA</th>
+                            <th>50 SMA</th>
+                            <th>Vurdering</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ticker in tickers %}
+                        <tr>
+                            <td><a href="{{ url_for('stocks.details', symbol=ticker) }}" class="text-decoration-none">{{ ticker }}</a></td>
+                            <td>
+                                <span class="badge {% if rsi.get(ticker, 50) > 70 %}bg-danger{% elif rsi.get(ticker, 50) < 30 %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {{ "%.1f"|format(rsi.get(ticker, 50)) }}
+                                </span>
+                            </td>
+                            <td>{{ "%.2f"|format(macd.get(ticker, {}).get('macd', 0)) }}</td>
+                            <td>{{ "%.2f"|format(macd.get(ticker, {}).get('signal', 0)) }}</td>
+                            <td>
+                                {% if bb.get(ticker, {}).get('position') == 'upper' %}
+                                <span class="badge bg-danger">Upper Band</span>
+                                {% elif bb.get(ticker, {}).get('position') == 'lower' %}
+                                <span class="badge bg-success">Lower Band</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Middle</span>
+                                {% endif %}
+                            </td>
+                            <td class="{% if sma200.get(ticker, 0) > 0 %}text-success{% elif sma200.get(ticker, 0) < 0 %}text-danger{% endif %}">
+                                {{ "%.2f"|format(sma200.get(ticker, 0)) }}%
+                            </td>
+                            <td class="{% if sma50.get(ticker, 0) > 0 %}text-success{% elif sma50.get(ticker, 0) < 0 %}text-danger{% endif %}">
+                                {{ "%.2f"|format(sma50.get(ticker, 0)) }}%
+                            </td>
+                            <td>
+                                <span class="badge {% if signals.get(ticker) == 'BUY' %}bg-success{% elif signals.get(ticker) == 'SELL' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                                    {{ signals.get(ticker, 'HOLD') }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize form handling
+    const form = document.getElementById('comparison-form');
+        const resetButton = document.getElementById('resetForm');
+        
+        resetButton.addEventListener('click', function() {
+            document.getElementById('ticker1').value = 'EQNR.OL';
+            document.getElementById('ticker2').value = 'DNB.OL';
+            document.getElementById('ticker3').value = '';
+            document.getElementById('ticker4').value = '';
+            document.getElementById('period').value = '6mo';
+            document.getElementById('interval').value = '1d';
+            document.getElementById('normalize').value = '1';
+        });
+        
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Collect all ticker inputs
+            const tickers = Array.from(form.querySelectorAll('input[name="tickers"]'))
+                .map(input => input.value.trim())
+                .filter(value => value !== '');
+                
+            if (tickers.length < 2) {
+                alert('Du må angi minst to aksjer for å sammenligne.');
+                return;
+            }
+            
+            // Construct URL with tickers
+            const period = document.getElementById('period').value;
+            const interval = document.getElementById('interval').value;
+            const normalize = document.getElementById('normalize').value;
+            
+            const url = `{{ url_for('stocks.compare') }}?` + 
+                       tickers.map(t => `tickers=${encodeURIComponent(t)}`).join('&') +
+                       `&period=${period}&interval=${interval}&normalize=${normalize}`;
+            
+            window.location.href = url;
+        });
+        
+        {% if tickers and tickers|length > 0 and chart_data %}
+        console.log('Chart rendering conditions met');
+        console.log('Tickers:', {{ tickers|tojson }});
+        console.log('Chart data:', {{ chart_data|tojson }});
+        
+        document.getElementById('chart-status').textContent = 'Klargjør data...';
+        
+        // Check if Chart.js is loaded
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js is not loaded!');
+            document.getElementById('chart-status').textContent = 'Feil: Chart.js ikke lastet';
+            return;
+        }
+        
+        // Get canvas elements
+        const priceCanvas = document.getElementById('priceChart');
+        
+        if (!priceCanvas) {
+            console.error('Price canvas element not found!');
+            document.getElementById('chart-status').textContent = 'Feil: Canvas element ikke funnet';
+            return;
+        }
+        
+        // Create contexts
+        const priceCtx = priceCanvas.getContext('2d');
+        
+        if (!priceCtx) {
+            console.error('Canvas context could not be created!');
+            document.getElementById('chart-status').textContent = 'Feil: Canvas kontekst kunne ikke opprettes';
+            return;
+        }
+        
+        document.getElementById('chart-status').textContent = 'Bygger datasett...';
+        
+        // Prepare datasets for price chart
+        const priceDatasets = [];
+        const volumeDatasets = []; // Initialize volume datasets array
+        const colors = ['#0d6efd', '#dc3545', '#198754', '#6f42c1', '#fd7e14'];
+        
+        {% for ticker in tickers %}
+        if ('{{ ticker }}' in {{ chart_data|tojson }}) {
+            const tickerData = {{ chart_data|tojson }}['{{ ticker }}'];
+            console.log('Processing chart data for {{ ticker }}:', tickerData);
+            
+            if (tickerData && tickerData.length > 0) {
+                // Convert date strings to Date objects for Chart.js
+                const processedData = tickerData.map(d => ({
+                    x: new Date(d.date), // Convert string date to Date object
+                    y: d.close || d.price || 0 // Handle both 'close' and 'price' fields
+                }));
+                
+                // Price dataset
+                priceDatasets.push({
+                    label: '{{ ticker_names.get(ticker, ticker) }}',
+                    data: processedData,
+                    borderColor: colors[{{ loop.index0 }} % colors.length],
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    tension: 0.1,
+                    pointRadius: 0,
+                    pointHoverRadius: 5
+                });
+                
+                console.log('Added dataset for {{ ticker }}');
+            }
+        }
+        {% endfor %}
+        
+        console.log('Price datasets:', priceDatasets);
+        console.log('Volume datasets:', volumeDatasets);
+        
+        document.getElementById('chart-status').textContent = 'Oppretter grafer...';
+        
+        if (priceDatasets.length > 0) {
+            try {
+                // Create price chart
+                const priceChart = new Chart(priceCtx, {
+                    type: 'line',
+                    data: {
+                        datasets: priceDatasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    unit: 'day',
+                                    tooltipFormat: 'dd.MM.yyyy',
+                                    displayFormats: {
+                                        day: 'dd.MM'
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Dato'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Pris (NOK)'
+                                }
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Prissammenligning - {{ tickers|join(", ") }}'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.dataset.label || '';
+                                        const value = context.parsed.y;
+                                        return `${label}: ${value.toFixed(2)} NOK`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                console.log('Price chart created successfully');
+                document.getElementById('chart-status').textContent = 'Prisgraf opprettet! ✓';
+                document.getElementById('chart-status').className = 'mt-2 small text-success';
+            } catch (error) {
+                console.error('Error creating price chart:', error);
+                document.getElementById('chart-status').textContent = 'Feil ved opprettelse av prisgraf: ' + error.message;
+            }
+        } else {
+            console.warn('No price datasets available');
+            priceCanvas.style.display = 'none';
+            priceCanvas.parentNode.innerHTML = '<div class="alert alert-warning">Ingen prisdata tilgjengelig</div>';
+        }
+        {% else %}
+        // Debug logging for troubleshooting
+        console.group('Chart Data Debug Info');
+        console.log('Tickers:', {{ tickers|tojson if tickers else '[]' }});
+        console.log('Chart Data:', {{ chart_data|tojson if chart_data else '{}' }});
+        console.log('Metrics:', {{ metrics|tojson if metrics else '{}' }});
+        console.log('Period:', '{{ period }}');
+        console.log('Interval:', '{{ interval }}');
+        console.log('Normalize:', {{ 'true' if normalize else 'false' }});
+        console.groupEnd();
+        
+        // Show diagnostic message in UI
+        const diagnosticDiv = document.createElement('div');
+        diagnosticDiv.className = 'alert alert-info mt-3';
+        diagnosticDiv.innerHTML = `
+            <h6>Diagnostisk informasjon:</h6>
+            <ul class="mb-0">
+                <li>Antall tickere: {{ (tickers|length) if tickers else 0 }}</li>
+                <li>Data tilgjengelig: {{ 'Ja' if chart_data and chart_data|length > 0 else 'Nei' }}</li>
+                <li>Periode: {{ period }}</li>
+                <li>Intervall: {{ interval }}</li>
+            </ul>
+        `;
+        document.querySelector('.chart-container').appendChild(diagnosticDiv);
+        {% endif %}
+        
+        // Initialize favorite buttons (optional one-time check)
+        document.querySelectorAll('.btn-star-favorite').forEach(function(btn) {
+            const ticker = btn.dataset.ticker || btn.getAttribute('data-symbol');
+            if (!ticker) return;
+            fetch(`/stocks/api/favorites/check/${ticker}`)
+              .then(r=>r.json())
+              .then(data => {
+                  const favored = !!data.favorited;
+                  btn.innerHTML = favored ? '<i class="bi bi-star-fill"></i>' : '<i class="bi bi-star"></i>';
+                  btn.classList.toggle('btn-warning', favored);
+                  btn.classList.toggle('text-white', !favored);
+                  btn.addEventListener('click', () => {
+                      window.toggleFavorite(ticker, { button: btn, onSuccess: (res)=>{
+                          const f = !!res.favorited;
+                          btn.innerHTML = f ? '<i class="bi bi-star-fill"></i>' : '<i class="bi bi-star"></i>';
+                          btn.classList.toggle('btn-warning', f);
+                          btn.classList.toggle('text-white', !f);
+                          showToast(f ? `${ticker} lagt til i favoritter` : `${ticker} fjernet fra favoritter`, f ? 'success':'danger');
+                      }});
+                  }, { once: false });
+              })
+              .catch(()=>{});
+        });
+    });
+
+    function showToast(message, type) {
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
+        toast.setAttribute('role', 'alert');
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        let container = document.querySelector('.toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            document.body.appendChild(container);
+        }
+        container.appendChild(toast);
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+        toast.addEventListener('hidden.bs.toast', () => toast.remove());
+    }
+</script>
+{% endblock %}

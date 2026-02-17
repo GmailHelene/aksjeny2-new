@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Legg til Aksjetips | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-lightbulb me-2"></i>
+                        Legg til Aksjetips
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ csrf_token() }}
+                        
+                        <div class="mb-3">
+                            <label for="ticker" class="form-label">Aksjesymbol *</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="ticker" 
+                                   name="ticker" 
+                                   value="{{ ticker or '' }}" 
+                                   placeholder="f.eks. EQNR.OL eller AAPL"
+                                   required>
+                            <div class="form-text">Skriv inn aksjesymbolet du vil gi tips om.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="tip_type" class="form-label">Type anbefaling *</label>
+                            <select class="form-select" id="tip_type" name="tip_type" required>
+                                <option value="">Velg anbefalingstype</option>
+                                <option value="KJØP">KJØP - Sterk anbefaling</option>
+                                <option value="HOLD">HOLD - Behold posisjon</option>
+                                <option value="SELG">SELG - Reduser eller selg</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="confidence" class="form-label">Konfidensnivå *</label>
+                            <select class="form-select" id="confidence" name="confidence" required>
+                                <option value="">Velg konfidensnivå</option>
+                                <option value="Høy">Høy (85-100%)</option>
+                                <option value="Medium">Medium (65-84%)</option>
+                                <option value="Lav">Lav (50-64%)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="analysis" class="form-label">Analyse og begrunnelse *</label>
+                            <textarea class="form-control" 
+                                      id="analysis" 
+                                      name="analysis" 
+                                      rows="5" 
+                                      placeholder="Begrunn din anbefaling. Inkluder teknisk analyse, fundamentale faktorer, markedssentiment, etc."
+                                      required></textarea>
+                            <div class="form-text">Forklar hvorfor du anbefaler denne aksjen. Jo mer detaljert, jo bedre!</div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('portfolio.stock_tips') }}" class="btn btn-secondary me-md-2">
+                                <i class="bi bi-arrow-left me-1"></i>
+                                Tilbake
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-1"></i>
+                                Legg til tips
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tips for good recommendations -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Tips for gode anbefalinger
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <strong>Teknisk analyse:</strong> Inkluder tekniske indikatorer som RSI, MACD, støtte/motstand
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <strong>Fundamental analyse:</strong> Se på P/E-forhold, inntjening, gjeld, konkurranseposisjon
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <strong>Markedssentiment:</strong> Vurder generell markedsstemning og sektortrends
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <strong>Risikofaktorer:</strong> Nevn potensielle risikoer og usikkerhetsmomenter
+                        </li>
+                        <li>
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <strong>Tidshorisont:</strong> Spesifiser om dette er kortsiktig eller langsiktig anbefaling
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

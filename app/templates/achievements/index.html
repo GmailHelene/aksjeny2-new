@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Mine Oppnåelser - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            {% if demo_mode %}
+            <!-- Demo Mode Message -->
+            <div class="alert alert-info mb-4">
+                <h5 class="alert-heading">
+                    <i class="bi bi-info-circle"></i> Demo-modus
+                </h5>
+                <p>Logg inn for å spore dine egne oppnåelser og fremgang!</p>
+                <a href="{{ url_for('main.login') }}" class="btn btn-primary btn-sm">Logg inn</a>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="bi bi-trophy text-warning"></i> Oppnåelser (Demo)</h1>
+            </div>
+            
+            <!-- Demo achievements display -->
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <i class="bi bi-lock fs-1 text-muted mb-3"></i>
+                    <h5>Oppnåelser er låst i demo-modus</h5>
+                    <p class="text-muted">Registrer deg eller logg inn for å låse opp oppnåelser og spore din fremgang!</p>
+                </div>
+            </div>
+            
+            {% else %}
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="bi bi-trophy text-warning"></i> Mine Oppnåelser</h1>
+                <div class="text-end">
+                    <div class="badge bg-primary fs-6">Level {{ user_stats.current_level if user_stats else 1 }}</div>
+                    <div class="small text-muted">{{ user_stats.total_points if user_stats else 0 }} poeng</div>
+                </div>
+            </div>
+            
+            <!-- Level Progress -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Fremgang til neste level</span>
+                        <span>{{ user_stats.get_level_progress() if user_stats else 0 }}/100</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-warning" style="width: {{ user_stats.get_level_progress() if user_stats else 0 }}%"></div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- User Stats Quick View -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-calendar-check text-primary fs-3"></i>
+                            <h5>{{ user_stats.consecutive_login_days }}</h5>
+                            <small class="text-muted">Dager på rad</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-star-fill text-warning fs-3"></i>
+                            <h5>{{ user_stats.favorites_added }}</h5>
+                            <small class="text-muted">Favoritter</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-briefcase-fill text-info fs-3"></i>
+                            <h5>{{ user_stats.portfolios_created }}</h5>
+                            <small class="text-muted">Porteføljer</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-chat-square-text text-secondary fs-3"></i>
+                            <h5>{{ user_stats.forum_posts }}</h5>
+                            <small class="text-muted">Forum-innlegg</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Earned Achievements -->
+            {% if user_achievements %}
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-trophy-fill"></i> Oppnådd ({{ user_achievements|length }})</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for user_ach, achievement in user_achievements %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-{{ achievement.badge_color }}">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            <i class="bi {{ achievement.icon }} text-{{ achievement.badge_color }} fs-2"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">{{ achievement.name }}</h6>
+                                            <p class="mb-1 small">{{ achievement.description }}</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="badge bg-{{ achievement.badge_color }}">+{{ achievement.points }} poeng</span>
+                                                <small class="text-muted">{{ user_ach.earned_at.strftime('%d.%m.%Y') }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Available Achievements -->
+            {% if available_achievements %}
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-target"></i> Tilgjengelige oppnåelser ({{ available_achievements|length }})</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for achievement in available_achievements %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-light">
+                                <div class="card-body opacity-75">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            <i class="bi {{ achievement.icon }} text-muted fs-2"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1 text-muted">{{ achievement.name }}</h6>
+                                            <p class="mb-1 small text-muted">{{ achievement.description }}</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="badge bg-light text-dark">{{ achievement.points }} poeng</span>
+                                                <small class="text-muted">{{ achievement.category|title }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Achievement Notification Modal -->
+<div class="modal fade" id="achievementModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-warning">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title"><i class="bi bi-trophy-fill"></i> Ny oppnåelse!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="achievement-content">
+                    <!-- Content will be inserted by JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Awesome!</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Achievement notification system
+function showAchievementNotification(achievement) {
+    const content = document.getElementById('achievement-content');
+    content.innerHTML = `
+        <i class="bi ${achievement.icon} text-${achievement.badge_color}" style="font-size: 3rem;"></i>
+        <h4 class="mt-3">${achievement.name}</h4>
+        <p>${achievement.description}</p>
+        <span class="badge bg-${achievement.badge_color} fs-6">+${achievement.points} poeng</span>
+    `;
+    
+    const modal = new bootstrap.Modal(document.getElementById('achievementModal'));
+    modal.show();
+}
+
+// Function to track achievements (called from other pages)
+window.trackAchievement = function(type, increment = 1) {
+    fetch('/achievements/api/update_stat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+            type: type,
+            increment: increment
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.new_achievements.length > 0) {
+            // Show notifications for new achievements
+            data.new_achievements.forEach(achievement => {
+                setTimeout(() => showAchievementNotification(achievement), 500);
+            });
+        }
+    })
+    .catch(error => console.error('Error tracking achievement:', error));
+};
+</script>
+{% endblock %}

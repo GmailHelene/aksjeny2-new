@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}{{ watchlist.name }} - Watchlist - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i class="bi bi-eye"></i> {{ watchlist.name }}
+                    </h1>
+                    {% if watchlist.description %}
+                    <p class="text-muted mb-0">{{ watchlist.description }}</p>
+                    {% endif %}
+                </div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('watchlist.index') }}">Watchlists</a></li>
+                        <li class="breadcrumb-item active">{{ watchlist.name }}</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    {% if stocks and stocks|length > 0 %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-graph-up"></i> Aksjer i watchlist ({{ stocks|length }})
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Navn</th>
+                                    <th class="text-end">Pris</th>
+                                    <th class="text-end">Endring</th>
+                                    <th class="text-end">Endring %</th>
+                                    <th class="text-end">Volum</th>
+                                    <th class="text-center">Handlinger</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stock in stocks %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ stock.symbol }}</strong>
+                                    </td>
+                                    <td>{{ stock.name }}</td>
+                                    <td class="text-end">
+                                        <span class="fw-bold">{{ "%.2f"|format(stock.price) }}</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="{% if stock.change > 0 %}text-success{% elif stock.change < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                            {% if stock.change > 0 %}+{% endif %}{{ "%.2f"|format(stock.change) }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="{% if stock.change_percent > 0 %}text-success{% elif stock.change_percent < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                            {% if stock.change_percent > 0 %}+{% endif %}{{ "%.2f"|format(stock.change_percent) }}%
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <small class="text-muted">{{ "{:,.0f}"|format(stock.volume) }}</small>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{{ url_for('stocks.details', symbol=stock.symbol) }}" 
+                                               class="btn btn-outline-primary" title="Se detaljer">
+                                                <i class="bi bi-info-circle"></i>
+                                            </a>
+                                            <button class="btn btn-outline-danger" 
+                                                    title="Fjern fra watchlist"
+                                                    onclick="removeFromWatchlist('{{ stock.symbol }}')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Stock Section -->
+    <div class="row mt-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bi bi-plus-circle"></i> Legg til ny aksje
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form id="addStockForm" onsubmit="addToWatchlist(event)">
+                        <div class="input-group">
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="stockSymbol" 
+                                   placeholder="F.eks: EQNR.OL, AAPL"
+                                   required>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus"></i> Legg til
+                            </button>
+                        </div>
+                        <div class="form-text">
+                            Skriv inn aksjesymbol for å legge til i watchlist
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card text-center">
+                <div class="card-body py-5">
+                    <i class="bi bi-eye-slash text-muted" style="font-size: 3rem;"></i>
+                    <h4 class="mt-3">Ingen aksjer lagt til ennå</h4>
+                    <p class="text-muted mb-4">Start med å bygge overvåkningslisten din ved å legge til aksjer du vil følge.</p>
+                    
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <form id="addStockForm" onsubmit="addToWatchlist(event)">
+                                <div class="input-group mb-3">
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="stockSymbol" 
+                                           placeholder="F.eks: EQNR.OL, AAPL"
+                                           required>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-plus"></i> Legg til
+                                    </button>
+                                </div>
+                                <div class="form-text">
+                                    Skriv inn aksjesymbol for å starte din watchlist
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Add stock to watchlist
+function addToWatchlist(event) {
+    event.preventDefault();
+    
+    const symbol = document.getElementById('stockSymbol').value.trim().toUpperCase();
+    if (!symbol) {
+        showToast('Vennligst skriv inn et aksjesymbol', 'warning');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Legger til...';
+    submitBtn.disabled = true;
+    
+    // Use advanced watchlist API endpoint
+    fetch('/watchlist/api/watchlist/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || ''
+        },
+        body: JSON.stringify({ symbol })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(`${symbol} lagt til i watchlist!`, 'success');
+            // Reload page to show updated list
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            showToast(data.message || 'Kunne ikke legge til aksje', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Teknisk feil ved tillegging av aksje', 'error');
+    })
+    .finally(() => {
+        // Restore button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        document.getElementById('stockSymbol').value = '';
+    });
+}
+
+// Remove stock from watchlist
+function removeFromWatchlist(symbol) {
+    if (!confirm(`Er du sikker på at du vil fjerne ${symbol} fra watchlist?`)) {
+        return;
+    }
+    
+    // Use advanced watchlist remove API
+    fetch('/watchlist/api/watchlist/remove', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || ''
+        },
+        body: JSON.stringify({ symbol })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(`${symbol} fjernet fra watchlist`, 'success');
+            // Reload page to show updated list
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showToast(data.message || 'Kunne ikke fjerne aksje', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Teknisk feil ved fjerning av aksje', 'error');
+    });
+}
+
+// Toast notification function
+function showToast(message, type = 'info') {
+    // Create toast container if it doesn't exist
+    let toastContainer = document.querySelector('.toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        document.body.appendChild(toastContainer);
+    }
+    
+    // Determine toast class based on type
+    let toastClass = 'bg-primary';
+    let icon = 'bi-info-circle';
+    
+    switch(type) {
+        case 'success':
+            toastClass = 'bg-success';
+            icon = 'bi-check-circle';
+            break;
+        case 'error':
+            toastClass = 'bg-danger';
+            icon = 'bi-exclamation-triangle';
+            break;
+        case 'warning':
+            toastClass = 'bg-warning';
+            icon = 'bi-exclamation-triangle';
+            break;
+    }
+    
+    // Create toast
+    const toastElement = document.createElement('div');
+    toastElement.className = `toast align-items-center text-white ${toastClass} border-0`;
+    toastElement.setAttribute('role', 'alert');
+    toastElement.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi ${icon} me-2"></i>
+                ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    toastContainer.appendChild(toastElement);
+    
+    // Show toast
+    if (typeof bootstrap !== 'undefined' && bootstrap.Toast) {
+        const toast = new bootstrap.Toast(toastElement);
+        toast.show();
+        
+        // Remove toast after it's hidden
+        toastElement.addEventListener('hidden.bs.toast', () => {
+            toastElement.remove();
+        });
+    } else {
+        // Fallback if Bootstrap is not available
+        setTimeout(() => {
+            toastElement.remove();
+        }, 5000);
+    }
+}
+</script>
+{% endblock %}

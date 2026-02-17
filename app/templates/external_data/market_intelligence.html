@@ -1,0 +1,619 @@
+{% extends "base.html" %}
+
+{% block title %}Market Intelligence - External Data{% endblock %}
+
+{% block head %}
+{{ super() }}
+<style>
+/* Fix color contrast issues */
+.bg-danger, .bg-primary, .bg-warning, .bg-info {
+    background-color: #dc3545 !important;
+}
+
+.bg-success {
+    background-color: #198754 !important;
+}
+
+.card-header.bg-primary {
+    background-color: #0d47a1 !important;
+}
+
+.intelligence-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+.intelligence-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+}
+
+.intelligence-header {
+    background: darkblue;
+    color: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.metric-widget {
+    background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.signal-strong-buy {
+    background-color: #198754 !important;
+    color: white;
+}
+
+.signal-buy {
+    background-color: #28a745 !important;
+    color: white;
+}
+
+.signal-neutral {
+    background-color: #ffc107 !important;
+    color: #212529;
+}
+
+.signal-sell {
+    background-color: #fd7e14 !important;
+    color: white;
+}
+
+.signal-strong-sell {
+    background-color: #dc3545 !important;
+    color: white;
+}
+
+.news-item {
+    border-left: 4px solid #007bff;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.news-positive {
+    border-left-color: #28a745;
+}
+
+.news-negative {
+    border-left-color: #dc3545;
+}
+
+.news-neutral {
+    border-left-color: #ffc107;
+}
+
+.sentiment-meter {
+    width: 100%;
+    height: 20px;
+    background: linear-gradient(to right, #dc3545 0%, #ffc107 50%, #28a745 100%);
+    border-radius: 10px;
+    position: relative;
+}
+
+.sentiment-indicator {
+    position: absolute;
+    top: -5px;
+    width: 30px;
+    height: 30px;
+    background: white;
+    border: 3px solid #333;
+    border-radius: 50%;
+    transform: translateX(-15px);
+}
+
+.ai-insight {
+    background: linear-gradient(135deg, #667eea 0%, #000000 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="intelligence-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="h2 mb-2">
+                            <i class="bi bi-brain me-3"></i>Market Intelligence
+                        </h1>
+                        <p class="mb-0">Avansert markedsanalyse med AI-drevne innsikter og sanntidsdata</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-light active" data-update="live">Live</button>
+                            <button type="button" class="btn btn-outline-light" data-update="daily">Daglig</button>
+                            <button type="button" class="btn btn-outline-light" data-update="weekly">Ukentlig</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics Dashboard -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-widget">
+                <div class="metric-value text-success">78</div>
+                <div class="metric-label">AI Confidence Score</div>
+                <small>↑ 5 poeng siden i går</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-widget" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                <div class="metric-value">62%</div>
+                <div class="metric-label">Bullish Sentiment</div>
+                <small>↑ 3% denne uken</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-widget" style="background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);">
+                <div class="metric-value">1,247</div>
+                <div class="metric-label">Insider Transaksjoner</div>
+                <small>Siste 30 dager</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-widget" style="background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);">
+                <div class="metric-value">$2.1B</div>
+                <div class="metric-label">Smart Money Flow</div>
+                <small>Netto innstrømning</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Intelligence Data -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card intelligence-card">
+                <div class="card-header" style="background-color: #0d47a1 !important; color: white;">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Market Intelligence Reports
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if market_overview %}
+                        <div class="row">
+                            {% for key, value in market_overview.items() %}
+                                {% if key == 'indices' %}
+                                    <div class="col-md-6">
+                                        <h6>Markedsindekser</h6>
+                                        {% for index_name, index_data in value.items() %}
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span>{{ index_name }}</span>
+                                                <span class="{% if index_data.change_percent > 0 %}text-success{% elif index_data.change_percent < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                                    {{ index_data.value|round(2) }} ({{ index_data.change_percent|round(2) }}%)
+                                                </span>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% elif key == 'currencies' %}
+                                    <div class="col-md-6">
+                                        <h6>Valutakurser</h6>
+                                        {% for currency_name, currency_data in value.items() %}
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span>{{ currency_name }}</span>
+                                                <span class="{% if currency_data.change > 0 %}text-success{% elif currency_data.change < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                                    {{ currency_data.value|round(4) }} ({{ currency_data.change|round(4) }})
+                                                </span>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {% if data %}
+                            {% for item in data %}
+                            <div class="mb-3 p-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                                <h6>{{ item.title }}</h6>
+                                <p>{{ item.summary }}</p>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>No market intelligence data available.</p>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Signals & Recommendations -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card intelligence-card">
+                <div class="card-header" style="background-color: #0d47a1 !important; color: white;">
+                    <h5 class="mb-0">
+                        <i class="bi bi-cpu me-2"></i>AI Trading Signaler
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Sterke Kjøpssignaler</h6>
+                            <div class="mb-3 p-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>EQNR.OL</strong>
+                                        <div class="small text-muted">Teknisk breakout + høy innsideaktivitet</div>
+                                    </div>
+                                    <span class="badge signal-strong-buy">STRONG BUY</span>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-success">AI Confidence: 89%</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 p-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>MOWI.OL</strong>
+                                        <div class="small text-muted">Sektorrotasjon + positive earnings</div>
+                                    </div>
+                                    <span class="badge signal-buy">BUY</span>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-success">AI Confidence: 76%</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 p-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>DNB.OL</strong>
+                                        <div class="small text-muted">Rentemiljø + sterke fundamentals</div>
+                                    </div>
+                                    <span class="badge signal-buy">BUY</span>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-success">AI Confidence: 72%</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6>Varselsignaler</h6>
+                            <div class="mb-3 p-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>KAHOOT.OL</strong>
+                                        <div class="small text-muted">Teknisk svakhet + insider salg</div>
+                                    </div>
+                                    <span class="badge signal-sell">SELL</span>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-danger">AI Confidence: 81%</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 p-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>TEL.OL</strong>
+                                        <div class="small text-muted">Sektorpress + makrorisiko</div>
+                                    </div>
+                                    <span class="badge signal-neutral">HOLD</span>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-warning">AI Confidence: 64%</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 p-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>YAR.OL</strong>
+                                        <div class="small text-muted">Commodity-syklus + geopolitisk risiko</div>
+                                    </div>
+                                    <span class="badge signal-neutral">HOLD</span>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-warning">AI Confidence: 58%</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card intelligence-card">
+                <div class="card-header" style="background-color: #0d47a1 !important; color: white;">
+                    <h6 class="mb-0">
+                        <i class="bi bi-speedometer2 me-2"></i>Sentiment Meter
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <h6>Markedssentiment</h6>
+                        <div class="sentiment-meter">
+                            <div class="sentiment-indicator" style="left: 62%;"></div>
+                        </div>
+                        <div class="d-flex justify-content-between small text-muted mt-1">
+                            <span>Bearish</span>
+                            <span>Neutral</span>
+                            <span>Bullish</span>
+                        </div>
+                        <div class="mt-2">
+                            <span class="badge signal-buy">62% BULLISH</span>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6>Sentiment Drivere</h6>
+                    <div class="small">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Insider Kjøp</span>
+                            <span class="text-success">+15%</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Institusjonell Flow</span>
+                            <span class="text-success">+8%</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Options Aktivitet</span>
+                            <span class="text-warning">+2%</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Social Media</span>
+                            <span class="text-danger">-3%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="ai-insight">
+                <h6>
+                    <i class="bi bi-lightbulb me-2"></i>AI Insight
+                </h6>
+                <p class="mb-0">Energisektoren viser sterk momentum med økt innsideaktivitet og positive tekniske signaler. Anbefaler overweight energi og underweight teknologi på kort sikt.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market News Intelligence -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card intelligence-card">
+                <div class="card-header" style="background-color: #0d47a1 !important; color: white;">
+                    <h5 class="mb-0">
+                        <i class="bi bi-newspaper me-2"></i>AI Nyhetsanalyse
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6>Positive Markedsnyheter</h6>
+                            <div class="news-item news-positive">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong>Equinor rapporterer rekord kvartalstall</strong>
+                                        <div class="small text-muted">
+                                            AI Sentiment: 94% Positiv | Påvirkning: Høy
+                                        </div>
+                                        <p class="small mt-1 mb-0">
+                                            Sterke produksjonstall og høyere oljepris gir betydelig oppside for energisektoren...
+                                        </p>
+                                    </div>
+                                    <small class="text-muted">2t</small>
+                                </div>
+                            </div>
+                            
+                            <div class="news-item news-positive">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong>Norges Bank holder renten uendret</strong>
+                                        <div class="small text-muted">
+                                            AI Sentiment: 78% Positiv | Påvirkning: Medium
+                                        </div>
+                                        <p class="small mt-1 mb-0">
+                                            Stabile renter støtter bank- og eiendomssektoren på kort sikt...
+                                        </p>
+                                    </div>
+                                    <small class="text-muted">4t</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-6">
+                            <h6>Risikofaktorer</h6>
+                            <div class="news-item news-negative">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong>Global handelsspenning øker</strong>
+                                        <div class="small text-muted">
+                                            AI Sentiment: 82% Negativ | Påvirkning: Medium
+                                        </div>
+                                        <p class="small mt-1 mb-0">
+                                            Økte tollbarrierer kan påvirke eksportorienterte norske selskaper...
+                                        </p>
+                                    </div>
+                                    <small class="text-muted">1t</small>
+                                </div>
+                            </div>
+                            
+                            <div class="news-item news-neutral">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong>Teknologiaksjer under press globalt</strong>
+                                        <div class="small text-muted">
+                                            AI Sentiment: 65% Negativ | Påvirkning: Lav
+                                        </div>
+                                        <p class="small mt-1 mb-0">
+                                            Begrenset eksponering på Oslo Børs reduserer direkte påvirkning...
+                                        </p>
+                                    </div>
+                                    <small class="text-muted">3t</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Analytics -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card intelligence-card">
+                <div class="card-header" style="background-color: #0d47a1 !important; color: white;">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up me-2"></i>AI Performance Analytics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <h6>Denne Uken</h6>
+                            <div class="metric-value text-success">+8.2%</div>
+                            <small class="text-muted">AI Anbefalinger vs OSEBX</small>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h6>Denne Måneden</h6>
+                            <div class="metric-value text-success">+12.7%</div>
+                            <small class="text-muted">Kumulativ outperformance</small>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h6>Success Rate</h6>
+                            <div class="metric-value text-warning">74%</div>
+                            <small class="text-muted">Profitable trades YTD</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update frequency functionality for market intelligence
+    const updateButtons = document.querySelectorAll('[data-update]');
+    
+    updateButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Update button states
+            updateButtons.forEach(btn => {
+                btn.classList.remove('active', 'btn-light');
+                btn.classList.add('btn-outline-light');
+            });
+            this.classList.remove('btn-outline-light');
+            this.classList.add('active', 'btn-light');
+            
+            const updateFreq = this.getAttribute('data-update');
+            
+            // Show loading state
+            const loadingHTML = `
+                <div class="text-center text-muted p-3">
+                    <div class="spinner-border spinner-border-sm" role="status"></div>
+                    <span class="ms-2">Oppdaterer markedsdata...</span>
+                </div>
+            `;
+            
+            // Find metric widgets and show loading
+            const metricWidgets = document.querySelectorAll('.metric-widget');
+            metricWidgets.forEach(widget => {
+                const originalContent = widget.innerHTML;
+                widget.innerHTML = loadingHTML;
+                
+                // Simulate data update
+                setTimeout(() => {
+                    widget.innerHTML = originalContent;
+                    
+                    // Add visual feedback for data refresh
+                    widget.style.transform = 'scale(1.05)';
+                    widget.style.transition = 'transform 0.2s ease';
+                    
+                    setTimeout(() => {
+                        widget.style.transform = 'scale(1)';
+                    }, 200);
+                }, 800);
+            });
+            
+            // Update page title based on frequency
+            const pageTitle = document.querySelector('.intelligence-header h1');
+            if (pageTitle) {
+                const baseTitle = 'Markedsintelligens';
+                const suffixes = {
+                    'live': ' - Live Data',
+                    'daily': ' - Daglig Oppdatering', 
+                    'weekly': ' - Ukentlig Rapport'
+                };
+                pageTitle.textContent = baseTitle + (suffixes[updateFreq] || '');
+            }
+            
+            console.log(`Markedsintelligens oppdatert med frekvens: ${updateFreq}`);
+        });
+    });
+    
+    // Auto-refresh for live mode
+    let autoRefreshInterval;
+    
+    function startAutoRefresh() {
+        const liveButton = document.querySelector('[data-update="live"]');
+        if (liveButton && liveButton.classList.contains('active')) {
+            autoRefreshInterval = setInterval(() => {
+                // Simulate live data update
+                const metrics = document.querySelectorAll('.metric-value');
+                metrics.forEach(metric => {
+                    // Add subtle animation to show data is live
+                    metric.style.color = '#28a745';
+                    setTimeout(() => {
+                        metric.style.color = '';
+                    }, 1000);
+                });
+            }, 30000); // Update every 30 seconds for live mode
+        }
+    }
+    
+    function stopAutoRefresh() {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+        }
+    }
+    
+    // Start auto-refresh if in live mode
+    startAutoRefresh();
+    
+    // Update auto-refresh when mode changes
+    updateButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            stopAutoRefresh();
+            setTimeout(startAutoRefresh, 1000);
+        });
+    });
+});
+</script>
+{% endblock %}

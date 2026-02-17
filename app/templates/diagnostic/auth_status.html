@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>{{ title }}</h1>
+    <p class="lead">Detaljert diagnostikk for autentisering og tilgangskontroll</p>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h2 class="h5 mb-0">Brukerinformasjon</h2>
+        </div>
+        <div class="card-body">
+            <table class="table table-sm">
+                <tbody>
+                    {% for key, value in data.user.items() %}
+                    <tr>
+                        <th>{{ key }}</th>
+                        <td>{{ value }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h2 class="h5 mb-0">Abonnementsinformasjon</h2>
+        </div>
+        <div class="card-body">
+            {% if data.subscription %}
+            <table class="table table-sm">
+                <tbody>
+                    {% for key, value in data.subscription.items() %}
+                    <tr>
+                        <th>{{ key }}</th>
+                        <td>{{ value }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-muted">Ingen abonnementsinformasjon tilgjengelig</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h2 class="h5 mb-0">Tilgangskontroll</h2>
+        </div>
+        <div class="card-body">
+            {% if data.access_control.error %}
+            <div class="alert alert-danger">
+                <strong>Feil:</strong> {{ data.access_control.error }}
+                <pre class="mt-2">{{ data.access_control.traceback }}</pre>
+            </div>
+            {% else %}
+            <h3 class="h6">Grunnleggende tilgang</h3>
+            <table class="table table-sm mb-4">
+                <tbody>
+                    <tr>
+                        <th>is_exempt_user</th>
+                        <td>{{ data.access_control.is_exempt_user }}</td>
+                    </tr>
+                    <tr>
+                        <th>has_active_subscription</th>
+                        <td>{{ data.access_control.has_active_subscription }}</td>
+                    </tr>
+                    <tr>
+                        <th>access_level</th>
+                        <td>
+                            <span class="badge badge-{{ 
+                                'success' if data.access_control.access_level == 'admin' else
+                                'primary' if data.access_control.access_level == 'premium' else
+                                'info' if data.access_control.access_level == 'demo' else
+                                'secondary'
+                            }}">{{ data.access_control.access_level }}</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3 class="h6">Gjeldende endepunkt</h3>
+            <table class="table table-sm mb-4">
+                <tbody>
+                    <tr>
+                        <th>name</th>
+                        <td>{{ data.access_control.current_endpoint.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>allowed</th>
+                        <td>
+                            <span class="badge badge-{{ 'success' if data.access_control.current_endpoint.allowed else 'danger' }}">
+                                {{ data.access_control.current_endpoint.allowed }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>redirect_to</th>
+                        <td>{{ data.access_control.current_endpoint.redirect_to or 'None' }}</td>
+                    </tr>
+                    <tr>
+                        <th>message</th>
+                        <td>{{ data.access_control.current_endpoint.message or 'None' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3 class="h6">Endepunktstilganger</h3>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Endpoint</th>
+                        <th>Tillatt</th>
+                        <th>Redirect til</th>
+                        <th>Melding</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for endpoint, result in data.access_control.endpoint_access.items() %}
+                    <tr>
+                        <td>{{ endpoint }}</td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if result.allowed else 'danger' }}">
+                                {{ result.allowed }}
+                            </span>
+                        </td>
+                        <td>{{ result.redirect_to or 'None' }}</td>
+                        <td>{{ result.message or 'None' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h2 class="h5 mb-0">Middleware</h2>
+        </div>
+        <div class="card-body">
+            {% if data.middleware.error %}
+            <div class="alert alert-danger">
+                <strong>Feil:</strong> {{ data.middleware.error }}
+                <pre class="mt-2">{{ data.middleware.traceback }}</pre>
+            </div>
+            {% else %}
+            <h3 class="h6">Before Request Functions</h3>
+            {% if data.middleware.before_request_funcs %}
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Blueprint</th>
+                        <th>Functions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for blueprint, funcs in data.middleware.before_request_funcs.items() %}
+                    <tr>
+                        <td>{{ blueprint }}</td>
+                        <td>
+                            <ul class="mb-0 pl-3">
+                                {% for func in funcs %}
+                                <li>{{ func }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-muted">Ingen before_request funksjoner registrert</p>
+            {% endif %}
+            
+            <h3 class="h6 mt-4">Global Access Control Middleware</h3>
+            <table class="table table-sm">
+                <tbody>
+                    <tr>
+                        <th>Imported</th>
+                        <td>{{ data.middleware.global_access_control_imported }}</td>
+                    </tr>
+                    <tr>
+                        <th>Active</th>
+                        <td>{{ data.middleware.global_access_control_active or False }}</td>
+                    </tr>
+                    {% if data.middleware.global_access_control_blueprint %}
+                    <tr>
+                        <th>Blueprint</th>
+                        <td>{{ data.middleware.global_access_control_blueprint }}</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-danger text-white">
+            <h2 class="h5 mb-0">Unauthorized Handler</h2>
+        </div>
+        <div class="card-body">
+            {% if data.unauthorized_handler.error %}
+            <div class="alert alert-danger">
+                <strong>Feil:</strong> {{ data.unauthorized_handler.error }}
+            </div>
+            {% else %}
+            <table class="table table-sm">
+                <tbody>
+                    <tr>
+                        <th>Registered</th>
+                        <td>{{ data.unauthorized_handler.registered }}</td>
+                    </tr>
+                    {% if data.unauthorized_handler.handler %}
+                    <tr>
+                        <th>Handler</th>
+                        <td>{{ data.unauthorized_handler.handler }}</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h2 class="h5 mb-0">Request Information</h2>
+        </div>
+        <div class="card-body">
+            <table class="table table-sm">
+                <tbody>
+                    {% for key, value in data.request.items() %}
+                    {% if key != 'headers' %}
+                    <tr>
+                        <th>{{ key }}</th>
+                        <td>{{ value }}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <h3 class="h6 mt-4">Headers</h3>
+            <table class="table table-sm">
+                <tbody>
+                    {% for key, value in data.request.headers.items() %}
+                    <tr>
+                        <th>{{ key }}</th>
+                        <td>{{ value }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h2 class="h5 mb-0">Route Lists</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <h3 class="h6">Always Accessible</h3>
+                    <ul class="list-group">
+                        {% for route in data.access_control.always_accessible_routes %}
+                        <li class="list-group-item">{{ route }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h3 class="h6">Demo Accessible</h3>
+                    <ul class="list-group">
+                        {% for route in data.access_control.demo_accessible_routes %}
+                        <li class="list-group-item">{{ route }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h3 class="h6">Premium Only</h3>
+                    <ul class="list-group">
+                        {% for route in data.access_control.premium_only_routes %}
+                        <li class="list-group-item">{{ route }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

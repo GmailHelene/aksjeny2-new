@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block title %}Short Positioner - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-9">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h2 class="mb-0">Short Analyse: {{ ticker|default('Velg aksje') }}</h2>
+                </div>
+                <div class="card-body">
+                    {% if not ticker %}
+                    <!-- Stock Selection Form -->
+                    <form method="GET" action="{{ url_for('analysis.short_analysis') }}" class="mb-4">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <label for="ticker" class="form-label">Velg aksje for short-analyse:</label>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <select name="ticker" id="ticker" class="form-select" required>
+                                    <option value="">-- Velg aksje --</option>
+                                    <optgroup label="Oslo Børs">
+                                        <option value="EQNR.OL">Equinor (EQNR.OL)</option>
+                                        <option value="DNB.OL">DNB (DNB.OL)</option>
+                                        <option value="TEL.OL">Telenor (TEL.OL)</option>
+                                        <option value="YAR.OL">Yara (YAR.OL)</option>
+                                        <option value="MOWI.OL">Mowi (MOWI.OL)</option>
+                                    </optgroup>
+                                    <optgroup label="US Aksjer">
+                                        <option value="AAPL">Apple (AAPL)</option>
+                                        <option value="MSFT">Microsoft (MSFT)</option>
+                                        <option value="TSLA">Tesla (TSLA)</option>
+                                        <option value="AMZN">Amazon (AMZN)</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="submit" class="btn btn-primary d-block w-100">
+                                    <i class="bi bi-search"></i> Analyser
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    {% else %}
+                    <!-- Analysis Results -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h4>Short Score</h4>
+                            <div class="progress" style="height: 30px;">
+                                <div class="progress-bar bg-danger" 
+                                     role="progressbar" 
+                                     style="width: {{ ai_analysis.short_score|default(0) }}%"
+                                     data-width="{{ ai_analysis.short_score|default(0) }}%">
+                                    {{ "{:.0f}".format(ai_analysis.short_score|default(0)).replace('.', ',') }}/100
+                                </div>
+                            </div>
+                            <p class="text-muted mt-2">
+                                Høyere score = større short-potensial
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="alert {% if ai_analysis.recommendation == 'STRONG_SHORT' %}alert-danger
+                                {% elif ai_analysis.recommendation == 'MODERATE_SHORT' %}alert-warning
+                                {% elif ai_analysis.recommendation == 'WAIT' %}alert-info
+                                {% else %}alert-success{% endif %}" 
+                                role="alert">
+                                <strong>Anbefaling:</strong> 
+                                {% if ai_analysis.recommendation == 'STRONG_SHORT' %}
+                                    STERK SHORT
+                                {% elif ai_analysis.recommendation == 'MODERATE_SHORT' %}
+                                    MODERAT SHORT
+                                {% elif ai_analysis.recommendation == 'WAIT' %}
+                                    VENT
+                                {% else %}
+                                    UNNGÅ SHORT
+                                {% endif %}
+                                <br>
+                                <small>Konfidens: {{ ai_analysis.confidence|default('Moderat') }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Risk Warnings -->
+                    <div class="alert alert-danger mb-4">
+                        <h5 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> Viktig Advarsel</h5>
+                        <p>Short-selling innebærer høy risiko og bør kun utføres av erfarne investorer.</p>
+                    </div>
+                    
+                    <!-- Price Targets -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h5 class="card-title">Nåværende Pris</h5>
+                                    <h2 class="text-primary">
+                                        {% if stock_info.current_price %}
+                                            {% if 'USD' in ticker or ticker in ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA'] %}
+                                                $ {{ "{:,.2f}".format(stock_info.current_price) }}
+                                            {% else %}
+                                                kr {{ "{:,.2f}".format(stock_info.current_price).replace(',', ' ').replace('.', ',') }}
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h5 class="card-title">Kursmål</h5>
+                                    <h2 class="text-danger">
+                                        {% if ai_analysis.price_target %}
+                                            {% if 'USD' in ticker or ticker in ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA'] %}
+                                                $ {{ "{:,.2f}".format(ai_analysis.price_target) }}
+                                            {% else %}
+                                                kr {{ "{:,.2f}".format(ai_analysis.price_target).replace(',', ' ').replace('.', ',') }}
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </h2>
+                                    <small class="text-muted">{{ ai_analysis.target_decline|default('-') }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h5 class="card-title">Stop Loss</h5>
+                                    <h2 class="text-warning">
+                                        {% if ai_analysis.stop_loss %}
+                                            {% if 'USD' in ticker or ticker in ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA'] %}
+                                                $ {{ "{:,.2f}".format(ai_analysis.stop_loss) }}
+                                            {% else %}
+                                                kr {{ "{:,.2f}".format(ai_analysis.stop_loss).replace(',', ' ').replace('.', ',') }}
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Short Analysis Factors -->
+                    <h4 class="mb-3">Analysefaktorer</h4>
+                    <div class="table-responsive mb-4">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <td><strong>Overvurdering</strong></td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-danger" 
+                                                 style="width: {{ ai_analysis.overvaluation_score|default(50) }}%">
+                                                {{ ai_analysis.overvaluation_score|default(50) }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Teknisk Svakhet</strong></td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-warning" 
+                                                 style="width: {{ ai_analysis.momentum_weakness|default(50) }}%">
+                                                {{ ai_analysis.momentum_weakness|default(50) }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Fundamental Forverring</strong></td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-danger" 
+                                                 style="width: {{ ai_analysis.fundamental_decline|default(50) }}%">
+                                                {{ ai_analysis.fundamental_decline|default(50) }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Negativt Sentiment</strong></td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-info" 
+                                                 style="width: {{ ai_analysis.market_sentiment|default(50) }}%">
+                                                {{ ai_analysis.market_sentiment|default(50) }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Key Factors -->
+                    {% if ai_analysis.key_factors %}
+                    <h4 class="mb-3">Nøkkelfaktorer</h4>
+                    <ul class="list-group mb-4">
+                        {% for factor in ai_analysis.key_factors %}
+                        <li class="list-group-item">
+                            <i class="bi bi-check-circle text-danger"></i> {{ factor }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    
+                    <!-- Analysis Summary -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Analysesammendrag</h5>
+                            <p class="card-text">
+                                {% if ai_analysis.summary %}
+                                    {{ ai_analysis.summary }}
+                                {% else %}
+                                    Short-analysen evaluerer potensialet for kursnedgang basert på overvurdering, 
+                                    teknisk svakhet, fundamental forverring og negativt markedssentiment.
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Strategy Notes -->
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">Strateginotater</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>{{ ai_analysis.strategy_notes|default('Shorting egner seg for erfarne investorer med høy risikotoleranse og god markedsforståelse.') }}</p>
+                            <ul>
+                                <li>Tidshorisont: {{ ai_analysis.time_horizon|default('1-6 måneder') }}</li>
+                                <li>Risikonivå: {{ ai_analysis.risk_level|default('Høy') }}</li>
+                                <li>Anbefalt posisjonsstørrelse: Maks 2-5% av portefølje</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="mt-4 d-flex flex-wrap gap-2">
+                        <a href="{{ url_for('stocks.details', symbol=ticker) }}" 
+                           class="btn btn-secondary">
+                            <i class="bi bi-graph-up"></i> Se aksjedetaljer
+                        </a>
+                        <a href="{{ url_for('analysis.technical', ticker=ticker) }}" 
+                           class="btn btn-primary">
+                            <i class="bi bi-bar-chart"></i> Teknisk analyse
+                        </a>
+                        <a href="{{ url_for('analysis.short_analysis') }}" 
+                           class="btn btn-outline-danger">
+                            <i class="bi bi-arrow-left"></i> Velg annen aksje
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <!-- Sidebar with additional info -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Short-trading Info</h5>
+                </div>
+                <div class="card-body">
+                    <p class="small">Short-selling innebærer å låne aksjer for å selge dem, med håp om å kjøpe tilbake til lavere pris.</p>
+                    <ul class="small">
+                        <li>Ubegrenset tapsrisiko</li>
+                        <li>Krever marginhandel</li>
+                        <li>Påvirkes av short squeeze</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    // Animate progress bars on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const progressBars = document.querySelectorAll('.progress-bar');
+        progressBars.forEach(bar => {
+            const width = bar.getAttribute('data-width') || bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.transition = 'width 1s ease-in-out';
+                bar.style.width = width;
+            }, 100);
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block title %}Aksjer Norge | Oslo Børs og Globale Aksjer - Aksjeradar{% endblock %}
+{% block description %}Komplett oversikt over Oslo Børs, globale aksjer, kryptovaluta og valutakurser. Sanntidskurser, analyser og kjøpssignaler for alle norske og internasjonale aksjer.{% endblock %}
+{% block keywords %}Oslo Børs, norske aksjer, EQNR, DNB, TEL, amerikanske aksjer, AAPL, MSFT, GOOGL, globale aksjer, aksjekurser sanntid{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="text-center">
+                <h1 class="display-4 mb-3">
+                    <i class="bi bi-graph-up text-primary me-3"></i>
+                    Aksjeoversikt
+                </h1>
+                <p class="lead text-muted">Din komplette guide til norske og internasjonale aksjer</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Search -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form action="{{ url_for('stocks.search') }}" method="GET" class="row g-3">
+                        <div class="col-md-9">
+                            <input type="text" name="q" class="form-control form-control-lg" 
+                                   placeholder="Søk etter aksjer (f.eks. EQNR, AAPL, Tesla)..." required>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="bi bi-search me-1"></i>Søk
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Categories -->
+    <div class="row g-4 mb-5">
+        <!-- Oslo Børs -->
+        <div class="col-lg-3 col-md-6">
+            <div class="card h-100 border-0 shadow-sm market-card" data-bs-toggle="tooltip" title="Utforsk norske aksjer på Oslo Børs">
+                <div class="card-body text-center p-4">
+                    <div class="market-icon mb-3">
+                        <i class="bi bi-flag-fill text-danger display-1"></i>
+                    </div>
+                    <h5 class="card-title text-danger mb-2">Oslo Børs</h5>
+                    <p class="card-text text-muted">Norske aksjer og selskaper</p>
+                    <p class="h6 text-muted mb-3">{{ oslo_stocks_count|default(120) }} aksjer</p>
+                    <a href="{{ url_for('stocks.list_oslo') }}" class="btn btn-danger">
+                        <i class="bi bi-arrow-right me-1"></i>Utforsk Oslo Børs
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Globale Aksjer -->
+        <div class="col-lg-3 col-md-6">
+            <div class="card h-100 border-0 shadow-sm market-card" data-bs-toggle="tooltip" title="Følg internasjonale markeder">
+                <div class="card-body text-center p-4">
+                    <div class="market-icon mb-3">
+                        <i class="bi bi-globe text-success display-1"></i>
+                    </div>
+                    <h5 class="card-title text-success mb-2">Globale Aksjer</h5>
+                    <p class="card-text text-muted">Internasjonale markeder</p>
+                    <p class="h6 text-muted mb-3">{{ global_stocks_count|default(500) }}+ aksjer</p>
+                    <a href="{{ url_for('stocks.global_list') }}" class="btn btn-success">
+                        <i class="bi bi-arrow-right me-1"></i>Utforsk Globalt
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kryptovaluta -->
+        <div class="col-lg-3 col-md-6">
+            <div class="card h-100 border-0 shadow-sm market-card" data-bs-toggle="tooltip" title="Handel med digitale valutaer">
+                <div class="card-body text-center p-4">
+                    <div class="market-icon mb-3">
+                        <i class="bi bi-currency-bitcoin text-warning display-1"></i>
+                    </div>
+                    <h5 class="card-title text-warning mb-2">Kryptovaluta</h5>
+                    <p class="card-text text-muted">Digitale valutaer</p>
+                    <p class="h6 text-muted mb-3">{{ crypto_count|default(50) }}+ coins</p>
+                    <a href="{{ url_for('stocks.list_crypto') }}" class="btn btn-warning">
+                        <i class="bi bi-arrow-right me-1"></i>Utforsk Crypto
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Valuta -->
+        <div class="col-lg-3 col-md-6">
+            <div class="card h-100 border-0 shadow-sm market-card" data-bs-toggle="tooltip" title="Følg valutakurser">
+                <div class="card-body text-center p-4">
+                    <div class="market-icon mb-3">
+                        <i class="bi bi-currency-exchange text-info display-1"></i>
+                    </div>
+                    <h5 class="card-title text-info mb-2">Valuta</h5>
+                    <p class="card-text text-muted">Valutakurser</p>
+                    <p class="h6 text-muted mb-3">{{ currency_count|default(30) }}+ par</p>
+                    <a href="{{ url_for('stocks.list_currency') }}" class="btn btn-info">
+                        <i class="bi bi-arrow-right me-1"></i>Utforsk Valuta
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popular Stocks Overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="h3 mb-4 text-center">Populære Aksjer</h2>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <!-- Oslo Børs Top Picks -->
+        <div class="col-lg-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-flag me-2"></i>
+                        Oslo Børs - Topp Aksjer
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>EQNR.OL</strong>
+                                <small class="text-muted d-block">Equinor ASA</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold">249.30 NOK</span>
+                                <span class="badge bg-success ms-2">+1.2%</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>DNB.OL</strong>
+                                <small class="text-muted d-block">DNB Bank ASA</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold">266.40 NOK</span>
+                                <span class="badge bg-success ms-2">+0.8%</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>TEL.OL</strong>
+                                <small class="text-muted d-block">Telenor ASA</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold">161.50 NOK</span>
+                                <span class="badge bg-danger ms-2">-0.5%</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>MOWI.OL</strong>
+                                <small class="text-muted d-block">Mowi ASA</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold">198.60 NOK</span>
+                                <span class="badge bg-success ms-2">+2.1%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a href="{{ url_for('stocks.list_oslo') }}" class="btn btn-outline-danger">
+                            Se alle Oslo Børs aksjer →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Global Stocks Top Picks -->
+        <div class="col-lg-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-globe me-2"></i>
+                        Globale Aksjer - Topp Aksjer
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>AAPL</strong>
+                                <small class="text-muted d-block">Apple Inc.</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold">$185.45</span>
+                                <span class="badge bg-success ms-2">+1.8%</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>MSFT</strong>
+                                <small class="text-muted d-block">Microsoft Corp.</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold">$378.91</span>
+                                <span class="badge bg-success ms-2">+0.9%</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>GOOGL</strong>
+                                <small class="text-muted d-block">Alphabet Inc.</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold">$142.78</span>
+                                <span class="badge bg-danger ms-2">-0.3%</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>TSLA</strong>
+                                <small class="text-muted d-block">Tesla Inc.</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold">$245.67</span>
+                                <span class="badge bg-success ms-2">+3.2%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a href="{{ url_for('stocks.global_list') }}" class="btn btn-outline-success">
+                            Se alle globale aksjer →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tools and Features -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="h3 mb-4 text-center">Verktøy & Analyser</h2>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card text-center border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <i class="bi bi-search text-primary display-4 mb-3"></i>
+                    <h5>Avansert Søk</h5>
+                    <p class="text-muted">Finn spesifikke aksjer med våre søkeverktøy</p>
+                    <a href="{{ url_for('stocks.search') }}" class="btn btn-outline-primary">Søk Aksjer</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card text-center border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <i class="bi bi-arrows-angle-expand text-info display-4 mb-3"></i>
+                    <h5>Sammenlign Aksjer</h5>
+                    <p class="text-muted">Sammenlign flere aksjer side ved side</p>
+                    <a href="{{ url_for('stocks.compare') }}" class="btn btn-outline-info">Sammenlign</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card text-center border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <i class="bi bi-robot text-warning display-4 mb-3"></i>
+                    <h5>AI Analyser</h5>
+                    <p class="text-muted">AI-drevne aksjeanbefalinger og prognoser</p>
+                    <a href="{{ url_for('analysis.ai') }}" class="btn btn-outline-warning">AI Analyse</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card text-center border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <i class="bi bi-briefcase text-success display-4 mb-3"></i>
+                    <h5>Portefølje</h5>
+                    <p class="text-muted">Administrer din virtuelle portefølje</p>
+                    <a href="{{ url_for('portfolio.portfolio_overview') }}" class="btn btn-outline-success">Min Portefølje</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.market-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.market-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.market-icon {
+    transition: transform 0.2s ease-in-out;
+}
+
+.market-card:hover .market-icon {
+    transform: scale(1.1);
+}
+</style>
+
+<script>
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function () {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

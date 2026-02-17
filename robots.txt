@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+
+# Prioritize production domain only
+Host: aksjeradar.trade
+
+# Allow main sections for better SEO
+Allow: /analysis/
+Allow: /stocks/
+Allow: /portfolio/
+Allow: /pricing
+Allow: /profile
+
+# Disallow development endpoints  
+Disallow: /admin/
+Disallow: /api/internal/
+Disallow: /*.json$
+Disallow: /debug/
+
+# Primary sitemap
+Sitemap: https://aksjeradar.trade/sitemap.xml
+
+Crawl-delay: 1

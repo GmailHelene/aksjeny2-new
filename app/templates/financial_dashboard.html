@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Finansiell Dashboard - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+  <div class="mb-3">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+  <h5 class="mb-2">Laster ekte finansiell dashboard…</h5>
+  <p class="text-muted">Du blir straks sendt videre til den oppdaterte dashboard-siden.</p>
+  <a class="btn btn-primary mt-2" href="{{ url_for('dashboard.financial_dashboard') }}">Gå til dashboard nå</a>
+</div>
+<script>
+  // Hard redirect to the EKTE-only dashboard implementation
+  window.addEventListener('DOMContentLoaded', function() {
+    const target = '{{ url_for('dashboard.financial_dashboard') }}' + (window.location.search || '');
+    window.location.replace(target);
+  });
+</script>
+{% endblock %}
+
+{% block scripts %}{% endblock %}

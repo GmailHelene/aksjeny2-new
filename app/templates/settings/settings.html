@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Innstillinger{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 class="mb-4">Innstillinger</h1>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Profil</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">E-post</label>
+                        <input type="email" class="form-control" id="email" value="{{ current_user.email }}" disabled>
+                        <div class="form-text">E-post kan ikke endres.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Varsler</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('main.update_notifications') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="emailNotifications" name="email_notifications" 
+                                   {% if current_user.email_notifications %}checked{% endif %}>
+                            <label class="form-check-label" for="emailNotifications">
+                                E-post varsler
+                            </label>
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="priceAlerts" name="price_alerts" 
+                                   {% if current_user.price_alerts %}checked{% endif %}>
+                            <label class="form-check-label" for="priceAlerts">
+                                Prisvarsler
+                            </label>
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="marketNews" name="market_news"
+                                   {% if current_user.market_news %}checked{% endif %}>
+                            <label class="form-check-label" for="marketNews">
+                                Markedsnyheter
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Lagre innstillinger</button>
+                    </form>
+                        {% if get_flashed_messages() %}
+                            {% for message in get_flashed_messages() %}
+                                <div class="alert alert-info mt-3">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Abonnement</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Nåværende plan</h6>
+                            <p class="mb-2">
+                                <span class="badge bg-{{ 'success' if current_user.has_subscription else 'secondary' }}">
+                                    {% if current_user.has_subscription %}
+                                        {% if current_user.subscription_type == 'yearly' %}
+                                            Premium Årlig
+                                        {% elif current_user.subscription_type == 'monthly' %}
+                                            Premium Månedlig
+                                        {% elif current_user.subscription_type == 'lifetime' %}
+                                            Premium Livstid
+                                        {% else %}
+                                            Premium
+                                        {% endif %}
+                                    {% else %}
+                                        Gratis
+                                    {% endif %}
+                                </span>
+                            </p>
+                            {% if current_user.has_subscription %}
+                                <p class="text-muted small">Ditt premium-abonnement er aktivt.</p>
+                            {% else %}
+                                <p class="text-muted small">Oppgrader for å få tilgang til alle funksjoner.</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{{ url_for('main.my_subscription') }}" class="btn btn-outline-primary">
+                                {% if current_user.has_subscription %}
+                                    Administrer abonnement
+                                {% else %}
+                                    Oppgrader til Premium
+                                {% endif %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Sikkerhet</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <a href="{{ url_for('auth.change_password') }}" class="btn btn-outline-warning">
+                            <i class="bi bi-key"></i> Endre passord
+                        </a>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Aktivitetslogg</h6>
+                        <p class="text-muted small">Siste pålogging: {{ current_user.last_login.strftime('%d.%m.%Y %H:%M') if current_user.last_login else 'Ukjent' }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Fare-sone</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Slett konto</h6>
+                    <p class="text-muted">
+                        Denne handlingen kan ikke angres. All data vil bli permanent slettet.
+                    </p>
+                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                        <i class="bi bi-trash"></i> Slett konto
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Bekreft sletting av konto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Er du sikker på at du vil slette kontoen din?</p>
+                <p class="text-danger"><strong>Denne handlingen kan ikke angres!</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Avbryt</button>
+                <button type="button" class="btn btn-danger">Slett konto</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Improve toggle feedback
+    const toggles = document.querySelectorAll('.form-check-input[type="checkbox"]');
+    
+    toggles.forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            // Provide visual feedback that the setting will be saved
+            const label = this.nextElementSibling;
+            if (label) {
+                if (this.checked) {
+                    label.style.fontWeight = 'bold';
+                    label.style.color = '#198754'; // Success green
+                } else {
+                    label.style.fontWeight = 'normal';
+                    label.style.color = '#6c757d'; // Muted gray
+                }
+            }
+        });
+        
+        // Set initial state
+        const label = toggle.nextElementSibling;
+        if (label && toggle.checked) {
+            label.style.fontWeight = 'bold';
+            label.style.color = '#198754';
+        }
+    });
+    
+    // Form submission feedback
+    const form = document.querySelector('form[action*="update_notifications"]');
+    if (form) {
+        form.addEventListener('submit', function() {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Lagrer...';
+                submitBtn.disabled = true;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

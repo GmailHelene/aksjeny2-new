@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Shipping Intelligence | Baltic Dry Index | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-ship text-info"></i> Norwegian Shipping Intelligence</h1>
+        <div>
+            <span class="badge bg-info">Baltic Dry Index</span>
+            <small class="text-muted">Sist oppdatert: {{ current_time.strftime('%H:%M:%S') if current_time else 'Live' }}</small>
+        </div>
+    </div>
+    
+    <!-- Baltic Dry Index Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="text-info">Baltic Dry Index</h5>
+                    <h3 class="text-info">{{ bdi_data.current }}</h3>
+                    <small class="text-{% if bdi_data.change_24h > 0 %}success{% else %}danger{% endif %}">
+                        {% if bdi_data.change_24h > 0 %}+{% endif %}{{ bdi_data.change_24h }} ({{ bdi_data.change_percent }}%)
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="text-primary">Market Trend</h5>
+                    <h3 class="text-{% if bdi_data.trend == 'bullish' %}success{% else %}danger{% endif %}">
+                        {{ bdi_data.trend.title() }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="text-success">Norwegian Fleet</h5>
+                    <h3 class="text-success">{{ shipping_data | sum(attribute='fleet_size') }}</h3>
+                    <small class="text-muted">Total Ships</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="text-warning">Avg Fleet Age</h5>
+                    <h3 class="text-warning">{{ "%.1f" | format((shipping_data | sum(attribute='avg_age')) / (shipping_data | length)) }}</h3>
+                    <small class="text-muted">Years</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Shipping Companies Analysis -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header">
+            <h5><i class="bi bi-anchor"></i> Norwegian Shipping Companies</h5>
+            <small class="text-muted">Baltic Dry Index korrelasjon og flåteanalyse</small>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Selskap</th>
+                            <th>BDI Korrelasjon</th>
+                            <th>Korrelasjonsstyrke</th>
+                            <th>Flåtestørrelse</th>
+                            <th>Gj.snitt Alder</th>
+                            <th>Korrelasjonsmeter</th>
+                            <th>Flåtekvalitet</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for company in shipping_data %}
+                        <tr>
+                            <td><strong>{{ company.ticker }}</strong></td>
+                            <td>
+                                <span class="badge bg-{% if company.correlation_bdi >= 0.7 %}success{% elif company.correlation_bdi >= 0.5 %}warning{% else %}info{% endif %}">
+                                    {{ "%.2f" | format(company.correlation_bdi) }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="text-{% if company.correlation_bdi >= 0.7 %}success{% elif company.correlation_bdi >= 0.5 %}warning{% else %}info{% endif %}">
+                                    {% if company.correlation_bdi >= 0.8 %}Very Strong
+                                    {% elif company.correlation_bdi >= 0.6 %}Strong
+                                    {% elif company.correlation_bdi >= 0.4 %}Moderate
+                                    {% else %}Weak{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if company.fleet_size >= 100 %}success{% elif company.fleet_size >= 75 %}warning{% else %}info{% endif %}">
+                                    {{ company.fleet_size }} skip
+                                </span>
+                            </td>
+                            <td>
+                                <span class="text-{% if company.avg_age <= 8 %}success{% elif company.avg_age <= 10 %}warning{% else %}danger{% endif %}">
+                                    {{ "%.1f" | format(company.avg_age) }} år
+                                </span>
+                            </td>
+                            <td>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-{% if company.correlation_bdi >= 0.7 %}success{% elif company.correlation_bdi >= 0.5 %}warning{% else %}info{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ (company.correlation_bdi * 100) | round }}%">
+                                        {{ "%.0f" | format(company.correlation_bdi * 100) }}%
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if company.avg_age <= 8 %}
+                                    <i class="bi bi-shield-check text-success"></i> Moderne
+                                {% elif company.avg_age <= 10 %}
+                                    <i class="bi bi-shield-exclamation text-warning"></i> Middels
+                                {% else %}
+                                    <i class="bi bi-shield-x text-danger"></i> Eldre
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Shipping Market Analysis -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h6><i class="bi bi-graph-up-arrow"></i> Market Insights</h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-{% if bdi_data.trend == 'bullish' %}success{% else %}warning{% endif %}">
+                        <strong>Baltic Dry Index:</strong> 
+                        {% if bdi_data.trend == 'bullish' %}
+                            Stigende BDI indikerer økt etterspørsel etter bulkskip og høyere fraktrater.
+                        {% else %}
+                            Fallende BDI kan signalisere redusert global handel og lavere fraktrater.
+                        {% endif %}
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <strong>Korrelasjon:</strong> 
+                        Selskaper med høy BDI-korrelasjon (>0.7) er mer følsomme for markedsendringer.
+                    </div>
+                    
+                    <div class="alert alert-secondary">
+                        <strong>Flåteanalyse:</strong> 
+                        Moderne flåter (< 10 år) har lavere driftskostnader og miljøfordeler.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h6><i class="bi bi-compass"></i> Trading Strategy</h6>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-success">Høy BDI-korrelasjon (FRONTLINE, GOLDEN_OCEAN):</h6>
+                    <ul>
+                        <li>Følg BDI-trendene tett for timing</li>
+                        <li>Ideal for momentum-trading</li>
+                        <li>Høyere volatilitet og risiko</li>
+                    </ul>
+                    
+                    <h6 class="text-warning">Moderat korrelasjon (HAFNIA):</h6>
+                    <ul>
+                        <li>Balansert eksponering mot shipping</li>
+                        <li>Mindre volatil enn høykorrelerte</li>
+                        <li>Egnet for porteføljediversifisering</li>
+                    </ul>
+                    
+                    <h6 class="text-info">Lav korrelasjon (WALLENIUS):</h6>
+                    <ul>
+                        <li>Spesialiserte markeder (bil/RoRo)</li>
+                        <li>Mindre påvirket av bulk-handel</li>
+                        <li>Egen markedsdynamikk</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Baltic Dry Index Chart Placeholder -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h6><i class="bi bi-bar-chart-line"></i> Baltic Dry Index Trend</h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-light text-center">
+                        <i class="bi bi-graph-up-arrow h1 text-muted"></i>
+                        <p class="mb-0">BDI Chart - Integreres med TradingView eller lignende charting-løsning</p>
+                        <small class="text-muted">Vis BDI-utvikling siste 30/90/365 dager</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-refresh shipping data every 45 seconds
+setInterval(function() {
+    location.reload();
+}, 45000);
+</script>
+{% endblock %}

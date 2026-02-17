@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block title %}Velg aksje for fundamental analyse{% endblock %}
+{% block content %}
+{% include 'analysis/_menu.html' %}
+<div class="container mt-4">
+  <h1>Velg aksje for fundamental analyse</h1>
+  
+  <div class="card mb-4">
+    <div class="card-header">
+      <h2>Søk etter aksje</h2>
+    </div>
+    <div class="card-body">
+      <form method="get" action="{{ url_for('analysis.fundamental') }}">
+        <div class="input-group mb-3">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="text" class="form-control" name="ticker" placeholder="Skriv inn ticker (f.eks. EQNR.OL, AAPL)" required>
+          <button class="btn btn-primary" type="submit">Vis fundamental analyse</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h2>Oslo Børs</h2>
+        </div>
+        <div class="card-body">
+          <div class="list-group">
+            <a href="{{ url_for('analysis.fundamental', ticker='EQNR.OL') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+              <span>EQNR.OL</span>
+              <span class="badge bg-primary">Equinor</span>
+            </a>
+            <a href="{{ url_for('analysis.fundamental', ticker='NHY.OL') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+              <span>NHY.OL</span>
+              <span class="badge bg-primary">Norsk Hydro</span>
+            </a>
+            <a href="{{ url_for('analysis.fundamental', ticker='DNB.OL') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+              <span>DNB.OL</span>
+              <span class="badge bg-primary">DNB Bank</span>
+            </a>
+            <a href="{{ url_for('analysis.fundamental', ticker='MOWI.OL') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+              <span>MOWI.OL</span>
+              <span class="badge bg-primary">Mowi</span>
+            </a>
+            <a href="{{ url_for('analysis.fundamental', ticker='TEL.OL') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+              <span>TEL.OL</span>
+              <span class="badge bg-primary">Telenor</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-6">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h2>Globale Aksjer</h2>
+        </div>
+        <div class="card-body">
+          <div class="list-group">
+            <a href="{{ url_for('analysis.fundamental', ticker='AAPL') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+              <span>AAPL</span>
+              <span class="badge bg-success">Apple Inc.</span>
+            </a>
+            <a href="{{ url_for('analysis.fundamental', ticker='MSFT') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+              <span>MSFT</span>
+              <span class="badge bg-success">Microsoft</span>
+            </a>
+            <a href="{{ url_for('analysis.fundamental', ticker='GOOGL') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+              <span>GOOGL</span>
+              <span class="badge bg-success">Alphabet Inc.</span>
+            </a>
+            <a href="{{ url_for('analysis.fundamental', ticker='AMZN') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+              <span>AMZN</span>
+              <span class="badge bg-success">Amazon.com</span>
+            </a>
+            <a href="{{ url_for('analysis.fundamental', ticker='TSLA') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+              <span>TSLA</span>
+              <span class="badge bg-success">Tesla Inc.</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="alert alert-info mt-4">
+    <h5><i class="bi bi-info-circle"></i> Om fundamental analyse</h5>
+    <p>Fundamental analyse vurderer selskapets finansielle helse, vekstpotensial og verdsettelse basert på finansielle nøkkeltall som P/E-ratio, gjeldsgrad, avkastning på egenkapital og mer.</p>
+  </div>
+</div>
+{% endblock %}

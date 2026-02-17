@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Betaling Vellykket - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    <h2 class="text-success mb-3">Betaling Vellykket!</h2>
+                    <p class="text-muted mb-4">
+                        Takk for ditt kjøp! Din betaling er behandlet og abonnementet ditt er nå aktivt.
+                    </p>
+                    
+                    <div class="alert alert-success mb-4">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Hva skjer nå?</strong><br>
+                        Du vil motta en e-post bekreftelse og kan umiddelbart begynne å bruke alle premium-funksjonene.
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-speedometer2 me-2"></i>Gå til Dashboard
+                        </a>
+                        <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-house-door me-2"></i>Tilbake til Hjem
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

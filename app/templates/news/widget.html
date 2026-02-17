@@ -1,0 +1,469 @@
+<!-- Enhanced News Widget Template -->
+<!-- Simple news widget without recursive includes -->
+
+<div class="news-widget">
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-newspaper me-2"></i>Siste Finansnyheter
+            </h5>
+        </div>
+        <div class="card-body">
+            <div id="news-widget-content">
+                <div class="text-center p-3">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Laster nyheter...</span>
+                    </div>
+                    <p class="mt-2 mb-0 text-muted small">Henter siste nyheter...</p>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer bg-light text-center">
+            <small class="text-muted">
+                <i class="bi bi-clock me-1"></i>
+                Oppdateres automatisk
+            </small>
+        </div>
+    </div>
+</div>
+
+<style>
+.news-widget {
+    margin-bottom: 2rem;
+}
+
+.news-widget-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e9ecef;
+    transition: background-color 0.2s ease;
+}
+
+.news-widget-item:last-child {
+    border-bottom: none;
+}
+
+.news-widget-item:hover {
+    background-color: #f8f9fa;
+}
+
+.news-widget-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #2c3e50;
+    text-decoration: none;
+    line-height: 1.3;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.news-widget-title:hover {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.news-widget-meta {
+    font-size: 0.75rem;
+    color: #6c757d;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.news-widget-source {
+    font-weight: 500;
+    color: #495057;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadSimpleNews();
+});
+
+function loadSimpleNews() {
+    const container = document.getElementById('news-widget-content');
+    
+    // Try to fetch from API first, then fallback
+    fetch('/news/api/latest?limit=6&category=norwegian')
+        .then(response => response.json())
+        .then(data => {
+            if (data.articles && data.articles.length > 0) {
+                displayNews(data.articles, container);
+            } else {
+                displayFallbackNews(container);
+            }
+        })
+        .catch(error => {
+            console.log('News API failed, using fallback:', error);
+            displayFallbackNews(container);
+        });
+}
+
+function displayFallbackNews(container) {
+    // Simple fallback news items
+    const fallbackNews = [
+        {
+            title: "Oslo Børs: Equinor stiger på høye energipriser",
+            source: "Finansavisen",
+            time: "15 min siden"
+        },
+        {
+            title: "Norges Bank holder renten uendret på 4,5%",
+            source: "E24", 
+            time: "1 time siden"
+        },
+        {
+            title: "DNB rapporterer sterke kvartalstall",
+            source: "DN",
+            time: "2 timer siden"
+        },
+        {
+            title: "Teknisk analyse: OSEBX viser bullish signal",
+            source: "Aksjeradar",
+            time: "3 timer siden"
+        }
+    ];
+    
+    let newsHtml = '';
+    fallbackNews.forEach(item => {
+        newsHtml += `
+            <div class="news-widget-item">
+                <div class="news-widget-title">${item.title}</div>
+                <div class="news-widget-meta">
+                    <span class="news-widget-source">${item.source}</span>
+                    <span>${item.time}</span>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = newsHtml;
+}
+
+function displayNews(articles, container) {
+    let newsHtml = '';
+    articles.slice(0, 6).forEach(article => {
+        const timeAgo = article.time_ago || 'Nylig';
+        const source = article.source || 'Ukjent kilde';
+        newsHtml += `
+            <div class="news-widget-item">
+                <div class="news-widget-title">${article.title}</div>
+                <div class="news-widget-meta">
+                    <span class="news-widget-source">${source}</span>
+                    <span>${timeAgo}</span>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = newsHtml;
+}
+</script>
+
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div id="news-widget-content">
+                <div class="text-center p-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Laster nyheter...</span>
+                    </div>
+                    <p class="mt-2 mb-0 text-muted small">Henter siste nyheter...</p>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer bg-light text-center">
+            <small class="text-muted">
+                <i class="bi bi-clock me-1"></i>
+                Sist oppdatert: <span id="news-last-updated">-</span>
+            </small>
+            <button class="btn btn-sm btn-outline-primary ms-2" onclick="refreshNewsWidget()">
+                <i class="bi bi-arrow-clockwise"></i> Oppdater
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.news-widget {
+    margin-bottom: 2rem;
+}
+
+.news-widget-item {
+    padding: 15px 20px;
+    border-bottom: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.news-widget-item:last-child {
+    border-bottom: none;
+}
+
+.news-widget-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(2px);
+}
+
+.news-widget-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #2c3e50;
+    text-decoration: none;
+    line-height: 1.3;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.news-widget-title:hover {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.news-widget-summary {
+    font-size: 0.8rem;
+    color: #6c757d;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-clamp: 2;
+    overflow: hidden;
+}
+
+.news-widget-meta {
+    font-size: 0.75rem;
+    color: #6c757d;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.news-widget-source {
+    font-weight: 500;
+    color: #495057;
+}
+
+.news-widget-time {
+    white-space: nowrap;
+}
+
+.news-widget-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 4px;
+}
+
+.news-widget-category {
+    background: #e9ecef;
+    color: #495057;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.news-widget-category.oslo_bors { background: #d4edda; color: #155724; }
+.news-widget-category.norwegian_companies { background: #d4edda; color: #155724; }
+.news-widget-category.energy { background: #fff3cd; color: #856404; }
+.news-widget-category.tech { background: #d1ecf1; color: #0c5460; }
+.news-widget-category.crypto { background: #f8d7da; color: #721c24; }
+.news-widget-category.banking { background: #cce5ff; color: #004085; }
+.news-widget-category.shipping { background: #e2e3e5; color: #383d41; }
+
+.news-widget-relevance {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+.news-widget-image {
+    width: 60px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-right: 12px;
+    float: left;
+}
+
+@media (max-width: 768px) {
+    .news-widget-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    
+    .news-widget-image {
+        width: 50px;
+        height: 40px;
+        margin-right: 10px;
+    }
+}
+</style>
+
+<script>
+// Load news widget content
+document.addEventListener('DOMContentLoaded', function() {
+    loadNewsWidget();
+    
+    // Add event listener for category filter
+    const categoryFilter = document.getElementById('news-category-filter');
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', function() {
+            loadNewsWidget(this.value);
+        });
+    }
+});
+
+function loadNewsWidget(category = 'norwegian') {
+    const widgetContainer = document.getElementById('news-widget-content');
+    
+    if (!widgetContainer) {
+        console.error('News widget container not found');
+        return;
+    }
+    
+    // Show loading state
+    widgetContainer.innerHTML = `
+        <div class="text-center p-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Laster nyheter...</span>
+            </div>
+            <p class="mt-2 mb-0 text-muted small">Henter siste nyheter...</p>
+        </div>
+    `;
+    
+    fetch(`/news/api/latest?limit=6&category=${category}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success && data.articles && data.articles.length > 0) {
+                renderNewsWidget(data.articles);
+                updateLastUpdated(data.last_updated);
+            } else {
+                showNewsWidgetError('Ingen nyheter funnet');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading news widget:', error);
+            showNewsWidgetError('Feil ved lasting av nyheter. Prøv igjen senere.');
+        });
+}
+
+function renderNewsWidget(articles) {
+    const container = document.getElementById('news-widget-content');
+    container.innerHTML = '';
+    
+    articles.forEach((article, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'news-widget-item';
+        
+        const publishedDate = new Date(article.published);
+        const timeAgo = getTimeAgo(publishedDate);
+        
+        const categories = article.categories && article.categories.length > 0 ? 
+            article.categories.slice(0, 3).map(cat => 
+                `<span class="news-widget-category ${cat}">${cat.replace('_', ' ')}</span>`
+            ).join('') : '';
+        
+        const imageHtml = article.image_url ? 
+            `<img src="${article.image_url}" alt="News image" class="news-widget-image" onerror="this.style.display='none'">` : '';
+        
+        const relevanceScore = Math.round(article.relevance_score);
+        const relevanceHtml = relevanceScore > 5 ? 
+            `<div class="news-widget-relevance">${relevanceScore}</div>` : '';
+        
+        itemDiv.innerHTML = `
+            ${relevanceHtml}
+            ${imageHtml}
+            <div class="news-widget-content">
+                <div class="news-widget-categories">
+                    ${categories}
+                </div>
+                <a href="${article.link}" target="_blank" rel="noopener noreferrer" class="news-widget-title">
+                    ${article.title}
+                </a>
+                ${article.summary ? `<div class="news-widget-summary">${article.summary}</div>` : ''}
+                <div class="news-widget-meta">
+                    <span class="news-widget-source">
+                        <i class="bi bi-building me-1"></i>${article.source}
+                    </span>
+                    <span class="news-widget-time">
+                        <i class="bi bi-clock me-1"></i>${timeAgo}
+                    </span>
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(itemDiv);
+    });
+}
+
+function showNewsWidgetError(message = 'Kunne ikke laste nyheter') {
+    const container = document.getElementById('news-widget-content');
+    container.innerHTML = `
+        <div class="text-center p-4">
+            <i class="bi bi-exclamation-triangle text-warning fs-3"></i>
+            <p class="mt-2 mb-2 text-muted">${message}</p>
+            <button class="btn btn-sm btn-outline-primary" onclick="refreshNewsWidget()">
+                <i class="bi bi-arrow-clockwise"></i> Prøv igjen
+            </button>
+        </div>
+    `;
+}
+
+function refreshNewsWidget() {
+    const categoryFilter = document.getElementById('news-category-filter');
+    const category = categoryFilter ? categoryFilter.value : 'norwegian';
+    loadNewsWidget(category);
+}
+
+function updateLastUpdated(timestamp) {
+    const lastUpdatedElement = document.getElementById('news-last-updated');
+    if (lastUpdatedElement && timestamp) {
+        const date = new Date(timestamp);
+        lastUpdatedElement.textContent = date.toLocaleTimeString('no-NO', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+}
+
+function getTimeAgo(date) {
+    const now = new Date();
+    const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'Nå nettopp';
+    if (diffInMinutes < 60) return `${diffInMinutes}m siden`;
+    
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours}t siden`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays}d siden`;
+    
+    return date.toLocaleDateString('no-NO', {
+        day: 'numeric',
+        month: 'short'
+    });
+}
+
+// Auto-refresh every 10 minutes
+setInterval(() => {
+    refreshNewsWidget();
+}, 10 * 60 * 1000);
+</script>

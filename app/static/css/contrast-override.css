@@ -1,0 +1,46 @@
+/* CSS Contrast Override - Fix white text on white background issues */
+
+/* Ensure proper text contrast on light backgrounds */
+.bg-light .text-white, 
+.bg-white .text-white,
+.card-body .text-white,
+.container .text-white,
+.row .text-white {
+    color: #212529 !important; /* Dark text for readability */
+}
+
+/* Ensure card headers on light backgrounds have dark text */
+.card-header.bg-light h5,
+.card-header.bg-white h5,
+.bg-light .card-header h5,
+.bg-white .card-header h5 {
+    color: #212529 !important;
+}
+
+/* General text color fixes for light backgrounds */
+.bg-light, .bg-white, .card-body {
+    color: #212529 !important;
+}
+
+/* Fix button text contrast */
+.btn-light {
+    color: #212529 !important;
+}
+
+/* Fix navbar text on light backgrounds */
+.navbar-light .navbar-text,
+.navbar-light .nav-link {
+    color: #212529 !important;
+}
+
+/* Ensure small text is readable */
+.small {
+    color: inherit !important;
+}
+
+/* Override any problematic white text rules that shouldn't apply to light backgrounds */
+.container-fluid:not(.bg-dark) .text-white,
+.main-content:not(.bg-dark) .text-white,
+body:not(.bg-dark) .text-white {
+    color: #212529 !important;
+}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Porteføljeoversikt - Aksjeny{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-4 mb-2">
+                    <i class="bi bi-briefcase text-warning me-3"></i>Porteføljeoversikt
+            </h1>
+            <p class="lead text-muted">Få en oversikt over dine investeringer</p>
+        </div>
+    </div>
+
+    {% if portfolios and portfolios|length > 0 %}
+        <div class="row">
+            {% for portfolio in portfolios %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ portfolio.name }}</h5>
+                            <p class="card-text">
+                                <strong>Verdi:</strong> ${{ "{:,.2f}".format(portfolio.total_value) }}<br>
+                                <strong>Endring:</strong> <span class="text-success">{{ "{:,.2f}".format(portfolio.change) }}%</span><br>
+                                <strong>Investert beløp:</strong> ${{ "{:,.2f}".format(portfolio.invested_amount) }}
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('portfolio.view_portfolio', id=portfolio.id) }}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-eye"></i> Vis detaljer
+                            </a>
+                            <form method="POST" action="{{ url_for('portfolio.delete_portfolio', id=portfolio.id) }}" style="display: inline-block;" onsubmit="return confirm('Er du sikker på at du vil slette denne porteføljen?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                 <i class="bi bi-trash"></i> Slett
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+              <i class="bi bi-info-circle me-2"></i>
+            Ingen porteføljer funnet. Opprett en ny portefølje for å komme i gang med investeringene dine.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

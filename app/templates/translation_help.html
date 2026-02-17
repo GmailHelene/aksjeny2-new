@@ -1,0 +1,376 @@
+{% extends "base.html" %}
+
+{% block title %}Oversettelse til engelsk - Translation to English{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-4 mb-3">
+                    <i class="bi bi-translate text-primary me-3"></i>
+                    Oversett til engelsk
+                </h1>
+                <p class="lead text-muted">
+                    Translate this website to English / Oversett denne nettsiden til engelsk
+                </p>
+            </div>
+
+            <!-- Translation Options -->
+            <div class="row g-4">
+                <!-- Browser Translation -->
+                <div class="col-lg-6">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-globe me-2"></i>
+                                Nettleser / Browser Translation
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">
+                                <strong>Den enkleste måten / The easiest way:</strong><br>
+                                Bruk nettleserens innebygde oversettelse / Use your browser's built-in translation
+                            </p>
+                            
+                            <div class="accordion" id="browserMethods">
+                                <!-- Chrome/Edge -->
+                                <div class="accordion-item">
+                                    <h6 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#chrome">
+                                            <i class="bi bi-browser-chrome me-2"></i> Chrome / Edge
+                                        </button>
+                                    </h6>
+                                    <div id="chrome" class="accordion-collapse collapse" data-bs-parent="#browserMethods">
+                                        <div class="accordion-body">
+                                            <ol>
+                                                <li>Høyreklikk hvor som helst på siden / Right-click anywhere on the page</li>
+                                                <li>Velg "Oversett til engelsk" / Select "Translate to English"</li>
+                                                <li>Eller bruk <kbd>Ctrl+Shift+T</kbd> (Windows) / <kbd>Cmd+Shift+T</kbd> (Mac)</li>
+                                            </ol>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Firefox -->
+                                <div class="accordion-item">
+                                    <h6 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#firefox">
+                                            <i class="bi bi-browser-firefox me-2"></i> Firefox
+                                        </button>
+                                    </h6>
+                                    <div id="firefox" class="accordion-collapse collapse" data-bs-parent="#browserMethods">
+                                        <div class="accordion-body">
+                                            <ol>
+                                                <li>Installer "To Google Translate" utvidelse / Install "To Google Translate" extension</li>
+                                                <li>Høyreklikk og velg "Translate this page" / Right-click and select "Translate this page"</li>
+                                            </ol>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Safari -->
+                                <div class="accordion-item">
+                                    <h6 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#safari">
+                                            <i class="bi bi-browser-safari me-2"></i> Safari
+                                        </button>
+                                    </h6>
+                                    <div id="safari" class="accordion-collapse collapse" data-bs-parent="#browserMethods">
+                                        <div class="accordion-body">
+                                            <ol>
+                                                <li>Høyreklikk på siden / Right-click on the page</li>
+                                                <li>Velg "Oversett til engelsk" / Select "Translate to English"</li>
+                                                <li>Eller klikk på oversettelse-ikonet i adressefeltet / Or click the translation icon in the address bar</li>
+                                            </ol>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Mobile -->
+                                <div class="accordion-item">
+                                    <h6 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#mobile">
+                                            <i class="bi bi-phone me-2"></i> Mobil / Mobile
+                                        </button>
+                                    </h6>
+                                    <div id="mobile" class="accordion-collapse collapse" data-bs-parent="#browserMethods">
+                                        <div class="accordion-body">
+                                            <ul>
+                                                <li><strong>Chrome Mobile:</strong> Meny → Oversett / Menu → Translate</li>
+                                                <li><strong>Safari iOS:</strong> Dele-knapp → Oversett / Share button → Translate</li>
+                                                <li><strong>Samsung Internet:</strong> Meny → Oversettelse / Menu → Translation</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <button class="btn btn-primary" onclick="triggerBrowserTranslation()">
+                                    <i class="bi bi-translate me-2"></i>
+                                    Prøv nettleser-oversettelse / Try Browser Translation
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Professional Translation Services -->
+                <div class="col-lg-6">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-gear me-2"></i>
+                                Profesjonell / Professional Translation
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">
+                                <strong>For bedre kvalitet / For better quality:</strong><br>
+                                Profesjonelle oversettelsestjenester / Professional translation services
+                            </p>
+                            
+                            <!-- ConveyThis Option -->
+                            <div class="mb-4">
+                                <h6 class="text-success">
+                                    <i class="bi bi-robot me-2"></i>
+                                    ConveyThis (AI-oversettelse / AI Translation)
+                                </h6>
+                                <p class="small">
+                                    Avansert AI-drevet oversettelse med bedre kontekst og kvalitet.
+                                    <br>
+                                    <em>Advanced AI-powered translation with better context and quality.</em>
+                                </p>
+                                
+                                <div class="alert alert-info small">
+                                    <strong>Hvordan få ConveyThis API key:</strong>
+                                    <ol class="mb-0 mt-2">
+                                        <li>Gå til <a href="https://app.conveythis.com/account/register/" target="_blank">app.conveythis.com</a></li>
+                                        <li>Opprett gratis konto (2500 ord gratis)</li>
+                                        <li>Gå til Dashboard → Settings → API Key</li>
+                                        <li>Kopier API key og sett i miljøvariabel CONVEYTHIS_API_KEY</li>
+                                    </ol>
+                                </div>
+                                
+                                {% if config.CONVEYTHIS_API_KEY %}
+                                    <button class="btn btn-success btn-sm" onclick="activateConveyThis()">
+                                        <i class="bi bi-magic me-1"></i>
+                                        Aktiver ConveyThis / Activate ConveyThis
+                                    </button>
+                                {% else %}
+                                    <small class="text-muted">
+                                        Ikke konfigurert - følg instruksjonene over / Not configured - follow instructions above
+                                    </small>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Google Translate API -->
+                            <div class="mb-4">
+                                <h6 class="text-info">
+                                    <i class="bi bi-google me-2"></i>
+                                    Google Translate API
+                                </h6>
+                                <p class="small">
+                                    Google sin profesjonelle oversettelse-API med høy kvalitet.
+                                    <br>
+                                    <em>Google's professional translation API with high quality.</em>
+                                </p>
+                                {% if config.GOOGLE_TRANSLATE_API_KEY %}
+                                    <button class="btn btn-info btn-sm" onclick="translateWithGoogle()">
+                                        <i class="bi bi-google me-1"></i>
+                                        Oversett med Google / Translate with Google
+                                    </button>
+                                {% else %}
+                                    <small class="text-muted">
+                                        Ikke konfigurert / Not configured
+                                    </small>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- External Services -->
+                            <div class="mb-3">
+                                <h6 class="text-warning">
+                                    <i class="bi bi-box-arrow-up-right me-2"></i>
+                                    Eksterne tjenester / External Services
+                                </h6>
+                                <div class="d-grid gap-2">
+                                    <a href="https://translate.google.com/?sl=no&tl=en&u={{ request.url | urlencode }}" 
+                                       target="_blank" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-google me-1"></i>
+                                        Google Translate
+                                    </a>
+                                    <a href="https://www.bing.com/translator?from=no&to=en&text={{ request.url | urlencode }}" 
+                                       target="_blank" class="btn btn-outline-info btn-sm">
+                                        <i class="bi bi-microsoft me-1"></i>
+                                        Microsoft Translator
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">
+                                <i class="bi bi-question-circle text-primary me-2"></i>
+                                Trenger du hjelp? / Need help?
+                            </h5>
+                            <p class="card-text">
+                                Hvis du har problemer med oversettelsen, prøv å laste siden på nytt eller bruk en annen nettleser.
+                                <br>
+                                <em>If you have problems with translation, try reloading the page or use a different browser.</em>
+                            </p>
+                            <div class="mt-3">
+                                <a href="{{ url_for('main.contact') }}" class="btn btn-outline-primary me-2">
+                                    <i class="bi bi-envelope me-1"></i>
+                                    Kontakt oss / Contact us
+                                </a>
+                                <a href="{{ url_for('main.help') }}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-life-preserver me-1"></i>
+                                    Hjelp / Help
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Browser translation trigger
+function triggerBrowserTranslation() {
+    // Try different browser-specific methods
+    if (navigator.userAgent.includes('Chrome') || navigator.userAgent.includes('Edge')) {
+        // Chrome/Edge: Try to trigger built-in translation
+        document.documentElement.lang = 'no';
+        
+        // Add Google Translate meta tag
+        if (!document.querySelector('meta[name="google"]')) {
+            const meta = document.createElement('meta');
+            meta.name = 'google';
+            meta.content = 'translate';
+            document.head.appendChild(meta);
+        }
+        
+        // Show instructions
+        showTranslationToast('chrome');
+        
+    } else if (navigator.userAgent.includes('Firefox')) {
+        showTranslationToast('firefox');
+        
+    } else if (navigator.userAgent.includes('Safari')) {
+        showTranslationToast('safari');
+        
+    } else {
+        showTranslationToast('general');
+    }
+}
+
+function showTranslationToast(browser) {
+    const messages = {
+        chrome: 'Høyreklikk på siden og velg "Oversett til engelsk" / Right-click and select "Translate to English"',
+        firefox: 'Installer oversettelse-utvidelse eller bruk meny → Oversett / Install translation extension or use menu → Translate',
+        safari: 'Klikk på oversettelse-ikonet i adressefeltet / Click the translation icon in the address bar',
+        general: 'Bruk nettleserens oversettelse-funksjon / Use your browser\'s translation feature'
+    };
+    
+    // Create toast notification
+    const toast = document.createElement('div');
+    toast.className = 'alert alert-info alert-dismissible fade show position-fixed';
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 400px;';
+    toast.innerHTML = `
+    <i class="bi bi-info-circle me-2"></i>
+        ${messages[browser]}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Auto-remove after 8 seconds
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }
+    }, 8000);
+}
+
+// ConveyThis activation
+function activateConveyThis() {
+    if (typeof ConveyThis !== 'undefined') {
+        ConveyThis.translatePage('en');
+        showTranslationToast('conveythis-activated');
+    } else {
+        // Try to load ConveyThis
+        const apiKey = '{{ config.CONVEYTHIS_API_KEY }}';
+        if (apiKey) {
+            loadConveyThisScript(apiKey);
+        } else {
+            alert('ConveyThis er ikke konfigurert / ConveyThis is not configured');
+        }
+    }
+}
+
+function loadConveyThisScript(apiKey) {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.conveythis.com/javascript/conveythis-initializer.js';
+    script.async = true;
+    script.onload = () => {
+        if (typeof ConveyThis !== 'undefined') {
+            ConveyThis.init({
+                api_key: apiKey,
+                source_language: 'no',
+                target_languages: ['en']
+            });
+            setTimeout(() => {
+                ConveyThis.translatePage('en');
+            }, 1000);
+        }
+    };
+    document.head.appendChild(script);
+}
+
+// Google Translate API (placeholder - requires server-side implementation)
+function translateWithGoogle() {
+    alert('Google Translate API krever server-side implementering / Google Translate API requires server-side implementation');
+}
+
+// Add language detection meta tags
+document.addEventListener('DOMContentLoaded', () => {
+    // Add language hints
+    document.documentElement.lang = 'no';
+    
+    // Add translation meta tags
+    const metas = [
+        { name: 'google', content: 'translate' },
+        { name: 'language', content: 'Norwegian' },
+        { property: 'og:locale', content: 'no_NO' },
+        { property: 'og:locale:alternate', content: 'en_US' }
+    ];
+    
+    metas.forEach(meta => {
+        const existing = document.querySelector(`meta[name="${meta.name}"], meta[property="${meta.property}"]`);
+        if (!existing) {
+            const metaTag = document.createElement('meta');
+            if (meta.name) metaTag.name = meta.name;
+            if (meta.property) metaTag.property = meta.property;
+            metaTag.content = meta.content;
+            document.head.appendChild(metaTag);
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Risikoanalyse - Aksjeradar{% endblock %}
+
+{% block content %}
+{% include 'analysis/_menu.html' %}
+
+<div class="container py-4">ds "base.html" %}
+
+{% block title %}Risikoanalyse | Aksjeradar{% endblock %}
+
+{% block content %}
+{% include 'analysis/_menu.html' %}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i class="bi bi-shield-exclamation text-danger"></i> Risikoanalyse
+                    </h1>
+                    <p class="text-muted">Omfattende analyse av investeringsrisiko og markedsforhold</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle"></i> {{ error }}
+    </div>
+    {% endif %}
+
+    {% if risk_factors %}
+    <div class="row">
+        {% for factor_key, factor in risk_factors.items() %}
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title">{{ factor_key.replace('_', ' ').title() }}</h5>
+                        <span class="badge 
+                            {% if factor.level == 'High' %}bg-danger
+                            {% elif factor.level == 'Medium' %}bg-warning
+                            {% else %}bg-success{% endif %}">
+                            {{ factor.level }}
+                        </span>
+                    </div>
+                    <p class="card-text">{{ factor.description }}</p>
+                    <div class="progress mt-3" style="height: 10px;">
+                        <div class="progress-bar 
+                            {% if factor.level == 'High' %}bg-danger
+                            {% elif factor.level == 'Medium' %}bg-warning
+                            {% else %}bg-success{% endif %}" 
+                            style="width: {{ factor.percentage }}%">
+                        </div>
+                    </div>
+                    <small class="text-muted">Risikonivå: {{ factor.percentage }}%</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Risk Summary -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Risikosammendrag</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="h2 text-warning">{% if risk_factors %}{{ (risk_factors.values() | map(attribute='percentage') | sum / risk_factors.values() | length) | round }}%{% else %}N/A{% endif %}</div>
+                                <p class="text-muted">Gjennomsnittlig risikonivå</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="h2 text-danger">{% if risk_factors %}{{ risk_factors.values() | selectattr('level', 'equalto', 'High') | list | length }}{% else %}0{% endif %}</div>
+                                <p class="text-muted">Høyrisikoområder</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="h2 text-success">{% if risk_factors %}{{ risk_factors.values() | selectattr('level', 'equalto', 'Low') | list | length }}{% else %}0{% endif %}</div>
+                                <p class="text-muted">Lavrisikoområder</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Management Recommendations -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card bg-light border-0">
+                <div class="card-body">
+                    <h5><i class="bi bi-shield-check text-success"></i> Anbefalinger for risikohåndtering</h5>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check-circle text-success"></i> Diversifiser på tvers av sektorer og geografier</li>
+                                <li><i class="bi bi-check-circle text-success"></i> Sett av en nødfond før investering</li>
+                                <li><i class="bi bi-check-circle text-success"></i> Gjennomgå porteføljen regelmessig</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check-circle text-success"></i> Ikke invester mer enn du har råd til å tape</li>
+                                <li><i class="bi bi-check-circle text-success"></i> Bruk stop-loss ordrer ved behov</li>
+                                <li><i class="bi bi-check-circle text-success"></i> Hold deg oppdatert på markedsutvikling</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-shield-exclamation text-muted" style="font-size: 4rem;"></i>
+        <h3 class="mt-3 text-muted">Ingen risikodata tilgjengelig</h3>
+        <p class="text-muted">Prøv igjen senere</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

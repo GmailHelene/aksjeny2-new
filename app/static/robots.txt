@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /
+
+# Block unwanted paths and domains
+Disallow: /admin/
+Disallow: /api/
+Disallow: /restricted_access
+Disallow: /payment_success
+Disallow: /payment_cancel
+Disallow: /_debug_toolbar/
+
+# Block Railway and Streamlit domains from indexing
+User-agent: *
+Disallow: *railway*
+Disallow: *streamlit*
+
+# Primary domain only
+Host: aksjeradar.trade
+
+# Sitemap location
+Sitemap: https://aksjeradar.trade/sitemap.xml
+
+# Crawl-delay (polite crawling)
+Crawl-delay: 1

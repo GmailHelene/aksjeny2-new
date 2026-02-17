@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AksjeNy{% endblock %}</title>
+        {% set host = request.host.split(':')[0] if request.host else '' %}
+        {% set canonical_url = 'https://aksjeradar.trade' + request.path %}
+        <link rel="canonical" href="{{ canonical_url }}">
+        {% if host not in ['aksjeradar.trade','www.aksjeradar.trade'] or current_app.config.get('EKTE_ONLY') %}
+        <meta name="robots" content="noindex, nofollow">
+        {% endif %}
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+    
+    <!-- Global CSS files -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    
+    <!-- Page specific CSS -->
+    {% block styles %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">AksjeNy</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.index') }}">Hjem</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('analysis.index') }}">Analyse</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('portfolio.portfolio_overview') }}">Portefølje</a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav ms-auto">
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.logout') }}">Logg ut</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">Logg inn</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.register') }}">Registrer deg</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light text-center text-lg-start mt-4">
+        <div class="container p-4">
+            <div class="row">
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <h5 class="text-uppercase">Om AksjeNy</h5>
+                    <p>
+                        AksjeNy er en plattform for aksjeanalyse og porteføljeforvaltning. Vår tjeneste gir deg innsikt i aksjemarkedet og hjelper deg med å ta informerte investeringsbeslutninger.
+                    </p>
+                </div>
+
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h5 class="text-uppercase">Rask linker</h5>
+                    <ul class="list-unstyled">
+                        <li>
+                            <a href="{{ url_for('main.index') }}" class="text-dark">Hjem</a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('analysis.index') }}" class="text-dark">Analyse</a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('portfolio.portfolio_overview') }}" class="text-dark">Portefølje</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h5 class="text-uppercase">Kontakt oss</h5>
+                    <ul class="list-unstyled">
+                        <li>
+                            <a href="mailto:kontakt@aksjeny.no" class="text-dark">E-post</a>
+                        </li>
+                        <li>
+                            <a href="https://www.linkedin.com/company/aksjeny" class="text-dark">LinkedIn</a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/aksjeny" class="text-dark">Facebook</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.1);">
+            © 2023 AksjeNy. Alle rettigheter reservert.
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Global JavaScript files -->
+    <script src="{{ url_for('static', filename='js/analysis-search.js') }}"></script>
+    
+    <!-- Page specific JavaScript -->
+    {% block scripts %}{% endblock %}
+</body>
+</html>

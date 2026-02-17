@@ -1,0 +1,1 @@
+FOUND: id=4 email=eiriktollan.berntsen@gmail.com username=eirik_berntsen has_subscription=True type=lifetime end=None is_premium=True

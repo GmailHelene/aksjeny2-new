@@ -1,0 +1,792 @@
+{% extends "base.html" %}
+
+{% block title %}Portfolio Optimization - Aksjeradar{% endblock %}
+
+{% block head %}
+<link href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css" rel="stylesheet">
+<style>
+    /* Professional portfolio optimization styling */
+    .optimization-container {
+        background: #f8f9fc; /* Light professional background */
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    
+    .optimization-card {
+        background: #ffffff;
+        border-radius: 8px; /* Less rounded for professional look */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* Subtle shadow */
+        border: 1px solid #e9ecef;
+    }
+    
+    .optimization-header {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); /* Professional gradient */
+        color: white;
+        border-radius: 8px 8px 0 0;
+        padding: 1.5rem; /* Less padding */
+        text-align: center;
+    }
+    
+        .metric-card {
+        background: darkblue;
+        border: none;
+        border-radius: 12px;
+        color: white;
+        text-align: center;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-1px); /* Subtle hover effect */
+    }
+    
+    .risk-badge {
+        display: inline-block;
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px; /* Less rounded */
+        font-weight: 500; /* Less bold */
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Professional risk colors */
+    .risk-low { 
+        background: #d5f4e6; 
+        color: #0f5132; 
+        border: 1px solid #a3cfbb;
+    }
+    .risk-moderate { 
+        background: #fff8e1; 
+        color: #8a6d00; 
+        border: 1px solid #e6cc80;
+    }
+    .risk-high { 
+        background: #f8e1e4; 
+        color: #58151c; 
+        border: 1px solid #d1a7ac;
+    }
+    
+    .allocation-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.8rem; /* Less padding */
+        margin-bottom: 0.5rem;
+        background: #f8f9fa;
+        border-radius: 4px; /* Less rounded */
+        border-left: 3px solid #27ae60; /* Professional green */
+    }
+    
+    .allocation-change {
+        font-weight: 500; /* Less bold */
+    }
+    
+    .allocation-increase { color: #27ae60; } /* Professional green */
+    .allocation-decrease { color: #e74c3c; } /* Professional red */
+    
+    .scenario-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .scenario-card {
+        background: white;
+        border-radius: 6px;
+        padding: 1rem;
+        text-align: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        border: 1px solid #e9ecef;
+    }
+    
+    .btn-optimization {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); /* Professional gradient */
+        border: none;
+        color: white;
+        padding: 0.6rem 1.5rem; /* Less padding */
+        border-radius: 4px; /* Less rounded */
+        font-weight: 500; /* Less bold */
+        transition: all 0.2s ease;
+    }
+    
+    .btn-optimization:hover {
+        background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+        transform: translateY(-1px);
+    }
+    
+    /* Typography improvements */
+    h1, h2, h3, h4, h5, h6 {
+        font-weight: 500; /* Less bold */
+        color: #2c3e50;
+    }
+    
+    .metric-value {
+        font-size: 1.8rem; /* Smaller for elegance */
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .metric-label {
+        font-size: 0.85rem;
+        color: #7f8c8d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Professional table styling */
+    .table {
+        font-size: 0.9rem;
+    }
+    
+    .table th {
+        border-top: none;
+        font-weight: 500;
+        color: #2c3e50;
+        background-color: #f8f9fa;
+    }
+    
+    /* Card header improvements */
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+        font-weight: 500;
+        color: #2c3e50;
+    }
+</style>
+{% endblock %}
+    }
+    
+    .risk-low { background: #d4edda; color: #155724; }
+    .risk-moderate { background: #fff3cd; color: #856404; }
+    .risk-high { background: #f8d7da; color: #721c24; }
+    
+    .allocation-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        border-left: 4px solid #28a745;
+    }
+    
+    .allocation-change {
+        font-weight: 600;
+    }
+    
+    .allocation-increase { color: #28a745; }
+    .allocation-decrease { color: #dc3545; }
+    
+    .scenario-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .scenario-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .btn-optimization {
+        background: linear-gradient(135deg, #667eea 0%, #000000 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-optimization:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        color: white;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin: 1rem 0;
+    }
+    
+    .loading-spinner {
+        display: none;
+        text-align: center;
+        padding: 2rem;
+    }
+    
+    .results-section {
+        display: none;
+        margin-top: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="optimization-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="optimization-card">
+                    <div class="optimization-header">
+                        <h1 class="display-5 mb-3">
+                            <i class="bi bi-graph-up-arrow me-3"></i>
+                            AI-Powered Portfolio Optimization
+                        </h1>
+                        <p class="lead mb-0">
+                            Institutional-grade portfolio optimization using Modern Portfolio Theory and AI analytics
+                        </p>
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        <!-- Optimization Parameters -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="metric-card">
+                                    <h5><i class="bi bi-sliders me-2"></i>Optimization Parameters</h5>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Risk Tolerance</label>
+                                        <div class="btn-group w-100" role="group">
+                                            <input type="radio" class="btn-check" name="riskTolerance" id="conservative" value="conservative">
+                                            <label class="btn btn-outline-primary" for="conservative">Conservative</label>
+                                            
+                                            <input type="radio" class="btn-check" name="riskTolerance" id="moderate" value="moderate" checked>
+                                            <label class="btn btn-outline-primary" for="moderate">Moderate</label>
+                                            
+                                            <input type="radio" class="btn-check" name="riskTolerance" id="aggressive" value="aggressive">
+                                            <label class="btn btn-outline-primary" for="aggressive">Aggressive</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Target Annual Return (%)</label>
+                                        <input type="number" class="form-control" id="targetReturn" 
+                                               placeholder="Optional - leave blank for Sharpe maximization" 
+                                               step="0.1" min="0" max="50">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Optimization Method</label>
+                                        <select class="form-select" id="optimizationMethod">
+                                            <option value="sharpe">Maximize Sharpe Ratio</option>
+                                            <option value="target_return">Target Return</option>
+                                            <option value="min_variance">Minimize Risk</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="metric-card">
+                                    <h5><i class="bi bi-pie-chart me-2"></i>Current Portfolio</h5>
+                                    <div id="currentPortfolioSummary">
+                                        <p class="text-muted">Loading current portfolio data...</p>
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas id="currentAllocationChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="text-center mb-4">
+                            <button class="btn btn-optimization btn-lg me-3" onclick="optimizePortfolio()">
+                                <i class="bi bi-cpu me-2"></i>Optimize Portfolio
+                            </button>
+                            <button class="btn btn-outline-secondary btn-lg me-3" onclick="runScenarioAnalysis()">
+                                <i class="bi bi-graph-down-arrow me-2"></i>Scenario Analysis
+                            </button>
+                            <button class="btn btn-outline-info btn-lg" onclick="calculateRiskMetrics()">
+                                <i class="bi bi-shield-check me-2"></i>Risk Analysis
+                            </button>
+                        </div>
+                        
+                        <!-- Loading Spinner -->
+                        <div class="loading-spinner" id="loadingSpinner">
+                            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                                <span class="visually-hidden">Optimizing portfolio...</span>
+                            </div>
+                            <p class="mt-3 text-muted">Running AI optimization algorithms...</p>
+                        </div>
+                        
+                        <!-- Optimization Results -->
+                        <div class="results-section" id="optimizationResults">
+                            <h4 class="mb-4"><i class="bi bi-check-circle me-2 text-success"></i>Optimization Results</h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="metric-card">
+                                        <h5>Portfolio Metrics</h5>
+                                        <div id="portfolioMetrics"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="metric-card">
+                                        <h5>Recommended Allocation</h5>
+                                        <div class="chart-container">
+                                            <canvas id="optimizedAllocationChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="metric-card">
+                                <h5>Rebalancing Recommendations</h5>
+                                <div id="rebalancingRecommendations"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Risk Analysis Results -->
+                        <div class="results-section" id="riskAnalysisResults">
+                            <h4 class="mb-4"><i class="bi bi-shield-exclamation me-2 text-warning"></i>Risk Analysis</h4>
+                            
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="metric-card">
+                                        <h6>Value at Risk (VaR)</h6>
+                                        <div id="varMetrics"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="metric-card">
+                                        <h6>Risk Classification</h6>
+                                        <div id="riskClassification"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="metric-card">
+                                        <h6>Risk Warnings</h6>
+                                        <div id="riskWarnings"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Scenario Analysis Results -->
+                        <div class="results-section" id="scenarioAnalysisResults">
+                            <h4 class="mb-4"><i class="bi bi-graph-down me-2 text-info"></i>Scenario Analysis</h4>
+                            
+                            <div class="scenario-grid" id="scenarioGrid"></div>
+                            
+                            <div class="metric-card mt-3">
+                                <h5>Scenario Recommendations</h5>
+                                <div id="scenarioRecommendations"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+// Global variables
+let currentPortfolioChart;
+let optimizedAllocationChart;
+let currentPortfolioData = [];
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    loadCurrentPortfolio();
+    setupEventListeners();
+});
+
+function setupEventListeners() {
+    // Risk tolerance change
+    document.querySelectorAll('input[name="riskTolerance"]').forEach(radio => {
+        radio.addEventListener('change', updateOptimizationParameters);
+    });
+    
+    // Target return change
+    document.getElementById('targetReturn').addEventListener('input', updateOptimizationParameters);
+    
+    // Optimization method change
+    document.getElementById('optimizationMethod').addEventListener('change', updateOptimizationParameters);
+}
+
+function loadCurrentPortfolio() {
+    // Mock portfolio data - in production, load from API
+    currentPortfolioData = [
+        { symbol: 'AAPL', weight: 0.25, value: 25000, name: 'Apple Inc.' },
+        { symbol: 'MSFT', weight: 0.20, value: 20000, name: 'Microsoft Corp.' },
+        { symbol: 'GOOGL', weight: 0.15, value: 15000, name: 'Alphabet Inc.' },
+        { symbol: 'TSLA', weight: 0.15, value: 15000, name: 'Tesla Inc.' },
+        { symbol: 'JPM', weight: 0.10, value: 10000, name: 'JPMorgan Chase' },
+        { symbol: 'JNJ', weight: 0.10, value: 10000, name: 'Johnson & Johnson' },
+        { symbol: 'XOM', weight: 0.05, value: 5000, name: 'Exxon Mobil' }
+    ];
+    
+    updateCurrentPortfolioSummary();
+    createCurrentAllocationChart();
+}
+
+function updateCurrentPortfolioSummary() {
+    const totalValue = currentPortfolioData.reduce((sum, item) => sum + item.value, 0);
+    const positionCount = currentPortfolioData.length;
+    const largestPosition = Math.max(...currentPortfolioData.map(item => item.weight));
+    
+    document.getElementById('currentPortfolioSummary').innerHTML = `
+        <div class="row text-center">
+            <div class="col-4">
+                <h6 class="mb-1">Total Value</h6>
+                <p class="h5 text-primary mb-0">$${totalValue.toLocaleString()}</p>
+            </div>
+            <div class="col-4">
+                <h6 class="mb-1">Positions</h6>
+                <p class="h5 text-success mb-0">${positionCount}</p>
+            </div>
+            <div class="col-4">
+                <h6 class="mb-1">Largest Position</h6>
+                <p class="h5 text-warning mb-0">${(largestPosition * 100).toFixed(1)}%</p>
+            </div>
+        </div>
+    `;
+}
+
+function createCurrentAllocationChart() {
+    const ctx = document.getElementById('currentAllocationChart').getContext('2d');
+    
+    if (currentPortfolioChart) {
+        currentPortfolioChart.destroy();
+    }
+    
+    currentPortfolioChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: currentPortfolioData.map(item => item.symbol),
+            datasets: [{
+                data: currentPortfolioData.map(item => item.weight * 100),
+                backgroundColor: [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                    '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                        padding: 10
+                    }
+                }
+            }
+        }
+    });
+}
+
+function optimizePortfolio() {
+    showLoading();
+    hideResults();
+    
+    const riskTolerance = document.querySelector('input[name="riskTolerance"]:checked').value;
+    const targetReturn = document.getElementById('targetReturn').value;
+    const optimizationMethod = document.getElementById('optimizationMethod').value;
+    
+    const requestData = {
+        holdings: currentPortfolioData,
+        risk_tolerance: riskTolerance,
+        target_return: targetReturn ? parseFloat(targetReturn) / 100 : null,
+        optimization_method: optimizationMethod
+    };
+    
+    fetch('/portfolio/api/optimization', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.success) {
+            displayOptimizationResults(data);
+        } else {
+            showError('Optimization failed: ' + data.error);
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showError('Error running optimization: ' + error.message);
+    });
+}
+
+function calculateRiskMetrics() {
+    showLoading();
+    hideResults();
+    
+    const requestData = {
+        holdings: currentPortfolioData,
+        timeframe_days: 252
+    };
+    
+    fetch('/portfolio/api/risk-metrics', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.success) {
+            displayRiskAnalysisResults(data);
+        } else {
+            showError('Risk analysis failed: ' + data.error);
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showError('Error calculating risk metrics: ' + error.message);
+    });
+}
+
+function runScenarioAnalysis() {
+    showLoading();
+    hideResults();
+    
+    const requestData = {
+        holdings: currentPortfolioData,
+        scenarios: ['market_crash', 'recession', 'inflation_spike', 'bull_market', 'base_case']
+    };
+    
+    fetch('/portfolio/api/scenario-analysis', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.success) {
+            displayScenarioAnalysisResults(data);
+        } else {
+            showError('Scenario analysis failed: ' + data.error);
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showError('Error running scenario analysis: ' + error.message);
+    });
+}
+
+function displayOptimizationResults(data) {
+    const metrics = data.portfolio_metrics;
+    const allocation = data.optimized_allocation;
+    
+    // Display portfolio metrics
+    document.getElementById('portfolioMetrics').innerHTML = `
+        <div class="row">
+            <div class="col-6">
+                <p><strong>Expected Return:</strong> ${(metrics.expected_return * 100).toFixed(2)}%</p>
+                <p><strong>Volatility:</strong> ${(metrics.volatility * 100).toFixed(2)}%</p>
+            </div>
+            <div class="col-6">
+                <p><strong>Sharpe Ratio:</strong> ${metrics.sharpe_ratio.toFixed(3)}</p>
+                <p><strong>Max Drawdown:</strong> ${(metrics.max_drawdown * 100).toFixed(2)}%</p>
+            </div>
+        </div>
+        <div class="mt-2">
+            <span class="risk-badge ${getRiskClass(metrics.volatility)}">
+                ${data.risk_tolerance.toUpperCase()} RISK
+            </span>
+        </div>
+    `;
+    
+    // Display rebalancing recommendations
+    const rebalancingHtml = allocation.map(item => `
+        <div class="allocation-item">
+            <div>
+                <strong>${item.symbol}</strong>
+                <small class="text-muted d-block">${item.symbol}</small>
+            </div>
+            <div class="text-end">
+                <div>Current: ${(item.current_weight * 100).toFixed(1)}%</div>
+                <div>Optimal: ${(item.optimal_weight * 100).toFixed(1)}%</div>
+                <div class="allocation-change ${item.action === 'increase' ? 'allocation-increase' : 'allocation-decrease'}">
+                    ${item.action === 'increase' ? '+' : ''}${(item.difference * 100).toFixed(1)}%
+                </div>
+            </div>
+        </div>
+    `).join('');
+    
+    document.getElementById('rebalancingRecommendations').innerHTML = rebalancingHtml;
+    
+    // Create optimized allocation chart
+    createOptimizedAllocationChart(allocation);
+    
+    document.getElementById('optimizationResults').style.display = 'block';
+}
+
+function displayRiskAnalysisResults(data) {
+    const metrics = data.risk_metrics;
+    
+    // VaR metrics
+    document.getElementById('varMetrics').innerHTML = `
+        <p><strong>1-Day VaR (95%):</strong> ${(metrics.var_95 * 100).toFixed(2)}%</p>
+        <p><strong>1-Day VaR (99%):</strong> ${(metrics.var_99 * 100).toFixed(2)}%</p>
+        <p><strong>CVaR (95%):</strong> ${(metrics.cvar_95 * 100).toFixed(2)}%</p>
+    `;
+    
+    // Risk classification
+    document.getElementById('riskClassification').innerHTML = `
+        <div class="text-center">
+            <span class="risk-badge ${getRiskClass(metrics.volatility)}">${data.risk_classification}</span>
+            <p class="mt-2 mb-0"><strong>Volatility:</strong> ${(metrics.volatility * 100).toFixed(2)}%</p>
+        </div>
+    `;
+    
+    // Risk warnings
+    const warningsHtml = data.risk_warnings.map(warning => 
+        `<div class="alert alert-warning alert-sm">${warning}</div>`
+    ).join('');
+    document.getElementById('riskWarnings').innerHTML = warningsHtml;
+    
+    document.getElementById('riskAnalysisResults').style.display = 'block';
+}
+
+function displayScenarioAnalysisResults(data) {
+    const scenarios = data.scenario_analysis;
+    
+    // Create scenario cards
+    const scenarioHtml = Object.entries(scenarios).map(([scenario, results]) => `
+        <div class="scenario-card">
+            <h6>${formatScenarioName(scenario)}</h6>
+            <p class="h5 ${results.mean_return >= 0 ? 'text-success' : 'text-danger'}">
+                ${(results.mean_return * 100).toFixed(1)}%
+            </p>
+            <small class="text-muted">Expected Return</small>
+            <div class="mt-2">
+                <small><strong>Best:</strong> ${(results.best_case * 100).toFixed(1)}%</small><br>
+                <small><strong>Worst:</strong> ${(results.worst_case * 100).toFixed(1)}%</small>
+            </div>
+        </div>
+    `).join('');
+    
+    document.getElementById('scenarioGrid').innerHTML = scenarioHtml;
+    
+    // Display recommendations
+    const recommendationsHtml = data.recommendations.map(rec => 
+        `<div class="alert alert-info alert-sm">${rec}</div>`
+    ).join('');
+    document.getElementById('scenarioRecommendations').innerHTML = recommendationsHtml;
+    
+    document.getElementById('scenarioAnalysisResults').style.display = 'block';
+}
+
+function createOptimizedAllocationChart(allocation) {
+    const ctx = document.getElementById('optimizedAllocationChart').getContext('2d');
+    
+    if (optimizedAllocationChart) {
+        optimizedAllocationChart.destroy();
+    }
+    
+    optimizedAllocationChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: allocation.map(item => item.symbol),
+            datasets: [{
+                data: allocation.map(item => item.optimal_weight * 100),
+                backgroundColor: [
+                    '#28a745', '#17a2b8', '#ffc107', '#dc3545',
+                    '#6f42c1', '#fd7e14', '#20c997', '#6c757d'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                        padding: 10
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Utility functions
+function showLoading() {
+    document.getElementById('loadingSpinner').style.display = 'block';
+}
+
+function hideLoading() {
+    document.getElementById('loadingSpinner').style.display = 'none';
+}
+
+function hideResults() {
+    document.getElementById('optimizationResults').style.display = 'none';
+    document.getElementById('riskAnalysisResults').style.display = 'none';
+    document.getElementById('scenarioAnalysisResults').style.display = 'none';
+}
+
+function getRiskClass(volatility) {
+    if (volatility < 0.15) return 'risk-low';
+    if (volatility < 0.25) return 'risk-moderate';
+    return 'risk-high';
+}
+
+function formatScenarioName(scenario) {
+    const names = {
+        'market_crash': 'Market Crash',
+        'recession': 'Recession',
+        'inflation_spike': 'Inflation Spike',
+        'bull_market': 'Bull Market',
+        'base_case': 'Base Case'
+    };
+    return names[scenario] || scenario;
+}
+
+function updateOptimizationParameters() {
+    // Update UI based on selected parameters
+    console.log('Optimization parameters updated');
+}
+
+function showError(message) {
+    const alertHtml = `
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    document.querySelector('.card-body').insertAdjacentHTML('afterbegin', alertHtml);
+}
+
+function getCsrfToken() {
+    return document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || '';
+}
+</script>
+{% endblock %}

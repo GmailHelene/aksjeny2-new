@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Foruminnlegg{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-3">{{ post.title }}</h1>
+    <div class="mb-4">
+        <small class="text-muted">Publisert {{ post.created_at.strftime('%d.%m.%Y %H:%M') }}</small>
+    </div>
+    <div class="card mb-4">
+        <div class="card-body">
+            <p>{{ post.content }}</p>
+        </div>
+    </div>
+    <a href="{{ url_for('forum.index') }}" class="btn btn-outline-primary">Tilbake til forum</a>
+</div>
+{% endblock %}
+
+    {% block scripts %}
+    {% if current_user.is_authenticated and (current_user.id == post.author_id or current_user.is_admin) %}
+    <form id="delete-post-form" method="POST" action="{{ url_for('forum.delete_post', post_id=post.id) }}" class="mt-3">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-danger" id="delete-post-btn">Slett innlegg</button>
+    </form>
+    <script>
+    document.getElementById('delete-post-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (!confirm('Er du sikker på at du vil slette dette innlegget?')) return;
+        fetch(this.action, {
+            method: 'POST',
+            headers: {'X-Requested-With': 'XMLHttpRequest'},
+            body: new FormData(this)
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = '{{ url_for('forum.index') }}';
+            } else {
+                alert('Kunne ikke slette innlegget: ' + (data.error || 'Ukjent feil'));
+            }
+        })
+        .catch(() => alert('Teknisk feil ved sletting.'));
+    });
+    </script>
+    {% endif %}
+    {% endblock %}

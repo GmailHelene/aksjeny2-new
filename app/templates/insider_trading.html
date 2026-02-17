@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Innsidehandel - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2">
+                    <i class="bi bi-eye"></i> Innsidehandel
+                </h1>
+                <div>
+                    <span class="text-muted">Sist oppdatert: {{ moment().format('DD.MM.YYYY HH:mm') if moment else 'N/A' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Nylige Innsidehandler</h5>
+                </div>
+                <div class="card-body">
+                    {% for ticker, data in insider_data.items() %}
+                    <div class="mb-4">
+                        <h6 class="text-primary">{{ data.company }} ({{ ticker }})</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Dato</th>
+                                        <th>Insider</th>
+                                        <th>Posisjon</th>
+                                        <th>Transaksjon</th>
+                                        <th>Aksjer</th>
+                                        <th>Pris</th>
+                                        <th>Verdi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for trade in data.recent_trades %}
+                                    <tr>
+                                        <td>{{ trade.date }}</td>
+                                        <td>{{ trade.insider }}</td>
+                                        <td>{{ trade.position }}</td>
+                                        <td>
+                                            <span class="badge {% if trade.transaction == 'Kjøp' %}bg-success{% else %}bg-danger{% endif %}">
+                                                {{ trade.transaction }}
+                                            </span>
+                                        </td>
+                                        <td>{{ "{:,}".format(trade.shares) }}</td>
+                                        <td>{{ "{:.2f}".format(trade.price) }} NOK</td>
+                                        <td>{{ "{:,}".format(trade.value) }} NOK</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Innsidehandel Statistikk</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted">Siste 30 dager</small>
+                        <div class="d-flex justify-content-between">
+                            <span>Kjøp:</span>
+                            <span class="text-success">8 transaksjoner</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Salg:</span>
+                            <span class="text-danger">3 transaksjoner</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Netto:</span>
+                            <span class="text-success">+5 transaksjoner</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <small class="text-muted">Mest aktive sektorer</small>
+                        <div class="d-flex justify-content-between">
+                            <span>Energi:</span>
+                            <span>45%</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Bank:</span>
+                            <span>27%</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Telekom:</span>
+                            <span>18%</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Andre:</span>
+                            <span>10%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <small>
+                            <i class="bi bi-info-circle"></i>
+                            Innsidehandel data er hentet fra offentlige kilder og kan ha forsinkelser.
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Følg Aksjer</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Velg aksjer du vil følge for innsidehandel:</p>
+                    {% for stock in popular_stocks %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="{{ stock }}" id="stock-{{ stock }}">
+                        <label class="form-check-label" for="stock-{{ stock }}">
+                            {{ stock }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                    <button class="btn btn-primary btn-sm mt-2">
+                        <i class="bi bi-bell"></i> Aktiver varsler
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add some interactivity
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle stock selection
+    document.querySelectorAll('.form-check-input').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            console.log('Stock selection changed:', this.value, this.checked);
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}{{ stock.symbol }} - {{ stock.name }} - Aksjeny{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" data-tech-cache-hit="{{ 'true' if technical_data and technical_data.get('cache_hit') else 'false' }}">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-4">
+                {{ stock.symbol }}
+                <small class="text-muted">{{ stock.name }}</small>
+            </h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Price and Chart -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h3">${{ "%.2f"|format(stock.current_price) }}</h2>
+                    <span class="badge {% if stock.change_percent >= 0 %}bg-success{% else %}bg-danger{% endif %}">
+                        {% if stock.change_percent >= 0 %}+{% endif %}{{ "%.2f"|format(stock.change_percent) }}%
+                    </span>
+                    
+                    {% if historical_data is not none and not historical_data.empty %}
+                        <div id="priceChart" class="mt-4" style="height: 400px;"></div>
+                    {% else %}
+                        <p class="text-muted mt-4">Ingen historiske data tilgjengelig</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- News -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="h5 mb-0">Nyheter</h3>
+                </div>
+                <div class="card-body">
+                    {% if news %}
+                        {% for article in news %}
+                            <div class="mb-3">
+                                <h6>{{ article.title }}</h6>
+                                <p class="text-muted small">{{ article.date }}</p>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Ingen nyheter tilgjengelig</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Stock Info -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="h5 mb-0">Informasjon</h3>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-6">Sektor:</dt>
+                        <dd class="col-sm-6">{{ stock.sector }}</dd>
+                        
+                        <dt class="col-sm-6">Volum:</dt>
+                        <dd class="col-sm-6">{{ "{:,.0f}".format(stock.volume) }}</dd>
+                        
+                        <dt class="col-sm-6">Market Cap:</dt>
+                        <dd class="col-sm-6">${{ "{:,.0f}".format(stock.market_cap) }}</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Analysis -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="h5 mb-0">Analyse</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>Anbefaling:</strong> {{ analysis.recommendation }}</p>
+                    <p><strong>RSI:</strong> {{ "%.1f"|format(analysis.rsi) }}</p>
+                    <p><strong>MA 50:</strong> ${{ "%.2f"|format(analysis.moving_avg_50) }}</p>
+                    <p><strong>MA 200:</strong> ${{ "%.2f"|format(analysis.moving_avg_200) }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- TradingView Widget -->
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function() {
+    new TradingView.widget({
+        "width": "100%",
+        "height": 400,
+        "symbol": "{{ symbol }}",
+        "interval": "D",
+        "timezone": "Europe/Oslo",
+        "theme": "light",
+        "style": "1",
+        "locale": "no_NO",
+        "toolbar_bg": "#f1f3f6",
+        "enable_publishing": false,
+        "allow_symbol_change": false,
+        "container_id": "tradingview_chart"
+    });
+});
+</script>
+
+<!-- Chart.js for historical data -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('priceChart');
+    if (ctx && {{ chart_data|tojson }}.length > 0) {
+        new Chart(ctx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: {{ chart_data|map(attribute='date')|list|tojson }},
+                datasets: [{
+                    label: 'Pris',
+                    data: {{ chart_data|map(attribute='close')|list|tojson }},
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

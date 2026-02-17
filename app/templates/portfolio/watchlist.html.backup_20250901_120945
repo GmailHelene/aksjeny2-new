@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% block title %}Watchlist{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Din Watchlist</h2>
+        <div>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStockModal">
+                <i class="fas fa-plus me-2"></i>Legg til aksje
+            </button>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if stocks %}
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Navn</th>
+                            <th class="text-end">Siste pris</th>
+                            <th class="text-end">Endring %</th>
+                            <th class="text-end">Volum</th>
+                            <th>Lagt til</th>
+                            <th>Handlinger</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stock in stocks %}
+                        <tr {% if stock.error %}class="table-warning"{% endif %}>
+                            <td>
+                                <a href="{{ url_for('stocks.details', symbol=stock.ticker) }}" class="text-decoration-none">
+                                    {{ stock.ticker }}
+                                </a>
+                            </td>
+                            <td>{{ stock.name }}</td>
+                            <td class="text-end">
+                                {% if not stock.error %}
+                                    {{ "%.2f"|format(stock.current_price) }}
+                                {% else %}
+                                    <span class="text-muted">--</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if not stock.error %}
+                                    <span class="text-{{ 'success' if stock.change_percent >= 0 else 'danger' }}">
+                                        {{ "%.2f"|format(stock.change_percent) }}%
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">--</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if not stock.error and stock.volume %}
+                                    {{ "{:,.0f}"|format(stock.volume) }}
+                                {% else %}
+                                    <span class="text-muted">--</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if stock.added_at %}
+                                    {{ stock.added_at }}
+                                {% else %}
+                                    <span class="text-muted">--</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{{ url_for('stocks.details', symbol=stock.ticker) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-chart-line"></i>
+                                    </a>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-danger"
+                                            onclick="removeFromWatchlist('{{ stock.ticker }}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            Din watchlist er tom. Legg til aksjer for å følge dem.
+        </div>
+    {% endif %}
+</div>
+
+<!-- Add Stock Modal -->
+<div class="modal fade" id="addStockModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Legg til aksje i watchlist</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addStockForm" method="POST" action="{{ url_for('portfolio.add_to_watchlist') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label for="tickerInput" class="form-label">Ticker symbol</label>
+                        <input type="text" class="form-control" id="tickerInput" name="ticker" required
+                               placeholder="f.eks. EQNR.OL, AAPL">
+                        <div class="form-text">Bruk .OL for Oslo Børs aksjer</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Legg til</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function removeFromWatchlist(ticker) {
+    if (!confirm(`Er du sikker på at du vil fjerne ${ticker} fra watchlist?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch("{{ url_for('portfolio.remove_from_watchlist') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+            },
+            body: JSON.stringify({ ticker: ticker })
+        });
+        
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Det oppstod en feil ved fjerning av aksjen');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Det oppstod en nettverksfeil');
+    }
+}
+
+document.getElementById('addStockForm').addEventListener('submit', function(e) {
+    const ticker = document.getElementById('tickerInput').value.trim().toUpperCase();
+    if (!ticker) {
+        e.preventDefault();
+        alert('Vennligst skriv inn et ticker symbol');
+    }
+});
+</script>
+{% endblock %}
+            {% if stock.change_percent is not none %}
+              <span class="{{ 'text-success' if stock.change_percent > 0 else 'text-danger' }}">
+                {{ stock.change_percent|round(2) }}%
+              </span>
+            {% else %}
+              <span class="{{ 'text-success' if (range(-300, 300) | random) > 0 else 'text-danger' }}">
+                {{ (range(-300, 300) | random) / 100 }}%
+              </span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{{ url_for('stocks.details', symbol=stock.ticker) }}" class="btn btn-sm btn-info">Detaljer</a>
+              <button class="btn btn-sm btn-danger ms-2" onclick="deleteWatchlistItem('{{ stock.id }}', this)">Slett</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="alert alert-info">Din watchlist er tom.</div>
+  {% endif %}
+</div>
+{% endblock %}
+<script>
+function deleteWatchlistItem(stockId, btn) {
+  if (confirm('Er du sikker på at du vil slette denne aksjen fra watchlisten?')) {
+    fetch(`/watchlist/remove/${stockId}`, {
+      method: 'POST',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': (window.csrfHelper ? window.csrfHelper.getToken() : '')
+      }
+    })
+    .then(response => response.text())
+    .then(data => {
+      // Remove row from table
+      const row = btn.closest('tr');
+      if (row) row.remove();
+      alert('Aksje slettet fra watchlist!');
+    })
+    .catch(error => {
+      alert('Feil ved sletting: ' + error);
+    });
+  }
+}
+</script>

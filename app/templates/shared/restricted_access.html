@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Begrenset tilgang{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h1 class="card-title text-danger mb-4">🔒 Tilgang kreves</h1>
+                    <p class="lead mb-4">Du trenger et abonnement for å få tilgang til denne funksjonen på Aksjeradar.</p>
+                    
+                    <div class="alert alert-info mb-4">
+                        <h5>Hva får du med et abonnement?</h5>
+                        <ul class="list-unstyled mb-0">
+                            <li>✅ Ubegrenset tilgang til alle analyser</li>
+                            <li>✅ AI aksjeanalyse og anbefalinger</li>
+                            <li>✅ Teknisk analyse av alle aksjer</li>
+                            <li>✅ Porteføljeverktøy og favoritter</li>
+                            <li>✅ Aksjetips og markedsanalyse</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-block">
+                        <a href="{{ url_for('pricing.index') }}" class="btn btn-primary btn-lg">
+                            Kjøp abonnement
+                        </a>
+                        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary btn-lg">
+                            Tilbake til forsiden
+                        </a>
+                    </div>
+                    
+                    <hr class="my-4">
+                    <p class="text-muted">
+                        Allerede abonnent? <a href="{{ url_for('auth.login') }}">Logg inn her</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

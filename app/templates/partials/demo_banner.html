@@ -1,0 +1,35 @@
+{# Vis banner KUN hvis bruker ikke er autentisert ELLER mangler alle premium-indikatorer #}
+{% set is_premium = False %}
+{% if current_user.is_authenticated %}
+  {# Unified premium detection ordering: cheapest fast flags first, then method calls #}
+  {% if (hasattr(current_user,'has_subscription') and current_user.has_subscription) %}
+    {% set is_premium = True %}
+  {% elif hasattr(current_user,'subscription_type') and current_user.subscription_type in ['monthly','yearly','lifetime','premium','pro','active'] %}
+    {% set is_premium = True %}
+  {% elif hasattr(current_user,'is_admin') and current_user.is_admin %}
+    {% set is_premium = True %}
+  {% elif hasattr(current_user, 'has_premium_access') and current_user.has_premium_access() %}
+    {% set is_premium = True %}
+  {% elif hasattr(current_user, 'has_active_subscription') and current_user.has_active_subscription() %}
+    {% set is_premium = True %}
+  {% elif hasattr(current_user, 'is_premium') and current_user.is_premium %}
+    {% set is_premium = True %}
+  {% elif hasattr(current_user, 'role') and current_user.role in ['premium','admin','superuser'] %}
+    {% set is_premium = True %}
+  {% endif %}
+{% endif %}
+{% if not is_premium %}
+<div class="demo-banner" style="background:#0d1b2a;color:#fff;padding:12px 16px;margin:12px 0;border-radius:6px;">
+  <strong>Begrenset modus:</strong> Du ser en forenklet visning.
+  {% if current_user.is_authenticated %}
+    {% if hasattr(current_user, 'has_premium_access') and not current_user.has_premium_access() %}
+      – <a href="/pricing" style="color:#4dabf7;text-decoration:underline;">Oppgrader til full tilgang</a>.
+    {% else %}
+      <!-- Authenticated but premium detection missing; show neutral link -->
+      – <a href="/pricing" style="color:#4dabf7;">Se planene</a>.
+    {% endif %}
+  {% else %}
+    – <a href="/auth/login" style="color:#4dabf7;">Logg inn</a> eller <a href="/pricing" style="color:#4dabf7;">prøv premium</a>.
+  {% endif %}
+</div>
+{% endif %}

@@ -1,0 +1,516 @@
+{% extends "base.html" %}
+
+{% block title %}Oil Price Correlation Matrix - Aksjeradar{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .correlation-strength {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+    
+    .correlation-very-strong { background-color: #198754; color: white; }
+    .correlation-strong { background-color: #20c997; color: white; }
+    .correlation-moderate { background-color: #ffc107; color: black; }
+    .correlation-weak { background-color: #fd7e14; color: white; }
+    .correlation-very-weak { background-color: #dc3545; color: white; }
+    
+        .metric-card {
+        background: darkblue;
+        border-radius: 10px;
+        color: white;
+        text-align: center;
+        padding: 1.5rem;
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .metric-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .oil-price-card {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .prediction-card {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .prediction-card:hover {
+        border-color: #007bff;
+        box-shadow: 0 4px 8px rgba(0,123,255,0.1);
+    }
+    
+    .scenario-positive { border-left: 4px solid #28a745; }
+    .scenario-negative { border-left: 4px solid #dc3545; }
+    .scenario-neutral { border-left: 4px solid #ffc107; }
+    
+    .loading-spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .risk-factor {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 8px 12px;
+        border-radius: 6px;
+        margin: 5px;
+        display: inline-block;
+        font-size: 0.85rem;
+    }
+    
+    .opportunity {
+        background-color: #d1e7dd;
+        color: #0f5132;
+        padding: 8px 12px;
+        border-radius: 6px;
+        margin: 5px;
+        display: inline-block;
+        font-size: 0.85rem;
+    }
+    
+    @media (max-width: 768px) {
+        .metric-value { font-size: 1.5rem; }
+        .table-responsive { font-size: 0.85rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-6 mb-0">
+                <i class="bi bi-fuel-pump me-3 text-warning"></i>
+                Oil Price Correlation Matrix
+            </h1>
+            <p class="text-muted mt-2">
+                Analyse korrelasjon mellom oljepris og norske aksjer
+            </p>
+        </div>
+    </div>
+
+    <!-- Oil Price Overview Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="oil-price-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">Brent Crude</h6>
+                        <h4 class="mb-0" id="brent-price">$--</h4>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-light text-dark" id="brent-change">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="oil-price-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">WTI Crude</h6>
+                        <h4 class="mb-0" id="wti-price">$--</h4>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-light text-dark" id="wti-change">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="oil-price-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">Natural Gas</h6>
+                        <h4 class="mb-0" id="gas-price">$--</h4>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-light text-dark" id="gas-change">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value" id="avg-correlation">--</div>
+                <div class="metric-label">Gjennomsnittlig Korrelasjon</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Oil Correlation Table -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-table me-2"></i>
+                        Norwegian Oil Stocks Correlation
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Aksje</th>
+                                    <th>Sektor</th>
+                                    <th>Pris</th>
+                                    <th>Endring</th>
+                                    <th>Korrelasjon</th>
+                                    <th>Beta Oil</th>
+                                    <th>Volatilitet</th>
+                                </tr>
+                            </thead>
+                            <tbody id="oil-stocks-table">
+                                <tr>
+                                    <td colspan="7" class="text-center">
+                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historical Correlation Chart -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up me-2"></i>
+                        Historical Correlation Trend
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="correlationChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Predictions and Analysis -->
+        <div class="col-lg-4">
+            <!-- Oil Scenario Predictions -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="bi bi-magic me-2"></i>
+                        Oil Price Scenarios
+                    </h5>
+                </div>
+                <div class="card-body" id="scenarios-container">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                </div>
+            </div>
+
+            <!-- Market Regime Analysis -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-cpu me-2"></i>
+                        Market Regime Analysis
+                    </h5>
+                </div>
+                <div class="card-body" id="regime-analysis">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                </div>
+            </div>
+
+            <!-- Risk Factors & Opportunities -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Risiko & Muligheter
+                    </h5>
+                </div>
+                <div class="card-body" id="risk-opportunities">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto" id="toast-title">Notification</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body" id="toast-body">
+            <!-- Toast message -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    class OilCorrelationTracker {
+        constructor() {
+            this.correlationChart = null;
+            this.refreshInterval = null;
+            this.init();
+        }
+
+        init() {
+            this.loadData();
+            this.startAutoRefresh();
+        }
+
+        async loadData() {
+            try {
+                await Promise.all([
+                    this.loadCorrelationMatrix(),
+                    this.loadPredictions()
+                ]);
+            } catch (error) {
+                console.error('Error loading oil correlation data:', error);
+                this.showToast('Error loading data', error.message, 'error');
+            }
+        }
+
+        async loadCorrelationMatrix() {
+            const response = await fetch('/oil-correlation/api/oil-correlation/matrix');
+            const data = await response.json();
+            
+            if (data.success) {
+                this.updateOilPrices(data.oil_data);
+                this.updateStocksTable(data.oil_stocks);
+                this.updateCorrelationChart(data.correlation_history);
+                this.updateSectorAnalysis(data.sector_analysis);
+                this.showToast('Oil Correlation Updated', 'Data successfully loaded', 'success');
+            }
+        }
+
+        async loadPredictions() {
+            const response = await fetch('/oil-correlation/api/oil-correlation/predictions');
+            const data = await response.json();
+            
+            if (data.success) {
+                this.updateScenarios(data.scenarios);
+                this.updateRegimeAnalysis(data.regime_analysis);
+                this.showToast('Predictions Updated', 'AI scenarios loaded', 'success');
+            }
+        }
+
+        updateOilPrices(oilData) {
+            document.getElementById('brent-price').textContent = `$${oilData.brent_price}`;
+            document.getElementById('brent-change').textContent = `${oilData.brent_change > 0 ? '+' : ''}${oilData.brent_change}%`;
+            document.getElementById('brent-change').className = `badge ${oilData.brent_change > 0 ? 'bg-success' : 'bg-danger'} text-white`;
+            
+            document.getElementById('wti-price').textContent = `$${oilData.wti_price}`;
+            document.getElementById('wti-change').textContent = `${oilData.wti_change > 0 ? '+' : ''}${oilData.wti_change}%`;
+            document.getElementById('wti-change').className = `badge ${oilData.wti_change > 0 ? 'bg-success' : 'bg-danger'} text-white`;
+            
+            document.getElementById('gas-price').textContent = `$${oilData.gas_price}`;
+            document.getElementById('gas-change').textContent = `${oilData.gas_change > 0 ? '+' : ''}${oilData.gas_change}%`;
+            document.getElementById('gas-change').className = `badge ${oilData.gas_change > 0 ? 'bg-success' : 'bg-danger'} text-white`;
+        }
+
+        updateStocksTable(stocks) {
+            const tableBody = document.getElementById('oil-stocks-table');
+            tableBody.innerHTML = stocks.map(stock => `
+                <tr>
+                    <td>
+                        <strong>${stock.symbol}</strong><br>
+                        <small class="text-muted">${stock.name}</small>
+                    </td>
+                    <td>
+                        <span class="badge bg-secondary">${stock.sector}</span>
+                    </td>
+                    <td>${stock.current_price} NOK</td>
+                    <td>
+                        <span class="badge ${stock.change_percent > 0 ? 'bg-success' : 'bg-danger'}">
+                            ${stock.change_percent > 0 ? '+' : ''}${stock.change_percent}%
+                        </span>
+                    </td>
+                    <td>
+                        <span class="${this.getCorrelationClass(stock.correlation)}">
+                            ${(stock.correlation * 100).toFixed(1)}%
+                        </span>
+                    </td>
+                    <td>${stock.beta_oil.toFixed(2)}</td>
+                    <td>${stock.volatility_ratio.toFixed(2)}x</td>
+                </tr>
+            `).join('');
+        }
+
+        updateCorrelationChart(historyData) {
+            const ctx = document.getElementById('correlationChart').getContext('2d');
+            
+            if (this.correlationChart) {
+                this.correlationChart.destroy();
+            }
+
+            this.correlationChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: historyData.map(d => new Date(d.date).toLocaleDateString('no-NO')),
+                    datasets: [{
+                        label: 'Average Correlation',
+                        data: historyData.map(d => d.average_correlation),
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1,
+                            ticks: {
+                                callback: function(value) {
+                                    return (value * 100).toFixed(0) + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        updateSectorAnalysis(analysis) {
+            document.getElementById('avg-correlation').textContent = 
+                (analysis.average_correlation * 100).toFixed(1) + '%';
+        }
+
+        updateScenarios(scenarios) {
+            const container = document.getElementById('scenarios-container');
+            container.innerHTML = scenarios.map(scenario => `
+                <div class="prediction-card ${this.getScenarioClass(scenario.oil_price_change)}">
+                    <h6 class="mb-2">${scenario.scenario}</h6>
+                    <div class="d-flex justify-content-between mb-2">
+                        <small>Probability:</small>
+                        <span class="badge bg-primary">${scenario.probability}%</span>
+                    </div>
+                    ${scenario.predictions.map(pred => `
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small>${pred.symbol}</small>
+                            <span class="badge ${pred.predicted_return > 0 ? 'bg-success' : 'bg-danger'}">
+                                ${pred.predicted_return > 0 ? '+' : ''}${pred.predicted_return.toFixed(1)}%
+                            </span>
+                        </div>
+                    `).join('')}
+                </div>
+            `).join('');
+        }
+
+        updateRegimeAnalysis(regime) {
+            const container = document.getElementById('regime-analysis');
+            container.innerHTML = `
+                <div class="mb-3">
+                    <h6>Current Regime:</h6>
+                    <span class="badge bg-info">${regime.current_regime}</span>
+                </div>
+                <div class="mb-3">
+                    <h6>Oil Trend:</h6>
+                    <span class="badge bg-success">${regime.oil_trend}</span>
+                </div>
+                <div>
+                    <h6>NOK Impact:</h6>
+                    <p class="small text-muted">${regime.nok_impact}</p>
+                </div>
+            `;
+
+            const riskContainer = document.getElementById('risk-opportunities');
+            riskContainer.innerHTML = `
+                <div class="mb-3">
+                    <h6>Risk Factors:</h6>
+                    ${regime.risk_factors.map(risk => `
+                        <span class="risk-factor">${risk}</span>
+                    `).join('')}
+                </div>
+                <div>
+                    <h6>Opportunities:</h6>
+                    ${regime.opportunities.map(opp => `
+                        <span class="opportunity">${opp}</span>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        getCorrelationClass(correlation) {
+            if (correlation > 0.8) return 'correlation-strength correlation-very-strong';
+            if (correlation > 0.6) return 'correlation-strength correlation-strong';
+            if (correlation > 0.4) return 'correlation-strength correlation-moderate';
+            if (correlation > 0.2) return 'correlation-strength correlation-weak';
+            return 'correlation-strength correlation-very-weak';
+        }
+
+        getScenarioClass(change) {
+            if (change > 0) return 'scenario-positive';
+            if (change < 0) return 'scenario-negative';
+            return 'scenario-neutral';
+        }
+
+        startAutoRefresh() {
+            this.refreshInterval = setInterval(() => {
+                this.loadData();
+            }, 60000); // Refresh every minute
+        }
+
+        showToast(title, message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const toastTitle = document.getElementById('toast-title');
+            const toastBody = document.getElementById('toast-body');
+            
+            toastTitle.textContent = title;
+            toastBody.textContent = message;
+            
+            // Add color based on type
+            toast.className = `toast ${type === 'error' ? 'border-danger' : type === 'success' ? 'border-success' : 'border-info'}`;
+            
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+        }
+    }
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        window.oilCorrelationTracker = new OilCorrelationTracker();
+    });
+</script>
+{% endblock %}

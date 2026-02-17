@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Pro-verktøy | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="bi bi-tools text-primary"></i> Pro-verktøy</h1>
+                <span class="badge bg-warning text-dark"><i class="bi bi-star-fill"></i> PRO</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistikk oversikt -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ stats.screener_searches }}</h4>
+                            <p class="mb-0">Screener søk</p>
+                        </div>
+                        <i class="bi bi-search fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ stats.custom_alerts }}</h4>
+                            <p class="mb-0">Aktive varsler</p>
+                        </div>
+                        <i class="bi bi-bell fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ stats.portfolio_analyses }}</h4>
+                            <p class="mb-0">Portefølje analyser</p>
+                        </div>
+                        <i class="bi bi-pie-chart fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ stats.export_reports }}</h4>
+                            <p class="mb-0">Eksporterte rapporter</p>
+                        </div>
+                        <i class="bi bi-download fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pro-verktøy meny -->
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-funnel text-primary"></i> Avansert Screener</h5>
+                    <p class="card-text">Finn aksjer basert på detaljerte kriterier og tekniske indikatorer.</p>
+                    <a href="{{ url_for('analysis.screener') }}" class="btn btn-primary">
+                        <i class="bi bi-arrow-right"></i> Åpne Screener
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-bell text-warning"></i> Pris-varsler</h5>
+                    <p class="card-text">Sett opp tilpassede varsler for pris, volum og tekniske signaler.</p>
+                    <a href="{{ url_for('pro_tools.price_alerts') }}" class="btn btn-warning">
+                        <i class="bi bi-arrow-right"></i> Administrer Varsler
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-pie-chart text-info"></i> Portefølje-analysator</h5>
+                    <p class="card-text">Dypanalyse av porteføljer med risiko-metriker og optimalisering.</p>
+                    <a href="{{ url_for('pro_tools.portfolio_analyzer') }}" class="btn btn-info">
+                        <i class="bi bi-arrow-right"></i> Analyser Portefølje
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-download text-success"></i> Eksport-verktøy</h5>
+                    <p class="card-text">Eksporter data til CSV, PDF og opprett tilpassede rapporter.</p>
+                    <a href="{{ url_for('pro_tools.export_tools') }}" class="btn btn-success">
+                        <i class="bi bi-arrow-right"></i> Eksporter Data
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-bar-chart-steps text-danger"></i> Avansert Analyse</h5>
+                    <p class="card-text">Monte Carlo, kvantitativ analyse og porteføljeoptimalisering.</p>
+                    <a href="{{ url_for('analysis.ai') }}" class="btn btn-danger">
+                        <i class="bi bi-arrow-right"></i> AI Analyse
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-clock-history text-secondary"></i> API Tilgang</h5>
+                    <p class="card-text">Programmatisk tilgang til alle data og analysefunksjoner.</p>
+                    <a href="{{ url_for('pro_tools.api_documentation') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-right"></i> API Dokumentasjon
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

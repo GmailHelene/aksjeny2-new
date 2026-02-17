@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Kryptovaluta - Aksjeny{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-4 mb-2">
+                <i class="bi bi-cash-coin text-warning me-3"></i>Kryptovaluta
+            </h1>
+            <p class="lead text-muted">Følg de største kryptovalutaene i sanntid</p>
+        </div>
+    </div>
+
+    {% if stocks_data and stocks_data|length > 0 %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Navn</th>
+                        <th class="text-end">Pris (USD)</th>
+                        <th class="text-end">Endring</th>
+                        <th class="text-end">Volum</th>
+                        <th class="text-end">Markedsverdi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for symbol, stock in stocks_data.items() %}
+                        <tr>
+                            <td><strong>{{ stock.symbol }}</strong></td>
+                            <td>{{ stock.name }}</td>
+                            <td class="text-end">${{ "%.2f"|format(stock.current_price) }}</td>
+                            <td class="text-end">
+                                <span class="badge {% if stock.change_percent >= 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                    {% if stock.change_percent >= 0 %}+{% endif %}{{ "%.2f"|format(stock.change_percent) }}%
+                                </span>
+                            </td>
+                            <td class="text-end">{{ "{:,.0f}".format(stock.volume) }}</td>
+                            <td class="text-end">${{ "{:,.0f}".format(stock.market_cap) }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            <i class="bi bi-info-circle me-2"></i>
+            Ingen kryptovalutadata tilgjengelig for øyeblikket.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

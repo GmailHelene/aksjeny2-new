@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+
+{% block title %}Søk i nyheter - Aksjeradar{% endblock %}
+
+{% block extra_css %}
+<style>
+.search-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 3rem 0;
+    margin-bottom: 2rem;
+}
+
+.search-form {
+    background: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    margin-top: -3rem;
+    position: relative;
+    z-index: 10;
+}
+
+.news-result {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+    margin-bottom: 1.5rem;
+}
+
+.news-result:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.search-highlight {
+    background: #fff3cd;
+    padding: 0.1rem 0.2rem;
+    border-radius: 0.2rem;
+}
+
+.result-meta {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.search-stats {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.filter-section {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.no-results {
+    text-align: center;
+    padding: 3rem;
+    color: #6c757d;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="search-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <h1><i class="bi bi-search me-2"></i>Søk i nyheter</h1>
+                <p class="lead mb-0">Finn relevante finansnyheter og markedsoppdateringer</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="search-form">
+                <form method="GET" action="{{ url_for('news_bp.search') }}">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="q" class="form-label">Søkeord</label>
+                                <input type="text" class="form-control form-control-lg" id="q" name="q" 
+                                       value="{{ request.args.get('q', '') }}" 
+                                       placeholder="Søk etter selskap, markeder, nyheter...">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Kategori</label>
+                                <select class="form-select form-select-lg" id="category" name="category">
+                                    <option value="">Alle kategorier</option>
+                                    <option value="aksjer" {{ 'selected' if request.args.get('category') == 'aksjer' }}>Aksjer</option>
+                                    <option value="økonomi" {{ 'selected' if request.args.get('category') == 'økonomi' }}>Økonomi</option>
+                                    <option value="marked" {{ 'selected' if request.args.get('category') == 'marked' }}>Marked</option>
+                                    <option value="crypto" {{ 'selected' if request.args.get('category') == 'crypto' }}>Krypto</option>
+                                    <option value="teknologi" {{ 'selected' if request.args.get('category') == 'teknologi' }}>Teknologi</option>
+                                    <option value="energi" {{ 'selected' if request.args.get('category') == 'energi' }}>Energi</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="source" class="form-label">Kilde</label>
+                                <select class="form-select" id="source" name="source">
+                                    <option value="">Alle kilder</option>
+                                    <option value="e24" {{ 'selected' if request.args.get('source') == 'e24' }}>E24</option>
+                                    <option value="dn" {{ 'selected' if request.args.get('source') == 'dn' }}>Dagens Næringsliv</option>
+                                    <option value="finansavisen" {{ 'selected' if request.args.get('source') == 'finansavisen' }}>Finansavisen</option>
+                                    <option value="kapital" {{ 'selected' if request.args.get('source') == 'kapital' }}>Kapital</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="date_range" class="form-label">Tidsperiode</label>
+                                <select class="form-select" id="date_range" name="date_range">
+                                    <option value="">Alle datoer</option>
+                                    <option value="today" {{ 'selected' if request.args.get('date_range') == 'today' }}>I dag</option>
+                                    <option value="week" {{ 'selected' if request.args.get('date_range') == 'week' }}>Siste uke</option>
+                                    <option value="month" {{ 'selected' if request.args.get('date_range') == 'month' }}>Siste måned</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-search me-2"></i>Søk nyheter
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            {% if request.args.get('q') %}
+                {% if articles %}
+                    <div class="search-stats">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6><i class="bi bi-graph-up me-2"></i>Søkeresultater</h6>
+                                <p class="mb-0">{{ articles|length }} artikler funnet for "{{ request.args.get('q') }}"</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="bi bi-clock me-2"></i>Søketid</h6>
+                                <p class="mb-0">{{ search_time if search_time else '< 0.1' }} sekunder</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% for article in articles %}
+                    <div class="card news-result">
+                        <div class="card-body">
+                            <div class="row">
+                                {% if article.image_url %}
+                                <div class="col-md-3">
+                                    <img src="{{ article.image_url }}" class="img-fluid rounded" alt="{{ article.title }}">
+                                </div>
+                                <div class="col-md-9">
+                                {% else %}
+                                <div class="col-12">
+                                {% endif %}
+                                    <h5 class="card-title">
+                                        <a href="{{ article.link }}" target="_blank" class="text-decoration-none">
+                                            {{ article.title|safe }}
+                                        </a>
+                                    </h5>
+                                    <p class="card-text">{{ article.summary[:300] }}...</p>
+                                    <div class="result-meta d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="badge bg-primary">{{ article.source }}</span>
+                                            <small class="ms-2">
+                                                <i class="bi bi-calendar3 me-1"></i>
+                                                {{ article.published.strftime('%d.%m.%Y %H:%M') if article.published else 'Ukjent dato' }}
+                                            </small>
+                                        </div>
+                                        {% if article.relevance_score > 0 %}
+                                        <small>
+                                            <i class="bi bi-star me-1"></i>
+                                            Relevans: {{ "%.1f"|format(article.relevance_score * 10) }}/10
+                                        </small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <!-- Pagination placeholder -->
+                    <nav aria-label="Søkeresultater paginering" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item disabled">
+                                <span class="page-link">Forrige</span>
+                            </li>
+                            <li class="page-item active">
+                                <span class="page-link">1</span>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link">Neste</span>
+                            </li>
+                        </ul>
+                    </nav>
+                {% else %}
+                    <div class="no-results">
+                        <i class="bi bi-search display-1 text-muted"></i>
+                        <h3 class="mt-3">Ingen resultater funnet</h3>
+                        <p>Ingen nyheter matchet søket ditt "{{ request.args.get('q') }}".</p>
+                        <div class="mt-4">
+                            <h6>Prøv å:</h6>
+                            <ul class="list-unstyled">
+                                <li>• Bruke mer generelle søkeord</li>
+                                <li>• Sjekke stavemåten</li>
+                                <li>• Søke uten filter</li>
+                                <li>• Bruke engelske termer</li>
+                            </ul>
+                        </div>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-search display-1 text-primary"></i>
+                        <h3 class="mt-3">Søk i vårt nyhetsarkiv</h3>
+                        <p class="text-muted">Bruk søkefeltet ovenfor for å finne relevante finansnyheter</p>
+                        
+                        <div class="mt-4">
+                            <h6>Populære søk:</h6>
+                            <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
+                                <a href="?q=EQNR" class="btn btn-outline-primary btn-sm">Equinor</a>
+                                <a href="?q=DNB" class="btn btn-outline-primary btn-sm">DNB</a>
+                                <a href="?q=bitcoin" class="btn btn-outline-primary btn-sm">Bitcoin</a>
+                                <a href="?q=oljepriser" class="btn btn-outline-primary btn-sm">Oljepriser</a>
+                                <a href="?q=renter" class="btn btn-outline-primary btn-sm">Renter</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-lightning me-2"></i>Trending nyheter</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item list-group-item-action border-0">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Equinor resultat Q4</h6>
+                                <small>2 timer siden</small>
+                            </div>
+                            <p class="mb-1">Oljeselskapet leverte sterke resultater...</p>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action border-0">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">DNB øker renten</h6>
+                                <small>4 timer siden</small>
+                            </div>
+                            <p class="mb-1">Norges største bank justerer boligrenten...</p>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action border-0">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Oslo Børs ned</h6>
+                                <small>6 timer siden</small>
+                            </div>
+                            <p class="mb-1">Hovedindeksen faller på svake tall...</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5><i class="bi bi-info-circle me-2"></i>Søketips</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Søk effektivt:</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <strong>"eksakt setning"</strong><br>
+                            <small class="text-muted">Bruk anførselstegn for eksakt match</small>
+                        </li>
+                        <li class="mb-2">
+                            <strong>ord1 OR ord2</strong><br>
+                            <small class="text-muted">Finn artikler med enten ord1 eller ord2</small>
+                        </li>
+                        <li class="mb-2">
+                            <strong>-uønsket</strong><br>
+                            <small class="text-muted">Ekskluder bestemte ord med minus</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-suggest funktionalitet
+document.getElementById('q').addEventListener('input', function() {
+    const query = this.value;
+    if (query.length > 2) {
+        // Implementer auto-suggest her
+        console.log('Søk etter:', query);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Sammenlign aksjer | Aksjeradar{% endblock %}
+
+{% block head %}
+<meta name="description" content="Sammenlign aksjer side-ved-side">
+<meta name="keywords" content="sammenlign aksjer, aktieanalyse, teknisk analyse">
+<style>
+    .chart-container { margin: 20px 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1>Test Sammenligning</h1>
+    
+    {% if tickers and tickers|length > 0 %}
+    <div class="card">
+        <div class="card-body">
+            <h3>Sammenligning av {{ tickers|join(', ') }}</h3>
+            <p>Dette er en minimal versjon for testing.</p>
+        </div>
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body">
+            <h3>Ingen aksjer valgt</h3>
+            <p>Velg aksjer for sammenligning.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    console.log('Minimal template loaded');
+    
+    {% if tickers and tickers|length > 0 and chart_data %}
+    console.log('Chart data available:', {{ chart_data|tojson }});
+    {% else %}
+    console.log('No chart data available');
+    {% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,482 @@
+{% extends "base.html" %}
+
+{% block title %}Søk i forum | Aksjeradar{% endblock %}
+{% block description %}Søk i Aksjeradar forum etter temaer og innlegg{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('forum.index') }}" class="text-decoration-none">
+                            <i class="bi bi-house"></i> Forum
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active">Søk</li>
+                </ol>
+            </nav>
+            
+            <h1 class="h2 mb-0">
+                <i class="bi bi-search text-primary me-2"></i>Søk i forum
+            </h1>
+        </div>
+    </div>
+
+    <!-- Search Form -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('forum.search') }}" id="search-form">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="input-group input-group-lg">
+                                    <input type="text" name="q" class="form-control" 
+                                           placeholder="Søk etter temaer, innlegg eller brukere..." 
+                                           value="{{ request.args.get('q', '') }}" 
+                                           id="search-input">
+                                    <button class="btn btn-primary" type="submit">
+                                        <i class="bi bi-search"></i> Søk
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="button" class="btn btn-outline-secondary" 
+                                        data-bs-toggle="collapse" data-bs-target="#advanced-search">
+                                    <i class="bi bi-sliders"></i> Avansert søk
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Advanced Search -->
+                        <div class="collapse mt-3" id="advanced-search">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label for="category" class="form-label">Kategori</label>
+                                    <select name="category" id="category" class="form-select">
+                                        <option value="">Alle kategorier</option>
+                                        {% for cat_key, cat_info in forum_categories.items() %}
+                                        <option value="{{ cat_key }}" {{ 'selected' if request.args.get('category') == cat_key }}>
+                                            {{ cat_info.display_name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="author" class="form-label">Forfatter</label>
+                                    <input type="text" name="author" id="author" class="form-control" 
+                                           placeholder="Brukernavn..." value="{{ request.args.get('author', '') }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="sort" class="form-label">Sorter etter</label>
+                                    <select name="sort" id="sort" class="form-select">
+                                        <option value="relevance" {{ 'selected' if request.args.get('sort', 'relevance') == 'relevance' }}>
+                                            Relevans
+                                        </option>
+                                        <option value="date" {{ 'selected' if request.args.get('sort') == 'date' }}>
+                                            Dato (nyeste først)
+                                        </option>
+                                        <option value="replies" {{ 'selected' if request.args.get('sort') == 'replies' }}>
+                                            Flest svar
+                                        </option>
+                                        <option value="views" {{ 'selected' if request.args.get('sort') == 'views' }}>
+                                            Flest visninger
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <label for="date_from" class="form-label">Fra dato</label>
+                                    <input type="date" name="date_from" id="date_from" class="form-control" 
+                                           value="{{ request.args.get('date_from', '') }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="date_to" class="form-label">Til dato</label>
+                                    <input type="date" name="date_to" id="date_to" class="form-control" 
+                                           value="{{ request.args.get('date_to', '') }}">
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" name="topics_only" id="topics_only" 
+                                               value="1" {{ 'checked' if request.args.get('topics_only') }}>
+                                        <label class="form-check-label" for="topics_only">
+                                            Kun temaer (ikke innlegg)
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" name="has_replies" id="has_replies" 
+                                               value="1" {{ 'checked' if request.args.get('has_replies') }}>
+                                        <label class="form-check-label" for="has_replies">
+                                            Kun temaer med svar
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if request.args.get('q') %}
+    <!-- Search Results -->
+    <div class="row">
+        <div class="col-md-9">
+            <!-- Results Summary -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="mb-0">Søkeresultater</h5>
+                    <small class="text-muted">
+                        {% if results %}
+                            Viser {{ results.total }} resultater for "{{ request.args.get('q') }}"
+                        {% else %}
+                            Ingen resultater funnet for "{{ request.args.get('q') }}"
+                        {% endif %}
+                    </small>
+                </div>
+                <div>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <input type="radio" class="btn-check" name="view_mode" id="view_list" value="list" checked>
+                        <label class="btn btn-outline-secondary" for="view_list">
+                            <i class="bi bi-list"></i>
+                        </label>
+                        
+                        <input type="radio" class="btn-check" name="view_mode" id="view_grid" value="grid">
+                        <label class="btn btn-outline-secondary" for="view_grid">
+                            <i class="bi bi-grid"></i>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            {% if results and results.items %}
+                <!-- Results List -->
+                <div id="results-container">
+                    {% for result in results.items %}
+                    <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="d-flex align-items-start">
+                                        <div class="me-3 mt-1">
+                                            {% if result.type == 'topic' %}
+                                                <i class="bi bi-chat-dots text-primary"></i>
+                                            {% else %}
+                                                <i class="bi bi-chat-square text-success"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">
+                                                <a href="{{ result.url }}" class="text-decoration-none">
+                                                    {{ result.title|safe }}
+                                                </a>
+                                                <span class="badge bg-light text-dark ms-2">{{ result.category_display }}</span>
+                                            </h6>
+                                            
+                                            <p class="text-muted mb-2 small">{{ result.snippet|safe }}</p>
+                                            
+                                            <div class="d-flex align-items-center text-small text-muted">
+                                                <img src="{{ result.author_avatar or '/static/img/default-avatar.png' }}" 
+                                                     alt="{{ result.author }}" 
+                                                     class="rounded-circle me-2" 
+                                                     style="width: 20px; height: 20px;">
+                                                <span class="me-3">
+                                                    <strong>{{ result.author }}</strong>
+                                                </span>
+                                                <span class="me-3">
+                                                    <i class="bi bi-clock me-1"></i>{{ result.created_at.strftime('%d.%m.%Y') }}
+                                                </span>
+                                                {% if result.match_type %}
+                                                <span class="badge bg-info">{{ result.match_type }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-2 text-center d-none d-md-block">
+                                    <div class="small text-muted">{{ 'Svar' if result.type == 'topic' else 'I tema' }}</div>
+                                    <div class="h6 mb-0 text-primary">{{ result.reply_count or 0 }}</div>
+                                </div>
+                                
+                                <div class="col-md-2 text-center d-none d-md-block">
+                                    <div class="small text-muted">Relevans</div>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar bg-success" style="width: {{ (result.relevance_score * 100)|round }}%;"></div>
+                                    </div>
+                                    <small class="text-success">{{ (result.relevance_score * 100)|round }}%</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if results.pages > 1 %}
+                <nav aria-label="Search results pagination" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if results.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('forum.search', page=results.prev_num, **request.args) }}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for page_num in results.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num != results.page %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('forum.search', page=page_num, **request.args) }}">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
+                                {% else %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                                {% endif %}
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">…</span>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if results.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('forum.search', page=results.next_num, **request.args) }}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+
+            {% else %}
+                <!-- No Results -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <div class="text-muted mb-3">
+                            <i class="bi bi-search" style="font-size: 3rem;"></i>
+                        </div>
+                        <h5>Ingen resultater funnet</h5>
+                        <p class="text-muted mb-4">
+                            Prøv å endre søkeordene eller bruk avansert søk for å justere kriteriene.
+                        </p>
+                        
+                        <div class="mb-3">
+                            <h6>Søketips:</h6>
+                            <ul class="list-unstyled text-muted small">
+                                <li>• Bruk færre eller mer generelle søkeord</li>
+                                <li>• Sjekk stavemåten</li>
+                                <li>• Prøv synonymer eller relaterte ord</li>
+                                <li>• Bruk anførselstegn for eksakte fraser: "eksakt setning"</li>
+                            </ul>
+                        </div>
+                        
+                        <a href="{{ url_for('forum.index') }}" class="btn btn-primary">
+                            <i class="bi bi-arrow-left me-1"></i>Tilbake til forum
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <!-- Quick Filters -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-funnel text-primary me-2"></i>Hurtigfiltre
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('forum.search', q=request.args.get('q', ''), topics_only=1) }}" 
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-chat-dots me-1"></i>Kun temaer
+                        </a>
+                        <a href="{{ url_for('forum.search', q=request.args.get('q', ''), has_replies=1) }}" 
+                           class="btn btn-outline-success btn-sm">
+                            <i class="bi bi-chat-square me-1"></i>Med svar
+                        </a>
+                        <a href="{{ url_for('forum.search', q=request.args.get('q', ''), sort='date') }}" 
+                           class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-clock me-1"></i>Nyeste først
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Popular Tags -->
+            {% if popular_tags %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-tags text-warning me-2"></i>Populære tags
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% for tag in popular_tags %}
+                    <a href="{{ url_for('forum.search', q=tag.name) }}" 
+                       class="badge bg-light text-dark me-1 mb-1 text-decoration-none">
+                        {{ tag.name }} ({{ tag.count }})
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Activity -->
+            {% if recent_activity %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-activity text-success me-2"></i>Ny aktivitet
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% for activity in recent_activity %}
+                    <div class="mb-3">
+                        <a href="{{ activity.url }}" class="text-decoration-none small">
+                            {{ activity.title }}
+                        </a>
+                        <div class="text-muted small">
+                            {{ activity.author }} • {{ activity.time_ago }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <!-- Search Suggestions -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="mb-3">
+                        <i class="bi bi-lightbulb text-warning me-2"></i>Søkeforslag
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Populære søkeord</h6>
+                            <div class="mb-3">
+                                {% for term in popular_search_terms %}
+                                <a href="{{ url_for('forum.search', q=term) }}" 
+                                   class="badge bg-primary me-1 mb-1 text-decoration-none">
+                                    {{ term }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Kategorier</h6>
+                            <div class="list-group list-group-flush">
+                                {% for cat_key, cat_info in forum_categories.items() %}
+                                <a href="{{ url_for('forum.category', category_name=cat_key) }}" 
+                                   class="list-group-item list-group-item-action border-0 px-0">
+                                    <i class="bi bi-{{ cat_info.icon }} me-2"></i>{{ cat_info.display_name }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6>
+                        <i class="bi bi-info-circle text-info me-2"></i>Søketips
+                    </h6>
+                    <ul class="list-unstyled small mb-0">
+                        <li class="mb-2">• Bruk anførselstegn for eksakte fraser</li>
+                        <li class="mb-2">• Prøv forskjellige søkeord</li>
+                        <li class="mb-2">• Bruk avansert søk for bedre resultat</li>
+                        <li>• Søk etter brukernavn for å finne innlegg</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Auto-complete search suggestions
+let searchTimeout;
+document.getElementById('search-input').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    const query = this.value;
+    
+    if (query.length > 2) {
+        searchTimeout = setTimeout(() => {
+            fetchSearchSuggestions(query);
+        }, 300);
+    }
+});
+
+function fetchSearchSuggestions(query) {
+    fetch('/forum/api/search-suggestions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ query: query })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Here you would implement auto-complete dropdown
+        console.log('Search suggestions:', data.suggestions);
+    })
+    .catch(error => console.log('Error fetching suggestions:', error));
+}
+
+// Handle advanced search toggle
+document.getElementById('search-form').addEventListener('submit', function() {
+    // Add loading state
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.innerHTML = '<i class="bi bi-search"></i> Søker...';
+    submitBtn.disabled = true;
+});
+
+// Highlight search terms in results
+function highlightSearchTerms() {
+    const searchQuery = "{{ request.args.get('q', '') }}";
+    if (searchQuery) {
+        const terms = searchQuery.toLowerCase().split(' ');
+        const resultsContainer = document.getElementById('results-container');
+        
+        if (resultsContainer) {
+            terms.forEach(term => {
+                if (term.length > 2) {
+                    const regex = new RegExp(`(${term})`, 'gi');
+                    resultsContainer.innerHTML = resultsContainer.innerHTML.replace(regex, '<mark>$1</mark>');
+                }
+            });
+        }
+    }
+}
+
+// Run highlighting after page load
+document.addEventListener('DOMContentLoaded', highlightSearchTerms);
+</script>
+{% endblock %}

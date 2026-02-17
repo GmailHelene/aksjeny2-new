@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Inviter Venn - Aksjeradar{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h1 class="h3 mb-3"><i class="bi bi-person-plus me-2"></i>Inviter en venn</h1>
+  <p class="text-muted">Del Aksjeradar med venner og hjelp dem å komme i gang. Fyll inn e-post under.</p>
+  {% if sent %}
+  <div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>Invitasjon sendt til <strong>{{ invited_email }}</strong>.</div>
+  {% endif %}
+  <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="mb-3">
+      <label class="form-label" for="email">E-postadresse *</label>
+      <input type="email" class="form-control" id="email" name="email" required placeholder="venn@example.com">
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="message">Melding (valgfritt)</label>
+      <textarea class="form-control" id="message" name="message" rows="3" placeholder="Bli med på Aksjeradar – norsk plattform for aksjeanalyse!"></textarea>
+    </div>
+    <button class="btn btn-primary"><i class="bi bi-send me-1"></i>Send invitasjon</button>
+  </form>
+</div>
+{% endblock %}

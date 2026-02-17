@@ -1,0 +1,81 @@
+<!-- Analysis Navigation Menu -->
+<div class="mb-4">
+    <div class="card">
+        <div class="card-body py-2">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <a href="{{ url_for('analysis.index') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.index' else 'btn-outline-primary' }}">
+                    <i class="bi bi-house me-1"></i>Oversikt
+                </a>
+                <a href="/financial-dashboard" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'dashboard.financial_dashboard' else 'btn-outline-primary' }}">
+                    <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                </a>
+                <a href="{{ url_for('analysis.technical') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.technical' else 'btn-outline-primary' }}">
+                    <i class="bi bi-graph-up me-1"></i>Teknisk
+                </a>
+                <a href="{{ url_for('analysis.ai') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.ai' else 'btn-outline-primary' }}">
+                    <i class="bi bi-cpu me-1"></i>AI-Analyse
+                </a>
+                <a href="{{ url_for('analysis.warren_buffett') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.warren_buffett' else 'btn-outline-primary' }}">
+                    <i class="bi bi-person-badge me-1"></i>Fundamental
+                </a>
+                <a href="{{ url_for('analysis.short_analysis') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.short_analysis' else 'btn-outline-primary' }}">
+                    <i class="bi bi-graph-down me-1"></i>Short
+                </a>
+                <a href="{{ url_for('analysis.sentiment') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.sentiment' else 'btn-outline-primary' }}">
+                    <i class="bi bi-emoji-smile me-1"></i>Sentiment
+                </a>
+                <a href="{{ url_for('analysis.screener') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.screener' else 'btn-outline-primary' }}">
+                    <i class="bi bi-funnel me-1"></i>Screener
+                </a>
+                
+                <!-- Ticker Input -->
+                <div class="d-flex align-items-center ms-auto">
+                    <label for="ticker-input" class="form-label me-2 mb-0 small text-muted">Ticker:</label>
+                    <input type="text" id="ticker-input" class="form-control form-control-sm" placeholder="f.eks. AAPL" style="width: 120px;">
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="analyzeCustomTicker()">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function analyzeCustomTicker() {
+    const ticker = document.getElementById('ticker-input').value.trim().toUpperCase();
+    if (ticker) {
+        // Get current path to determine which analysis to use
+        const currentPath = window.location.pathname;
+        let targetRoute = '';
+        
+        if (currentPath.includes('/technical')) {
+            targetRoute = `/analysis/technical?ticker=${ticker}`;
+        } else if (currentPath.includes('/warren-buffett')) {
+            targetRoute = `/analysis/warren-buffett?ticker=${ticker}`;
+        } else if (currentPath.includes('/benjamin-graham')) {
+            targetRoute = `/analysis/benjamin-graham?ticker=${ticker}`;
+        } else if (currentPath.includes('/short-analysis')) {
+            targetRoute = `/analysis/short-analysis?ticker=${ticker}`;
+        } else if (currentPath.includes('/sentiment')) {
+            targetRoute = `/analysis/sentiment-view?ticker=${ticker}`;
+        } else if (currentPath.includes('/ai')) {
+            targetRoute = `/analysis/ai?ticker=${ticker}`;
+        } else {
+            // Default to technical analysis
+            targetRoute = `/analysis/technical?ticker=${ticker}`;
+        }
+        
+        window.location.href = targetRoute;
+    } else {
+        alert('Vennligst skriv inn en ticker (f.eks. AAPL)');
+    }
+}
+
+// Allow Enter key to trigger analysis
+document.getElementById('ticker-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        analyzeCustomTicker();
+    }
+});
+</script>

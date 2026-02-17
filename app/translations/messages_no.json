@@ -1,0 +1,113 @@
+{
+  "navigation": {
+    "home": "Hjem",
+    "stocks": "Aksjer",
+    "analysis": "Analyse",
+    "news": "Nyheter",
+    "portfolio": "Portefølje",
+    "pricing": "Priser",
+    "login": "Logg inn",
+    "register": "Registrer",
+    "logout": "Logg ut",
+    "dashboard": "Dashboard"
+  },
+  "homepage": {
+    "welcome": "Velkommen til Aksjeradar",
+    "subtitle": "Norges mest avanserte aksjeplattform",
+    "get_started": "Kom i gang",
+    "learn_more": "Les mer",
+    "features": "Funksjoner",
+    "ai_analysis": "AI-drevet analyse",
+    "real_time_data": "Sanntidsdata",
+    "portfolio_management": "Porteføljeforvaltning"
+  },
+  "dashboard": {
+    "welcome_back": "Velkommen tilbake, {username}!",
+    "personal_overview": "Din personlige investeringsoversikt",
+    "last_login": "Sist innlogget",
+    "first_time": "Første gang",
+    "member_since": "Medlem siden",
+    "visit_count": "Besøk nr."
+  },
+  "stocks": {
+    "title": "Aksjer",
+    "oslo_bors": "Oslo Børs",
+    "global_stocks": "Globale aksjer",
+    "search_placeholder": "Søk etter aksje...",
+    "price": "Pris",
+    "change": "Endring",
+    "volume": "Volum",
+    "market_cap": "Markedsverdi"
+  },
+  "analysis": {
+    "title": "Analyse",
+    "technical_analysis": "Teknisk analyse",
+    "fundamental_analysis": "Fundamental analyse",
+    "ai_recommendation": "AI-anbefaling",
+    "buy_signal": "KJØP",
+    "hold_signal": "HOLD",
+    "sell_signal": "SELG"
+  },
+  "portfolio": {
+    "title": "Portefølje",
+    "create_portfolio": "Opprett portefølje",
+    "my_portfolios": "Mine porteføljer",
+    "total_value": "Total verdi",
+    "daily_change": "Dagens endring",
+    "add_stock": "Legg til aksje"
+  },
+  "pricing": {
+    "title": "Priser",
+    "free_plan": "Gratis",
+    "pro_plan": "Pro",
+    "premium_plan": "Premium",
+    "monthly": "Månedlig",
+    "yearly": "Årlig",
+    "get_started": "Kom i gang",
+    "most_popular": "Mest populær",
+    "annual_savings": "Årlig besparelse"
+  },
+  "common": {
+    "loading": "Laster...",
+    "error": "Feil",
+    "success": "Suksess",
+    "save": "Lagre",
+    "cancel": "Avbryt",
+    "edit": "Rediger",
+    "delete": "Slett",
+    "search": "Søk",
+    "filter": "Filter",
+    "close": "Lukk",
+    "unknown": "Ukjent",
+    "refresh": "Oppdater",
+    "view": "Se oversikt",
+    "explore": "Utforsk",
+    "convert": "Konverter",
+    "view_calendar": "Se kalender",
+    "analyze": "Analyser"
+  },
+  "advanced_features": {
+    "title": "Avanserte Funksjoner",
+    "subtitle": "Inspirert av de største konkurrentene i markedet"
+  },
+  "features": {
+    "real_time_data": "Sanntids Markedsdata",
+    "real_time_description": "Live data fra Oslo Børs, globale markeder og kryptovaluta - akkurat som E24 og DN Børs.",
+    "crypto_dashboard": "Krypto Dashboard",
+    "crypto_description": "Omfattende cryptocurrency tracking inspirert av CoinMarketCap og TradingView.",
+    "currency_converter": "Valutakonverter",
+    "currency_description": "Profesjonell valutakonverter med data fra Norges Bank og internasjonale kilder.",
+    "economic_calendar": "Økonomisk Kalender",
+    "economic_description": "Viktige økonomiske indikatorer og hendelser - inspirert av Bloomberg og Investing.com.",
+    "competitive_analysis": "Konkurrentanalyse",
+    "competitive_description": "Se hvordan vi sammenligner med E24, DN, Yahoo Finance, TradingView og andre.",
+    "missing_features": "Funksjoner under utvikling",
+    "status": "Status",
+    "in_development": "Under utvikling"
+  },
+  "translation": {
+    "active": "Oversettelsessystem aktivt",
+    "current_language": "Nåværende språk",
+    "switch_to": "Bytt til"
+  }
+}

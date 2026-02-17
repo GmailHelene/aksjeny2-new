@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if query %}Søk: {{ query }}{% else %}Søk{% endif %} | Aksjeradar
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Søk</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <form action="{{ url_for('search.search_page') }}" method="get" class="d-flex">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="text" name="q" class="form-control" placeholder="Søk etter aksje, selskap eller ticker..." value="{{ query }}">
+                <button type="submit" class="btn btn-primary ms-2">Søk</button>
+            </form>
+        </div>
+    </div>
+    
+    {% if results %}
+        <h2>Søkeresultater for "{{ query }}"</h2>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Ticker</th>
+                        <th>Navn</th>
+                        <th>Børs</th>
+                        <th>Siste pris</th>
+                        <th>Endring (%)</th>
+                        <th>Handlinger</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in results %}
+                    <tr>
+                        <td><a href="{{ url_for('stocks.details', symbol=result.ticker) }}">{{ result.ticker }}</a></td>
+                        <td>{{ result.name }}</td>
+                        <td>{{ result.exchange }}</td>
+                        <td>{{ result.price }}</td>
+                        <td class="{% if result.change > 0 %}text-success{% elif result.change < 0 %}text-danger{% endif %}">
+                            {{ result.change }}%
+                        </td>
+                        <td>
+                            <a href="{{ url_for('stocks.details', symbol=result.ticker) }}" class="btn btn-sm btn-primary">Vis detaljer</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% elif query %}
+        <div class="alert alert-info">
+            <p>Ingen resultater funnet for "{{ query }}". Prøv å søke etter noe annet.</p>
+            <p>Tips: Prøv å søke på ticker-symboler (f.eks. EQNR.OL, AAPL) eller selskapsnavn (f.eks. Equinor, Apple).</p>
+        </div>
+    {% else %}
+        <div class="card">
+            <div class="card-body">
+                <h3>Populære søk</h3>
+                <div class="d-flex flex-wrap">
+                    <a href="{{ url_for('search.search_page', q='EQNR') }}" class="btn btn-outline-primary m-1">Equinor</a>
+                    <a href="{{ url_for('search.search_page', q='DNB') }}" class="btn btn-outline-primary m-1">DNB</a>
+                    <a href="{{ url_for('search.search_page', q='AAPL') }}" class="btn btn-outline-primary m-1">Apple</a>
+                    <a href="{{ url_for('search.search_page', q='MSFT') }}" class="btn btn-outline-primary m-1">Microsoft</a>
+                    <a href="{{ url_for('search.search_page', q='TSLA') }}" class="btn btn-outline-primary m-1">Tesla</a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

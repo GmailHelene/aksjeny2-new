@@ -1,0 +1,893 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    /* Mobile-First Design System */
+    :root {
+        --mobile-primary: #007bff;
+        --mobile-success: #28a745;
+        --mobile-danger: #dc3545;
+        --mobile-warning: #ffc107;
+        --mobile-dark: #343a40;
+        --mobile-light: #f8f9fa;
+        --mobile-border: #dee2e6;
+        --mobile-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        --mobile-radius: 12px;
+    }
+    
+    /* Mobile-optimized container */
+    .mobile-container {
+        max-width: 100%;
+        padding: 0;
+        margin: 0;
+    }
+    
+    /* Touch-friendly buttons */
+    .mobile-btn {
+        min-height: 48px;
+        border-radius: var(--mobile-radius);
+        font-size: 16px;
+        font-weight: 600;
+        padding: 12px 20px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: var(--mobile-shadow);
+    }
+    
+    .mobile-btn:active {
+        transform: scale(0.98);
+    }
+    
+    .mobile-btn-primary {
+        background: linear-gradient(135deg, var(--mobile-primary), #0056b3);
+        color: white;
+    }
+    
+    .mobile-btn-success {
+        background: linear-gradient(135deg, var(--mobile-success), #20c997);
+        color: white;
+    }
+    
+    .mobile-btn-danger {
+        background: linear-gradient(135deg, var(--mobile-danger), #e83e8c);
+        color: white;
+    }
+    
+    /* Mobile cards */
+    .mobile-card {
+        background: white;
+        border-radius: var(--mobile-radius);
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: var(--mobile-shadow);
+        border: 1px solid var(--mobile-border);
+    }
+    
+    /* Portfolio summary card */
+    .portfolio-summary {
+        background:  background: #344686;
+;
+        color: white;
+        text-align: center;
+        padding: 25px;
+        border-radius: var(--mobile-radius);
+        margin-bottom: 20px;
+    }
+    
+    .portfolio-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+    .portfolio-change {
+        font-size: 1.2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .portfolio-change.positive {
+        color: #90EE90;
+    }
+    
+    .portfolio-change.negative {
+        color: #FFB6C1;
+    }
+    
+    /* Quick action buttons */
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .quick-action-btn {
+        background: white;
+        border: 2px solid var(--mobile-border);
+        border-radius: var(--mobile-radius);
+        padding: 20px;
+        text-align: center;
+        text-decoration: none;
+        color: var(--mobile-dark);
+        transition: all 0.3s ease;
+        min-height: 100px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .quick-action-btn:hover {
+        border-color: var(--mobile-primary);
+        transform: translateY(-2px);
+        box-shadow: var(--mobile-shadow);
+        color: var(--mobile-primary);
+        text-decoration: none;
+    }
+    
+    .quick-action-icon {
+        font-size: 2rem;
+        margin-bottom: 5px;
+    }
+    
+    /* Market status indicator */
+    .market-status {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--mobile-light);
+        padding: 15px;
+        border-radius: var(--mobile-radius);
+        margin-bottom: 20px;
+    }
+    
+    .market-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .market-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+    
+    .market-open {
+        background: var(--mobile-success);
+    }
+    
+    .market-closed {
+        background: var(--mobile-danger);
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    
+    /* Top positions list */
+    .positions-list {
+        background: white;
+        border-radius: var(--mobile-radius);
+        overflow: hidden;
+        box-shadow: var(--mobile-shadow);
+    }
+    
+    .position-item {
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--mobile-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background 0.2s ease;
+    }
+    
+    .position-item:last-child {
+        border-bottom: none;
+    }
+    
+    .position-item:active {
+        background: var(--mobile-light);
+    }
+    
+    .position-left {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .position-symbol {
+        font-weight: bold;
+        font-size: 1.1rem;
+        color: var(--mobile-dark);
+    }
+    
+    .position-shares {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .position-right {
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .position-value {
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+    
+    .position-pnl {
+        font-size: 0.9rem;
+    }
+    
+    .position-pnl.positive {
+        color: var(--mobile-success);
+    }
+    
+    .position-pnl.negative {
+        color: var(--mobile-danger);
+    }
+    
+    /* Recent orders */
+    .recent-orders {
+        margin-top: 20px;
+    }
+    
+    .order-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background: white;
+        border-radius: var(--mobile-radius);
+        margin-bottom: 10px;
+        box-shadow: var(--mobile-shadow);
+    }
+    
+    .order-left {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .order-symbol {
+        font-weight: bold;
+        color: var(--mobile-dark);
+    }
+    
+    .order-details {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .order-status {
+        padding: 4px 8px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    
+    .order-status.filled {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .order-status.pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    /* Bottom navigation */
+    .mobile-bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        border-top: 1px solid var(--mobile-border);
+        padding: 10px 0;
+        z-index: 1000;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .bottom-nav-items {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    .bottom-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        color: #6c757d;
+        padding: 8px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        min-width: 60px;
+    }
+    
+    .bottom-nav-item.active {
+        color: var(--mobile-primary);
+        background: rgba(0, 123, 255, 0.1);
+    }
+    
+    .bottom-nav-item:hover {
+        text-decoration: none;
+        color: var(--mobile-primary);
+    }
+    
+    .bottom-nav-icon {
+        font-size: 1.5rem;
+        margin-bottom: 4px;
+    }
+    
+    .bottom-nav-label {
+        font-size: 0.7rem;
+        font-weight: 500;
+    }
+    
+    /* Add bottom padding to avoid nav overlap */
+    .main-content {
+        padding-bottom: 80px;
+    }
+    
+    /* Loading states */
+    .loading-skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+        border-radius: var(--mobile-radius);
+        height: 20px;
+        margin: 5px 0;
+    }
+    
+    @keyframes loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+    
+    /* Pull to refresh indicator */
+    .pull-to-refresh {
+        text-align: center;
+        padding: 20px;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 480px) {
+        .portfolio-value {
+            font-size: 2rem;
+        }
+        
+        .quick-actions {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .quick-action-btn {
+            padding: 15px;
+            min-height: 80px;
+        }
+        
+        .quick-action-icon {
+            font-size: 1.5rem;
+        }
+    }
+    
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+        .mobile-card {
+            background: #2d3748;
+            color: white;
+            border-color: #4a5568;
+        }
+        
+        .quick-action-btn {
+            background: #2d3748;
+            color: white;
+            border-color: #4a5568;
+        }
+        
+        .mobile-bottom-nav {
+            background: #2d3748;
+            border-top-color: #4a5568;
+        }
+        
+        .position-item {
+            color: white;
+        }
+        
+        .order-item {
+            background: #2d3748;
+            color: white;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mobile-container">
+    <div class="main-content">
+        <!-- Portfolio Summary -->
+        <div class="portfolio-summary">
+            <div class="portfolio-value" id="portfolioValue">$125,432.50</div>
+            <div class="portfolio-change positive" id="portfolioChange">
+                <i class="bi bi-arrow-up"></i>
+                <span>+$2,341.20 (+1.91%)</span>
+            </div>
+            <div class="mt-3">
+                <small>Today's Performance</small>
+            </div>
+        </div>
+
+        <!-- Market Status -->
+        <div class="market-status">
+            <div class="market-indicator">
+                <div class="market-dot market-open" id="marketDot"></div>
+                <span id="marketStatus">Market Open</span>
+            </div>
+            <div>
+                <small id="marketTime">Closes in 2h 15m</small>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <a href="{{ url_for('mobile_trading.quick_trade') }}" class="quick-action-btn">
+                <div class="quick-action-icon">📈</div>
+                <div>Quick Trade</div>
+            </a>
+            <a href="{{ url_for('mobile_trading.mobile_portfolio') }}" class="quick-action-btn">
+                <div class="quick-action-icon">💼</div>
+                <div>Portfolio</div>
+            </a>
+            <a href="{{ url_for('mobile_trading.mobile_watchlist') }}" class="quick-action-btn">
+                <div class="quick-action-icon">👁️</div>
+                <div>Watchlist</div>
+            </a>
+            <a href="{{ url_for('mobile_trading.mobile_charts') }}" class="quick-action-btn">
+                <div class="quick-action-icon">📊</div>
+                <div>Charts</div>
+            </a>
+        </div>
+
+        <!-- Top Positions -->
+        <div class="mobile-card">
+            <h5 class="mb-3">
+                <i class="bi bi-star-fill text-warning"></i>
+                Top Positions
+            </h5>
+            <div class="positions-list" id="positionsList">
+                <div class="loading-skeleton"></div>
+                <div class="loading-skeleton"></div>
+                <div class="loading-skeleton"></div>
+            </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="mobile-card">
+            <h5 class="mb-3">
+                <i class="bi bi-clock text-primary"></i>
+                Recent Orders
+            </h5>
+            <div class="recent-orders" id="recentOrders">
+                <div class="loading-skeleton"></div>
+                <div class="loading-skeleton"></div>
+            </div>
+        </div>
+
+        <!-- Market Indices -->
+        <div class="mobile-card">
+            <h5 class="mb-3">
+                <i class="bi bi-graph-up text-success"></i>
+                Market Indices
+            </h5>
+            <div id="marketIndices">
+                <div class="loading-skeleton"></div>
+                <div class="loading-skeleton"></div>
+                <div class="loading-skeleton"></div>
+            </div>
+        </div>
+
+        <!-- Pull to Refresh -->
+        <div class="pull-to-refresh" id="pullToRefresh">
+            <i class="bi bi-arrow-down"></i>
+            Pull down to refresh
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="mobile-bottom-nav">
+        <div class="bottom-nav-items">
+            <a href="{{ url_for('mobile_trading.mobile_dashboard') }}" class="bottom-nav-item active">
+                <div class="bottom-nav-icon">🏠</div>
+                <div class="bottom-nav-label">Home</div>
+            </a>
+            <a href="{{ url_for('mobile_trading.mobile_portfolio') }}" class="bottom-nav-item">
+                <div class="bottom-nav-icon">💼</div>
+                <div class="bottom-nav-label">Portfolio</div>
+            </a>
+            <a href="{{ url_for('mobile_trading.quick_trade') }}" class="bottom-nav-item">
+                <div class="bottom-nav-icon">⚡</div>
+                <div class="bottom-nav-label">Trade</div>
+            </a>
+            <a href="{{ url_for('mobile_trading.mobile_watchlist') }}" class="bottom-nav-item">
+                <div class="bottom-nav-icon">👁️</div>
+                <div class="bottom-nav-label">Watch</div>
+            </a>
+            <a href="{{ url_for('mobile_trading.mobile_charts') }}" class="bottom-nav-item">
+                <div class="bottom-nav-icon">📊</div>
+                <div class="bottom-nav-label">Charts</div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let isLoading = false;
+let portfolioData = null;
+
+// Initialize mobile dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    loadDashboardData();
+    setupPullToRefresh();
+    setupAutoRefresh();
+    
+    // Load data immediately and then refresh every 30 seconds
+    setInterval(loadDashboardData, 30000);
+});
+
+async function loadDashboardData() {
+    if (isLoading) return;
+    isLoading = true;
+    
+    try {
+        // Load portfolio summary
+        await loadPortfolioSummary();
+        
+        // Load market status
+        await loadMarketStatus();
+        
+        // Load positions
+        await loadTopPositions();
+        
+        // Load recent orders
+        await loadRecentOrders();
+        
+        // Load market indices
+        await loadMarketIndices();
+        
+    } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        showError('Failed to load dashboard data');
+    } finally {
+        isLoading = false;
+    }
+}
+
+async function loadPortfolioSummary() {
+    try {
+        const response = await fetch('/mobile-trading/api/portfolio-summary');
+        const data = await response.json();
+        
+        if (data.success) {
+            portfolioData = data;
+            
+            // Update portfolio value
+            document.getElementById('portfolioValue').textContent = 
+                formatCurrency(data.total_value);
+            
+            // Update daily change
+            const changeElement = document.getElementById('portfolioChange');
+            const changeIcon = data.daily_change >= 0 ? 'bi-arrow-up' : 'bi-arrow-down';
+            const changeClass = data.daily_change >= 0 ? 'positive' : 'negative';
+            const changeSign = data.daily_change >= 0 ? '+' : '';
+            
+            changeElement.className = `portfolio-change ${changeClass}`;
+            changeElement.innerHTML = `
+                <i class="bi ${changeIcon}"></i>
+                <span>${changeSign}${formatCurrency(data.daily_change)} (${data.daily_change_percent.toFixed(2)}%)</span>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading portfolio summary:', error);
+    }
+}
+
+async function loadMarketStatus() {
+    try {
+        const response = await fetch('/mobile-trading/api/market-status');
+        const data = await response.json();
+        
+        if (data.success) {
+            const nyseStatus = data.markets.nyse.status;
+            const isOpen = nyseStatus === 'open';
+            
+            // Update market indicator
+            const marketDot = document.getElementById('marketDot');
+            const marketStatus = document.getElementById('marketStatus');
+            const marketTime = document.getElementById('marketTime');
+            
+            marketDot.className = `market-dot ${isOpen ? 'market-open' : 'market-closed'}`;
+            marketStatus.textContent = isOpen ? 'Market Open' : 'Market Closed';
+            
+            if (isOpen) {
+                const closeTime = new Date(data.markets.nyse.next_close);
+                const timeUntilClose = getTimeUntilClose(closeTime);
+                marketTime.textContent = `Closes in ${timeUntilClose}`;
+            } else {
+                const openTime = new Date(data.markets.nyse.next_open);
+                const timeUntilOpen = getTimeUntilOpen(openTime);
+                marketTime.textContent = `Opens in ${timeUntilOpen}`;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading market status:', error);
+    }
+}
+
+async function loadTopPositions() {
+    try {
+        const response = await fetch('/mobile-trading/api/portfolio-summary');
+        const data = await response.json();
+        
+        if (data.success && data.top_positions) {
+            const positionsList = document.getElementById('positionsList');
+            
+            const html = data.top_positions.map(position => {
+                const pnlClass = position.unrealized_pnl >= 0 ? 'positive' : 'negative';
+                const pnlSign = position.unrealized_pnl >= 0 ? '+' : '';
+                
+                return `
+                    <div class="position-item" onclick="viewPosition('${position.symbol}')">
+                        <div class="position-left">
+                            <div class="position-symbol">${position.symbol}</div>
+                            <div class="position-shares">${position.shares} shares</div>
+                        </div>
+                        <div class="position-right">
+                            <div class="position-value">${formatCurrency(position.market_value)}</div>
+                            <div class="position-pnl ${pnlClass}">
+                                ${pnlSign}${formatCurrency(position.unrealized_pnl)} (${position.unrealized_pnl_percent.toFixed(2)}%)
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            positionsList.innerHTML = html;
+        }
+    } catch (error) {
+        console.error('Error loading positions:', error);
+    }
+}
+
+async function loadRecentOrders() {
+    try {
+        const response = await fetch('/mobile-trading/api/portfolio-summary');
+        const data = await response.json();
+        
+        if (data.success && data.recent_orders) {
+            const recentOrders = document.getElementById('recentOrders');
+            
+            const html = data.recent_orders.map(order => {
+                const orderTime = new Date(order.timestamp).toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                return `
+                    <div class="order-item">
+                        <div class="order-left">
+                            <div class="order-symbol">${order.symbol}</div>
+                            <div class="order-details">
+                                ${order.action.toUpperCase()} ${order.quantity} @ ${formatCurrency(order.price)}
+                            </div>
+                            <div class="order-details">${orderTime}</div>
+                        </div>
+                        <div class="order-status ${order.status}">${order.status}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            recentOrders.innerHTML = html;
+        }
+    } catch (error) {
+        console.error('Error loading recent orders:', error);
+    }
+}
+
+async function loadMarketIndices() {
+    try {
+        const response = await fetch('/mobile-trading/api/market-status');
+        const data = await response.json();
+        
+        if (data.success && data.market_indices) {
+            const marketIndices = document.getElementById('marketIndices');
+            
+            const html = Object.entries(data.market_indices).map(([key, index]) => {
+                const changeClass = index.change >= 0 ? 'positive' : 'negative';
+                const changeSign = index.change >= 0 ? '+' : '';
+                const arrow = index.change >= 0 ? '↗️' : '↘️';
+                
+                return `
+                    <div class="position-item">
+                        <div class="position-left">
+                            <div class="position-symbol">${key.toUpperCase()}</div>
+                            <div class="position-shares">Index</div>
+                        </div>
+                        <div class="position-right">
+                            <div class="position-value">${formatNumber(index.value)}</div>
+                            <div class="position-pnl ${changeClass}">
+                                ${arrow} ${changeSign}${formatNumber(index.change)} (${index.change_percent.toFixed(2)}%)
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            marketIndices.innerHTML = html;
+        }
+    } catch (error) {
+        console.error('Error loading market indices:', error);
+    }
+}
+
+function setupPullToRefresh() {
+    let startY = 0;
+    let currentY = 0;
+    let pullDistance = 0;
+    const threshold = 100;
+    
+    document.addEventListener('touchstart', function(e) {
+        if (window.pageYOffset === 0) {
+            startY = e.touches[0].clientY;
+        }
+    });
+    
+    document.addEventListener('touchmove', function(e) {
+        if (window.pageYOffset === 0 && startY) {
+            currentY = e.touches[0].clientY;
+            pullDistance = currentY - startY;
+            
+            if (pullDistance > 0) {
+                const pullIndicator = document.getElementById('pullToRefresh');
+                if (pullDistance > threshold) {
+                    pullIndicator.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Release to refresh';
+                    pullIndicator.style.color = '#28a745';
+                } else {
+                    pullIndicator.innerHTML = '<i class="bi bi-arrow-down"></i> Pull down to refresh';
+                    pullIndicator.style.color = '#6c757d';
+                }
+            }
+        }
+    });
+    
+    document.addEventListener('touchend', function(e) {
+        if (pullDistance > threshold) {
+            refreshDashboard();
+        }
+        startY = 0;
+        pullDistance = 0;
+        
+        const pullIndicator = document.getElementById('pullToRefresh');
+    pullIndicator.innerHTML = '<i class="bi bi-arrow-down"></i> Pull down to refresh';
+        pullIndicator.style.color = '#6c757d';
+    });
+}
+
+function setupAutoRefresh() {
+    // Refresh data when page becomes visible again
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            loadDashboardData();
+        }
+    });
+}
+
+async function refreshDashboard() {
+    const pullIndicator = document.getElementById('pullToRefresh');
+    pullIndicator.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Refreshing...';
+    pullIndicator.style.color = '#007bff';
+    
+    await loadDashboardData();
+    
+    setTimeout(() => {
+    pullIndicator.innerHTML = '<i class="bi bi-check"></i> Updated';
+        pullIndicator.style.color = '#28a745';
+        
+        setTimeout(() => {
+            pullIndicator.innerHTML = '<i class="bi bi-arrow-down"></i> Pull down to refresh';
+            pullIndicator.style.color = '#6c757d';
+        }, 1000);
+    }, 500);
+}
+
+function viewPosition(symbol) {
+    // Navigate to position details
+    window.location.href = `/mobile-trading/position/${symbol}`;
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2
+    }).format(amount);
+}
+
+function formatNumber(number) {
+    return new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(number);
+}
+
+function getTimeUntilClose(closeTime) {
+    const now = new Date();
+    const diff = closeTime - now;
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}h ${minutes}m`;
+}
+
+function getTimeUntilOpen(openTime) {
+    const now = new Date();
+    const diff = openTime - now;
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (hours > 24) {
+        const days = Math.floor(hours / 24);
+        return `${days}d ${hours % 24}h`;
+    }
+    
+    return `${hours}h ${minutes}m`;
+}
+
+function showError(message) {
+    // Simple error display
+    console.error(message);
+    alert(message);
+}
+
+// Handle mobile app-like behavior
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js').then(function(registration) {
+            console.log('ServiceWorker registration successful');
+        }, function(err) {
+            console.log('ServiceWorker registration failed: ', err);
+        });
+    });
+}
+
+// Prevent zoom on double tap
+let lastTouchEnd = 0;
+document.addEventListener('touchend', function (event) {
+    const now = (new Date()).getTime();
+    if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+    }
+    lastTouchEnd = now;
+}, false);
+</script>
+{% endblock %}

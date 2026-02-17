@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article.title }} - AksjeRadar{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Breadcrumb -->
+        <nav class="mb-6">
+            <div class="flex items-center space-x-2 text-sm text-gray-600">
+                <a href="{{ url_for('main.index') }}" class="hover:text-blue-600">Hjem</a>
+                <span>/</span>
+                <a href="{{ url_for('news_bp.index') }}" class="hover:text-blue-600">Nyheter</a>
+                <span>/</span>
+                <span class="text-gray-800">{{ article.title[:50] }}{% if article.title|length > 50 %}...{% endif %}</span>
+            </div>
+        </nav>
+
+        <!-- Article Header -->
+        <article class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="p-8">
+                <header class="mb-6">
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                        {{ article.title }}
+                    </h1>
+                    
+                    <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-4">
+                        <div class="flex items-center">
+                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+                            </svg>
+                            {{ article.published | datetimeformat }}
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                            </svg>
+                            {{ article.source }}
+                        </div>
+                        
+                        {% if article.symbol %}
+                        <div class="flex items-center">
+                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
+                            </svg>
+                            {{ article.symbol }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </header>
+
+                <!-- Article Image -->
+                {% if article.image_url %}
+                <div class="mb-6">
+                <div class="relative overflow-hidden rounded-lg shadow-lg bg-gradient-to-r from-blue-500 to-green-600 h-24 flex items-center justify-center">
+                        <img src="{{ article.image_url }}"
+                             alt="{{ article.title }}"
+                             class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                             style="max-height: 120px !important;"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="absolute inset-0 flex items-center justify-center text-white text-lg font-semibold bg-gradient-to-r from-blue-500 to-green-600" style="display: none;">
+                            <i class="bi bi-newspaper me-2" style="font-size: 1rem;"></i>
+                            {{ article.title[:50] }}{% if article.title|length > 50 %}...{% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Article Content -->
+                <div class="prose prose-lg max-w-none">
+                    <style>
+                        /* Strong global image constraints to override utility classes */
+                        .prose img,
+                        .news-content img,
+                        .article-content img,
+                        .news-image,
+                        .article-image,
+                        img[src*="news"],
+                        img[src*="article"],
+                        .card-img-top {
+                            max-width: 100% !important;
+                            width: 100% !important;
+                            height: auto !important;
+                            max-height: 120px !important;
+                            object-fit: cover !important;
+                            border-radius: 8px !important;
+                            margin: 1rem auto !important;
+                            box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+                            display: block !important;
+                        }
+
+                        .prose img:hover {
+                            transform: scale(1.02);
+                            transition: transform 0.3s ease;
+                        }
+
+                        /* Mobile image optimization */
+                        @media (max-width: 768px) {
+                            .prose img,
+                            .news-content img,
+                            .article-content img,
+                            .news-image,
+                            .article-image,
+                            img[src*="news"],
+                            img[src*="article"],
+                            .card-img-top {
+                                max-height: 90px !important;
+                            }
+                        }
+
+                        /* Article image specific styling */
+                        .article-hero-image {
+                            max-width: 100% !important;
+                            height: auto !important;
+                            max-height: 120px !important;
+                            object-fit: cover !important;
+                            border-radius: 0.5rem !important;
+                            box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+                        }
+
+                        @media (max-width: 768px) {
+                            .article-hero-image {
+                                max-height: 90px !important;
+                            }
+                        }
+
+                        /* Icon size constraints - override utility classes */
+                        .bi, i.bi, i[class*="bi-"], svg {
+                            font-size: 1rem !important;
+                            max-width: 20px !important;
+                            max-height: 20px !important;
+                        }
+                    </style>
+                    <p class="text-lg text-gray-700 leading-relaxed">
+                        {{ article.content }}
+                    </p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="mt-8 flex flex-wrap gap-4">
+                    {% if article.symbol and article.symbol != 'TECH' %}
+                    <a href="{{ url_for('stocks.details', symbol=article.symbol) }}" 
+                       class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path>
+                        </svg>
+                        Se {{ article.symbol }} detaljer
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('news_bp.index') }}" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.707 14.707a1 1 0 01-1.414 0L2.586 11A2 2 0 012 9.586V6a2 2 0 012-2h3.586a2 2 0 011.414.586l3.707 3.707a1 1 0 010 1.414l-3.707 3.707z" clip-rule="evenodd"></path>
+                        </svg>
+                        Tilbake til nyheter
+                    </a>
+                </div>
+            </div>
+        </article>
+
+        <!-- Related News -->
+        <div class="mt-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Relaterte nyheter</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="font-semibold text-gray-900 mb-2">Markedsoppdatering</h3>
+                    <p class="text-gray-600 text-sm mb-3">Siste utvikling i finansmarkedene...</p>
+                    <a href="{{ url_for('news_bp.index') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Les mer →</a>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="font-semibold text-gray-900 mb-2">Analyser og innsikt</h3>
+                    <p class="text-gray-600 text-sm mb-3">Ekspertanalyser av dagens marked...</p>
+                    <a href="{{ url_for('analysis.market_overview') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Se analyser →</a>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="font-semibold text-gray-900 mb-2">Watchlist</h3>
+                    <p class="text-gray-600 text-sm mb-3">Følg dine favorittaksjer...</p>
+                    <a href="{{ url_for('stocks.list_oslo') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Gå til aksjer →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom filter for datetime formatting -->
+{% if not filters_registered %}
+{% set filters_registered = True %}
+<script>
+// Register datetime formatting filter in Jinja2
+</script>
+{% endif %}
+
+<style>
+.prose {
+    line-height: 1.8;
+}
+.prose p {
+    margin-bottom: 1.5rem;
+}
+</style>
+{% endblock %}

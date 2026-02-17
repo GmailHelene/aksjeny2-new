@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+
+{% block title %}Referér en venn | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="text-center mb-5">
+                <h1 class="display-5 mb-3">🎁 Referér en venn og spar penger!</h1>
+                <p class="lead">Inviter venner til Aksjeradar og få 20% rabatt på ditt neste årlige abonnement når de tegner abonnement.</p>
+            </div>
+
+            <!-- Referral Stats -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card text-center border-primary">
+                        <div class="card-body">
+                            <h3 class="text-primary">{{ stats.sent }}</h3>
+                            <p class="mb-0">Invitasjoner sendt</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center border-success">
+                        <div class="card-body">
+                            <h3 class="text-success">{{ stats.completed }}</h3>
+                            <p class="mb-0">Vellykkede referrals</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center border-warning">
+                        <div class="card-body">
+                            <h3 class="text-warning">{{ stats.available_discounts }}</h3>
+                            <p class="mb-0">Tilgjengelige rabatter</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Available Discounts -->
+            {% if available_discounts %}
+            <div class="alert alert-success border-0 mb-4">
+                <h5 class="alert-heading"><i class="bi bi-gift"></i> Du har rabatter tilgjengelig!</h5>
+                <p class="mb-3">Du har {{ available_discounts|length }} rabatt(er) på 20% som kan brukes på årlige abonnement.</p>
+                <a href="{{ url_for('pricing.index') }}" class="btn btn-success">Bruk rabatt nå</a>
+            </div>
+            {% endif %}
+
+            <!-- Your Referral Code -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-share"></i> Din invitasjonskode</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <input type="text" class="form-control form-control-lg" value="{{ referral_code }}" id="referralCode" readonly>
+                                <button class="btn btn-outline-secondary" type="button" onclick="copyReferralCode()">
+                                    <i class="bi bi-clipboard"></i> Kopier
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                            <small class="text-muted">Din unike kode</small>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6>Invitasjonslenke:</h6>
+                    <div class="input-group">
+                        <input type="text" class="form-control" value="{{ url_for('main.register', ref=referral_code, _external=True) }}" id="referralLink" readonly>
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyReferralLink()">
+                            <i class="bi bi-clipboard"></i> Kopier lenke
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Send Invitation -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header {% if email_configured %}bg-success{% else %}bg-warning{% endif %} text-white">
+                    <h4 class="mb-0"><i class="bi bi-envelope"></i> Send invitasjon</h4>
+                </div>
+                <div class="card-body">
+                    {% if email_configured %}
+                    <form method="POST" action="{{ url_for('main.send_referral') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}"/>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Vennens e-postadresse</label>
+                            <input type="email" class="form-control" id="email" name="email" required placeholder="venn@eksempel.no">
+                            <div class="form-text">Vi sender en personlig invitasjon på dine vegne.</div>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-send"></i> Send invitasjon
+                        </button>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <h6 class="alert-heading"><i class="bi bi-exclamation-triangle me-2"></i>E-post-funksjon ikke tilgjengelig</h6>
+                        <p class="mb-2">E-post-serveren er ikke konfigurert, så vi kan ikke sende invitasjoner via e-post for øyeblikket.</p>
+                        <p class="mb-0"><strong>Alternativ:</strong> Del lenken din direkte med venner og familie!</p>
+                    </div>
+                    <a href="{{ url_for('main.invite_friend') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-info-circle me-2"></i>Se alternativer for deling
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- How it works -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="bi bi-question-circle"></i> Slik fungerer det</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex mb-3">
+                                <div class="flex-shrink-0">
+                                    <div class="badge bg-primary rounded-circle fs-5" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">1</div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6>Send invitasjon</h6>
+                                    <p class="text-muted mb-0">Del din invitasjonskode eller lenke med venner som er interessert i aksjer og investering.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex mb-3">
+                                <div class="flex-shrink-0">
+                                    <div class="badge bg-primary rounded-circle fs-5" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">2</div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6>Venn registrerer seg</h6>
+                                    <p class="text-muted mb-0">Vennen din bruker din kode når de registrerer seg på Aksjeradar.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="d-flex mb-3">
+                                <div class="flex-shrink-0">
+                                    <div class="badge bg-success rounded-circle fs-5" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">3</div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6>Venn tegner abonnement</h6>
+                                    <p class="text-muted mb-0">Når vennen din tegner et betalingsabonnement, aktiveres rabatten din.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex mb-3">
+                                <div class="flex-shrink-0">
+                                    <div class="badge bg-success rounded-circle fs-5" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">4</div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6>Du får 20% rabatt</h6>
+                                    <p class="text-muted mb-0">Du får automatisk 20% rabatt på ditt neste årlige abonnement!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-4">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Merk:</strong> Rabatten gjelder kun for årlige abonnement og må brukes innen ett år. Du kan samle opp flere rabatter ved å referere flere venner!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyReferralCode() {
+    const codeInput = document.getElementById('referralCode');
+    codeInput.select();
+    codeInput.setSelectionRange(0, 99999);
+    
+    try {
+        document.execCommand('copy');
+        showToast('Invitasjonskode kopiert!', 'success');
+    } catch (err) {
+        showToast('Kunne ikke kopiere kode', 'error');
+    }
+}
+
+function copyReferralLink() {
+    const linkInput = document.getElementById('referralLink');
+    linkInput.select();
+    linkInput.setSelectionRange(0, 99999);
+    
+    try {
+        document.execCommand('copy');
+        showToast('Invitasjonslenke kopiert!', 'success');
+    } catch (err) {
+        showToast('Kunne ikke kopiere lenke', 'error');
+    }
+}
+
+// Use global showToast from base.html
+</script>
+{% endblock %}

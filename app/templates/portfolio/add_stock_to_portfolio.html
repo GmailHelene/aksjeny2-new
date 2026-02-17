@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Legg til aksje - {{ portfolio.name }} | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Legg til aksje i {{ portfolio.name }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <div class="mb-3">
+                            <label for="ticker" class="form-label">Ticker-symbol</label>
+                            <input type="text" class="form-control" id="ticker" name="ticker" placeholder="f.eks. EQNR, AAPL" required>
+                            <div class="form-text">Skriv inn ticker-symbolet for aksjen du vil legge til</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="quantity" class="form-label">Antall aksjer</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" step="0.01" min="0.01" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="price" class="form-label">Kjøpspris (per aksje)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="price" name="price" step="0.01" min="0.01" required>
+                                <span class="input-group-text">NOK</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('portfolio.view_portfolio', id=portfolio.id) }}" class="btn btn-secondary me-md-2">Avbryt</a>
+                            <button type="submit" class="btn btn-primary">Legg til aksje</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Stock Search Helper -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5>Populære aksjer</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Oslo Børs</h6>
+                            <div class="list-group list-group-flush">
+                                <button type="button" class="list-group-item list-group-item-action" onclick="fillTicker('EQNR')">EQNR - Equinor ASA</button>
+                                <button type="button" class="list-group-item list-group-item-action" onclick="fillTicker('DNB')">DNB - DNB Bank ASA</button>
+                                <button type="button" class="list-group-item list-group-item-action" onclick="fillTicker('TEL')">TEL - Telenor ASA</button>
+                                <button type="button" class="list-group-item list-group-item-action" onclick="fillTicker('NHY')">NHY - Norsk Hydro ASA</button>
+                                <button type="button" class="list-group-item list-group-item-action" onclick="fillTicker('MOWI')">MOWI - Mowi ASA</button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Internasjonalt</h6>
+                            <div class="list-group list-group-flush">
+                                <button type="button" class="list-group-item list-group-item-action" onclick="fillTicker('AAPL')">AAPL - Apple Inc.</button>
+                                <button type="button" class="list-group-item list-group-item-action" onclick="fillTicker('MSFT')">MSFT - Microsoft Corp.</button>
+                                <button type="button" class="list-group-item list-group-item-action" onclick="fillTicker('GOOGL')">GOOGL - Alphabet Inc.</button>
+                                <button type="button" class="list-group-item list-group-item-action" onclick="fillTicker('TSLA')">TSLA - Tesla Inc.</button>
+                                <button type="button" class="list-group-item list-group-item-action" onclick="fillTicker('NVDA')">NVDA - NVIDIA Corp.</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function fillTicker(ticker) {
+    document.getElementById('ticker').value = ticker;
+    // Optionally focus on quantity field
+    document.getElementById('quantity').focus();
+}
+</script>
+{% endblock %}

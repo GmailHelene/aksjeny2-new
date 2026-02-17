@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}Mitt Abonnement | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-6 mb-3">Mitt Abonnement</h1>
+                <p class="lead text-muted">Administrer ditt abonnement og se din kontohistorikk</p>
+            </div>
+
+            <!-- Current Subscription -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-credit-card me-2"></i>Aktivt Abonnement
+                    </h5>
+                    {% if subscription.status == 'active' %}
+                    <span class="badge bg-success">Aktiv</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Gratis</span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6 class="fw-bold text-primary">{{ subscription.plan_name }}</h6>
+                            <p class="text-muted mb-3">{{ subscription.plan_description }}</p>
+                            
+                            {% if subscription.status == 'active' %}
+                            <div class="row text-sm">
+                                <div class="col-6">
+                                    <strong>Startet:</strong><br>
+                                    <span class="text-muted">
+                                        {% if subscription.start_date %}
+                                        {{ subscription.start_date.strftime('%d.%m.%Y') }}
+                                        {% else %}
+                                        Ikke tilgjengelig
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="col-6">
+                                    <strong>Neste fakturering:</strong><br>
+                                    <span class="text-muted">
+                                        {% if subscription.next_billing %}
+                                        {{ subscription.next_billing.strftime('%d.%m.%Y') }}
+                                        {% else %}
+                                        Ikke tilgjengelig
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="h4 mb-0">
+                                {% if subscription.price > 0 %}
+                                {{ subscription.price }} {{ subscription.currency }}
+                                <small class="text-muted">/måned</small>
+                                {% else %}
+                                Gratis
+                                {% endif %}
+                            </div>
+                            {% if subscription.status == 'active' %}
+                            <button class="btn btn-outline-danger btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                                Avslutt abonnement
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Features -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-check-circle me-2"></i>Dine Funksjoner
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for feature in subscription.features %}
+                        <div class="col-md-6 mb-2">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>{{ feature }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upgrade Options -->
+            {% if subscription.status != 'active' %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-arrow-up-circle me-2"></i>Oppgrader Abonnement
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for plan in subscription.upgrade_options %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 border-primary">
+                                <div class="card-header bg-primary text-white text-center">
+                                    <h6 class="mb-0">{{ plan.name }}</h6>
+                                    <div class="h4 mb-0">
+                                        {{ plan.price }} NOK 
+                                        <small>
+                                            {% if plan.billing == 'yearly' %}
+                                            /år
+                                            {% else %}
+                                            /måned
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled">
+                                        {% for feature in plan.features %}
+                                        <li class="mb-1">
+                                            <i class="bi bi-check text-success me-2"></i>{{ feature }}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <div class="card-footer text-center">
+                                    <form action="{{ url_for('stripe.create_checkout_session') }}" method="POST">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="billing_cycle" value="{{ plan.billing }}">
+                                        <button type="submit" class="btn btn-primary">
+                                            Velg {{ plan.billing == 'yearly' and 'Årlig' or 'Månedlig' }}
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Account Info -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person me-2"></i>Kontoinformasjon
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Navn:</strong><br>
+                            <span class="text-muted">{{ user.username }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>E-post:</strong><br>
+                            <span class="text-muted">{{ user.email }}</span>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('main.settings') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-gear me-1"></i>Innstillinger
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Support -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-headset me-2"></i>Trenger du hjelp?
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">Vårt supportteam er her for å hjelpe deg med alle spørsmål om abonnement og funksjoner.</p>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('main.contact') }}" class="btn btn-outline-info">
+                            <i class="bi bi-envelope me-1"></i>Kontakt Support
+                        </a>
+                        <a href="{{ url_for('main.help') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-question-circle me-1"></i>Hjelp & FAQ
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Subscription Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelModalLabel">Avslutt Abonnement</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Er du sikker på at du vil avslutte abonnementet ditt?</p>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Viktig:</strong> Du vil miste tilgang til alle premium-funksjoner når abonnementet utløper.
+                </div>
+                <p class="text-muted">Abonnementet vil være aktivt frem til neste faktureringsperiode.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Avbryt</button>
+                <button type="button" class="btn btn-danger" onclick="cancelSubscription()">Ja, avslutt abonnement</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function cancelSubscription() {
+    // Add cancellation logic here
+    alert('Abonnement avslutning vil bli implementert med Stripe integrasjon');
+    $('#cancelModal').modal('hide');
+}
+</script>
+{% endblock %}

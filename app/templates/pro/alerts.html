@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Pris-varsler - Pro | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-1">
+                        <i class="bi bi-bell text-warning"></i> Pris-varsler
+                    </h1>
+                    <p class="text-muted">Opprett og administrer prisalarmer for dine favorittaksjer</p>
+                </div>
+                <span class="badge bg-warning text-dark fs-6">PRO</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Create Alert Form -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5><i class="bi bi-plus-circle me-2"></i>Opprett nytt varsel</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('pro_tools.price_alerts') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Aksje Ticker</label>
+                            <input type="text" class="form-control" name="ticker" placeholder="f.eks. EQNR.OL" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Varselstype</label>
+                            <select class="form-select" name="alert_type" required>
+                                <option value="">Velg type</option>
+                                <option value="above">Pris over</option>
+                                <option value="below">Pris under</option>
+                                <option value="change_up">Økning over (%)</option>
+                                <option value="change_down">Fall over (%)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Målverdi</label>
+                            <input type="number" class="form-control" name="target_value" step="0.01" placeholder="f.eks. 150.00" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Varslingsmetode</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="email_alert" checked>
+                                <label class="form-check-label">E-post</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="browser_alert">
+                                <label class="form-check-label">Nettleservarsel</label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-warning w-100">
+                            <i class="bi bi-bell"></i> Opprett varsel
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Alerts -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="bi bi-bell-fill me-2"></i>Aktive varsler</h5>
+                    {% if alerts %}
+                    <span class="badge bg-warning text-dark">{{ alerts|length }} aktive</span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if alerts %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Ticker</th>
+                                    <th>Type</th>
+                                    <th>Målverdi</th>
+                                    <th>Nåværende pris</th>
+                                    <th>Status</th>
+                                    <th>Opprettet</th>
+                                    <th>Handlinger</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for alert in alerts %}
+                                <tr>
+                                    <td><strong>{{ alert.ticker }}</strong></td>
+                                    <td>
+                                        {% if alert.type == 'above' %}
+                                            <span class="badge bg-success">Over {{ alert.target_value }}</span>
+                                        {% elif alert.type == 'below' %}
+                                            <span class="badge bg-danger">Under {{ alert.target_value }}</span>
+                                        {% elif alert.type == 'change_up' %}
+                                            <span class="badge bg-info">Økning +{{ alert.target_value }}%</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Fall -{{ alert.target_value }}%</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ alert.target_value }}</td>
+                                    <td>{{ alert.current_price|default('N/A') }}</td>
+                                    <td>
+                                        {% if alert.triggered %}
+                                            <span class="badge bg-success">Utløst</span>
+                                        {% else %}
+                                            <span class="badge bg-primary">Aktiv</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ alert.created_at.strftime('%d.%m.%Y') }}</td>
+                                    <td>
+                                        <form method="POST" action="{{ url_for('pro_tools.delete_alert', alert_id=alert.id) }}" style="display: inline;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Er du sikker?')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-bell display-1 text-muted"></i>
+                        <h4 class="text-muted mt-3">Ingen aktive varsler</h4>
+                        <p class="text-muted">Opprett ditt første prisvarsel med skjemaet til venstre</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert History -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5><i class="bi bi-clock-history me-2"></i>Varslingshistorikk</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Historikk over utløste varsler vises her...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,271 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ portfolio.name }} - Portfolio{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('portfolio.portfolio_overview') }}">Portfolios</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ portfolio.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h3>{{ portfolio.name }}</h3>
+                <a href="{{ url_for('portfolio.add_stock', id=portfolio.id) }}" class="btn btn-light">
+                    <i class="bi bi-plus-circle"></i> Add Stock
+                </a>
+            </div>
+            <div class="card-body">
+                {% if error %}
+                <div class="alert alert-danger">{{ error }}</div>
+                {% endif %}
+                
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Total Value</h5>
+                                <div class="display-4 mb-3">
+                                    ${{ total_value|round(2) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Total Investment</h5>
+                                <div class="display-4 mb-3">
+                                    ${{ total_investment|round(2) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Total Gain/Loss</h5>
+                                <div class="display-4 mb-3 {{ 'text-success' if total_gain_loss > 0 else 'text-danger' }}">
+                                    ${{ total_gain_loss|round(2) }}
+                                </div>
+                                <div class="badge bg-{{ 'success' if total_gain_loss_percent > 0 else 'danger' }} fs-6">
+                                    {{ total_gain_loss_percent|round(2) }}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Portfolio Holdings</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if stocks %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Ticker</th>
+                                                <th>Shares</th>
+                                                <th>Avg Price</th>
+                                                <th>Current Price</th>
+                                                <th>Value</th>
+                                                <th>Gain/Loss</th>
+                                                <th>Gain/Loss %</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for stock in stocks %}
+                                            <tr>
+                                                <td>
+                                                    <a href="{{ url_for('stocks.details', symbol=stock.ticker) }}">
+                                                        {{ stock.ticker }}
+                                                    </a>
+                                                </td>
+                                                <td>{{ stock.shares }}</td>
+                                                <td>${{ stock.average_price|round(2) }}</td>
+                                                <td>${{ stock.current_price|round(2) }}</td>
+                                                <td>${{ stock.value|round(2) }}</td>
+                                                <td class="{{ 'text-success' if stock.gain_loss > 0 else 'text-danger' }}">
+                                                    ${{ stock.gain_loss|round(2) }}
+                                                </td>
+                                                <td class="{{ 'text-success' if stock.gain_loss_percent > 0 else 'text-danger' }}">
+                                                    {{ stock.gain_loss_percent|round(2) }}%
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group" role="group">
+                                                        <a href="{{ url_for('stocks.details', symbol=stock.ticker) }}" class="btn btn-sm btn-info" title="Detaljer">
+                                                            <i class="bi bi-info-circle"></i>
+                                                        </a>
+                                                        <a href="{{ url_for('stocks.details', symbol=stock.ticker) }}" class="btn btn-sm btn-primary" title="Analyse">
+                                                            <i class="bi bi-graph-up"></i>
+                                                        </a>
+                                                        <button type="button" class="btn btn-sm btn-danger" title="Fjern" data-bs-toggle="modal" data-bs-target="#deleteStockModal" data-ticker="{{ stock.ticker }}" data-stock-id="{{ stock.id }}">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                    <form id="remove-form-{{ stock.id }}" action="{{ url_for('portfolio.remove_stock', id=portfolio.id, stock_id=stock.id) }}" method="post" style="display:none;">
+                                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="alert alert-info">
+                                    <p>No stocks in this portfolio. <a href="{{ url_for('portfolio.add_stock', id=portfolio.id) }}">Add stocks</a> to get started.</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if ai_recommendation %}
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header bg-dark text-white">
+                                <h5>AI Portfolio Recommendation</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h6>Overall Assessment</h6>
+                                        <p>{{ ai_recommendation.overall }}</p>
+                                        
+                                        {% if ai_recommendation.allocation_strategy %}
+                                        <h6>Allocation Strategy</h6>
+                                        <p>{{ ai_recommendation.allocation_strategy }}</p>
+                                        {% endif %}
+                                        
+                                        {% if ai_recommendation.risk_assessment %}
+                                        <h6>Risk Assessment</h6>
+                                        <p>{{ ai_recommendation.risk_assessment }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6>Recommended Allocation</h6>
+                                        <canvas id="allocationChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% if ai_recommendation and ai_recommendation.allocation %}
+<script type="application/json" id="allocation-data">
+    {{ ai_recommendation.allocation|tojson }}
+</script>
+{% endif %}
+
+<script>
+    // Bootstrap modal handling for deletion
+    const deleteModalEl = document.getElementById('deleteStockModal');
+    if (deleteModalEl) {
+        deleteModalEl.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const ticker = button.getAttribute('data-ticker');
+            const stockId = button.getAttribute('data-stock-id');
+            const confirmBtn = deleteModalEl.querySelector('#confirmDeleteStockBtn');
+            const tickerSpan = deleteModalEl.querySelector('#deleteStockTicker');
+            if (tickerSpan) tickerSpan.textContent = ticker;
+            confirmBtn.onclick = function() {
+                const form = document.getElementById('remove-form-' + stockId);
+                if (form) form.submit();
+            };
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Draw allocation chart if data exists
+        const allocationElem = document.getElementById('allocation-data');
+        const chartElem = document.getElementById('allocationChart');
+        if (allocationElem && chartElem) {
+            let allocation = {};
+            try {
+                allocation = JSON.parse(allocationElem.textContent);
+            } catch (e) {
+                allocation = {};
+            }
+            const tickers = Object.keys(allocation);
+            const percentages = Object.values(allocation);
+
+            new Chart(chartElem.getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: tickers,
+                    datasets: [{
+                        data: percentages,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(255, 159, 64, 0.7)',
+                            'rgba(199, 199, 199, 0.7)',
+                            'rgba(83, 102, 255, 0.7)',
+                            'rgba(40, 159, 64, 0.7)',
+                            'rgba(210, 199, 199, 0.7)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.raw + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+
+<!-- Delete Stock Confirmation Modal -->
+<div class="modal fade" id="deleteStockModal" tabindex="-1" aria-labelledby="deleteStockModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteStockModalLabel"><i class="bi bi-trash me-2"></i>Fjern aksje</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Lukk"></button>
+            </div>
+            <div class="modal-body">
+                Er du sikker på at du vil fjerne <strong id="deleteStockTicker"></strong> fra porteføljen?
+                Denne handlingen kan ikke angres.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Avbryt</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteStockBtn">Fjern</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

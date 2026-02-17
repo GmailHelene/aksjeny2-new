@@ -1,0 +1,175 @@
+/* Card Header Text Color Fix - August 29, 2025 */
+
+
+/* Ensure all text elements in card headers are visible */
+.card-header h1,
+.card-header h3,
+.card-header h4,
+.card-header h6,
+.card-header p,
+.card-header span,
+.card-header strong,
+.card-header small,
+.card-header i,
+.card-header .fa,
+.card-header .fas,
+.card-header .fab,
+.card-header .fal,
+.card-header .far,
+.card-header .bi {
+    color: #212529 !important;
+}
+
+/* Ensure links in card headers are visible */
+.card-header a,
+.card-header a:visited,
+.card-header a:hover,
+.card-header a:focus {
+    color: #0d6efd !important;
+}
+
+/* Buttons in card headers should have proper contrast */
+.card-header .btn {
+    color: inherit !important;
+}
+
+/* For dark-themed cards, use white text */
+.card-header.bg-dark,
+.card-header.bg-primary,
+.card-header.bg-secondary,
+.card-header.bg-success,
+.card-header.bg-danger {
+    color: #ffffff !important;
+}
+
+.card-header.bg-primary *,
+.card-header.bg-secondary *,
+.card-header.bg-success *,
+.card-header.bg-danger * {
+    color: #ffffff !important;
+}
+
+/* For light-themed cards, use dark text */
+.card-header.bg-light,
+.card-header.bg-warning {
+    color: #212529 !important;
+}
+
+.card-header.bg-light *,
+.card-header.bg-warning *{
+    color: #212529 !important;
+}
+
+
+/* Enhanced Analyst Coverage Fixes - 2025-09-01 12:19 */
+
+/* Analyst Coverage Text Color Fixes - Enhanced */
+
+/* Blue background headers - force white text */
+.card-header[style*="background-color: #0d47a1"],
+.card-header[style*="background-color:#0d47a1"],
+div[style*="background-color: #0d47a1"],
+div[style*="background-color:#0d47a1"] {
+    color: white !important;
+}
+
+.card-header[style*="background-color: #0d47a1"] *,
+.card-header[style*="background-color:#0d47a1"] *,
+div[style*="background-color: #0d47a1"] *,
+div[style*="background-color:#0d47a1"] * {
+    color: white !important;
+}
+
+/* Coverage header gradient styling */
+.coverage-header {
+    background: linear-gradient(135deg, #0d47a1 0%, #1565c0 100%) !important;
+    color: white !important;
+}
+
+.coverage-header * {
+    color: white !important;
+}
+
+/* Filter button styling fixes */
+.coverage-header .btn-group .btn {
+    border-color: rgba(255,255,255,0.3) !important;
+}
+
+.coverage-header .btn-light {
+    background-color: rgba(255,255,255,0.9) !important;
+    color: #0d47a1 !important;
+    border-color: rgba(255,255,255,0.3) !important;
+}
+
+.coverage-header .btn-outline-light {
+    color: white !important;
+    border-color: rgba(255,255,255,0.5) !important;
+    background-color: transparent !important;
+}
+
+.coverage-header .btn-outline-light:hover {
+    background-color: rgba(255,255,255,0.1) !important;
+    color: white !important;
+}
+
+/* Specific fixes for analyst coverage page */
+.analyst-card .card-header {
+    background-color: #0d47a1 !important;
+    color: white !important;
+}
+
+.analyst-card .card-header * {
+    color: white !important;
+}
+
+/* Badge styling for better contrast */
+.badge.rating-buy {
+    background-color: #198754 !important;
+    color: white !important;
+}
+
+.badge.rating-hold {
+    background-color: #ffc107 !important;
+    color: #000 !important;
+}
+
+.badge.rating-sell {
+    background-color: #dc3545 !important;
+    color: white !important;
+}
+
+/* Filter feedback message */
+#filter-feedback {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #28a745;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    z-index: 1050;
+    display: none;
+}
+
+/* Consensus circle styling */
+.consensus-circle {
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white !important;
+}
+
+.consensus-buy {
+    background-color: #198754 !important;
+}
+
+.consensus-hold {
+    background-color: #ffc107 !important;
+    color: #000 !important;
+}
+
+.consensus-sell {
+    background-color: #dc3545 !important;
+}

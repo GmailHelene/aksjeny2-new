@@ -1,0 +1,52 @@
+/* Ensure white text on colored backgrounds */
+.bg-primary, .bg-success, .bg-danger, .bg-warning, .bg-info, .bg-dark {
+    color: white !important;
+}
+
+.bg-primary *, .bg-success *, .bg-danger *, .bg-warning *, .bg-info *, .bg-dark * {
+    color: white !important;
+}
+
+/* Keep dark text on light backgrounds */
+.bg-light, .bg-white, .bg-secondary {
+    color: #212529 !important;
+}
+
+.badge.bg-primary, .badge.bg-success, .badge.bg-danger, 
+.badge.bg-warning, .badge.bg-info, .badge.bg-dark {
+    color: white !important;
+}
+
+/* Specific overrides for buttons */
+.btn-primary, .btn-success, .btn-danger, .btn-warning, .btn-info, .btn-dark {
+    color: white !important;
+}
+
+/* Card headers with colored backgrounds */
+.card-header.bg-primary, .card-header.bg-success, 
+.card-header.bg-danger, .card-header.bg-warning, 
+.card-header.bg-info, .card-header.bg-dark {
+    color: white !important;
+}
+
+ .bg-primary .h5:not(.dropdown-item):not(.nav-link) {
+ color: #000000 !important;
+}
+
+/* Override for .alert-warning banners */
+.alert-warning {
+    background-color: #379b84 !important;
+    color: white !important;
+}
+
+/* Override for .intelligence-header */
+.intelligence-header {
+    background-color: #0d47a1 !important;
+    color: white !important;
+}
+
+/* Override for .ai-insight */
+.ai-insight {
+    background-color: #0d47a1 !important;
+    color: white !important;
+}

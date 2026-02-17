@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Market View - {{ date.strftime('%d.%m.%Y') }} | Aksjeradar{% endblock %}
+{% block description %}Dagens markedssammendrag, nøkkelhendelser og analyser for Oslo Børs og globale markeder{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-5">📈 Daily Market View</h1>
+                    <p class="lead text-muted">{{ date.strftime('%d. %B %Y') }} - Dagens markedssammendrag</p>
+                </div>
+                <div class="text-end">
+                    <small class="text-muted">Oppdatert {{ date.strftime('%H:%M') }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Market Insights -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">🔥 Dagens Markedsnyheter</h4>
+                </div>
+                <div class="card-body">
+                    {% if insights and insights|length > 0 %}
+                    {% for insight in insights %}
+                    <div class="d-flex align-items-start mb-3 pb-3 {% if not loop.last %}border-bottom{% endif %}">
+                        <div class="flex-shrink-0 me-3">
+                            <span class="badge bg-{% if insight.impact == 'Meget Positiv' %}success{% elif insight.impact == 'Positiv' %}info{% elif insight.impact == 'Negativ' %}danger{% else %}secondary{% endif %} rounded-pill">
+                                {{ insight.time }}
+                            </span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ insight.title }}</h6>
+                            <p class="mb-2 text-muted">{{ insight.summary }}</p>
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-outline-primary me-2">{{ insight.category }}</span>
+                                <span class="badge bg-{% if insight.impact == 'Meget Positiv' %}success{% elif insight.impact == 'Positiv' %}info{% elif insight.impact == 'Negativ' %}danger{% else %}secondary{% endif %} me-2">
+                                    {{ insight.impact }}
+                                </span>
+                                <small class="text-muted">
+                                    Berører: 
+                                    {% for stock in insight.affected_stocks %}
+                                        <strong>{{ stock }}</strong>{% if not loop.last %}, {% endif %}
+                                    {% endfor %}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center text-muted py-4">Ingen nyheter tilgjengelig akkurat nå.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Market Movers -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">📈 Dagens Vinnere</h5>
+                </div>
+                <div class="card-body">
+                    {% if movers and movers.gainers and movers.gainers|length > 0 %}
+                    {% for stock in movers.gainers %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>{{ stock.ticker }}</strong>
+                        </div>
+                        <div class="text-end">
+                            <div class="text-success fw-bold">{{ stock.change }}</div>
+                            <small class="text-muted">{{ stock.price }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center text-muted py-4">Ingen vinnere tilgjengelig.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">📉 Dagens Tapere</h5>
+                </div>
+                <div class="card-body">
+                    {% if movers and movers.losers and movers.losers|length > 0 %}
+                    {% for stock in movers.losers %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>{{ stock.ticker }}</strong>
+                        </div>
+                        <div class="text-end">
+                            <div class="text-danger fw-bold">{{ stock.change }}</div>
+                            <small class="text-muted">{{ stock.price }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center text-muted py-4">Ingen tapere tilgjengelig.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Economic Calendar -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">📅 Økonomisk Kalender - I dag</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Tid</th>
+                                    <th>Hendelse</th>
+                                    <th>Viktighet</th>
+                                    <th>Forventet</th>
+                                    <th>Forrige</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if events and events|length > 0 %}
+                                {% for event in events %}
+                                <tr>
+                                    <td><strong>{{ event.time }}</strong></td>
+                                    <td>{{ event.event }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if event.importance == 'Høy' %}danger{% elif event.importance == 'Medium' %}warning{% else %}secondary{% endif %}">
+                                            {{ event.importance }}
+                                        </span>
+                                    </td>
+                                    <td>{{ event.expected }}</td>
+                                    <td class="text-muted">{{ event.previous }}</td>
+                                </tr>
+                                {% endfor %}
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">Ingen hendelser i kalenderen for i dag.</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Analysis Summary -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">🧐 Dagens Markedsanalyse</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-secondary mb-0">
+                        Ingen redaksjonell analyse er tilgjengelig her enda. Vi viser kun ekte markedsdata uten genererte sammendrag.
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('daily_view.daily_analysis', date=date.strftime('%Y-%m-%d')) }}" class="btn btn-primary">
+                            📊 Åpne detaljvisning
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

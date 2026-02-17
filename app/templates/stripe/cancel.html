@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Betaling Avbrutt - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="bi bi-x-circle-fill text-warning" style="font-size: 4rem;"></i>
+                    </div>
+                    <h2 class="text-warning mb-3">Betaling Avbrutt</h2>
+                    <p class="text-muted mb-4">
+                        Du avbrøt betalingsprosessen. Ingen betaling ble belastet.
+                    </p>
+                    
+                    <div class="alert alert-info mb-4">
+                        <i class="bi bi-lightbulb me-2"></i>
+                        <strong>Trenger du hjelp?</strong><br>
+                        Hvis du opplevde problemer med betalingen, kan du kontakte oss eller prøve igjen.
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{{ url_for('pricing.index') }}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-credit-card me-2"></i>Prøv Igjen
+                        </a>
+                        <a href="{{ url_for('main.contact') }}" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-envelope me-2"></i>Kontakt Oss
+                        </a>
+                        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary btn-lg">
+                            <i class="bi bi-house-door me-2"></i>Tilbake til Hjem
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

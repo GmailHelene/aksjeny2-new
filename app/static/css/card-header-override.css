@@ -1,0 +1,135 @@
+/* Card header style overrides - ensuring proper contrast and visibility */
+
+/* Default card header style - light background */
+.card-header {
+    background-color: #ffffff;
+    color: #212529;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* Text elements in default card header */
+.card-header h5,
+.card-header h6,
+.card-header span,
+.card-header i,
+.card-header .bi,
+.card-header .btn,
+.card-header a,
+.card-header .small {
+    color: #212529;
+}
+
+/* Primary background card headers */
+.card-header.bg-primary,
+.card-header.bg-primary h5,
+.card-header.bg-primary h6,
+.card-header.bg-primary span,
+.card-header.bg-primary i,
+.card-header.bg-primary .bi,
+.card-header.bg-primary .btn,
+.card-header.bg-primary a,
+.card-header.bg-primary .small {
+    background-color: #0d47a1 !important;
+    color: #ffffff !important;
+}
+
+/* Success background card headers */
+.card-header.bg-success,
+.card-header.bg-success h5,
+.card-header.bg-success h6,
+.card-header.bg-success span,
+.card-header.bg-success i,
+.card-header.bg-success .bi,
+.card-header.bg-success .btn,
+.card-header.bg-success a,
+.card-header.bg-success .small {
+    background-color: #1b5e20 !important;
+    color: #ffffff !important;
+}
+
+/* Info background card headers */
+.card-header.bg-info,
+.card-header.bg-info h5,
+.card-header.bg-info h6,
+.card-header.bg-info span,
+.card-header.bg-info i,
+.card-header.bg-info .bi,
+.card-header.bg-info .btn,
+.card-header.bg-info a,
+.card-header.bg-info .small {
+    background-color: #0d6efd !important;
+    color: #ffffff !important;
+}
+
+/* Warning background card headers */
+.card-header.bg-warning,
+.card-header.bg-warning h5,
+.card-header.bg-warning h6,
+.card-header.bg-warning span,
+.card-header.bg-warning i,
+.card-header.bg-warning .bi,
+.card-header.bg-warning .btn,
+.card-header.bg-warning a,
+.card-header.bg-warning .small {
+    background-color: #fd7e14 !important;
+    color: #000000 !important;
+}
+
+/* Danger background card headers */
+.card-header.bg-danger,
+.card-header.bg-danger h5,
+.card-header.bg-danger h6,
+.card-header.bg-danger span,
+.card-header.bg-danger i,
+.card-header.bg-danger .bi,
+.card-header.bg-danger .btn,
+.card-header.bg-danger a,
+.card-header.bg-danger .small {
+    background-color: #b71c1c !important;
+    color: #ffffff !important;
+}
+
+/* Dark background card headers */
+.card-header.bg-dark,
+.card-header.bg-dark h5,
+.card-header.bg-dark h6,
+.card-header.bg-dark i,
+.card-header.bg-dark .bi,
+.card-header.bg-dark .btn,
+.card-header.bg-dark a,
+.card-header.bg-dark .small {
+    background-color: #222222 !important;
+    color: #ffffff !important;
+}
+
+/* Override any gradient backgrounds */
+.card-header.bg-gradient {
+    background-image: none !important;
+}
+
+/* Ensure border-0 class doesn't affect background/text colors */
+.card-header.border-0 {
+    border: none !important;
+}
+
+/* Market card headers */
+.market-card-oslo .card-header,
+.market-card-global .card-header,
+.market-card-crypto .card-header,
+.market-card-currency .card-header {
+    background-color: #222222 !important;
+    color: #ffffff !important;
+}
+
+/* Mobile improvements */
+@media (max-width: 768px) {
+    .card-header {
+        padding: 0.75rem 1rem;
+    }
+    
+    .card-header h5,
+    .card-header h6 {
+        font-size: 1rem;
+        margin-bottom: 0;
+    }
+}

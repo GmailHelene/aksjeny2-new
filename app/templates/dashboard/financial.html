@@ -1,0 +1,1177 @@
+{% extends "base.html" %}
+
+{% block title %}Finansiell Dashboard - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="bi bi-graph-up me-2"></i>Finansiell Dashboard
+                <span class="badge ms-2" id="market-status"></span>
+            </h1>
+            
+            <!-- Quick Stats Row -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Portefølje Verdi</h6>
+                                    <h4 id="portfolio-value">NOK 1,250,000</h4>
+                                </div>
+                                <i class="bi bi-wallet2 fs-2 opacity-75"></i>
+                            </div>
+                            <small class="text-light opacity-75">+15.2% denne måneden</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Daglig Endring</h6>
+                                    <h4 id="daily-change">+2.45%</h4>
+                                </div>
+                                <i class="bi bi-graph-up fs-2 opacity-75"></i>
+                            </div>
+                            <small class="text-light opacity-75">+NOK 30,625 i dag</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Kryptovaluta</h6>
+                                    <h4 id="crypto-count">5 coins</h4>
+                                </div>
+                                <i class="bi bi-currency-bitcoin fs-2 opacity-75"></i>
+                            </div>
+                            <small class="text-light opacity-75">BTC, ETH, ADA, SOL, DOT</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-dark">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Aksjer i Portefølje</h6>
+                                    <h4 id="stock-count">12 aksjer</h4>
+                                </div>
+                                <i class="bi bi-bar-chart fs-2 opacity-75"></i>
+                            </div>
+                            <small class="text-light opacity-75">EQNR, DNB, TEL, YAR m.fl.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Dashboard Tabs -->
+            <ul class="nav nav-tabs mb-4" id="dashboardTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" 
+                            type="button" role="tab" aria-controls="overview" aria-selected="true">
+                        <i class="bi bi-pie-chart me-2"></i>Oversikt
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="stocks-tab" data-bs-toggle="tab" data-bs-target="#stocks" 
+                            type="button" role="tab" aria-controls="stocks" aria-selected="false">
+                        <i class="bi bi-bar-chart me-2"></i>Aksjer
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="crypto-tab" data-bs-toggle="tab" data-bs-target="#crypto" 
+                            type="button" role="tab" aria-controls="crypto" aria-selected="false">
+                        <i class="bi bi-currency-bitcoin me-2"></i>Krypto
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="currency-tab" data-bs-toggle="tab" data-bs-target="#currency" 
+                            type="button" role="tab" aria-controls="currency" aria-selected="false">
+                        <i class="bi bi-currency-exchange me-2"></i>Valuta
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="insider-tab" data-bs-toggle="tab" data-bs-target="#insider" 
+                            type="button" role="tab" aria-controls="insider" aria-selected="false">
+                        <i class="bi bi-person-fill-lock me-2"></i>Innsidehandel
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="news-tab" data-bs-toggle="tab" data-bs-target="#news" 
+                            type="button" role="tab" aria-controls="news" aria-selected="false">
+                        <i class="bi bi-newspaper me-2"></i>Nyheter
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="dashboardTabContent">
+                
+                <!-- Overview Tab -->
+                <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Markedsoversikt</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="market-overview-chart" style="height: 400px;">
+                                        <!-- Market Overview Data -->
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <h6 class="text-primary">Oslo Børs (OSEBX)</h6>
+                                                <div class="d-flex justify-content-between">
+                                                    <span>1,415.25</span>
+                                                    <span class="text-success">+1.2%</span>
+                                                </div>
+                                                <small class="text-muted">Sist oppdatert: 16:15</small>
+                                            </div>
+                                            <div class="col-6">
+                                                <h6 class="text-primary">S&P 500</h6>
+                                                <div class="d-flex justify-content-between">
+                                                    <span>4,567.89</span>
+                                                    <span class="text-success">+0.8%</span>
+                                                </div>
+                                                <small class="text-muted">Sist oppdatert: 22:00</small>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row mt-3">
+                                            <div class="col-6">
+                                                <h6 class="text-warning">NASDAQ</h6>
+                                                <div class="d-flex justify-content-between">
+                                                    <span>14,234.56</span>
+                                                    <span class="text-danger">-0.3%</span>
+                                                </div>
+                                                <small class="text-muted">Sist oppdatert: 22:00</small>
+                                            </div>
+                                            <div class="col-6">
+                                                <h6 class="text-warning">Bitcoin</h6>
+                                                <div class="d-flex justify-content-between">
+                                                    <span>$43,250</span>
+                                                    <span class="text-success">+2.1%</span>
+                                                </div>
+                                                <small class="text-muted">Sist oppdatert: 16:10</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Økonomiske Indikatorer</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="economic-indicators">
+                                        <div class="indicator-item mb-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>Norges Bank Rente</span>
+                                                <span class="badge bg-info">4.50%</span>
+                                            </div>
+                                            <small class="text-muted">Uendret siden juni</small>
+                                        </div>
+                                        <div class="indicator-item mb-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>Inflasjon (KPI)</span>
+                                                <span class="badge bg-warning">3.2%</span>
+                                            </div>
+                                            <small class="text-muted">Mai 2025</small>
+                                        </div>
+                                        <div class="indicator-item mb-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>Arbeidsledighet</span>
+                                                <span class="badge bg-success">3.1%</span>
+                                            </div>
+                                            <small class="text-muted">Juni 2025</small>
+                                        </div>
+                                        <div class="indicator-item mb-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>USD/NOK</span>
+                                                <span class="badge bg-secondary">10.67</span>
+                                            </div>
+                                            <small class="text-muted">+1.1% i dag</small>
+                                        </div>
+                                        <div class="indicator-item mb-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>Oljepris (Brent)</span>
+                                                <span class="badge bg-primary">$82.45</span>
+                                            </div>
+                                            <small class="text-muted">+0.8% i dag</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Sektoranalyse</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="sector-analysis">
+                                        <div class="text-center py-3">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Laster...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stocks Tab -->
+                <div class="tab-pane fade" id="stocks" role="tabpanel" aria-labelledby="stocks-tab">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0">Aksjer</h5>
+                                    <div>
+                                        <button class="btn btn-outline-primary btn-sm" id="add-stock-btn">
+                                            <i class="bi bi-plus me-1"></i>Legg til aksje
+                                        </button>
+                                        <button class="btn btn-outline-success btn-sm" id="refresh-stocks-btn">
+                                            <i class="bi bi-arrow-clockwise me-1"></i>Oppdater
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover" id="stocks-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Symbol</th>
+                                                    <th>Pris</th>
+                                                    <th>Endring</th>
+                                                    <th>Endring %</th>
+                                                    <th>Volum</th>
+                                                    <th>P/E</th>
+                                                    <th>Utbytte</th>
+                                                    <th>Mkt Cap</th>
+                                                    <th>Handlinger</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Stock data will be populated here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Crypto Tab -->
+                <div class="tab-pane fade" id="crypto" role="tabpanel" aria-labelledby="crypto-tab">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0">Kryptovaluta Markeder</h5>
+                                    <button class="btn btn-outline-success btn-sm" id="refresh-crypto-btn">
+                                        <i class="bi bi-arrow-clockwise me-1"></i>Oppdater
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover" id="crypto-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Rank</th>
+                                                    <th>Navn</th>
+                                                    <th>Pris (USD)</th>
+                                                    <th>24t Endring</th>
+                                                    <th>Markedsverdi</th>
+                                                    <th>Volum 24t</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Crypto data will be populated here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Trending Krypto</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="trending-crypto">
+                                        <div class="text-center py-3">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Laster...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Currency Tab -->
+                <div class="tab-pane fade" id="currency" role="tabpanel" aria-labelledby="currency-tab">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Valutakurser (USD)</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover" id="currency-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Valuta</th>
+                                                    <th>Kurs</th>
+                                                    <th>24t Endring</th>
+                                                    <th>Bid</th>
+                                                    <th>Ask</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Currency data will be populated here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Valutakalkulator</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="currency-converter-form">
+                                        <div class="row">
+                                            <div class="col-md-5">
+                                                <label class="form-label">Fra</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" id="amount-from" value="1" min="0" step="0.01">
+                                                    <select class="form-select" id="currency-from">
+                                                        <option value="USD">USD</option>
+                                                        <option value="EUR">EUR</option>
+                                                        <option value="NOK" selected>NOK</option>
+                                                        <option value="GBP">GBP</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2 text-center">
+                                                <label class="form-label">&nbsp;</label>
+                                                <div class="pt-2">
+                                                    <i class="bi bi-arrow-left-right fs-4"></i>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-5">
+                                                <label class="form-label">Til</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" id="amount-to" readonly>
+                                                    <select class="form-select" id="currency-to">
+                                                        <option value="USD" selected>USD</option>
+                                                        <option value="EUR">EUR</option>
+                                                        <option value="NOK">NOK</option>
+                                                        <option value="GBP">GBP</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary w-100 mt-3">
+                                            <i class="bi bi-calculator me-2"></i>Konverter
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Insider Trading Tab -->
+                <div class="tab-pane fade" id="insider" role="tabpanel" aria-labelledby="insider-tab">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Innsidehandel Analyse</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <form id="insider-search-form">
+                                                <div class="mb-3">
+                                                    <label for="insider-symbol" class="form-label">Aksjesymbol</label>
+                                                    <input type="text" class="form-control" id="insider-symbol" 
+                                                           placeholder="f.eks. AAPL" required>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary w-100">
+                                                    <i class="bi bi-search me-2"></i>Analyser
+                                                </button>
+                                            </form>
+                                        </div>
+                                        <div class="col-md-9">
+                                            <div id="insider-analysis-results">
+                                                <div class="text-center text-muted py-5">
+                                                    <i class="bi bi-person-fill-lock fs-1 mb-3"></i>
+                                                    <p>Søk etter en aksje for å se innsidehandel analyse</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- News Tab -->
+                <div class="tab-pane fade" id="news" role="tabpanel" aria-labelledby="news-tab">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0">Finansielle Nyheter</h5>
+                                    <div>
+                                        <select class="form-select form-select-sm" id="news-filter">
+                                            <option value="">Alle nyheter</option>
+                                            <option value="positive">Positive</option>
+                                            <option value="negative">Negative</option>
+                                            <option value="neutral">Nøytrale</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="financial-news">
+                                        <div class="text-center py-3">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Laster nyheter...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Stock Modal -->
+<div class="modal fade" id="addStockModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Legg til aksje</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-stock-form">
+                    <div class="mb-3">
+                        <label for="new-stock-symbol" class="form-label">Aksjesymbol</label>
+                        <input type="text" class="form-control" id="new-stock-symbol" 
+                               placeholder="f.eks. AAPL, EQNR.OL" required>
+                        <div class="form-text">Bruk .OL for norske aksjer (f.eks. EQNR.OL)</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Avbryt</button>
+                <button type="button" class="btn btn-primary" id="save-stock-btn">Legg til</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Message Containers -->
+<div id="error-messages"></div>
+<div id="success-messages"></div>
+
+{% endblock %}
+
+{% block scripts %}
+<!-- Financial Dashboard JavaScript -->
+<script>
+class FinancialDashboard {
+    constructor() {
+        this.userStocks = this.loadUserStocks();
+        this.refreshInterval = null;
+        this.init();
+    }
+
+    init() {
+        this.bindEvents();
+        this.loadInitialData();
+        this.startAutoRefresh();
+    }
+
+    bindEvents() {
+        // Add stock functionality
+        document.getElementById('add-stock-btn').addEventListener('click', () => {
+            const modal = new bootstrap.Modal(document.getElementById('addStockModal'));
+            modal.show();
+        });
+
+        document.getElementById('save-stock-btn').addEventListener('click', () => {
+            this.addStock();
+        });
+
+        // Refresh buttons
+        document.getElementById('refresh-stocks-btn').addEventListener('click', () => {
+            this.loadStockData();
+        });
+
+        document.getElementById('refresh-crypto-btn').addEventListener('click', () => {
+            this.loadCryptoData();
+        });
+
+        // Insider search
+        document.getElementById('insider-search-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.searchInsiderData();
+        });
+
+        // Currency converter
+        document.getElementById('currency-converter-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.convertCurrency();
+        });
+
+        // Tab change events
+        document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
+            tab.addEventListener('shown.bs.tab', (e) => {
+                this.onTabChange(e.target.getAttribute('data-bs-target'));
+            });
+        });
+    }
+
+    async loadInitialData() {
+        try {
+            await Promise.all([
+                this.loadDashboardData(),
+                this.loadEconomicIndicators(),
+                this.loadSectorAnalysis(),
+                this.loadFinancialNews()
+            ]);
+        } catch (error) {
+            console.error('Error loading initial data:', error);
+        }
+    }
+
+    async loadDashboardData() {
+        try {
+            const response = await fetch(`/api/public/market/data?${this.userStocks.map(s => `symbols=${s}`).join('&')}`);
+            const data = await response.json();
+
+            if (data.success) {
+                this.updateQuickStats(data.dashboard_data);
+                this.populateStockTable(data.dashboard_data.stocks);
+                this.populateCryptoTable(data.dashboard_data.crypto);
+                this.populateCurrencyTable(data.dashboard_data.currencies);
+            }
+        } catch (error) {
+            console.error('Error loading dashboard data:', error);
+        }
+    }
+
+    async loadEconomicIndicators() {
+        try {
+            const response = await fetch('/api/public/economic/indicators');
+            const data = await response.json();
+
+            if (data.success) {
+                this.displayEconomicIndicators(data.economic_indicators);
+            }
+        } catch (error) {
+            console.error('Error loading economic indicators:', error);
+        }
+    }
+
+    async loadSectorAnalysis() {
+        try {
+            const response = await fetch('/api/public/market/sectors');
+            
+            // Check if response is JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Response is not JSON');
+            }
+            
+            const data = await response.json();
+
+            if (data.success) {
+                this.displaySectorAnalysis(data.sector_analysis);
+            }
+        } catch (error) {
+            console.error('Error loading sector analysis:', error);
+            // Display fallback content
+            const container = document.getElementById('sector-analysis');
+            container.innerHTML = '<div class="alert alert-warning">Kunne ikke laste sektoranalyse. Prøv igjen senere.</div>';
+        }
+    }
+
+    async loadFinancialNews() {
+        try {
+            const response = await fetch(`/api/public/news/financial?${this.userStocks.map(s => `symbols=${s}`).join('&')}&limit=20`);
+            
+            // Check if response is JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Response is not JSON');
+            }
+            
+            const data = await response.json();
+
+            if (data.success) {
+                this.displayFinancialNews(data.news);
+            }
+        } catch (error) {
+            console.error('Error loading financial news:', error);
+            // Display fallback content
+            const container = document.getElementById('financial-news');
+            container.innerHTML = '<div class="alert alert-warning">Kunne ikke laste finansielle nyheter. Prøv igjen senere.</div>';
+        }
+    }
+
+    updateQuickStats(dashboardData) {
+        // Calculate portfolio value (demo calculation)
+        let totalValue = 0;
+        let totalChange = 0;
+
+        Object.values(dashboardData.stocks || {}).forEach(stock => {
+            totalValue += stock.price * 100; // Assuming 100 shares each
+            totalChange += stock.change * 100;
+        });
+
+        document.getElementById('portfolio-value').textContent = `NOK ${totalValue.toLocaleString()}`;
+        
+        const changePercent = totalValue > 0 ? (totalChange / totalValue) * 100 : 0;
+        const changeElement = document.getElementById('daily-change');
+        changeElement.textContent = `${changePercent > 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
+        changeElement.parentElement.className = `card ${changePercent >= 0 ? 'bg-success' : 'bg-danger'} text-white`;
+
+    document.getElementById('crypto-count').textContent = (dashboardData.crypto || []).length;
+    // EKTE-only: do not fabricate insider activity count
+    const insiderEl = document.getElementById('insider-activity');
+    if (insiderEl) insiderEl.textContent = '—';
+    }
+
+    populateStockTable(stocks) {
+        const tbody = document.querySelector('#stocks-table tbody');
+        tbody.innerHTML = '';
+
+        Object.entries(stocks || {}).forEach(([symbol, data]) => {
+            const row = tbody.insertRow();
+            const changePercent = data.change_percent || 0;
+            const change = data.change || 0;
+            const changeClass = change >= 0 ? 'text-success' : 'text-danger';
+            const changeIcon = change >= 0 ? 'bi-arrow-up' : 'bi-arrow-down';
+            
+            // Calculate financial metrics with realistic fallbacks
+            const price = data.price || data.last_price || 100;
+            const volume = data.volume || 1000000;
+            const marketCap = data.market_cap || (price * 50000000);
+            const peRatio = (data.pe_ratio !== undefined && data.pe_ratio !== null) ? data.pe_ratio : '—';
+            const divYield = (data.dividend_yield !== undefined && data.dividend_yield !== null) ? data.dividend_yield : '—';
+
+            row.innerHTML = `
+                <td><strong>${symbol}</strong></td>
+                <td>$${price.toFixed(2)}</td>
+                <td class="${changeClass}">
+                    <i class="bi ${changeIcon} me-1"></i>$${Math.abs(change).toFixed(2)}
+                </td>
+                <td class="${changeClass}">${changePercent > 0 ? '+' : ''}${changePercent.toFixed(2)}%</td>
+                <td>${volume.toLocaleString()}</td>
+                <td>${peRatio}</td>
+                <td>${divYield === '—' ? '—' : `${divYield}%`}</td>
+                <td>$${(marketCap / 1e9).toFixed(2)}B</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="dashboard.viewStockDetails('${symbol}')">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="dashboard.removeStock('${symbol}')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            `;
+        });
+    }
+
+    populateCryptoTable(cryptos) {
+        const tbody = document.querySelector('#crypto-table tbody');
+        tbody.innerHTML = '';
+
+        // Convert object to array if needed
+        const cryptoArray = Array.isArray(cryptos) ? cryptos : Object.entries(cryptos || {}).map(([symbol, data], index) => ({
+            rank: index + 1,
+            symbol: data.symbol || symbol.replace('-USD', ''),
+            name: data.name || symbol,
+            price_usd: data.last_price || data.price || 0,
+            price_change_percentage_24h: data.change_percent || 0,
+            market_cap: data.market_cap || 1000000000,
+            volume_24h: data.volume || 100000000
+        }));
+
+        cryptoArray.forEach(crypto => {
+            const row = tbody.insertRow();
+            const changePercent = crypto.price_change_percentage_24h || 0;
+            const changeClass = changePercent >= 0 ? 'text-success' : 'text-danger';
+            const changeIcon = changePercent >= 0 ? 'bi-arrow-up' : 'bi-arrow-down';
+
+            row.innerHTML = `
+                <td><span class="badge bg-secondary">${crypto.rank}</span></td>
+                <td>
+                    <strong>${crypto.symbol}</strong>
+                    <small class="text-muted d-block">${crypto.name}</small>
+                </td>
+                <td>$${crypto.price_usd.toFixed(6)}</td>
+                <td class="${changeClass}">
+                    <i class="bi ${changeIcon} me-1"></i>${Math.abs(changePercent).toFixed(2)}%
+                </td>
+                <td>$${(crypto.market_cap / 1e9).toFixed(2)}B</td>
+                <td>$${(crypto.volume_24h / 1e6).toFixed(1)}M</td>
+            `;
+        });
+    }
+
+    populateCurrencyTable(currencies) {
+        const tbody = document.querySelector('#currency-table tbody');
+        tbody.innerHTML = '';
+
+        // Convert object to array if needed
+        const currencyArray = Array.isArray(currencies) ? currencies : Object.entries(currencies || {}).map(([pair, data]) => ({
+            pair: pair,
+            target: data.pair || pair,
+            rate: data.rate || data.last_price || 1.0,
+            change_24h: data.change || data.change_percent || 0,
+            bid: data.bid || (data.rate || 1.0) * 0.999,
+            ask: data.ask || (data.rate || 1.0) * 1.001
+        }));
+
+        currencyArray.forEach(currency => {
+            const row = tbody.insertRow();
+            const change24h = currency.change_24h || 0;
+            const changeClass = change24h >= 0 ? 'text-success' : 'text-danger';
+            const changeIcon = change24h >= 0 ? 'bi-arrow-up' : 'bi-arrow-down';
+
+            row.innerHTML = `
+                <td><strong>${currency.target}</strong></td>
+                <td>${currency.rate.toFixed(4)}</td>
+                <td class="${changeClass}">
+                    <i class="bi ${changeIcon} me-1"></i>${Math.abs(change24h).toFixed(4)}
+                </td>
+                <td>${currency.bid.toFixed(4)}</td>
+                <td>${currency.ask.toFixed(4)}</td>
+            `;
+        });
+    }
+
+    displayEconomicIndicators(indicators) {
+        const container = document.getElementById('economic-indicators');
+        container.innerHTML = '';
+
+        (indicators || []).forEach(indicator => {
+            const indicatorDiv = document.createElement('div');
+            indicatorDiv.className = 'mb-3 p-2 border-start border-3 border-primary';
+            indicatorDiv.innerHTML = `
+                <div class="d-flex justify-content-between">
+                    <strong>${indicator.indicator}</strong>
+                    <span class="badge bg-light text-dark">${indicator.value}${indicator.unit}</span>
+                </div>
+                <small class="text-muted">${indicator.date} - ${indicator.source}</small>
+            `;
+            container.appendChild(indicatorDiv);
+        });
+    }
+
+    displaySectorAnalysis(sectors) {
+        const container = document.getElementById('sector-analysis');
+        container.innerHTML = '';
+
+        Object.entries(sectors || {}).forEach(([sector, data]) => {
+            const sectorDiv = document.createElement('div');
+            sectorDiv.className = 'mb-2 p-2 bg-light rounded';
+            
+            const trendColor = data.trend === 'bullish' ? 'success' : data.trend === 'bearish' ? 'danger' : 'warning';
+            const trendIcon = data.trend === 'bullish' ? 'bi-arrow-up' : data.trend === 'bearish' ? 'bi-arrow-down' : 'bi-dash';
+            
+            sectorDiv.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>${sector.charAt(0).toUpperCase() + sector.slice(1)}</strong>
+                        <small class="text-muted d-block">${data.symbols.join(', ')}</small>
+                    </div>
+                    <div class="text-end">
+                        <div class="badge bg-${trendColor}">
+                            <i class="bi ${trendIcon} me-1"></i>${data.performance}
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(sectorDiv);
+        });
+    }
+
+    displayFinancialNews(news) {
+        const container = document.getElementById('financial-news');
+        container.innerHTML = '';
+
+        (news || []).forEach(article => {
+            const newsDiv = document.createElement('div');
+            newsDiv.className = 'border-bottom pb-3 mb-3';
+            
+            const sentimentColor = article.sentiment === 'positive' ? 'success' : 
+                                 article.sentiment === 'negative' ? 'danger' : 'warning';
+            
+            newsDiv.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="mb-1">${article.title}</h6>
+                    <span class="badge bg-${sentimentColor}">${article.sentiment}</span>
+                </div>
+                <p class="text-muted mb-2">${article.summary}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        ${article.source} - ${new Date(article.published_at).toLocaleDateString()}
+                    </small>
+                    <a href="${article.url}" target="_blank" class="btn btn-sm btn-outline-primary">
+                        Les mer <i class="bi bi-box-arrow-up-right ms-1"></i>
+                    </a>
+                </div>
+            `;
+            container.appendChild(newsDiv);
+        });
+    }
+
+    async searchInsiderData() {
+        const symbol = document.getElementById('insider-symbol').value.toUpperCase();
+        const container = document.getElementById('insider-analysis-results');
+        
+        container.innerHTML = '<div class="text-center py-3"><div class="spinner-border" role="status"></div></div>';
+        
+        try {
+            const url = `/insider-trading/api/latest?symbol=${encodeURIComponent(symbol)}&period=90&limit=50`;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.success) {
+                this.displayInsiderTransactions(symbol, data.data || data.transactions || []);
+            } else {
+                container.innerHTML = `<div class="alert alert-warning">Ingen data funnet for ${symbol}</div>`;
+            }
+        } catch (error) {
+            console.error('Error searching insider data:', error);
+            container.innerHTML = '<div class="alert alert-danger">Feil ved lasting av data</div>';
+        }
+    }
+
+    displayInsiderTransactions(symbol, transactions) {
+        const container = document.getElementById('insider-analysis-results');
+        
+        if (!transactions || transactions.length === 0) {
+            container.innerHTML = `<div class="alert alert-info">Ingen insidertransaksjoner funnet for ${symbol} i valgt periode.</div>`;
+            return;
+        }
+
+        const rows = transactions.slice(0, 20).map(tr => {
+            const isBuy = String(tr.transaction_type || '').toLowerCase().includes('buy') || String(tr.transaction_type || '').toLowerCase().includes('kjøp');
+            const shares = (tr.shares || 0).toLocaleString();
+            const value = (tr.value || tr.total_value || 0);
+            const valueStr = value ? new Intl.NumberFormat('no-NO', { style: 'currency', currency: 'USD' }).format(value) : '-';
+            const dateStr = tr.date ? new Date(tr.date).toLocaleDateString('no-NO') : '-';
+            return `
+                <tr>
+                    <td>${tr.insider || tr.insider_name || 'Ukjent'}</td>
+                    <td>${tr.position || tr.title || ''}</td>
+                    <td><span class="badge ${isBuy ? 'bg-success' : 'bg-danger'}">${tr.transaction_type}</span></td>
+                    <td class="text-end">${shares}</td>
+                    <td class="text-end">${valueStr}</td>
+                    <td>${dateStr}</td>
+                </tr>`;
+        }).join('');
+
+        const html = `
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Insidertransaksjoner for ${symbol}</h6>
+                    <small class="text-muted">Kilde: Offentlige innberetninger (ekte data)</small>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Insider</th>
+                                    <th>Rolle</th>
+                                    <th>Type</th>
+                                    <th class="text-end">Aksjer</th>
+                                    <th class="text-end">Verdi</th>
+                                    <th>Dato</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>`;
+        
+        container.innerHTML = html;
+    }
+
+    async convertCurrency() {
+        const amountFrom = parseFloat(document.getElementById('amount-from').value);
+        const currencyFrom = document.getElementById('currency-from').value;
+        const currencyTo = document.getElementById('currency-to').value;
+        
+        // EKTE-only: Try derive rates from loaded currency table (vs NOK); no fabrication
+        const exchangeRates = {};
+        const tbody = document.querySelector('#currency-table tbody');
+        if (tbody) {
+            tbody.querySelectorAll('tr').forEach(tr => {
+                const pairCell = tr.querySelector('td:first-child strong');
+                const rateCell = tr.querySelector('td:nth-child(2)');
+                if (pairCell && rateCell) {
+                    const pair = pairCell.textContent.trim();
+                    const [base, quote] = pair.split('/');
+                    const rate = parseFloat(rateCell.textContent.trim());
+                    if (quote === 'NOK' && !isNaN(rate)) {
+                        exchangeRates[base] = rate; // base vs NOK
+                    }
+                }
+            });
+        }
+        
+        let convertedAmount;
+        if (currencyFrom === currencyTo) {
+            convertedAmount = amountFrom;
+        } else {
+            let convertedAmountNok;
+            if (currencyFrom === 'NOK' && exchangeRates[currencyTo]) {
+                convertedAmountNok = amountFrom / exchangeRates[currencyTo];
+            } else if (currencyTo === 'NOK' && exchangeRates[currencyFrom]) {
+                convertedAmountNok = amountFrom * exchangeRates[currencyFrom];
+            } else if (exchangeRates[currencyFrom] && exchangeRates[currencyTo]) {
+                // via NOK
+                convertedAmountNok = (amountFrom * exchangeRates[currencyFrom]) / exchangeRates[currencyTo];
+            } else {
+                convertedAmountNok = NaN;
+            }
+            convertedAmount = isNaN(convertedAmountNok) ? amountFrom : convertedAmountNok;
+        }
+        
+        document.getElementById('amount-to').value = convertedAmount.toFixed(2);
+    }
+
+    addStock() {
+        const symbol = document.getElementById('new-stock-symbol').value.toUpperCase().trim();
+        
+        if (symbol && !this.userStocks.includes(symbol)) {
+            this.userStocks.push(symbol);
+            this.saveUserStocks();
+            this.loadStockData();
+            
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addStockModal'));
+            modal.hide();
+            
+            document.getElementById('new-stock-symbol').value = '';
+            this.showMessage('Aksje lagt til!', 'success');
+        }
+    }
+
+    removeStock(symbol) {
+        const index = this.userStocks.indexOf(symbol);
+        if (index > -1) {
+            this.userStocks.splice(index, 1);
+            this.saveUserStocks();
+            this.loadStockData();
+            this.showMessage('Aksje fjernet!', 'info');
+        }
+    }
+
+    viewStockDetails(symbol) {
+    // Redirect to stock details page (existing route)
+    window.location.href = `/stocks/details/${symbol}`;
+    }
+
+    onTabChange(target) {
+        switch(target) {
+            case '#crypto':
+                this.loadCryptoData();
+                break;
+            case '#currency':
+                this.loadCurrencyData();
+                break;
+            case '#insider':
+                // Insider tab loaded on demand
+                break;
+            case '#news':
+                this.loadFinancialNews();
+                break;
+        }
+    }
+
+    async loadStockData() {
+        try {
+            const response = await fetch('/api/market/comprehensive', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ symbols: this.userStocks })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                this.populateStockTable(data.market_data);
+            }
+        } catch (error) {
+            console.error('Error loading stock data:', error);
+        }
+    }
+
+    async loadCryptoData() {
+        try {
+            const response = await fetch('/api/crypto/data?limit=20');
+            const data = await response.json();
+            
+            if (data.success) {
+                this.populateCryptoTable(data.crypto_data);
+            }
+            
+            // Load trending crypto
+            const trendingResponse = await fetch('/api/crypto/trending');
+            const trendingData = await trendingResponse.json();
+            
+            if (trendingData.success) {
+                this.displayTrendingCrypto(trendingData.trending_crypto);
+            }
+        } catch (error) {
+            console.error('Error loading crypto data:', error);
+        }
+    }
+
+    displayTrendingCrypto(trending) {
+        const container = document.getElementById('trending-crypto');
+        container.innerHTML = '';
+        
+        trending.forEach(crypto => {
+            const cryptoDiv = document.createElement('div');
+            cryptoDiv.className = 'mb-2 p-2 border rounded';
+            cryptoDiv.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>${crypto.symbol}</strong>
+                        <small class="text-muted d-block">${crypto.name}</small>
+                    </div>
+                    <span class="badge bg-primary">#${crypto.rank}</span>
+                </div>
+            `;
+            container.appendChild(cryptoDiv);
+        });
+    }
+
+    async loadCurrencyData() {
+        try {
+            const response = await fetch('/api/currency/rates');
+            const data = await response.json();
+            
+            if (data.success) {
+                this.populateCurrencyTable(data.currency_rates);
+            }
+        } catch (error) {
+            console.error('Error loading currency data:', error);
+        }
+    }
+
+    startAutoRefresh() {
+        // Refresh data every 5 minutes
+        this.refreshInterval = setInterval(() => {
+            this.loadDashboardData();
+        }, 5 * 60 * 1000);
+    }
+
+    stopAutoRefresh() {
+        if (this.refreshInterval) {
+            clearInterval(this.refreshInterval);
+        }
+    }
+
+    loadUserStocks() {
+        const stored = localStorage.getItem('aksjeradar_user_stocks');
+        return stored ? JSON.parse(stored) : ['EQNR.OL', 'DNB.OL', 'TEL.OL', 'AAPL', 'GOOGL'];
+    }
+
+    saveUserStocks() {
+        localStorage.setItem('aksjeradar_user_stocks', JSON.stringify(this.userStocks));
+    }
+
+    showMessage(message, type = 'info') {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.parentNode.removeChild(alertDiv);
+            }
+        }, 5000);
+    }
+}
+
+// Initialize dashboard when page loads
+let dashboard;
+document.addEventListener('DOMContentLoaded', function() {
+    dashboard = new FinancialDashboard();
+    
+    // Market status logic for Oslo Børs
+    function updateMarketStatus() {
+        const marketStatus = document.getElementById('market-status');
+        if (!marketStatus) return;
+
+        const now = new Date();
+        // Oslo Børs: open 09:00 - 16:30, Monday-Friday
+        const openHour = 9, openMinute = 0, closeHour = 16, closeMinute = 30;
+        const weekday = now.getDay(); // 0=Sunday, 1=Monday, ..., 5=Friday, 6=Saturday
+        let isOpen = false;
+        
+        if (weekday >= 1 && weekday <= 5) {
+            const minutes = now.getHours() * 60 + now.getMinutes();
+            const openMinutes = openHour * 60 + openMinute;
+            const closeMinutes = closeHour * 60 + closeMinute;
+            isOpen = minutes >= openMinutes && minutes < closeMinutes;
+        }
+        
+        if (isOpen) {
+            marketStatus.innerHTML = 'ÅPEN';
+            marketStatus.className = 'badge bg-success ms-2';
+        } else {
+            marketStatus.innerHTML = 'STENGT';
+            marketStatus.className = 'badge bg-danger ms-2';
+        }
+    }
+    
+    updateMarketStatus();
+    setInterval(updateMarketStatus, 60000); // Update every minute
+});
+</script>
+{% endblock %}

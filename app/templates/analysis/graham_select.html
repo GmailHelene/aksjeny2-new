@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Benjamin Graham Analyse - Aksjevalg | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-3">
+            {% include 'analysis/_menu.html' %}
+        </div>
+        
+        <div class="col-lg-9">
+            <h1 class="mb-4" data-i18n="analysis.graham">Benjamin Graham Analyse</h1>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Velg en aksje for analyse</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('analysis.benjamin_graham') }}">
+                        <div class="input-group">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="text" id="stockSearch" class="form-control" placeholder="Søk etter aksje...">
+                            <button class="btn btn-outline-secondary" type="button" id="clearSearch"><i class="bi bi-x"></i></button>
+                        </div>
+                        <div id="stockList" class="list-group mt-2" style="max-height: 300px; overflow-y: auto;">
+                            {% for stock in available_stocks %}
+                                <button type="submit" name="ticker" value="{{ stock.ticker }}" class="list-group-item list-group-item-action stock-item">
+                                    <strong>{{ stock.ticker }}</strong> - {{ stock.name }}
+                                </button>
+                            {% endfor %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Methodology Description -->
+            <div class="methodology mt-4">
+                <h3>Benjamin Grahams investeringsprinsipper</h3>
+                <p>Benjamin Graham, kjent som "verdiinvesteringens far", utviklet en systematisk tilnærming til aksjeutvelgelse basert på følgende kriterier:</p>
+                <ul>
+                    <li><strong>Finansiell Styrke:</strong> Selskaper med solid balanse og lav gjeld.</li>
+                    <li><strong>Inntektsstabilitet:</strong> En historie med jevn og pålitelig inntjening.</li>
+                    <li><strong>Utbyttehistorikk:</strong> Konsekvente utbyttebetalinger over tid.</li>
+                    <li><strong>Moderat P/E-forhold:</strong> Unngå overprisede aksjer.</li>
+                    <li><strong>Moderat P/B-forhold:</strong> Pris i forhold til bokført verdi.</li>
+                    <li><strong>Sikkerhetsmargin:</strong> Kjøp eiendeler for betydelig mindre enn deres indre verdi.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const stockSearch = document.getElementById('stockSearch');
+    const stockItems = document.querySelectorAll('.stock-item');
+    const clearSearch = document.getElementById('clearSearch');
+
+    stockSearch.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        stockItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+
+    clearSearch.addEventListener('click', function() {
+        stockSearch.value = '';
+        stockItems.forEach(item => {
+            item.style.display = 'block';
+        });
+    });
+});
+</script>
+
+<style>
+.stock-item {
+    transition: background-color 0.2s ease;
+}
+.stock-item:hover {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}

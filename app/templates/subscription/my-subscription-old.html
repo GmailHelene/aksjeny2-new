@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Mitt Abonnement - Aksjeradar{% endblock %}
+
+{% block head %}
+<style>
+.pricing-card {
+    height: 100%;
+    background: #ffffff;
+    color: #212529;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.pricing-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.pricing-card.featured {
+    border: 3px solid #0d6efd;
+    position: relative;
+}
+
+.pricing-card.featured .card-header {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    color: white;
+}
+
+.price-amount {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #0d6efd;
+    line-height: 1;
+}
+
+.price-period {
+    font-size: 1rem;
+    color: #6c757d;
+}
+
+.feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.feature-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.feature-list li:last-child {
+    border-bottom: none;
+}
+
+.feature-list li i {
+    color: #28a745;
+    margin-right: 0.5rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="mb-4">Mitt Abonnement</h1>
+            
+            <div class="card">
+                <div class="card-body">
+                    {% if subscription and subscription.is_active %}
+                        <h5 class="card-title">{{ subscription.plan|title }} Abonnement</h5>
+                        <p class="card-text">
+                            Status: <span class="badge bg-success">Aktiv</span>
+                        </p>
+                        {% if subscription.end_date %}
+                        <p class="card-text">
+                            Fornyes: {{ subscription.end_date.strftime('%d.%m.%Y') }}
+                        </p>
+                        {% endif %}
+                        
+                        <hr>
+                        
+                        <h6>Inkluderte funksjoner:</h6>
+                        <ul>
+                            <li>Ubegrenset tilgang til alle aksjeanalyser</li>
+                            <li>Sanntids markedsdata</li>
+                            <li>Avanserte tekniske indikatorer</li>
+                            <li>AI-drevne anbefalinger</li>
+                            <li>Porteføljeovervåkning</li>
+                            <li>Eksport av data</li>
+                        </ul>
+                        
+                        <div class="mt-4">
+                            <a href="{{ url_for('main.cancel_subscription') }}" class="btn btn-outline-danger">
+                                Avbryt abonnement
+                            </a>
+                        </div>
+                    {% else %}
+                        <h5 class="card-title">Gratis konto</h5>
+                        <p class="card-text">
+                            Du har begrenset tilgang til funksjoner.
+                        </p>
+                        
+                        <a href="{{ url_for('pricing.pricing_page') }}" class="btn btn-primary">
+                            Oppgrader til Premium
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Show pricing info if user doesn't have active subscription -->
+            {% if not subscription or not subscription.is_active %}
+            <div class="mt-5">
+                <h2 class="text-center mb-4">Velg ditt abonnement</h2>
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="card pricing-card">
+                            <div class="card-header text-center">
+                                <h5 class="card-title">Gratis</h5>
+                            </div>
+                            <div class="card-body text-center">
+                                <div class="price-amount">0 kr</div>
+                                <div class="price-period">per måned</div>
+                                <ul class="feature-list mt-3">
+                                    <li><i class="bi bi-check"></i> Grunnleggende markedsdata</li>
+                                    <li><i class="bi bi-check"></i> Begrenset tilgang til analyser</li>
+                                    <li><i class="bi bi-check"></i> Porteføljeovervåkning</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="card pricing-card featured">
+                            <div class="card-header text-center">
+                                <h5 class="card-title">Premium</h5>
+                            </div>
+                            <div class="card-body text-center">
+                                <div class="price-amount">199 kr</div>
+                                <div class="price-period">per måned</div>
+                                <ul class="feature-list mt-3">
+                                    <li><i class="bi bi-check"></i> Sanntids markedsdata</li>
+                                    <li><i class="bi bi-check"></i> Ubegrenset tilgang til analyser</li>
+                                    <li><i class="bi bi-check"></i> Avanserte tekniske indikatorer</li>
+                                    <li><i class="bi bi-check"></i> AI-drevne anbefalinger</li>
+                                    <li><i class="bi bi-check"></i> Avansert porteføljeovervåkning</li>
+                                    <li><i class="bi bi-check"></i> Eksport av data</li>
+                                    <li><i class="bi bi-check"></i> Prioritert kundesupport</li>
+                                </ul>
+                                <div class="mt-3">
+                                    <a href="{{ url_for('pricing.pricing_page') }}" class="btn btn-primary btn-lg">
+                                        Oppgrader nå
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Simple enhancement for payment buttons
+    document.querySelectorAll('a[href*="pricing"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Add loading state to give user feedback
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Omdirigerer...';
+            
+            // Reset after a short delay
+            setTimeout(() => {
+                this.innerHTML = originalText;
+            }, 3000);
+        });
+    });
+});
+</script>
+{% endblock %}

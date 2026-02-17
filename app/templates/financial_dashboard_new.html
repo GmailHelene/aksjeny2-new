@@ -1,0 +1,702 @@
+{% extends "base.html" %}
+
+{% block title %}Finansiell Dashboard - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="mb-0">
+                    <i class="bi bi-graph-up me-2"></i>Finansiell Dashboard
+                </h1>
+                <div class="d-flex align-items-center">
+                    <span class="badge me-2 {% if data.market_status.oslo_bors %}bg-success{% else %}bg-danger{% endif %}" id="market-status-oslo">
+                        Oslo Børs: {% if data.market_status.oslo_bors %}ÅPEN{% else %}STENGT{% endif %}
+                    </span>
+                    <span class="badge {% if data.market_status.us_markets %}bg-success{% else %}bg-danger{% endif %}" id="market-status-us">
+                        US: {% if data.market_status.us_markets %}ÅPEN{% else %}STENGT{% endif %}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Quick Stats Row -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Portefølje Verdi</h6>
+                                    <h4 id="portfolio-value">{{ data.user_data.portfolio_value }}</h4>
+                                </div>
+                                <i class="bi bi-wallet2 fs-2 opacity-75"></i>
+                            </div>
+                            <small class="text-light opacity-75">{{ data.user_data.daily_change }} i dag</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Medlemskap</h6>
+                                    <h4 id="membership-status">{{ data.user_data.membership }}</h4>
+                                </div>
+                                <i class="bi bi-award fs-2 opacity-75"></i>
+                            </div>
+                            <small class="text-light opacity-75">Aktiv abonnement</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Mine Aksjer</h6>
+                                    <h4 id="stock-count">{{ data.user_data.stock_count }}</h4>
+                                </div>
+                                <i class="bi bi-bar-chart fs-2 opacity-75"></i>
+                            </div>
+                            <small class="text-light opacity-75">I portefølje</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-dark h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Sist oppdatert</h6>
+                                    <h4 id="last-update">Nå</h4>
+                                </div>
+                                <i class="bi bi-arrow-clockwise fs-2 opacity-75"></i>
+                            </div>
+                            <small class="opacity-75">Auto-refresh: På</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Dashboard Tabs -->
+            <ul class="nav nav-tabs mb-4" id="dashboardTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" 
+                            type="button" role="tab" aria-controls="overview" aria-selected="true">
+                        <i class="bi bi-pie-chart me-2"></i>Markedsoversikt
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="portfolio-tab" data-bs-toggle="tab" data-bs-target="#portfolio" 
+                            type="button" role="tab" aria-controls="portfolio" aria-selected="false">
+                        <i class="bi bi-briefcase me-2"></i>Min Portefølje
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="news-tab" data-bs-toggle="tab" data-bs-target="#news" 
+                            type="button" role="tab" aria-controls="news" aria-selected="false">
+                        <i class="bi bi-newspaper me-2"></i>Nyheter
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="insider-tab" data-bs-toggle="tab" data-bs-target="#insider" 
+                            type="button" role="tab" aria-controls="insider" aria-selected="false">
+                        <i class="bi bi-person-lines-fill me-2"></i>Innsidehandel
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="currency-tab" data-bs-toggle="tab" data-bs-target="#currency" 
+                            type="button" role="tab" aria-controls="currency" aria-selected="false">
+                        <i class="bi bi-cash-coin me-2"></i>Valutakalkulator
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tools-tab" data-bs-toggle="tab" data-bs-target="#tools" 
+                            type="button" role="tab" aria-controls="tools" aria-selected="false">
+                        <i class="bi bi-tools me-2"></i>Verktøy
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="dashboardTabContent">
+                <!-- Market Overview Tab -->
+                <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="bi bi-flag me-2"></i>Norske Aksjer</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Ticker</th>
+                                                    <th>Pris</th>
+                                                    <th>Endring</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="norwegian-stocks">
+                                                {% for stock in data.market_data.norwegian %}
+                                                <tr>
+                                                    <td><strong>{{ stock.ticker }}</strong></td>
+                                                    <td>{{ "%.2f"|format(stock.price) }}</td>
+                                                    <td class="{% if stock.change > 0 %}text-success{% elif stock.change < 0 %}text-danger{% endif %}">
+                                                        {{ "%.2f"|format(stock.change) }}%
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="bi bi-globe me-2"></i>Globale Aksjer</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Ticker</th>
+                                                    <th>Pris</th>
+                                                    <th>Endring</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="global-stocks">
+                                                {% for stock in data.market_data.global %}
+                                                <tr>
+                                                    <td><strong>{{ stock.ticker }}</strong></td>
+                                                    <td>${{ "%.2f"|format(stock.price) }}</td>
+                                                    <td class="{% if stock.change > 0 %}text-success{% elif stock.change < 0 %}text-danger{% endif %}">
+                                                        {{ "%.2f"|format(stock.change) }}%
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Portfolio Tab -->
+                <div class="tab-pane fade" id="portfolio" role="tabpanel" aria-labelledby="portfolio-tab">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="bi bi-briefcase me-2"></i>Min Portefølje</h5>
+                            <div>
+                                <a href="/portfolio" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-box-arrow-up-right me-1"></i>Åpne portefølje
+                                </a>
+                                <a href="/portfolio/create_portfolio" class="btn btn-success btn-sm">
+                                    <i class="bi bi-plus-lg me-1"></i>Ny portefølje
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div id="portfolio-chart">
+                                        <p class="text-muted">Porteføljeoversikt lastes...</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6>Rask Handling</h6>
+                                            <div class="d-grid gap-2">
+                                                <a href="/stocks/list-oslo" class="btn btn-outline-primary btn-sm">
+                                                    <i class="bi bi-search me-1"></i>Finn aksjer
+                                                </a>
+                                                <a href="/analysis/recommendations" class="btn btn-outline-success btn-sm">
+                                                    <i class="bi bi-lightbulb me-1"></i>Anbefalinger
+                                                </a>
+                                                <a href="/price-alerts/create" class="btn btn-outline-warning btn-sm">
+                                                    <i class="bi bi-bell me-1"></i>Opprett varsel
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- News Tab -->
+                <div class="tab-pane fade" id="news" role="tabpanel" aria-labelledby="news-tab">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="bi bi-newspaper me-2"></i>Siste Nyheter</h5>
+                            <button class="btn btn-outline-primary btn-sm" onclick="refreshNews()">
+                                <i class="bi bi-arrow-repeat me-1"></i>Oppdater
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div id="news-content">
+                                {% for article in data.news_data %}
+                                <div class="border-bottom pb-3 mb-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">{{ article.title }}</h6>
+                                            <p class="text-muted mb-1">{{ article.summary }}</p>
+                                            <small class="text-muted">
+                                                <span class="badge bg-secondary me-2">{{ article.category }}</span>
+                                                {{ article.time }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Insider Trading Tab -->
+                <div class="tab-pane fade" id="insider" role="tabpanel" aria-labelledby="insider-tab">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-person-lines-fill me-2"></i>Innsidehandel</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Selskap</th>
+                                            <th>Innsider</th>
+                                            <th>Posisjon</th>
+                                            <th>Transaksjon</th>
+                                            <th>Antall</th>
+                                            <th>Pris</th>
+                                            <th>Dato</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for trade in data.insider_data %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ trade.ticker }}</strong><br>
+                                                <small class="text-muted">{{ trade.company }}</small>
+                                            </td>
+                                            <td>{{ trade.insider }}</td>
+                                            <td><small class="text-muted">{{ trade.position }}</small></td>
+                                            <td>
+                                                <span class="badge {% if trade.transaction == 'Kjøp' %}bg-success{% else %}bg-danger{% endif %}">
+                                                    {{ trade.transaction }}
+                                                </span>
+                                            </td>
+                                            <td>{{ "{:,}"|format(trade.shares) }}</td>
+                                            <td>{{ "%.2f"|format(trade.price) }}</td>
+                                            <td>{{ trade.date }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Currency Calculator Tab -->
+                <div class="tab-pane fade" id="currency" role="tabpanel" aria-labelledby="currency-tab">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-cash-coin me-2"></i>Valutakalkulator</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6>Valutaomregner</h6>
+                                            <form id="currency-form">
+                                                <div class="row mb-3">
+                                                    <div class="col-6">
+                                                        <label class="form-label">Fra</label>
+                                                        <select class="form-select" id="from-currency">
+                                                            <option value="NOK">NOK</option>
+                                                            <option value="USD">USD</option>
+                                                            <option value="EUR">EUR</option>
+                                                            <option value="GBP">GBP</option>
+                                                            <option value="SEK">SEK</option>
+                                                            <option value="DKK">DKK</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <label class="form-label">Til</label>
+                                                        <select class="form-select" id="to-currency">
+                                                            <option value="USD">USD</option>
+                                                            <option value="NOK">NOK</option>
+                                                            <option value="EUR">EUR</option>
+                                                            <option value="GBP">GBP</option>
+                                                            <option value="SEK">SEK</option>
+                                                            <option value="DKK">DKK</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Beløp</label>
+                                                    <input type="number" class="form-control" id="amount" value="1000" min="0" step="0.01">
+                                                </div>
+                                                <button type="button" class="btn btn-primary" onclick="convertCurrency()">
+                                                    <i class="bi bi-arrow-left-right me-1"></i>Omregn
+                                                </button>
+                                            </form>
+                                            <div id="conversion-result" class="mt-3" style="display: none;">
+                                                <div class="alert alert-success">
+                                                    <strong>Resultat:</strong>
+                                                    <div id="result-text"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">Valutakurser (vs NOK)</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <table class="table table-sm">
+                                                <tbody>
+                                                    {% for currency, rate in data.currency_rates.items() %}
+                                                    <tr>
+                                                        <td><strong>{{ currency }}</strong></td>
+                                                        <td>{{ "%.2f"|format(rate) }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                            <small class="text-muted">Kurser oppdateres hver time</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tools Tab -->
+                <div class="tab-pane fade" id="tools" role="tabpanel" aria-labelledby="tools-tab">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-tools me-2"></i>Finansielle Verktøy</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="card border-primary">
+                                        <div class="card-body text-center">
+                                            <i class="bi bi-graph-up fs-1 text-primary mb-3"></i>
+                                            <h6>Teknisk Analyse</h6>
+                                            <p class="text-muted">Avansert teknisk analyse av aksjer</p>
+                                            <a href="/analysis/technical" class="btn btn-primary">
+                                                <i class="bi bi-arrow-right me-1"></i>Åpne
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card border-success">
+                                        <div class="card-body text-center">
+                                            <i class="bi bi-lightbulb fs-1 text-success mb-3"></i>
+                                            <h6>AI Anbefalinger</h6>
+                                            <p class="text-muted">Intelligente investeringsanbefalinger</p>
+                                            <a href="/analysis/recommendations" class="btn btn-success">
+                                                <i class="bi bi-arrow-right me-1"></i>Åpne
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card border-info">
+                                        <div class="card-body text-center">
+                                            <i class="bi bi-scale fs-1 text-info mb-3"></i>
+                                            <h6>Sammenlign Aksjer</h6>
+                                            <p class="text-muted">Side-ved-side sammenligning</p>
+                                            <a href="/stocks/compare" class="btn btn-info">
+                                                <i class="bi bi-arrow-right me-1"></i>Åpne
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-4">
+                                <div class="col-md-4">
+                                    <div class="card border-primary">
+                                        <div class="card-body text-center">
+                                            <i class="bi bi-heart-pulse fs-1 text-primary mb-3"></i>
+                                            <h6>Sentiment Tracker</h6>
+                                            <p class="text-muted">Social sentiment analyse for norske aksjer</p>
+                                            <a href="/sentiment/sentiment-tracker" class="btn btn-primary">
+                                                <i class="bi bi-arrow-right me-1"></i>Åpne
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card border-warning">
+                                        <div class="card-body text-center">
+                                            <i class="bi bi-bell fs-1 text-warning mb-3"></i>
+                                            <h6>Prisvarsler</h6>
+                                            <p class="text-muted">Automatiske prisvarsler</p>
+                                            <a href="/price-alerts" class="btn btn-warning">
+                                                <i class="bi bi-arrow-right me-1"></i>Åpne
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card border-danger">
+                                        <div class="card-body text-center">
+                                            <i class="bi bi-pie-chart fs-1 text-danger mb-3"></i>
+                                            <h6>Porteføljeanalyse</h6>
+                                            <p class="text-muted">Detaljert porteføljeanalyse</p>
+                                            <a href="/portfolio-analytics" class="btn btn-danger">
+                                                <i class="bi bi-arrow-right me-1"></i>Åpne
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-4">
+                                <div class="col-md-4">
+                                    <div class="card border-dark">
+                                        <div class="card-body text-center">
+                                            <i class="bi bi-droplet fs-1 text-dark mb-3"></i>
+                                            <h6>Olje Korrelasjon</h6>
+                                            <p class="text-muted">Analyse av oljepris korrelasjon</p>
+                                            <a href="/oil-correlation/oil-correlation" class="btn btn-dark">
+                                                <i class="bi bi-arrow-right me-1"></i>Åpne
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card border-secondary">
+                                        <div class="card-body text-center">
+                                            <i class="bi bi-gear fs-1 text-secondary mb-3"></i>
+                                            <h6>Innstillinger</h6>
+                                            <p class="text-muted">Tilpass dashbordet</p>
+                                            <a href="/profile" class="btn btn-secondary">
+                                                <i class="bi bi-arrow-right me-1"></i>Åpne
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+class EnhancedDashboard {
+    constructor() {
+        this.refreshInterval = null;
+        this.init();
+    }
+
+    init() {
+        this.bindEvents();
+        this.startAutoRefresh();
+        this.loadPortfolioData();
+    }
+
+    bindEvents() {
+        // Tab switching events
+        document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
+            tab.addEventListener('shown.bs.tab', (e) => {
+                this.onTabSwitch(e.target.getAttribute('data-bs-target'));
+            });
+        });
+    }
+
+    onTabSwitch(tabId) {
+        switch(tabId) {
+            case '#portfolio':
+                this.loadPortfolioData();
+                break;
+            case '#news':
+                this.loadNewsData();
+                break;
+            case '#insider':
+                this.loadInsiderData();
+                break;
+        }
+    }
+
+    startAutoRefresh() {
+        // Refresh market data every 30 seconds
+        this.refreshInterval = setInterval(() => {
+            this.refreshMarketData();
+        }, 30000);
+    }
+
+    refreshMarketData() {
+        fetch('/dashboard/api/market/comprehensive', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                this.updateMarketTables(data.data);
+                this.updateLastUpdateTime();
+            }
+        })
+        .catch(error => {
+            console.error('Error refreshing market data:', error);
+        });
+    }
+
+    updateMarketTables(data) {
+        // Update Norwegian stocks table
+        const norwegianTable = document.getElementById('norwegian-stocks');
+        if (norwegianTable && data.norwegian) {
+            norwegianTable.innerHTML = data.norwegian.map(stock => `
+                <tr>
+                    <td><strong>${stock.ticker}</strong></td>
+                    <td>${stock.price.toFixed(2)}</td>
+                    <td class="${stock.change > 0 ? 'text-success' : stock.change < 0 ? 'text-danger' : ''}">${stock.change.toFixed(2)}%</td>
+                </tr>
+            `).join('');
+        }
+
+        // Update Global stocks table
+        const globalTable = document.getElementById('global-stocks');
+        if (globalTable && data.global) {
+            globalTable.innerHTML = data.global.map(stock => `
+                <tr>
+                    <td><strong>${stock.ticker}</strong></td>
+                    <td>$${stock.price.toFixed(2)}</td>
+                    <td class="${stock.change > 0 ? 'text-success' : stock.change < 0 ? 'text-danger' : ''}">${stock.change.toFixed(2)}%</td>
+                </tr>
+            `).join('');
+        }
+    }
+
+    updateLastUpdateTime() {
+        const updateElement = document.getElementById('last-update');
+        if (updateElement) {
+            updateElement.textContent = new Date().toLocaleTimeString('no-NO', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+    }
+
+    loadPortfolioData() {
+        // This would load real portfolio data
+        console.log('Loading portfolio data...');
+    }
+
+    loadNewsData() {
+        console.log('Loading news data...');
+    }
+
+    loadInsiderData() {
+        console.log('Loading insider data...');
+    }
+}
+
+// Currency conversion function
+function convertCurrency() {
+    const fromCurrency = document.getElementById('from-currency').value;
+    const toCurrency = document.getElementById('to-currency').value;
+    const amount = parseFloat(document.getElementById('amount').value);
+
+    if (!amount || amount <= 0) {
+        alert('Vennligst skriv inn et gyldig beløp');
+        return;
+    }
+
+    fetch('/dashboard/api/currency/convert', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            from: fromCurrency,
+            to: toCurrency,
+            amount: amount
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('result-text').innerHTML = `
+                ${amount.toFixed(2)} ${fromCurrency} = <strong>${data.result.toFixed(2)} ${toCurrency}</strong>
+            `;
+            document.getElementById('conversion-result').style.display = 'block';
+        } else {
+            alert('Feil ved valutaomregning: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Teknisk feil ved valutaomregning');
+    });
+}
+
+// Refresh news function
+function refreshNews() {
+    fetch('/dashboard/api/news/latest')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const newsContent = document.getElementById('news-content');
+            newsContent.innerHTML = data.news.map(article => `
+                <div class="border-bottom pb-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">${article.title}</h6>
+                            <p class="text-muted mb-1">${article.summary}</p>
+                            <small class="text-muted">
+                                <span class="badge bg-secondary me-2">${article.category}</span>
+                                ${article.time}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    })
+    .catch(error => {
+        console.error('Error refreshing news:', error);
+    });
+}
+
+// Initialize dashboard when page loads
+let dashboard;
+document.addEventListener('DOMContentLoaded', function() {
+    dashboard = new EnhancedDashboard();
+});
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', function() {
+    if (dashboard && dashboard.refreshInterval) {
+        clearInterval(dashboard.refreshInterval);
+    }
+});
+</script>
+{% endblock %}
