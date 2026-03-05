@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Innsidehandel - Markedsintelligens{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('market_intel.index') }}">Markedsintelligens</a></li>
+                    <li class="breadcrumb-item active">Innsidehandel</li>
+                </ol>
+            </nav>
+            <h1 class="h2 fw-bold mb-2">🏢 Detaljert Innsidehandel</h1>
+            <p class="text-muted">Oversikt over nylige innsidehandler fra ledende selskaper.</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            {% if not ekte_mode %}
+            <div class="alert alert-info">
+                <strong>Demo-modus:</strong> Viser eksempeldata. Logg inn for å se reelle innsidehandler.
+            </div>
+            {% elif insider_data %}
+            <div class="alert alert-success">
+                <strong>Reelle data:</strong> Viser aktuelle innsidehandler fra amerikanske selskaper.
+            </div>
+            {% else %}
+            <div class="alert alert-warning">
+                <strong>Ingen data tilgjengelig:</strong> API-nøkler eller datafeed er ikke konfigurert.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if insider_data %}
+    <div class="row">
+        {% for symbol, trades in insider_data.items() %}
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">📊 {{ symbol }} - Nylige Innsidehandler</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr class="small text-uppercase text-muted">
+                                    <th>Dato</th>
+                                    <th>Person</th>
+                                    <th>Type</th>
+                                    <th class="text-end">Antall</th>
+                                    <th class="text-end">Pris</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trade in trades %}
+                                <tr class="small">
+                                    <td>{{ trade.transaction_date }}</td>
+                                    <td>{{ trade.reporting_name[:25] }}{% if trade.reporting_name|length > 25 %}...{% endif %}</td>
+                                    <td>
+                                        {% if 'Purchase' in trade.transaction_type or 'P' in trade.transaction_type %}
+                                            <span class="badge bg-success">KJØP</span>
+                                        {% elif 'Sale' in trade.transaction_type or 'S' in trade.transaction_type %}
+                                            <span class="badge bg-danger">SALG</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ trade.transaction_type[:10] }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">{{ "{:,}".format(trade.securities_transacted|int) if trade.securities_transacted else '-' }}</td>
+                                    <td class="text-end">${{ "%.2f"|format(trade.price|float) if trade.price else '-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i>
+                Ingen innsidehandelsdata tilgjengelig akkurat nå. Data hentes fra Finnhub API.
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Navigation Back -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <a href="{{ url_for('market_intel.index') }}" class="btn btn-outline-primary">
+                ← Tilbake til Markedsintelligens
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

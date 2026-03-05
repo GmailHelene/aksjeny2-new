@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}Resultatkalender - Markedsintelligens{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('market_intel.index') }}">Markedsintelligens</a></li>
+                    <li class="breadcrumb-item active">Resultatkalender</li>
+                </ol>
+            </nav>
+            <h1 class="h2 fw-bold mb-2">📅 Full Resultatkalender</h1>
+            <p class="text-muted">Kommende resultatrapporter fra amerikanske selskaper.</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            {% if not ekte_mode %}
+            <div class="alert alert-info">
+                <strong>Demo-modus:</strong> Viser eksempeldata. Logg inn for å se reelle resultatkalender.
+            </div>
+            {% elif earnings_calendar %}
+            <div class="alert alert-success">
+                <strong>Reelle data:</strong> Viser kommende resultatrapporter de neste 7 dagene.
+            </div>
+            {% else %}
+            <div class="alert alert-warning">
+                <strong>Ingen data tilgjengelig:</strong> API-nøkler eller datafeed er ikke konfigurert.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if earnings_calendar %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Kommende Resultater</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr class="small text-uppercase text-muted">
+                                    <th>Symbol</th>
+                                    <th>Dato</th>
+                                    <th>Når</th>
+                                    <th class="text-end">EPS (Forventet)</th>
+                                    <th class="text-end">Inntekt (Mld. $)</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for earning in earnings_calendar %}
+                                <tr class="small">
+                                    <td><strong>{{ earning.symbol }}</strong></td>
+                                    <td>{{ earning.date }}</td>
+                                    <td>
+                                        {% if earning.when == 'bmc' %}
+                                            <span class="badge bg-info">Før åpning</span>
+                                        {% elif earning.when == 'amc' %}
+                                            <span class="badge bg-warning">Etter stenging</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">--</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">{{ "%.2f"|format(earning.eps_estimated|float) if earning.eps_estimated else '-' }}</td>
+                                    <td class="text-end">{{ "{:,.0f}".format(earning.revenue_estimated|float / 1000000000) if earning.revenue_estimated else '-' }}B</td>
+                                    <td>
+                                        {% if earning.eps_actual %}
+                                            <span class="badge bg-success">Rapportert</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Venter</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i>
+                Ingen resultatdata tilgjengelig akkurat nå. Data hentes fra Finnhub API.
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Navigation Back -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <a href="{{ url_for('market_intel.index') }}" class="btn btn-outline-primary">
+                ← Tilbake til Markedsintelligens
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

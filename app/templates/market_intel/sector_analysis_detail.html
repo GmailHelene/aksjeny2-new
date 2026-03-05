@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Sektoranalyse - Markedsintelligens{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('market_intel.index') }}">Markedsintelligens</a></li>
+                    <li class="breadcrumb-item active">Sektoranalyse</li>
+                </ol>
+            </nav>
+            <h1 class="h2 fw-bold mb-2">🏭 Avansert Sektoranalyse</h1>
+            <p class="text-muted">Sektorytelse og markedssentiment per sektor.</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            {% if not ekte_mode %}
+            <div class="alert alert-info">
+                <strong>Demo-modus:</strong> Viser eksempeldata. Logg inn for å se reelle sektordata.
+            </div>
+            {% elif sector_performance %}
+            <div class="alert alert-success">
+                <strong>Reelle data:</strong> Viser dagens sektorytelse fra amerikanske markeder.
+            </div>
+            {% else %}
+            <div class="alert alert-warning">
+                <strong>Ingen data tilgjengelig:</strong> API-nøkler eller datafeed er ikke konfigurert.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if sector_performance %}
+    <div class="row">
+        {% for sector in sector_performance %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ sector.sector }}</h5>
+                    <div class="display-5 {% if sector.change_percentage > 0 %}text-success{% elif sector.change_percentage < 0 %}text-danger{% else %}text-secondary{% endif %}">
+                        {% if sector.change_percentage > 0 %}+{% endif %}{{ "%.2f"|format(sector.change_percentage) }}%
+                    </div>
+                    <small class="text-muted">
+                        {% if sector.change_percentage > 0 %}
+                            <i class="bi bi-arrow-up"></i> Opp
+                        {% elif sector.change_percentage < 0 %}
+                            <i class="bi bi-arrow-down"></i> Ned
+                        {% else %}
+                            <i class="bi bi-dash"></i> Uendret
+                        {% endif %}
+                    </small>
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="progress">
+                        <div class="progress-bar {% if sector.change_percentage > 0 %}bg-success{% elif sector.change_percentage < 0 %}bg-danger{% else %}bg-secondary{% endif %}" 
+                             style="width: {{ (sector.change_percentage|float * 2 + 50)|max(0)|min(100) }}%">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="row mt-4">
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="card-title text-muted">Beste Sektor</h6>
+                    {% set best_sector = sector_performance|max(attribute='change_percentage') %}
+                    <h4 class="text-success">{{ best_sector.sector }}</h4>
+                    <p class="mb-0">+{{ "%.2f"|format(best_sector.change_percentage) }}%</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="card-title text-muted">Dårligste Sektor</h6>
+                    {% set worst_sector = sector_performance|min(attribute='change_percentage') %}
+                    <h4 class="text-danger">{{ worst_sector.sector }}</h4>
+                    <p class="mb-0">{{ "%.2f"|format(worst_sector.change_percentage) }}%</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="card-title text-muted">Gjennomsnittlig Endring</h6>
+                    {% set avg_change = sector_performance|map(attribute='change_percentage')|sum / sector_performance|length %}
+                    <h4 class="{% if avg_change > 0 %}text-success{% elif avg_change < 0 %}text-danger{% else %}text-secondary{% endif %}">
+                        {% if avg_change > 0 %}+{% endif %}{{ "%.2f"|format(avg_change) }}%
+                    </h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i>
+                Ingen sektordata tilgjengelig akkurat nå. Data hentes fra Finnhub API.
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Navigation Back -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <a href="{{ url_for('market_intel.index') }}" class="btn btn-outline-primary">
+                ← Tilbake til Markedsintelligens
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

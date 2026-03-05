@@ -94,35 +94,82 @@ def index():
     )
 
 
-# ---- Placeholder child routes (anchors or future dedicated pages) ----
+# ---- Dedicated child routes with real data ----
 
 @market_intel.route('/insider-trading')
 def insider_trading():
-    """Temporary: reuse index but could later serve dedicated template."""
-    return redirect(url_for('market_intel.index') + '#insider')
+    """Dedicated insider trading page with full data."""
+    insider_data = {}
+    ekte_mode = is_ekte_only()
+    
+    if ekte_mode and getattr(current_user, 'is_authenticated', False):
+        try:
+            insider_data = fetch_insider_trades_real()
+        except Exception as e:
+            logger.error(f"Failed to fetch insider trades: {e}")
+    
+    return render_template(
+        'market_intel/insider_trading_detail.html',
+        insider_data=insider_data,
+        ekte_mode=ekte_mode
+    )
 
 
 @market_intel.route('/earnings-calendar')
 def earnings_calendar():
-    """Placeholder route for earnings calendar - redirects to main page section.
-
-    Endpoint name intentionally matches template reference 'market_intel.earnings_calendar'.
-    """
-    return redirect(url_for('market_intel.index') + '#earnings')
+    """Dedicated earnings calendar page with full data."""
+    earnings_calendar = []
+    ekte_mode = is_ekte_only()
+    
+    if ekte_mode and getattr(current_user, 'is_authenticated', False):
+        try:
+            earnings_calendar = fetch_earnings_calendar_real()
+        except Exception as e:
+            logger.error(f"Failed to fetch earnings calendar: {e}")
+    
+    return render_template(
+        'market_intel/earnings_calendar_detail.html',
+        earnings_calendar=earnings_calendar,
+        ekte_mode=ekte_mode
+    )
 
 
 @market_intel.route('/sector-analysis')
 def sector_analysis():
-    return redirect(url_for('market_intel.index') + '#sectors')
+    """Dedicated sector analysis page with full data."""
+    sector_performance = []
+    ekte_mode = is_ekte_only()
+    
+    if ekte_mode and getattr(current_user, 'is_authenticated', False):
+        try:
+            sector_performance = fetch_sector_performance_real()
+        except Exception as e:
+            logger.error(f"Failed to fetch sector performance: {e}")
+    
+    return render_template(
+        'market_intel/sector_analysis_detail.html',
+        sector_performance=sector_performance,
+        ekte_mode=ekte_mode
+    )
 
 
 @market_intel.route('/economic-indicators')
 def economic_indicators():
-    """Placeholder route for economic indicators - redirects to main page section.
-
-    Endpoint name intentionally matches template reference 'market_intel.economic_indicators'.
-    """
-    return redirect(url_for('market_intel.index') + '#economic-indicators')
+    """Dedicated economic indicators page with full data."""
+    economic_indicators = {}
+    ekte_mode = is_ekte_only()
+    
+    if ekte_mode and getattr(current_user, 'is_authenticated', False):
+        try:
+            economic_indicators = fetch_economic_indicators_real()
+        except Exception as e:
+            logger.error(f"Failed to fetch economic indicators: {e}")
+    
+    return render_template(
+        'market_intel/economic_indicators_detail.html',
+        economic_indicators=economic_indicators,
+        ekte_mode=ekte_mode
+    )
 
 
 # Example lightweight API endpoint used by template JS (crypto fear & greed)

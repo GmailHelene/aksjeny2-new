@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+
+{% block title %}Økonomiske Indikatorer - Markedsintelligens{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('market_intel.index') }}">Markedsintelligens</a></li>
+                    <li class="breadcrumb-item active">Økonomiske Indikatorer</li>
+                </ol>
+            </nav>
+            <h1 class="h2 fw-bold mb-2">📊 Økonomiske Indikatorer</h1>
+            <p class="text-muted">Makroøkonomiske indikatorer og markedsdata.</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            {% if not ekte_mode %}
+            <div class="alert alert-info">
+                <strong>Demo-modus:</strong> Viser eksempeldata. Logg inn for å se reelle økonomiske data.
+            </div>
+            {% elif economic_indicators %}
+            <div class="alert alert-success">
+                <strong>Reelle data:</strong> Viser aktuelle økonomiske indikatorer.
+            </div>
+            {% else %}
+            <div class="alert alert-warning">
+                <strong>Ingen data tilgjengelig:</strong> Datafeed er ikke konfigurert.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if economic_indicators %}
+    <!-- Main Economic Indicators -->
+    <div class="row mb-4">
+        {% if economic_indicators.get('brent_oil_usd') %}
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="card-title text-muted">Brent Olje (USD)</h6>
+                    <div class="display-6 text-info">
+                        ${{ "%.2f"|format(economic_indicators.brent_oil_usd) }}
+                    </div>
+                    <small class="text-muted">Per fat</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if economic_indicators.get('eur_nok') %}
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="card-title text-muted">EUR/NOK</h6>
+                    <div class="display-6 text-primary">
+                        {{ "%.4f"|format(economic_indicators.eur_nok) }}
+                    </div>
+                    <small class="text-muted">Valutakurs</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if economic_indicators.get('nok_eur') %}
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="card-title text-muted">NOK/EUR</h6>
+                    <div class="display-6 text-primary">
+                        {{ "%.4f"|format(economic_indicators.nok_eur) }}
+                    </div>
+                    <small class="text-muted">Valutakurs</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if economic_indicators.get('gdp_growth') %}
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="card-title text-muted">BNP Vekst</h6>
+                    <div class="display-6 text-success">
+                        {{ "%.2f"|format(economic_indicators.gdp_growth) }}%
+                    </div>
+                    <small class="text-muted">År-på-år</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if economic_indicators.get('inflation_rate') %}
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="card-title text-muted">Inflasjon</h6>
+                    <div class="display-6 text-warning">
+                        {{ "%.2f"|format(economic_indicators.inflation_rate) }}%
+                    </div>
+                    <small class="text-muted">År-på-år</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Additional Information -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">📈 Datakilder</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Energimarkeder</h6>
+                            <ul class="small list-unstyled">
+                                <li>✓ Brent Olje (Investing.com)</li>
+                                <li>✓ WTI Crude (når tilgjengelig)</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Valutamarkeder</h6>
+                            <ul class="small list-unstyled">
+                                <li>✓ EUR/NOK (ExchangeRate-host API)</li>
+                                <li>✓ NOK/EUR (invertert)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h6>Makroøkonomi</h6>
+                            <ul class="small list-unstyled">
+                                <li>✓ BNP Vekst (når tilgjengelig)</li>
+                                <li>✓ Inflasjonsmål (når tilgjengelig)</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Oppdateringer</h6>
+                            <ul class="small list-unstyled">
+                                <li>✓ Cached i 5 minutter</li>
+                                <li>✓ Reell tid når tilgjengelig</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i>
+                Ingen økonomiske data tilgjengelig akkurat nå. Vi henter data fra offentlige kilder.
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Navigation Back -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <a href="{{ url_for('market_intel.index') }}" class="btn btn-outline-primary">
+                ← Tilbake til Markedsintelligens
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
