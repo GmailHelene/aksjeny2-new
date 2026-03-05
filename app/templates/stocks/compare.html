@@ -238,61 +238,46 @@
     </div>
 </div>
 
-<!-- Stock comparison form -->
+<!-- Stock comparison form - Single unified form -->
 <div class="container-fluid py-4">
     <div class="row">
         <div class="col-12">
             <div class="stock-selector mb-4">
-                <form id="comparison-form" action="/stocks/compare" method="get">
-                <div class="row">
+                <form id="comparison-form" method="get" action="{{ url_for('stocks.compare') }}">
+                    <div class="row align-items-end">
+                        <div class="col-md-8">
+                            <label for="symbols" class="form-label">
+                                <strong>Velg aksjer å sammenligne:</strong>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="symbols" 
+                                   name="symbols" 
+                                   placeholder="F.eks: EQNR.OL,DNB.OL,TEL.OL (skill med komma)"
+                                   value="{{ tickers|join(',') if tickers else '' }}"
+                                   required>
+                            <div class="form-text">
+                                Skriv aksjesymbol (f.eks. EQNR.OL for Equinor). Maksimum 4 aksjer.
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="period" class="form-label">Periode:</label>
+                            <select class="form-select" name="period" id="period">
+                                <option value="1mo" {{ 'selected' if period == '1mo' else '' }}>1 måned</option>
+                                <option value="3mo" {{ 'selected' if period == '3mo' else '' }}>3 måneder</option>
+                                <option value="6mo" {{ 'selected' if period == '6mo' else '' }}>6 måneder</option>
+                                <option value="1y" {{ 'selected' if period == '1y' else '' }}>1 år</option>
+                                <option value="2y" {{ 'selected' if period == '2y' else '' }}>2 år</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-compare w-100">
+                                <i class="bi bi-search"></i> Sammenlign
+                            </button>
+                        </div>
                     </div>
-                    <div class="col-md-3 mb-3 mb-md-0">
-                        <label for="ticker2" class="form-label">Aksje 2:</label>
-                        <input type="text" class="form-control" id="ticker2" name="tickers" value="{{ tickers[1] if tickers and tickers|length > 1 else 'DNB.OL' }}" placeholder="f.eks. DNB.OL" required>
-                    </div>
-                    <div class="col-md-3 mb-3 mb-md-0">
-                        <label for="ticker3" class="form-label">Aksje 3 (valgfri):</label>
-                        <input type="text" class="form-control" id="ticker3" name="tickers" value="{{ tickers[2] if tickers and tickers|length > 2 else '' }}" placeholder="f.eks. TEL.OL">
-                    </div>
-                    <div class="col-md-3 mb-3 mb-md-0">
-                        <label for="ticker4" class="form-label">Aksje 4 (valgfri):</label>
-                        <input type="text" class="form-control" id="ticker4" name="tickers" value="{{ tickers[3] if tickers and tickers|length > 3 else '' }}" placeholder="f.eks. AAPL">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-4 mb-3 mb-md-0">
-                        <label for="period" class="form-label">Periode:</label>
-                        <select class="form-select" id="period" name="period">
-                            <option value="1mo" {% if period == '1mo' %}selected{% endif %}>1 måned</option>
-                            <option value="3mo" {% if period == '3mo' %}selected{% endif %}>3 måneder</option>
-                            <option value="6mo" {% if period == '6mo' or not period %}selected{% endif %}>6 måneder</option>
-                            <option value="1y" {% if period == '1y' %}selected{% endif %}>1 år</option>
-                            <option value="2y" {% if period == '2y' %}selected{% endif %}>2 år</option>
-                            <option value="5y" {% if period == '5y' %}selected{% endif %}>5 år</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4 mb-3 mb-md-0">
-                        <label for="interval" class="form-label">Intervall:</label>
-                        <select class="form-select" id="interval" name="interval">
-                            <option value="1d" {% if interval == '1d' or not interval %}selected{% endif %}>Daglig</option>
-                            <option value="1wk" {% if interval == '1wk' %}selected{% endif %}>Ukentlig</option>
-                            <option value="1mo" {% if interval == '1mo' %}selected{% endif %}>Månedlig</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4 mb-3 mb-md-0">
-                        <label for="normalize" class="form-label">Normalisering:</label>
-                        <select class="form-select" id="normalize" name="normalize">
-                            <option value="1" {% if normalize == '1' or normalize == True %}selected{% endif %}>Normaliser til prosent</option>
-                            <option value="0" {% if normalize == '0' or normalize == False %}selected{% endif %}>Vis faktiske priser</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <button type="submit" class="btn btn-primary">Sammenlign</button>
-                    <button type="button" class="btn btn-outline-secondary" id="resetForm">Tilbakestill</button>
-                </div>
-            </form>
-        </div>
+                </form>
+            </div>
     </div>
 
     {% if tickers and tickers|length > 0 %}
@@ -482,40 +467,27 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize form handling
-    const form = document.getElementById('comparison-form');
-        const resetButton = document.getElementById('resetForm');
+        const form = document.getElementById('comparison-form');
         
-        resetButton.addEventListener('click', function() {
-            document.getElementById('ticker1').value = 'EQNR.OL';
-            document.getElementById('ticker2').value = 'DNB.OL';
-            document.getElementById('ticker3').value = '';
-            document.getElementById('ticker4').value = '';
-            document.getElementById('period').value = '6mo';
-            document.getElementById('interval').value = '1d';
-            document.getElementById('normalize').value = '1';
-        });
+        if (!form) {
+            console.warn('Comparison form not found');
+            return;
+        }
         
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // Collect all ticker inputs
-            const tickers = Array.from(form.querySelectorAll('input[name="tickers"]'))
-                .map(input => input.value.trim())
-                .filter(value => value !== '');
-                
-            if (tickers.length < 2) {
+            const symbolsInput = document.getElementById('symbols').value.trim();
+            const symbols = symbolsInput ? symbolsInput.split(',').map(s => s.trim()).filter(s => s) : [];
+            
+            if (symbols.length < 2) {
                 alert('Du må angi minst to aksjer for å sammenligne.');
                 return;
             }
             
-            // Construct URL with tickers
+            // Construct URL with symbols as comma-separated string
             const period = document.getElementById('period').value;
-            const interval = document.getElementById('interval').value;
-            const normalize = document.getElementById('normalize').value;
-            
-            const url = `{{ url_for('stocks.compare') }}?` + 
-                       tickers.map(t => `tickers=${encodeURIComponent(t)}`).join('&') +
-                       `&period=${period}&interval=${interval}&normalize=${normalize}`;
+            const url = `{{ url_for('stocks.compare') }}?symbols=${encodeURIComponent(symbols.join(','))}&period=${period}`;
             
             window.location.href = url;
         });
