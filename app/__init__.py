@@ -531,6 +531,13 @@ def create_app(config_class=None):
         from app.views.subscription import subscription_bp
         app.register_blueprint(subscription_bp)
     
+    # Configure ProxyFix for Railway and other reverse proxies
+    # This ensures that X-Forwarded-Proto header is correctly used for HTTPS
+    if app.config.get('ENV') == 'production' or os.getenv('RAILWAY_ENVIRONMENT'):
+        from werkzeug.middleware.proxy_fix import ProxyFix
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
+        app.logger.info("ProxyFix middleware enabled for production/Railway deployment")
+    
     return app
 
 def register_blueprints(app):
