@@ -87,10 +87,12 @@ class TestingConfig(Config):
 class ProductionConfig(Config):
     DEBUG = False
     IS_REAL_PRODUCTION = True
+    ENV = 'production'
     
     # Production-specific settings
     SESSION_COOKIE_SECURE = True
     WTF_CSRF_SSL_STRICT = True
+    PREFERRED_URL_SCHEME = 'https'
     
     # Override with production values
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \

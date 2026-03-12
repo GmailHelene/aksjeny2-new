@@ -5,6 +5,7 @@ import secrets
 import hashlib
 import base64
 import io
+import os
 from typing import Optional
 from flask import current_app, has_app_context, request
 
@@ -172,11 +173,26 @@ def setup_security_headers(app):
         # X-XSS-Protection: Enable XSS filtering
         response.headers['X-XSS-Protection'] = '1; mode=block'
         
-        # Strict-Transport-Security: Force HTTPS (only add in production)
-        if app.config.get('ENV') == 'production':
-            response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+        # Referrer-Policy: Control referrer information
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        
+        # Permissions-Policy: Control browser features
+        response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
+        
+        # Strict-Transport-Security: Force HTTPS
+        # Check both app config and Railway environment
+        is_production = (
+            app.config.get('ENV') == 'production' or 
+            app.config.get('IS_REAL_PRODUCTION') or
+            os.environ.get('RAILWAY_ENVIRONMENT') or
+            os.environ.get('APP_ENV') == 'production'
+        )
+        
+        if is_production:
+            # Production: Strict HSTS with preload
+            response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
         else:
-            # For development, use a shorter max-age
+            # Development: Don't enforce HSTS with max-age=0
             response.headers['Strict-Transport-Security'] = 'max-age=0'
         
         # Add CORS headers for PWA manifest and static files

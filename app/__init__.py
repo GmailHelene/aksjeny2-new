@@ -329,6 +329,11 @@ def create_app(config_class=None):
         from .utils.security import setup_security_headers
         setup_security_headers(app)
         
+        # Import and setup HTTPS configuration
+        from .utils.https_config import apply_https_config, verify_https_config
+        apply_https_config(app)
+        verify_https_config(app)
+        
         # Add CORS headers for GitHub Codespaces
         @app.after_request
         def after_request(response):
@@ -533,10 +538,31 @@ def create_app(config_class=None):
     
     # Configure ProxyFix for Railway and other reverse proxies
     # This ensures that X-Forwarded-Proto header is correctly used for HTTPS
-    if app.config.get('ENV') == 'production' or os.getenv('RAILWAY_ENVIRONMENT'):
+    # Must be applied early to ensure correct request context detection
+    is_production = (
+        app.config.get('ENV') == 'production' or 
+        app.config.get('IS_REAL_PRODUCTION') or
+        os.getenv('RAILWAY_ENVIRONMENT') or
+        os.getenv('APP_ENV') == 'production'
+    )
+    
+    if is_production:
         from werkzeug.middleware.proxy_fix import ProxyFix
-        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
-        app.logger.info("ProxyFix middleware enabled for production/Railway deployment")
+        # Trust 1 level of proxies: Railway reverse proxy
+        # x_for: Trust X-Forwarded-For header for client IP
+        # x_proto: Trust X-Forwarded-Proto header for protocol (http/https)
+        # x_host: Trust X-Forwarded-Host header for hostname
+        # x_port: Trust X-Forwarded-Port header for port
+        app.wsgi_app = ProxyFix(
+            app.wsgi_app,
+            x_for=1,
+            x_proto=1,
+            x_host=1,
+            x_port=1
+        )
+        app.logger.info("✅ ProxyFix middleware enabled for production/Railway deployment with full HTTPS support")
+    else:
+        app.logger.info("ProxyFix middleware not enabled (not in production mode)")
     
     return app
 
