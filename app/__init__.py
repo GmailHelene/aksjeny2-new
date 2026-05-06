@@ -609,16 +609,7 @@ def register_blueprints(app):
         
         # NOTE: stocks blueprint is registered via blueprint_configs below
         
-        # Register Stripe blueprint
-        try:
-            from .routes.stripe_routes import stripe_bp
-            app.register_blueprint(stripe_bp)
-            blueprints_registered.append('stripe')
-            app.logger.info("OK Registered Stripe blueprint")
-        except ImportError as e:
-            app.logger.warning(f"Could not import Stripe blueprint: {e}")
-        
-        # Register Auth blueprint  
+        # Register Auth blueprint
         try:
             from .auth import auth
             app.register_blueprint(auth, url_prefix='/auth')
@@ -626,32 +617,25 @@ def register_blueprints(app):
             app.logger.info("OK Registered Auth blueprint")
         except ImportError as e:
             app.logger.warning(f"Could not import Auth blueprint: {e}")
-        
-        # Register Cache Management blueprint
-        try:
-            from .routes.cache_management import cache_bp
-            app.register_blueprint(cache_bp)
-            blueprints_registered.append('cache_management')
-            app.logger.info("OK Registered Cache Management blueprint")
-        except ImportError as e:
-            app.logger.warning(f"Could not import Cache Management blueprint: {e}")
+        # Note: stripe_routes and cache_management modules don't exist in this
+        # branch — Stripe is wired via app.routes.pricing instead.
     except ImportError as e:
         app.logger.error(f"Failed to import main or portfolio blueprint: {e}")
         raise
     
-    # Other blueprints with proper relative imports
+    # Other blueprints with proper relative imports.
+    # Removed stale entries for modules that never existed in this branch:
+    #   insider_trading, backtest, seo_content, investment_guides,
+    #   watchlist_fixes, news_intelligence, realtime_routes,
+    #   realtime_websocket, oil_correlation
     blueprint_configs = [
         ('.routes.stocks', 'stocks', '/stocks'),
-        ('.routes.insider_trading', 'insider_trading', '/insider-trading'),
         ('.routes.api', 'api', None),
         ('.routes.analysis', 'analysis', '/analysis'),
         ('.routes.dashboard', 'dashboard', None),
         ('.routes.pro_tools', 'pro_tools', '/pro-tools'),
         ('.routes.market_intel', 'market_intel', '/market-intel'),
-        # Use views.external_data since that's the working one
         ('.views.external_data', 'external_data_bp', None),
-        ('.routes.backtest', 'backtest_bp', '/backtest'),
-        ('.routes.seo_content', 'seo_content', '/content'),
         ('.routes.portfolio_advanced', 'portfolio_advanced', '/portfolio-advanced'),
         ('.professional_analytics', 'analytics_bp', '/analytics'),
         ('.routes.news', 'news_bp', '/news'),
@@ -659,28 +643,21 @@ def register_blueprints(app):
         ('.routes.admin', 'admin', '/admin'),
         ('.routes.features', 'features', '/features'),
         ('.routes.blog', 'blog', '/blog'),
-        ('.routes.investment_guides', 'investment_guides', '/investment-guides'),
         ('.routes.watchlist_advanced', 'watchlist_bp', '/watchlist'),
-        ('.routes.watchlist_fixes', 'watchlist_fixes', '/watchlist-fixed'),
         ('.routes.price_alerts', 'price_alerts', '/price-alerts'),
         ('.routes.seo_sitemap', 'seo_sitemap', None),
         ('.routes.resources', 'resources_bp', '/resources'),
         ('.routes.investment_analyzer', 'investment_analyzer_bp', '/investment-analyzer'),
         ('.routes.advanced_features', 'advanced_features', '/advanced'),
-        ('.routes.investor', 'investor', None),  # Investor/acquisition page
-        ('.routes.news_intelligence', 'news_intelligence', '/news-intelligence'),
+        ('.routes.investor', 'investor', None),
         ('.routes.mobile_trading', 'mobile_trading', '/mobile-trading'),
-        ('.routes.realtime_routes', 'realtime_bp', '/realtime'),
-        ('.routes.realtime_websocket', 'realtime_data', None),
         ('.routes.portfolio_analytics', 'portfolio_analytics', '/portfolio-analytics'),
-    # notifications_bp exposes many /api/... routes under /notifications
-    ('.routes.notifications', 'notifications_bp', '/notifications'),
+        ('.routes.notifications', 'notifications_bp', '/notifications'),
         ('.routes.notifications', 'notifications_web_bp', None),
         ('.routes.norwegian_intel', 'norwegian_intel', '/norwegian-intel'),
         ('.routes.daily_view', 'daily_view', '/daily-view'),
         ('.routes.forum', 'forum', '/forum'),
         ('.routes.sentiment_tracker', 'sentiment_tracker', '/sentiment'),
-        ('.routes.oil_correlation', 'oil_correlation', '/oil-correlation'),
         ('.routes.achievements', 'achievements_bp', '/achievements'),
         ('.routes.advanced_analytics', 'advanced_analytics', '/advanced-analytics'),
         ('.routes.profile', 'profile', '/profile'),
@@ -786,15 +763,6 @@ def register_blueprints(app):
                 return jsonify({'success': False, 'error': 'Kunne ikke endre språk'}), 500
             return redirect(request.referrer or url_for('main.index'))
     
-    # Register the realtime_api blueprint
-    try:
-        from .routes.realtime_api import realtime_api
-        app.register_blueprint(realtime_api)
-        blueprints_registered.append('realtime_api')
-        app.logger.info("OK Registered realtime_api blueprint")
-    except ImportError as e:
-        app.logger.warning(f"Could not import realtime_api blueprint: {e}")
-    
     # Register the diagnostic blueprint for troubleshooting access control issues
     try:
         from .routes.diagnostic import diagnostic
@@ -803,15 +771,7 @@ def register_blueprints(app):
         app.logger.info("OK Registered diagnostic blueprint for access control troubleshooting")
     except ImportError as e:
         app.logger.warning(f"Could not import diagnostic blueprint: {e}")
-        
-    # Register the test blueprint for troubleshooting
-    try:
-        from .routes.test_route import test
-        app.register_blueprint(test)
-        blueprints_registered.append('test')
-        app.logger.info("OK Registered test blueprint for testing access control")
-    except ImportError as e:
-        app.logger.warning(f"Could not import test blueprint: {e}")
+    # Note: realtime_api and test_route modules don't exist in this branch.
     
     # Register the watchlist_api blueprint with different prefix to avoid conflicts
     try:

@@ -260,47 +260,69 @@ def fetch_earnings_calendar_real() -> List[Dict[str, Any]]:
         return []
 
 def fetch_sector_performance_real() -> List[Dict[str, Any]]:
-    """Fetch sector performance (Finnhub) if API key present.
+    """Fetch sector performance via SPDR sector ETFs (no API key required).
 
-    Endpoint: https://finnhub.io/api/v1/stock/sector-performance
-    Returns list of { sector, change_percentage } entries.
-    Empty list if unavailable.
-    Cached 10 minutes.
+    Finnhub's /stock/sector-performance endpoint is premium-only, so we
+    derive daily sector returns from the 11 SPDR sector ETFs via yfinance.
+    Returns list of { sector, change_percentage } entries. Empty list if
+    yfinance is unavailable or all calls fail. Cached 10 minutes.
     """
     cache_key = 'sector:performance'
     cached = _cache_get(cache_key)
     if cached is not None:
         return cached
-    
-    if not FINNHUB_KEY:
-        logger.info("Sector performance: FINNHUB_KEY missing — returning empty list")
-        _cache_set(cache_key, [], ttl=600)
-        return []
+
+    # 11 SPDR sector ETFs — these track the S&P 500 GICS sectors
+    sector_etfs = [
+        ('XLK', 'Technology'),
+        ('XLV', 'Healthcare'),
+        ('XLF', 'Financials'),
+        ('XLE', 'Energy'),
+        ('XLY', 'Consumer Discretionary'),
+        ('XLP', 'Consumer Staples'),
+        ('XLI', 'Industrials'),
+        ('XLB', 'Materials'),
+        ('XLRE', 'Real Estate'),
+        ('XLU', 'Utilities'),
+        ('XLC', 'Communication Services'),
+    ]
 
     try:
-        resp = requests.get('https://finnhub.io/api/v1/stock/sector-performance', params={'token': FINNHUB_KEY}, timeout=10, headers={'X-Finnhub-Secret': FINNHUB_SECRET, **HEADERS})
-        if resp.status_code != 200:
-            logger.warning(f"Finnhub sector performance HTTP {resp.status_code}")
-            _cache_set(cache_key, [], ttl=300)
-            return []
-        data = resp.json() or []
-        normalized = []
-        for it in data:
-            sector = it.get('sector')
-            change = it.get('change')
-            if sector is None or change is None:
-                continue
-            try:
-                change_val = float(change)
-            except Exception:
-                continue
-            normalized.append({'sector': sector, 'change_percentage': change_val})
-        _cache_set(cache_key, normalized, ttl=600)
-        return normalized
+        import yfinance as yf
     except Exception as e:
-        logger.error(f"Sector performance fetch failed: {e}")
+        logger.warning(f"Sector performance: yfinance unavailable — {e}")
         _cache_set(cache_key, [], ttl=300)
         return []
+
+    normalized = []
+    for symbol, sector_name in sector_etfs:
+        try:
+            ticker = yf.Ticker(symbol)
+            # 5d window catches the latest two trading days even on weekends
+            hist = ticker.history(period='5d', interval='1d')
+            if hist is None or len(hist) < 2:
+                continue
+            prev_close = float(hist['Close'].iloc[-2])
+            last_close = float(hist['Close'].iloc[-1])
+            if prev_close <= 0:
+                continue
+            change_pct = ((last_close - prev_close) / prev_close) * 100.0
+            normalized.append({
+                'sector': sector_name,
+                'change_percentage': round(change_pct, 2),
+                'symbol': symbol,
+            })
+        except Exception as e:
+            logger.debug(f"Sector ETF {symbol} fetch failed: {e}")
+            continue
+
+    if not normalized:
+        logger.warning("Sector performance: all yfinance calls failed")
+        _cache_set(cache_key, [], ttl=120)
+        return []
+
+    _cache_set(cache_key, normalized, ttl=600)
+    return normalized
 
 def fetch_market_news_real() -> List[Dict[str, Any]]:
     """Fetch general market news from Finnhub if API key present.
