@@ -211,19 +211,8 @@ function showToast(message, type) {
     toast.addEventListener('hidden.bs.toast', () => toast.remove());
 }
 
-// Delegate to global toggleFavorite from base.html
-window.toggleFavorite = function(ticker, btn) {
-    if (!ticker || !btn) return;
-    if (!window.toggleFavorite || typeof window.toggleFavorite !== 'function') return;
-    // call the global helper with button context and toasts
-    window.toggleFavorite(ticker, {
-        button: btn,
-        favoritedText: '<i class="bi bi-star-fill"></i>',
-        unfavoritedText: '<i class="bi bi-star"></i>',
-        onSuccess: (d)=> showToast(d.message || (d.favorited ? `${ticker} lagt til i favoritter` : `${ticker} fjernet fra favoritter`), d.favorited ? 'success' : 'info'),
-        onError: ()=> showToast('Favoritt-handling feilet', 'danger')
-    });
-}
+// window.toggleFavorite is defined globally by portfolio-actions-enhanced.js
+// (loaded right below) and is called directly from button onclick handlers.
 </script>
 
 <!-- Include portfolio actions for favorites functionality -->

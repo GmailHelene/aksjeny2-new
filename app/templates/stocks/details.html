@@ -269,10 +269,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
             favBtn.addEventListener('click', (e)=>{
                 e.preventDefault();
                 favErr.style.display = 'none';
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
                 fetch(`/stocks/api/favorites/toggle/${encodeURIComponent(sym)}`, {
                     method: 'POST',
+                    credentials: 'same-origin',
                     headers: {
+                        'Content-Type': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRFToken': csrfToken
                     },

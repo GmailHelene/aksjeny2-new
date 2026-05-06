@@ -11,35 +11,41 @@
             <p>{{ post.content }}</p>
         </div>
     </div>
-    <a href="{{ url_for('forum.index') }}" class="btn btn-outline-primary">Tilbake til forum</a>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('forum.index') }}" class="btn btn-outline-primary">Tilbake til forum</a>
+        {% if current_user.is_authenticated and (current_user.id == post.author_id or current_user.is_admin) %}
+        <form id="delete-post-form" method="POST" action="{{ url_for('forum.delete_post', post_id=post.id) }}" class="m-0">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-danger" id="delete-post-btn">
+                <i class="bi bi-trash me-1"></i>Slett innlegg
+            </button>
+        </form>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}
 
-    {% block scripts %}
-    {% if current_user.is_authenticated and (current_user.id == post.author_id or current_user.is_admin) %}
-    <form id="delete-post-form" method="POST" action="{{ url_for('forum.delete_post', post_id=post.id) }}" class="mt-3">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn btn-danger" id="delete-post-btn">Slett innlegg</button>
-    </form>
-    <script>
-    document.getElementById('delete-post-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        if (!confirm('Er du sikker på at du vil slette dette innlegget?')) return;
-        fetch(this.action, {
-            method: 'POST',
-            headers: {'X-Requested-With': 'XMLHttpRequest'},
-            body: new FormData(this)
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                window.location.href = '{{ url_for('forum.index') }}';
-            } else {
-                alert('Kunne ikke slette innlegget: ' + (data.error || 'Ukjent feil'));
-            }
-        })
-        .catch(() => alert('Teknisk feil ved sletting.'));
-    });
-    </script>
-    {% endif %}
-    {% endblock %}
+{% block scripts %}
+{% if current_user.is_authenticated and (current_user.id == post.author_id or current_user.is_admin) %}
+<script>
+document.getElementById('delete-post-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (!confirm('Er du sikker på at du vil slette dette innlegget?')) return;
+    fetch(this.action, {
+        method: 'POST',
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+        body: new FormData(this)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = '{{ url_for('forum.index') }}';
+        } else {
+            alert('Kunne ikke slette innlegget: ' + (data.error || 'Ukjent feil'));
+        }
+    })
+    .catch(() => alert('Teknisk feil ved sletting.'));
+});
+</script>
+{% endif %}
+{% endblock %}

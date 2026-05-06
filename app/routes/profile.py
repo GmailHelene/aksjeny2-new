@@ -120,7 +120,7 @@ def profile_page():
             error_message="Det oppstod en teknisk feil under lasting av profilen. Vennligst prøv igjen senere."
         ), 500
 
-@profile.route('/profile/update', methods=['POST'])
+@profile.route('/update', methods=['POST'])
 @login_required
 @unified_access_required
 def update_profile():
@@ -152,7 +152,7 @@ def update_profile():
         
     return redirect(url_for('profile.profile_page'))
 
-@profile.route('/profile/favorites/remove/<symbol>', methods=['POST'])
+@profile.route('/favorites/remove/<symbol>', methods=['POST'])
 @login_required
 @unified_access_required
 def remove_favorite(symbol):
