@@ -1,3 +1,4 @@
+import os
 import requests
 import logging
 import random
@@ -7,7 +8,8 @@ logger = logging.getLogger(__name__)
 
 class FinnhubAPI:
     BASE_URL = "https://finnhub.io/api/v1"
-    API_KEY = "cn8roj1r01qi0ij9lmu0cn8roj1r01qi0ij9lmug"  # Updated to a valid API key
+    # Read from environment — never hardcode secrets in source.
+    API_KEY = os.environ.get('FINNHUB_API_KEY')
 
     def get_sentiment(self, symbol):
         """

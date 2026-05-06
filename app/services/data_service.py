@@ -16,10 +16,12 @@ from .short_interest_service import ShortInterestService
 
 short_interest_service = ShortInterestService()
 
-FINNHUB_API_KEY = os.environ.get('FINNHUB_API_KEY', 'd2nrf11r01qsrqkpq0dgd2nrf11r01qsrqkpq0e0')
-FINNHUB_SECRET = os.environ.get('FINNHUB_SECRET', 'd2nrf11r01qsrqkpq0f0')
+# API keys MUST come from environment (.env or hosting provider).
+# Never hardcode secrets — they end up in git history and compromised.
+FINNHUB_API_KEY = os.environ.get('FINNHUB_API_KEY')
+FINNHUB_SECRET = os.environ.get('FINNHUB_SECRET')
 
-ALPHA_VANTAGE_API_KEY = os.environ.get('ALPHA_VANTAGE_API_KEY', 'J5VTVRL81XIDBR90')
+ALPHA_VANTAGE_API_KEY = os.environ.get('ALPHA_VANTAGE_API_KEY')
 
 # Set up logging
 logger = logging.getLogger(__name__)
