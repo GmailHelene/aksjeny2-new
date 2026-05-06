@@ -346,35 +346,18 @@ class AlertManager:
         return message
         
     def _send_email(self, alert: Alert, user_settings: NotificationSettings, message: str):
-        """Send email notification"""
-        
+        """Send email notification (legacy — prefer price_monitor_service)."""
         if not user_settings.email_enabled or not user_settings.email:
             return
-            
         try:
-            # Email configuration (would be in environment variables)
-            smtp_server = "smtp.gmail.com"
-            smtp_port = 587
-            sender_email = "alerts@aksjeradar.no"
-            sender_password = "app_password"  # App password
-            
-            # Create message
-            msg = MIMEMultipart()
-            msg['From'] = sender_email
-            msg['To'] = user_settings.email
-            msg['Subject'] = f"Trading Alert: {alert.symbol}"
-            
-            msg.attach(MIMEText(message, 'plain'))
-            
-            # Send email
-            context = ssl.create_default_context()
-            with smtplib.SMTP(smtp_server, smtp_port) as server:
-                server.starttls(context=context)
-                server.login(sender_email, sender_password)
-                server.send_message(msg)
-                
-            logging.info(f"Email sent for alert {alert.id}")
-            
+            from app.services.email_service import send_transactional
+            ok = send_transactional(
+                subject=f"Trading Alert: {alert.symbol}",
+                body=message,
+                to_email=user_settings.email,
+            )
+            if ok:
+                logging.info(f"Email sent for alert {alert.id}")
         except Exception as e:
             logging.error(f"Failed to send email for alert {alert.id}: {e}")
             

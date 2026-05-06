@@ -859,27 +859,26 @@ def send_weekly_reports():
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 def send_weekly_email(user, report_data):
-    """Send ukentlig AI-rapport via e-post"""
+    """Send ukentlig AI-rapport via e-post (Brevo HTTP API primary)."""
     try:
-        subject = f"📊 Ukentlig AI-rapport fra Aksjeradar"
-        
-        # Generer HTML-innhold
-        html_content = render_template('email/weekly_report.html', 
-                                     user=user, 
-                                     report=report_data)
-        
-        msg = EmailMessage(
+        from app.services.email_service import send_transactional
+        subject = "📊 Ukentlig AI-rapport fra Aksjeradar"
+        html_content = render_template('email/weekly_report.html',
+                                       user=user,
+                                       report=report_data)
+        ok = send_transactional(
             subject=subject,
-            to=[user.email],
+            body='Se HTML-versjonen av e-posten for full rapport.',
+            to_email=user.email,
             from_email=current_app.config.get('MAIL_DEFAULT_SENDER'),
+            html=html_content,
         )
-        msg.content_subtype = 'html'
-        msg.body = html_content
-        msg.send()  # flask-mailman API
-        current_app.logger.info(f"Ukentlig rapport sendt til {user.email}")
-        
+        if ok:
+            current_app.logger.info(f"Ukentlig rapport sendt til {user.email}")
+        return ok
     except Exception as e:
         current_app.logger.error(f"Feil ved sending av e-post til {user.email}: {e}")
+        return False
 
 @watchlist_bp.route('/delete/<int:id>', methods=['POST'])
 @demo_access

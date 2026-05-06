@@ -127,16 +127,12 @@ class EmailService:
     def send_email(cls, to_email: str, subject: str, template: str, context: dict) -> bool:
         """Generic email sender used by alert workflows.
 
-        In test/CI or when credentials are not configured, this is a no-op that returns True.
+        Uses send_transactional() (Brevo HTTP API → SMTP fallback).
+        Returns True even when SMTP/API is not configured to avoid breaking
+        tests; logs the no-op clearly so production failures are visible.
         """
         try:
-            svc = cls()
-            # If not configured, behave as no-op success to avoid breaking tests/environments
-            if not svc.email_user or not svc.email_password or not svc.smtp_server:
-                print(f"📭 EmailService NOOP send -> to={to_email} subject={subject}")
-                return True
-
-            # Very simple text body using context; template rendering is out-of-scope here
+            # Render simple text body from context (template rendering out of scope)
             text_lines = [
                 f"Subject: {subject}",
                 "",
@@ -152,21 +148,14 @@ class EmailService:
                 pass
             text_body = "\n".join(text_lines)
 
-            msg = MIMEMultipart('alternative')
-            msg['Subject'] = subject
-            msg['From'] = svc.from_email
-            msg['To'] = to_email
-            msg.attach(MIMEText(text_body, 'plain'))
-
-            with smtplib.SMTP(svc.smtp_server, svc.smtp_port) as server:
-                server.starttls()
-                server.login(svc.email_user, svc.email_password)
-                server.send_message(msg)
-
-            print(f"✅ Email sent to {to_email} (subject='{subject}')")
-            return True
+            # Use unified transport
+            return send_transactional(
+                subject=subject,
+                body=text_body,
+                to_email=to_email,
+            )
         except Exception as e:
-            print(f"❌ EmailService.send_email failed: {e}")
+            logger.error(f"EmailService.send_email failed: {e}")
             return False
 
     def send_reset_email(self, to_email, reset_url):

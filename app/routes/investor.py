@@ -144,58 +144,31 @@ def contact():
         return redirect(url_for('investor.index'))
 
 def send_investor_notification(name, email, company, inquiry_type, message, investment_range):
-    """Send notification email about investor inquiry"""
+    """Send notification email about investor inquiry via send_transactional."""
     try:
-        # Email configuration (should be in environment variables)
-        # Unified MAIL_* env names with legacy fallbacks
-        smtp_host = (
-            os.getenv('MAIL_SERVER') or os.getenv('SMTP_HOST') or 'smtp.gmail.com'
-        )
-        smtp_port = int(os.getenv('MAIL_PORT') or os.getenv('SMTP_PORT') or '587')
-        smtp_user = (
-            os.getenv('MAIL_USERNAME') or os.getenv('SMTP_USER') or os.getenv('SMTP_USERNAME')
-        )
-        smtp_pass = (
-            os.getenv('MAIL_PASSWORD') or os.getenv('SMTP_PASS') or os.getenv('SMTP_PASSWORD')
-        )
+        from app.services.email_service import send_transactional
         recipient = os.getenv('INVESTOR_EMAIL', 'contact@aksjeradar.trade')
-        
-        if not all([smtp_user, smtp_pass]):
-            logger.warning("SMTP credentials not configured - investor notification not sent")
-            return
-        
-        # Compose email
-        msg = MIMEMultipart()
-        msg['From'] = smtp_user
-        msg['To'] = recipient
-        msg['Subject'] = f"Aksjeradar - Investor Inquiry: {inquiry_type.title()}"
-        
-        body = f"""
-        Ny investor/oppkjøper forespørsel:
-        
-        Navn: {name}
-        E-post: {email}
-        Selskap: {company or 'Ikke oppgitt'}
-        Type forespørsel: {inquiry_type}
-        Investeringsområde: {investment_range or 'Ikke oppgitt'}
-        
-        Melding:
-        {message}
-        
-        Sendt: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        """
-        
-        msg.attach(MIMEText(body, 'plain', 'utf-8'))
-        
-        # Send email
-        server = smtplib.SMTP(smtp_host, smtp_port)
-        server.starttls()
-        server.login(smtp_user, smtp_pass)
-        server.send_message(msg)
-        server.quit()
-        
-        logger.info(f"Investor notification sent for {name} ({email})")
-        
+        body = f"""Ny investor/oppkjøper forespørsel:
+
+Navn: {name}
+E-post: {email}
+Selskap: {company or 'Ikke oppgitt'}
+Type forespørsel: {inquiry_type}
+Investeringsområde: {investment_range or 'Ikke oppgitt'}
+
+Melding:
+{message}
+
+Sendt: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+"""
+        ok = send_transactional(
+            subject=f"Aksjeradar - Investor Inquiry: {inquiry_type.title()}",
+            body=body,
+            to_email=recipient,
+        )
+        if ok:
+            logger.info(f"Investor notification sent for {name} ({email})")
+        return ok
     except Exception as e:
         logger.error(f"Failed to send investor notification: {e}")
-        # Don't raise exception - this shouldn't block the user flow
+        return False

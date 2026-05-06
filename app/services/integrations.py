@@ -272,16 +272,14 @@ class WeeklyReportService:
             """
             
             html_content = render_template_string(email_template, report_data=report_data)
-            
-            msg = EmailMessage(
+            from app.services.email_service import send_transactional
+            return send_transactional(
                 subject=f"🚀 Din ukentlige AI aksje-rapport - {report_data['date']}",
-                to=[user_email],
+                body='Se HTML-versjonen av e-posten for full rapport.',
+                to_email=user_email,
+                html=html_content,
             )
-            msg.content_subtype = 'html'
-            msg.body = html_content
-            msg.send()  # flask-mailman API
-            return True
-            
+
         except Exception as e:
             logger.error(f"Error sending weekly email report: {e}")
             return False

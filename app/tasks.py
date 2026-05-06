@@ -201,48 +201,38 @@ def send_integration_alert(user_id: int, symbol: str, alert_type: str, data: dic
 
 @celery.task(name='app.tasks.send_email_alert')
 def send_email_alert(email: str, title: str, message: str):
-    """Send email alert"""
+    """Send email alert via send_transactional (Brevo HTTP API primary)."""
     try:
-        from flask_mailman import EmailMessage
-        from app.extensions import mail
-        from flask import current_app
-        
-        # Check if email is configured
-        if not current_app.config.get('MAIL_SERVER') or not current_app.config.get('MAIL_USERNAME') or not current_app.config.get('MAIL_PASSWORD'):
-            logger.warning(f"Email not configured - cannot send alert to {email}")
-            return False
-        
-        # Fix f-string backslash issue by extracting the replace operation
+        from app.services.email_service import send_transactional
+
         message_html = message.replace('\n', '<br>')
-        
-        msg = EmailMessage(
+        html = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: #007bff; color: white; padding: 20px; text-align: center;">
+                <h1>🚨 Aksjeradar Alert</h1>
+            </div>
+            <div style="padding: 20px;">
+                <h2>{title}</h2>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 5px;">
+                    {message_html}
+                </div>
+                <p style="margin-top: 20px; color: #666;">
+                    <small>Dette varselet ble sendt fra Aksjeradar AI. Ikke investeringsrådgivning.</small>
+                </p>
+            </div>
+        </body>
+        </html>
+        """
+        ok = send_transactional(
             subject=f"🚨 Aksjeradar Alert: {title}",
-            recipients=[email],
             body=message,
-            html=f"""
-            <html>
-            <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <div style="background: #007bff; color: white; padding: 20px; text-align: center;">
-                    <h1>🚨 Aksjeradar Alert</h1>
-                </div>
-                <div style="padding: 20px;">
-                    <h2>{title}</h2>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 5px;">
-                        {message_html}
-                    </div>
-                    <p style="margin-top: 20px; color: #666;">
-                        <small>Dette varselet ble sendt fra Aksjeradar AI. Ikke investeringsrådgivning.</small>
-                    </p>
-                </div>
-            </body>
-            </html>
-            """
+            to_email=email,
+            html=html,
         )
-        
-        msg.send()  # flask-mailman API
-        logger.info(f"Email alert sent to {email}")
-        return True
-        
+        if ok:
+            logger.info(f"Email alert sent to {email}")
+        return ok
     except Exception as e:
         logger.error(f"Error sending email alert: {e}")
         return False
