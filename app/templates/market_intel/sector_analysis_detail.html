@@ -58,8 +58,11 @@
                 </div>
                 <div class="card-footer bg-light">
                     <div class="progress">
-                        <div class="progress-bar {% if sector.change_percentage > 0 %}bg-success{% elif sector.change_percentage < 0 %}bg-danger{% else %}bg-secondary{% endif %}" 
-                             style="width: {{ (sector.change_percentage|float * 2 + 50)|max(0)|min(100) }}%">
+                        {% set _bar_w = (sector.change_percentage|float * 2 + 50) %}
+                        {% if _bar_w < 0 %}{% set _bar_w = 0 %}{% endif %}
+                        {% if _bar_w > 100 %}{% set _bar_w = 100 %}{% endif %}
+                        <div class="progress-bar {% if sector.change_percentage > 0 %}bg-success{% elif sector.change_percentage < 0 %}bg-danger{% else %}bg-secondary{% endif %}"
+                             style="width: {{ _bar_w }}%">
                         </div>
                     </div>
                 </div>

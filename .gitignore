@@ -1,1 +1,14 @@
 .venv/
+__pycache__/
+*.pyc
+
+# Local databases / instance dir
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# Local secrets / scripts
+.env
+.env.local
+reset_helene_password.py

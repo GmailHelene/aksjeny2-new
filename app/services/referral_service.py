@@ -63,11 +63,23 @@ class ReferralService:
             
             # Send referral email (include optional personal message)
             email_sent = ReferralService.send_referral_email(referrer, referred_email, referral.referral_code, personal_message)
-            
+
             if not email_sent:
-                # Email failed to send - provide clear error message
-                return False, "Kunne ikke sende invitasjon. E-postsystemet er ikke konfigurert. Prøv igjen senere."
-            
+                # Build manual invite URL the user can share themselves
+                try:
+                    from flask import url_for
+                    invite_url = url_for('main.register', ref=referral.referral_code, _external=True)
+                except Exception:
+                    invite_url = f"https://aksjeradar.trade/register?ref={referral.referral_code}"
+                logger.warning(
+                    f"SMTP not configured — referral row {referral.id} created but email NOT sent. "
+                    f"Manual invite URL: {invite_url}"
+                )
+                return False, (
+                    "E-postutsendelse er ikke konfigurert akkurat nå. "
+                    f"Del denne lenken med vennen din manuelt: {invite_url}"
+                )
+
             return True, "Referral sendt!"
             
         except Exception as e:

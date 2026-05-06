@@ -249,6 +249,9 @@ def settings():
                 alert_settings.email_enabled = settings_data['email_enabled']
                 alert_settings.email_instant = settings_data['email_instant']
                 alert_settings.email_daily_summary = settings_data['email_daily_summary']
+                # language column may not exist in legacy DB schemas — set defensively
+                if hasattr(alert_settings, 'language') and settings_data.get('language'):
+                    alert_settings.language = settings_data['language']
                 db.session.commit()
                 flash('Innstillinger lagret.', 'success')
                 logger.info(f"Alert settings updated successfully for user {current_user.id}")
@@ -284,10 +287,17 @@ def settings():
             settings = type('Settings', (), {
                 'email_enabled': True,
                 'email_instant': True,
-                'email_daily_summary': False
+                'email_daily_summary': False,
+                'language': 'no',
             })()
-        
-        # Add deprecation context for template
+
+        # Always expose a `language` attribute so the template never AttributeError's
+        if not hasattr(settings, 'language'):
+            try:
+                setattr(settings, 'language', 'no')
+            except Exception:
+                pass
+
         deprecation_context = {
             'show_deprecation_notice': True,
             'unified_settings_url': url_for('notifications.user_preferences') if 'notifications.user_preferences' in current_app.view_functions else '#'

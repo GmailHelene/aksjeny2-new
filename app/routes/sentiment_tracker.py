@@ -1,25 +1,17 @@
-from flask import Blueprint, render_template, current_app
-from flask_login import login_required, current_user
+from flask import Blueprint, redirect, url_for
+from flask_login import login_required
 
 sentiment_tracker = Blueprint('sentiment_tracker', __name__)
+
 
 @sentiment_tracker.route('/')
 @login_required
 def sentiment_tracker_page():
-    """Minimal sentiment tracker placeholder page.
+    """Redirect /sentiment/ to the real sentiment view under /analysis.
 
-    Added to resolve BuildError caused by template references to
-    url_for('sentiment_tracker.sentiment_tracker_page'). Replace with
-    real implementation later (market sentiment, social sentiment, etc.).
+    The standalone placeholder previously shown here has been retired per
+    EKTE_ONLY policy ("ekte data eller ingenting"). The canonical sentiment
+    page is `analysis.sentiment`, which uses Finnhub when configured and
+    shows an honest empty state when not.
     """
-    try:
-        # Placeholder context; expand with real data later
-        context = {
-            'title': 'Sentiment Tracker',
-            'description': 'Denne siden viser markeds- og sosialt sentiment (kommer snart).',
-            'user': current_user if current_user.is_authenticated else None
-        }
-        return render_template('sentiment_tracker/index.html', **context)
-    except Exception as e:
-        current_app.logger.error(f"Error rendering sentiment tracker page: {e}")
-        return render_template('sentiment_tracker/index.html', title='Sentiment Tracker', error=True)
+    return redirect(url_for('analysis.sentiment'), code=302)
