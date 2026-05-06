@@ -288,8 +288,44 @@ function showToast(message, type) {
     // Remove after hidden
     toast.addEventListener('hidden.bs.toast', () => toast.remove());
 }
+
+// Self-contained favorite toggle (independent of portfolio-actions-enhanced.js)
+window.toggleFavorite = async function(ticker, btn) {
+    if (!ticker) return;
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    try {
+        if (btn) { btn.disabled = true; }
+        const res = await fetch(`/stocks/api/favorites/toggle/${encodeURIComponent(ticker)}`, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrf,
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.success) {
+            const fav = !!data.favorited;
+            if (btn) {
+                const icon = btn.querySelector('i');
+                if (icon) {
+                    icon.className = fav ? 'bi bi-star-fill' : 'bi bi-star';
+                }
+                btn.title = fav ? 'Fjern fra favoritter' : 'Legg til favoritt';
+            }
+            showToast(fav ? `${ticker} lagt til i favoritter` : `${ticker} fjernet fra favoritter`, 'success');
+        } else {
+            showToast(data.message || data.error || 'Favoritt-handling feilet', 'error');
+        }
+    } catch (e) {
+        console.error('toggleFavorite error', e);
+        showToast('Teknisk feil ved favoritt-handling', 'error');
+    } finally {
+        if (btn) { btn.disabled = false; }
+    }
+};
 </script>
 
-<!-- Include portfolio actions for watchlist functionality -->
 <script src="{{ url_for('static', filename='js/portfolio-actions-enhanced.js') }}"></script>
 {% endblock %}
