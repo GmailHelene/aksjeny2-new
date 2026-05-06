@@ -196,34 +196,19 @@ class ReferralService:
     
     @staticmethod
     def send_referral_email(referrer, referred_email, referral_code, personal_message: Optional[str] = None):
-        """Send referral invitation email with optional personal message"""
+        """Send referral invitation email via the unified send_transactional()
+        helper (Brevo HTTP API primary, SMTP fallback)."""
         try:
-            # Check if mail is configured
-            from flask import current_app
-            import smtplib
-            from email.mime.text import MIMEText
-            from email.mime.multipart import MIMEMultipart
-            
-            # Get mail configuration
-            mail_server = current_app.config.get('MAIL_SERVER')
-            mail_port = current_app.config.get('MAIL_PORT', 587)
-            mail_username = current_app.config.get('MAIL_USERNAME')
-            mail_password = current_app.config.get('MAIL_PASSWORD')
-            mail_use_tls = current_app.config.get('MAIL_USE_TLS', True)
-            
-            if not mail_server or not mail_username or not mail_password:
-                logger.error("Mail server not fully configured - cannot send referral email")
-                logger.error(f"Missing config: MAIL_SERVER={bool(mail_server)}, MAIL_USERNAME={bool(mail_username)}, MAIL_PASSWORD={bool(mail_password)}")
-                return False  # Return False - email could not be sent!
-            
+            from app.services.email_service import send_transactional
+
             subject = f"{referrer.username} inviterer deg til Aksjeradar!"
-            
+
             body = f"""Hei!
 
 {referrer.username} har invitert deg til å bli med på Aksjeradar - Norges smarteste aksjeplattform!
 
 🎯 Få AI-drevet aksjeanalyse og professionelle investeringsverktøy
-📈 Teknisk analyse av alle Oslo Børs og globale aksjer  
+📈 Teknisk analyse av alle Oslo Børs og globale aksjer
 💼 Avanserte porteføljeverkøy
 📊 Sanntids markedsdata og anbefalinger
 
@@ -235,8 +220,7 @@ Når du tegner et årlig abonnement, får {referrer.username} 20% rabatt på sit
 
 Mvh,
 Aksjeradar-teamet"""
-            
-            # Add personal message if provided
+
             if personal_message:
                 personal_message = personal_message.strip()
                 if personal_message:
@@ -245,25 +229,12 @@ Aksjeradar-teamet"""
                         f"— {personal_message}\n\n"
                         + body
                     )
-            
-            # Create message
-            msg = MIMEMultipart()
-            msg['From'] = mail_username
-            msg['To'] = referred_email
-            msg['Subject'] = subject
-            msg.attach(MIMEText(body, 'plain', 'utf-8'))
-            
-            # Send email
-            server = smtplib.SMTP(mail_server, mail_port)
-            if mail_use_tls:
-                server.starttls()
-            server.login(mail_username, mail_password)
-            server.send_message(msg)
-            server.quit()
-            
-            logger.info(f"Referral email sent successfully to {referred_email}")
-            return True
-            
+
+            return send_transactional(
+                subject=subject,
+                body=body,
+                to_email=referred_email,
+            )
         except Exception as e:
             logger.error(f"Error sending referral email to {referred_email}: {e}")
             return False

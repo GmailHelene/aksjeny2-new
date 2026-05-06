@@ -1456,10 +1456,12 @@ def forgot_password():
             serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
             token = serializer.dumps(user.email, salt='password-reset-salt')
             
-            # Send reset email
+            # Send reset email — uses Brevo HTTP API when BREVO_API_KEY is set
+            # (works on Railway/Heroku where outbound SMTP is blocked).
             try:
+                from app.services.email_service import send_transactional
                 reset_url = url_for('main.reset_password', token=token, _external=True)
-                msg = EmailMessage(
+                ok = send_transactional(
                     subject='Tilbakestill passord - Aksjeradar',
                     body=f'''Hei {user.username},
 
@@ -1472,12 +1474,13 @@ Hvis du ikke har bedt om dette, kan du ignorere denne e-posten.
 
 Med vennlig hilsen,
 Aksjeradar-teamet''',
+                    to_email=user.email,
                     from_email=current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@aksjeradar.trade'),
-                    to=[user.email],
                 )
-                # flask-mailman API: msg.send() (not mail.send(msg))
-                msg.send()
-                flash('En e-post med instruksjoner for å tilbakestille passordet har blitt sendt.', 'info')
+                if ok:
+                    flash('En e-post med instruksjoner for å tilbakestille passordet har blitt sendt.', 'info')
+                else:
+                    flash('Kunne ikke sende e-post. Vennligst prøv igjen senere.', 'error')
             except Exception as e:
                 current_app.logger.error(f"Failed to send reset email: {e}")
                 flash('Kunne ikke sende e-post. Vennligst prøv igjen senere.', 'error')
@@ -1590,7 +1593,8 @@ def send_referral():
     referral_link = url_for('main.register', ref=referral_code, _external=True)
     
     try:
-        msg = EmailMessage(
+        from app.services.email_service import send_transactional
+        ok = send_transactional(
             subject=f'{current_user.username} inviterer deg til Aksjeradar',
             body=f'''Hei!
 
@@ -1609,12 +1613,13 @@ Bli med i dag!
 
 Med vennlig hilsen,
 Aksjeradar-teamet''',
+            to_email=email,
             from_email=current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@aksjeradar.trade'),
-            to=[email],
         )
-        # flask-mailman API: msg.send() (not mail.send(msg))
-        msg.send()
-        flash(f'Invitasjon sendt til {email}!', 'success')
+        if ok:
+            flash(f'Invitasjon sendt til {email}!', 'success')
+        else:
+            flash('Kunne ikke sende invitasjon. Vennligst prøv igjen senere.', 'error')
     except Exception as e:
         current_app.logger.error(f"Failed to send referral email: {e}")
         flash('Kunne ikke sende invitasjon. Vennligst prøv igjen senere.', 'error')

@@ -1,7 +1,87 @@
 import smtplib
 import os
+import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+
+import requests
+
+logger = logging.getLogger(__name__)
+
+
+def send_transactional(subject: str, body: str, to_email: str,
+                       from_email: str | None = None,
+                       html: str | None = None) -> bool:
+    """Send a transactional email.
+
+    Tries Brevo's HTTP API first (works through HTTPS — won't be blocked
+    by cloud providers that ban outbound port 587). Falls back to SMTP
+    via the EmailService class if BREVO_API_KEY is not configured.
+
+    Returns True on success, False on failure.
+    """
+    sender = from_email or os.getenv('MAIL_DEFAULT_SENDER') or os.getenv('EMAIL_FROM') \
+        or os.getenv('MAIL_USERNAME') or os.getenv('SMTP_USER') or 'noreply@aksjeradar.trade'
+
+    brevo_key = os.getenv('BREVO_API_KEY')
+    if brevo_key:
+        try:
+            payload = {
+                'sender': {'email': sender},
+                'to': [{'email': to_email}],
+                'subject': subject,
+            }
+            if html:
+                payload['htmlContent'] = html
+                if body:
+                    payload['textContent'] = body
+            else:
+                payload['textContent'] = body
+
+            resp = requests.post(
+                'https://api.brevo.com/v3/smtp/email',
+                json=payload,
+                headers={
+                    'accept': 'application/json',
+                    'api-key': brevo_key,
+                    'content-type': 'application/json',
+                },
+                timeout=15,
+            )
+            if 200 <= resp.status_code < 300:
+                logger.info(f"✅ Brevo API: email sent to {to_email} (subject={subject!r})")
+                return True
+            logger.error(
+                f"❌ Brevo API HTTP {resp.status_code} sending to {to_email}: {resp.text[:300]}"
+            )
+            # Fall through to SMTP attempt
+        except Exception as e:
+            logger.error(f"❌ Brevo API exception sending to {to_email}: {e}")
+            # Fall through
+
+    # SMTP fallback (works locally; blocked on many cloud providers)
+    try:
+        svc = EmailService()
+        if not svc.email_user or not svc.email_password:
+            logger.warning("Email NOT sent: no SMTP credentials and Brevo API also unavailable")
+            return False
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = sender
+        msg['To'] = to_email
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        if html:
+            msg.attach(MIMEText(html, 'html', 'utf-8'))
+        with smtplib.SMTP(svc.smtp_server, svc.smtp_port, timeout=15) as server:
+            server.starttls()
+            server.login(svc.email_user, svc.email_password)
+            server.send_message(msg)
+        logger.info(f"✅ SMTP: email sent to {to_email}")
+        return True
+    except Exception as e:
+        logger.error(f"❌ SMTP send failed to {to_email}: {e}")
+        return False
+
 
 class EmailService:
     def __init__(self):
