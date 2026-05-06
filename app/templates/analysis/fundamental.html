@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% block title %}Fundamental analyse - {{ ticker }}{% endblock %}
 {% block content %}
-{% include 'analysis/_menu.html' %}
-<div class="container">
+<div class="container mt-4">
+    {% include 'analysis/_menu.html' %}
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Fundamental analyse</h1>
         <form method="get" action="{{ url_for('analysis.fundamental') }}" class="d-flex" role="search">
