@@ -5,21 +5,38 @@ from email.mime.multipart import MIMEMultipart
 
 class EmailService:
     def __init__(self):
-        # Railway environment variables (bruk dine spesifikke variabelnavn)
-        self.email_user = os.getenv('EMAIL_USERNAME')  # support@luxushair.com
-        self.email_password = os.getenv('EMAIL_PASSWORD')  # suetozoydejwntii
-        self.smtp_port = int(os.getenv('EMAIL_PORT', '587'))  # 587
-        
-        # Fix: EMAIL_SERVER er satt til imap.gmail.com, men vi trenger SMTP
-        email_server = os.getenv('EMAIL_SERVER', 'imap.gmail.com')
-        # Konverter IMAP til SMTP for Gmail
-        if 'imap.gmail.com' in email_server:
-            self.smtp_server = 'smtp.gmail.com'
-        else:
-            self.smtp_server = email_server.replace('imap', 'smtp')
-        
-        self.from_email = self.email_user
-        
+        # Unified env-var convention: MAIL_* (Flask-Mail standard).
+        # Falls back to legacy EMAIL_*/SMTP_* names so older deployments still work.
+        self.email_user = (
+            os.getenv('MAIL_USERNAME')
+            or os.getenv('EMAIL_USERNAME')
+            or os.getenv('SMTP_USERNAME')
+            or os.getenv('SMTP_USER')
+        )
+        self.email_password = (
+            os.getenv('MAIL_PASSWORD')
+            or os.getenv('EMAIL_PASSWORD')
+            or os.getenv('SMTP_PASSWORD')
+            or os.getenv('SMTP_PASS')
+        )
+        self.smtp_port = int(
+            os.getenv('MAIL_PORT')
+            or os.getenv('EMAIL_PORT')
+            or os.getenv('SMTP_PORT')
+            or '587'
+        )
+        smtp_server_raw = (
+            os.getenv('MAIL_SERVER')
+            or os.getenv('EMAIL_SERVER')
+            or os.getenv('SMTP_SERVER')
+            or os.getenv('SMTP_HOST')
+            or 'smtp.gmail.com'
+        )
+        # Defensive: someone occasionally types imap.* — convert to smtp.*
+        self.smtp_server = smtp_server_raw.replace('imap.', 'smtp.')
+
+        self.from_email = os.getenv('MAIL_DEFAULT_SENDER') or self.email_user
+
         print(f"📧 Email service initialized:")
         print(f"   SMTP Server: {self.smtp_server}")
         print(f"   SMTP Port: {self.smtp_port}")

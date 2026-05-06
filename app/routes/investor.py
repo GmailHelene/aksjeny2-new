@@ -147,10 +147,17 @@ def send_investor_notification(name, email, company, inquiry_type, message, inve
     """Send notification email about investor inquiry"""
     try:
         # Email configuration (should be in environment variables)
-        smtp_host = os.getenv('SMTP_HOST', 'smtp.gmail.com')
-        smtp_port = int(os.getenv('SMTP_PORT', '587'))
-        smtp_user = os.getenv('SMTP_USER')
-        smtp_pass = os.getenv('SMTP_PASS')
+        # Unified MAIL_* env names with legacy fallbacks
+        smtp_host = (
+            os.getenv('MAIL_SERVER') or os.getenv('SMTP_HOST') or 'smtp.gmail.com'
+        )
+        smtp_port = int(os.getenv('MAIL_PORT') or os.getenv('SMTP_PORT') or '587')
+        smtp_user = (
+            os.getenv('MAIL_USERNAME') or os.getenv('SMTP_USER') or os.getenv('SMTP_USERNAME')
+        )
+        smtp_pass = (
+            os.getenv('MAIL_PASSWORD') or os.getenv('SMTP_PASS') or os.getenv('SMTP_PASSWORD')
+        )
         recipient = os.getenv('INVESTOR_EMAIL', 'contact@aksjeradar.trade')
         
         if not all([smtp_user, smtp_pass]):
