@@ -1040,33 +1040,42 @@ def market_overview():
         currency_data = {}
         errors = []
         
-        # Try to get data with timeout protection (cross-platform)
+        # Fetch the four datasets in parallel with a 20-second total budget.
+        # The previous implementation ran them sequentially in one thread with
+        # a 5-second timeout, which routinely tripped because each method can
+        # take 1-3s when fanning out to Finnhub/yfinance. Parallel ThreadPool
+        # cuts wall time to roughly the slowest single call.
         try:
-            import threading
-            import time
-            
+            from concurrent.futures import ThreadPoolExecutor, TimeoutError as _FTimeout
             data_results = {'oslo': {}, 'global': {}, 'crypto': {}, 'currency': {}}
-            
-            def fetch_data_thread():
+
+            def _safe(fn, label):
                 try:
-                    if DataService:
-                        data_results['oslo'] = DataService.get_oslo_bors_overview() or {}
-                        data_results['global'] = DataService.get_global_stocks_overview() or {}
-                        data_results['crypto'] = DataService.get_crypto_overview() or {}
-                        data_results['currency'] = DataService.get_currency_overview() or {}
+                    return fn() or {}
                 except Exception as e:
-                    logger.warning(f"DataService error in thread: {e}")
-            
-            # Start data fetching thread with 5-second timeout
-            data_thread = threading.Thread(target=fetch_data_thread)
-            data_thread.daemon = True
-            data_thread.start()
-            data_thread.join(timeout=5.0)
-            
-            if data_thread.is_alive():
-                logger.warning("⚠️ DataService timeout after 5 seconds - returning partial/empty real data (no synthetic fallback)")
-                errors.append("Tidsavbrudd mot dataservice – viser det som er tilgjengelig.")
-            
+                    logger.warning(f"{label} fetch failed: {e}")
+                    return {}
+
+            if DataService:
+                with ThreadPoolExecutor(max_workers=4) as ex:
+                    futures = {
+                        'oslo':     ex.submit(_safe, DataService.get_oslo_bors_overview, 'oslo'),
+                        'global':   ex.submit(_safe, DataService.get_global_stocks_overview, 'global'),
+                        'crypto':   ex.submit(_safe, DataService.get_crypto_overview, 'crypto'),
+                        'currency': ex.submit(_safe, DataService.get_currency_overview, 'currency'),
+                    }
+                    timed_out = False
+                    for key, fut in futures.items():
+                        try:
+                            data_results[key] = fut.result(timeout=20)
+                        except _FTimeout:
+                            timed_out = True
+                            logger.warning(f"⚠️ {key} fetch timed out after 20s")
+                        except Exception as e:
+                            logger.warning(f"{key} future failed: {e}")
+                    if timed_out:
+                        errors.append("Tidsavbrudd mot dataservice – viser det som er tilgjengelig.")
+
             oslo_data = data_results['oslo']
             global_data = data_results['global']
             crypto_data = data_results['crypto']
