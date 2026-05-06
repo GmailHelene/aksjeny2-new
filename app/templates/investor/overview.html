@@ -35,7 +35,7 @@
       <div class="h-100 p-4 border rounded bg-light">
         <h5 class="fw-semibold mb-3">{{ group.title }}</h5>
         <ul class="list-unstyled small mb-0">
-          {% for item in group.items %}
+          {% for item in group['items'] %}
           <li class="mb-2"><i class="bi bi-check2 text-primary me-1"></i>{{ item }}</li>
           {% endfor %}
         </ul>

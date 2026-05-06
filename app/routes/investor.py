@@ -19,10 +19,11 @@ def index():
     error_message = None
     try:
         total_users = User.query.count()
-        premium_users = User.query.filter(User.subscription_active == True).count()
+        premium_users = User.query.filter(
+            User.subscription_type.in_(['monthly', 'yearly', 'lifetime', 'premium', 'pro'])
+        ).count()
     except Exception as e:
         logger.error(f"Failed fetching investor metrics (DB): {e}")
-        # Graceful degradation: show page with notice; do NOT fabricate numbers
         total_users = None
         premium_users = None
         # Updated wording (original placement before 'Markedsmulighet' was distracting)
@@ -57,7 +58,10 @@ def overview():
     premium_users = None
     try:
         total_users = User.query.count()
-        premium_users = User.query.filter(User.subscription_active == True).count()
+        # subscription_active was renamed/removed; use subscription_type instead
+        premium_users = User.query.filter(
+            User.subscription_type.in_(['monthly', 'yearly', 'lifetime', 'premium', 'pro'])
+        ).count()
     except Exception as e:
         logger.warning(f"Overview metrics degraded: {e}")
 
