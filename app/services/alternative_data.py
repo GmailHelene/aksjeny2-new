@@ -3,6 +3,7 @@ Alternative Financial Data Sources - Replace Yahoo Finance
 Implements multiple data sources with fallbacks to avoid 429 errors
 """
 
+import os
 import requests
 import logging
 import time
@@ -11,6 +12,11 @@ from datetime import datetime, timedelta
 import json
 
 logger = logging.getLogger(__name__)
+
+# Read API keys from environment — never hardcode secrets
+FINNHUB_API_KEY = os.environ.get('FINNHUB_API_KEY') or os.environ.get('FINNHUB_KEY')
+ALPHA_VANTAGE_API_KEY = os.environ.get('ALPHA_VANTAGE_API_KEY')
+TWELVE_DATA_API_KEY = os.environ.get('TWELVE_DATA_API_KEY')
 
 class AlternativeDataService:
     """Alternative data sources for financial data"""
@@ -52,16 +58,17 @@ class AlternativeDataService:
         self.last_request_time[source] = time.time()
     
     def get_stock_data_from_alpha_vantage(self, symbol):
-        """Get stock data from Alpha Vantage (free tier)"""
+        """Get stock data from Alpha Vantage GLOBAL_QUOTE endpoint."""
+        if not ALPHA_VANTAGE_API_KEY:
+            return None
         try:
             self._rate_limit_delay('alpha_vantage')
-            
-            # Alpha Vantage demo endpoint (limited but real data)
-            url = f"https://www.alphavantage.co/query"
+
+            url = "https://www.alphavantage.co/query"
             params = {
                 'function': 'GLOBAL_QUOTE',
                 'symbol': symbol,
-                'apikey': 'demo'
+                'apikey': ALPHA_VANTAGE_API_KEY,
             }
             
             response = self.session.get(url, params=params, timeout=10)
@@ -86,48 +93,53 @@ class AlternativeDataService:
         return None
     
     def get_stock_data_from_finnhub(self, symbol):
-        """Get stock data from Finnhub (free tier)"""
+        """Get stock data from Finnhub /quote endpoint."""
+        if not FINNHUB_API_KEY:
+            return None
         try:
             self._rate_limit_delay('finnhub')
-            
-            # Finnhub free tier endpoint
-            url = f"https://finnhub.io/api/v1/quote"
+
+            url = "https://finnhub.io/api/v1/quote"
             params = {
                 'symbol': symbol,
-                'token': 'demo'  # Free demo token
+                'token': FINNHUB_API_KEY,
             }
-            
+
             response = self.session.get(url, params=params, timeout=10)
-            if response.status_code == 200:
-                data = response.json()
-                
-                if 'c' in data and data['c'] != 0:  # Current price exists
-                    return {
-                        'symbol': symbol,
-                        'last_price': float(data.get('c', 0)),
-                        'change': float(data.get('d', 0)),
-                        'change_percent': float(data.get('dp', 0)),
-                        'high': float(data.get('h', 0)),
-                        'low': float(data.get('l', 0)),
-                        'open': float(data.get('o', 0)),
-                        'volume': 0,  # Not available in free tier
-                        'source': 'Finnhub'
-                    }
+            if response.status_code != 200:
+                logger.warning(f"Finnhub HTTP {response.status_code} for {symbol}")
+                return None
+            data = response.json()
+            current = data.get('c')
+            if not current or float(current) == 0:
+                return None
+            return {
+                'symbol': symbol,
+                'last_price': float(current),
+                'change': float(data.get('d') or 0),
+                'change_percent': float(data.get('dp') or 0),
+                'high': float(data.get('h') or 0),
+                'low': float(data.get('l') or 0),
+                'open': float(data.get('o') or 0),
+                'volume': 0,  # /quote does not include volume
+                'source': 'Finnhub',
+            }
         except Exception as e:
             logger.warning(f"Finnhub failed for {symbol}: {e}")
-        
+
         return None
     
     def get_stock_data_from_twelve_data(self, symbol):
-        """Get stock data from Twelve Data (free tier)"""
+        """Get stock data from Twelve Data /price endpoint."""
+        if not TWELVE_DATA_API_KEY:
+            return None
         try:
             self._rate_limit_delay('twelve_data')
-            
-            # Twelve Data free tier endpoint
-            url = f"https://api.twelvedata.com/price"
+
+            url = "https://api.twelvedata.com/price"
             params = {
                 'symbol': symbol,
-                'apikey': 'demo'
+                'apikey': TWELVE_DATA_API_KEY,
             }
             
             response = self.session.get(url, params=params, timeout=10)
@@ -442,22 +454,29 @@ class AlternativeDataService:
             # 5. Enhanced fallback (only if all fail)
             
             data_sources = []
-            
-            # Always try Yahoo Finance first - it's the most reliable
+
+            # 1) Finnhub /quote first if key configured — fast, reliable,
+            #    works for both US and (some) international tickers.
+            if FINNHUB_API_KEY:
+                data_sources.append(('Finnhub', self.get_stock_data_from_finnhub))
+
+            # 2) Yahoo Finance Direct API as backup
             data_sources.append(('Yahoo Finance Direct API', self.scrape_yahoo_finance))
-            
-            # For Norwegian stocks, also try Oslo Børs
+
+            # 3) Oslo Børs for Norwegian stocks
             if symbol.endswith('.OL'):
                 data_sources.append(('Oslo Børs', self.get_oslo_bors_data))
         except Exception as e:
             logger.error(f"Critical error in get_stock_data setup for {symbol}: {e}")
             return self.get_enhanced_fallback_data(symbol)
-        
+
         try:
-            # For all stocks, try Google Finance
+            # 4) Alpha Vantage as additional fallback if key configured
+            if ALPHA_VANTAGE_API_KEY:
+                data_sources.append(('Alpha Vantage', self.get_stock_data_from_alpha_vantage))
+
+            # 5) Web scraping fallbacks (often blocked)
             data_sources.append(('Google Finance', self.scrape_google_finance))
-            
-            # For US stocks, try MarketWatch
             if not symbol.endswith('.OL'):
                 data_sources.append(('MarketWatch', self.scrape_marketwatch))
             
