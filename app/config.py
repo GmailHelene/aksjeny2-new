@@ -47,13 +47,43 @@ class Config:
     STRIPE_YEARLY_PRICE_ID = os.getenv('STRIPE_YEARLY_PRICE_ID') or 'price_yearly_default_dev'
     STRIPE_LIFETIME_PRICE_ID = os.getenv('STRIPE_LIFETIME_PRICE_ID') or 'price_lifetime_default_dev'
     
-    # Mail configuration
-    MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
-    MAIL_PORT = int(os.getenv('MAIL_PORT', 587))
-    MAIL_USE_TLS = os.getenv('MAIL_USE_TLS', 'True').lower() == 'true'
-    MAIL_USERNAME = os.getenv('MAIL_USERNAME')
-    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
-    MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER') or os.getenv('MAIL_USERNAME')
+    # Mail configuration. Read MAIL_* primarily; fall back to legacy SMTP_*
+    # / EMAIL_* names so existing Railway/.env setups keep working.
+    MAIL_SERVER = (
+        os.getenv('MAIL_SERVER')
+        or os.getenv('SMTP_HOST')
+        or os.getenv('SMTP_SERVER')
+        or os.getenv('EMAIL_SERVER')
+        or 'smtp.gmail.com'
+    )
+    MAIL_PORT = int(
+        os.getenv('MAIL_PORT')
+        or os.getenv('SMTP_PORT')
+        or os.getenv('EMAIL_PORT')
+        or 587
+    )
+    MAIL_USE_TLS = (
+        os.getenv('MAIL_USE_TLS')
+        or os.getenv('SMTP_USE_TLS')
+        or 'True'
+    ).lower() == 'true'
+    MAIL_USERNAME = (
+        os.getenv('MAIL_USERNAME')
+        or os.getenv('SMTP_USER')
+        or os.getenv('SMTP_USERNAME')
+        or os.getenv('EMAIL_USERNAME')
+    )
+    MAIL_PASSWORD = (
+        os.getenv('MAIL_PASSWORD')
+        or os.getenv('SMTP_PASS')
+        or os.getenv('SMTP_PASSWORD')
+        or os.getenv('EMAIL_PASSWORD')
+    )
+    MAIL_DEFAULT_SENDER = (
+        os.getenv('MAIL_DEFAULT_SENDER')
+        or os.getenv('EMAIL_FROM')
+        or MAIL_USERNAME
+    )
     
     # API Keys with safe fallbacks
     OPENAI_API_KEY = os.getenv('OPENAI_API_KEY') or None

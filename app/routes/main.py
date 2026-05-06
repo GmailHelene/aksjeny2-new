@@ -1458,13 +1458,10 @@ def forgot_password():
             
             # Send reset email
             try:
-                msg = EmailMessage(
-                    'Tilbakestill passord - Aksjeradar',
-                    sender=current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@aksjeradar.trade'),
-                    recipients=[user.email]
-                )
                 reset_url = url_for('main.reset_password', token=token, _external=True)
-                msg.body = f'''Hei {user.username},
+                msg = EmailMessage(
+                    subject='Tilbakestill passord - Aksjeradar',
+                    body=f'''Hei {user.username},
 
 Du har bedt om å tilbakestille passordet ditt på Aksjeradar.
 
@@ -1474,8 +1471,10 @@ Klikk på følgende lenke for å tilbakestille passordet:
 Hvis du ikke har bedt om dette, kan du ignorere denne e-posten.
 
 Med vennlig hilsen,
-Aksjeradar-teamet'''
-                
+Aksjeradar-teamet''',
+                    from_email=current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@aksjeradar.trade'),
+                    to=[user.email],
+                )
                 mail.send(msg)
                 flash('En e-post med instruksjoner for å tilbakestille passordet har blitt sendt.', 'info')
             except Exception as e:
@@ -1591,11 +1590,8 @@ def send_referral():
     
     try:
         msg = EmailMessage(
-            f'{current_user.username} inviterer deg til Aksjeradar',
-            sender=current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@aksjeradar.trade'),
-            recipients=[email]
-        )
-        msg.body = f'''Hei!
+            subject=f'{current_user.username} inviterer deg til Aksjeradar',
+            body=f'''Hei!
 
 {current_user.username} har invitert deg til å prøve Aksjeradar - Norges smarteste aksjeplattform.
 
@@ -1611,8 +1607,10 @@ Med Aksjeradar får du:
 Bli med i dag!
 
 Med vennlig hilsen,
-Aksjeradar-teamet'''
-        
+Aksjeradar-teamet''',
+            from_email=current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@aksjeradar.trade'),
+            to=[email],
+        )
         mail.send(msg)
         flash(f'Invitasjon sendt til {email}!', 'success')
     except Exception as e:
