@@ -402,9 +402,12 @@ function initChart(){
     const c=document.getElementById('tradingview_widget_details');
     const l=document.getElementById('chart-loading');
     if(!c) return;
-    if(l) l.style.display='block';
+    // Use the iframe widgetembed directly — simpler, always works, no
+    // dependency on the tv.js dynamic loader which can fail silently.
     const tvSymbol = formatTradingViewSymbol(currentSymbol);
-    loadTradingViewScript(()=>createChart(tvSymbol,c,l));
+    embedFallbackWidget(c, tvSymbol, 'chart');
+    if(l) l.style.display='none';
+    tradingViewLoaded = true;
 }
 
 function createChart(symbol,container,loading){
@@ -442,9 +445,12 @@ function initTechnical(){
     const c=document.getElementById('tradingview_technical_widget');
     const l=document.getElementById('technical-loading');
     if(!c) return;
-    if(l) l.style.display='block';
+    // Iframe widgetembed — direct, reliable. Skip the tv.js loader.
     const tvSymbol = formatTradingViewSymbol(currentSymbol);
-    loadTradingViewScript(()=>createTechnicalWidget(tvSymbol,c,l));
+    embedFallbackWidget(c, tvSymbol, 'technical');
+    if(l) l.style.display='none';
+    technicalWidgetLoaded = true;
+    updateTechnicalSummary();
 }
 
 function createTechnicalWidget(symbol,container,loading){
