@@ -48,15 +48,20 @@ def index():
         try:
             raw_status = price_monitor.get_service_status()
             logger.info(f"Price monitor raw status: {raw_status}")
-            monitoring_active = raw_status.get('status') == 'running'
+            # PriceMonitorService.get_service_status() returns 'monitoring_active'
+            # (boolean), not 'status'. Old code looked for 'status' == 'running'
+            # which always evaluated to False -> 'Inaktiv' i UI.
+            monitoring_active = bool(raw_status.get('monitoring_active', False))
             last_check = raw_status.get('last_check')
             if not last_check or last_check in ['Aldri', 'Ukjent', None]:
                 last_check = 'Aldri sjekket'
+            # Per-user active alert count, not global
+            user_active_count = len([a for a in user_alerts if a.get('is_active', False)])
             service_status = {
                 'monitoring_active': monitoring_active,
                 'last_check': last_check,
-                'total_active_alerts': len([a for a in user_alerts if a.get('is_active', False)]),
-                'check_interval_minutes': raw_status.get('check_interval', 5)
+                'total_active_alerts': user_active_count,
+                'check_interval_minutes': raw_status.get('check_interval_minutes', 5),
             }
             if not monitoring_active:
                 logger.warning("Price monitor service is not active!")

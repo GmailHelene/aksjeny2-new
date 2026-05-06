@@ -1895,49 +1895,78 @@ def ai(ticker=None):
 @analysis.route('/short-analysis/<ticker>')
 @demo_access
 def short_analysis(ticker=None):
-    """Short selling analysis"""
+    """Short selling analysis — uses yfinance .info for real short-interest data."""
     try:
-        # Check for ticker in URL path or GET parameter
         if not ticker:
             ticker = request.args.get('ticker')
-        
-        if ticker:
-            cache_key = f"short_analysis_{ticker}"
-            cached_data = cache.get(cache_key)
-            if cached_data:
-                return cached_data
-            
-            # Mock short analysis data with all required fields
-            short_data = {
-                'ticker': ticker.upper(),
-                'short_interest': {
-                    'current': 12.5,  # Add current field
-                    'percentage': 12.5,
-                    'change': -2.1,  # Add change field for template
-                    'shares_short': 2500000,
-                    'days_to_cover': 3.2,
-                    'trend': 'Increasing'
-                },
-                'analysis': {
-                    'recommendation': 'Avoid shorting',
-                    'risk_level': 'High',
-                    'reasoning': 'Strong fundamentals and positive momentum'
-                },
-                'key_metrics': [
-                    {'metric': 'Borrow rate', 'value': '2.5%'},
-                    {'metric': 'Float shorted', 'value': '12.5%'},
-                    {'metric': 'Short squeeze risk', 'value': 'Medium'}
-                ]
-            }
-            
-            result = render_template('analysis/short_analysis.html', 
-                                   short_data=short_data,
-                                   ticker=ticker)
-            cache.set(cache_key, result, timeout=1800)
-            return result
-        else:
+
+        if not ticker:
             return render_template('analysis/short_analysis_select.html')
+
+        ticker_up = ticker.upper().strip()
+        cache_key = f"short_analysis_{ticker_up}"
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return cached_data
+
+        # Try real short-interest data from yfinance .info
+        short_data = None
+        try:
+            import yfinance as yf
+            info = yf.Ticker(ticker_up).info or {}
+            short_pct = info.get('shortPercentOfFloat')
+            shares_short = info.get('sharesShort')
+            short_ratio = info.get('shortRatio')
+            float_shares = info.get('floatShares')
+            shares_short_prev = info.get('sharesShortPriorMonth')
+
+            # Only build short_data if we got at least the essentials
+            if shares_short or short_pct:
+                pct_value = round(float(short_pct) * 100, 2) if short_pct else None
+                pct_change = None
+                if shares_short and shares_short_prev:
+                    try:
+                        pct_change = round(((shares_short - shares_short_prev) / shares_short_prev) * 100, 2)
+                    except Exception:
+                        pct_change = None
+                trend = 'Increasing' if (pct_change is not None and pct_change > 0) else (
+                    'Decreasing' if (pct_change is not None and pct_change < 0) else 'Stable'
+                )
+                key_metrics = []
+                if pct_value is not None:
+                    key_metrics.append({'metric': 'Float shorted', 'value': f'{pct_value:.2f}%'})
+                if short_ratio:
+                    key_metrics.append({'metric': 'Days to cover', 'value': f'{float(short_ratio):.1f}'})
+                if shares_short:
+                    key_metrics.append({'metric': 'Shares short', 'value': f'{int(shares_short):,}'})
+
+                short_data = {
+                    'ticker': ticker_up,
+                    'short_interest': {
+                        'current': pct_value,
+                        'percentage': pct_value,
+                        'change': pct_change,
+                        'shares_short': shares_short,
+                        'days_to_cover': short_ratio,
+                        'float_shares': float_shares,
+                        'trend': trend,
+                    },
+                    'analysis': None,  # No fabricated narrative — keep honest
+                    'key_metrics': key_metrics,
+                    'source': 'yfinance',
+                }
+        except Exception as yf_err:
+            logger.warning(f"yfinance short-interest lookup failed for {ticker_up}: {yf_err}")
+
+        result = render_template(
+            'analysis/short_analysis.html',
+            short_data=short_data,
+            ticker=ticker_up,
+        )
+        cache.set(cache_key, result, timeout=1800)
+        return result
     except Exception as e:
+        logger.error(f"Error loading short-analysis for {ticker}: {e}")
         flash(f'Feil ved lasting av short-analyse: {str(e)}', 'error')
         return render_template('analysis/short_analysis_select.html')
 
@@ -1974,111 +2003,120 @@ def ai_predictions(ticker=None):
 @analysis.route('/fundamental/', methods=['GET', 'POST'])
 @access_required
 def fundamental():
-    """Fundamental analysis"""
+    """Fundamental analysis — uses yfinance .info for real fundamentals.
+
+    EKTE_ONLY: previously returned hardcoded mock fundamentals (PE 24.5,
+    ROE 18.5 etc. — all fake). Now reads real metrics from yfinance and
+    presents a partial dataset if some fields are missing, rather than
+    fabricating values.
+    """
+    ticker = None
     try:
-        ticker = None
-        
-        # Handle POST requests (form submissions)
         if request.method == 'POST':
             ticker = request.form.get('ticker')
-        # Handle GET requests with query parameter (without symbol in URL)
         else:
             ticker = request.args.get('ticker')
-            
-        if ticker and ticker.strip():
-            ticker = ticker.strip().upper()
-            logger.info(f"Fundamental analysis requested for: {ticker}")
-            
-            # Enhanced mock fundamental analysis data
-            fundamental_data = {
-                'ticker': ticker,
-                'company_name': f"{ticker} Corporation",
-                'longName': f"{ticker} Corporation",  # For template compatibility
-                'sector': 'Technology' if ticker in ['AAPL', 'MSFT', 'GOOGL', 'TSLA'] else 'Energy' if ticker.endswith('.OL') else 'Financial',
-                'industry': 'Software' if ticker in ['AAPL', 'MSFT', 'GOOGL'] else 'Oil & Gas' if ticker.endswith('.OL') else 'Banking',
-                'market_cap': 2.5e12 if ticker == 'AAPL' else 1.2e9,
-                'marketCap': 2.5e12 if ticker == 'AAPL' else 1.2e9,  # Template expects this key
-                'beta': 1.2,  # For template compatibility
-                'revenue': 2.5e11 if ticker == 'AAPL' else 1.5e10,  # Add revenue
-                'revenue_growth': 12.4,
-                'eps_growth': 15.2,
-                'financial_metrics': {
-                    'pe_ratio': 24.5,
-                    'peg_ratio': 1.2,
-                    'price_to_book': 3.8,
-                    'debt_to_equity': 0.65,
-                    'roe': 18.5,
-                    'roa': 12.3,
-                    'current_ratio': 1.8,
-                    'quick_ratio': 1.4,
-                    'profit_margin': 21.2,
-                    'operating_margin': 28.5
-                },
-                'valuation': {
-                    'fair_value': 165.0,
-                    'current_price': 152.0,
-                    'upside_potential': 8.5,
-                    'target_price': 170.0,
-                    'rating': 'BUY',
-                    'analyst_rating': 'Strong Buy',
-                    'price_target_confidence': 'High'
-                },
-                'growth_metrics': {
-                    'revenue_growth_5y': 12.4,
-                    'earnings_growth_5y': 15.2,
-                    'dividend_yield': 2.4,
-                    'dividend_growth_5y': 8.1,
-                    'eps_growth_ttm': 18.7,
-                    'revenue_growth_ttm': 11.3
-                },
-                'financial_health': {
-                    'debt_to_assets': 0.28,
-                    'interest_coverage': 12.5,
-                    'altman_z_score': 3.2,
-                    'piotroski_score': 7,
-                    'financial_strength': 'Strong'
-                },
-                'key_ratios': {
-                    'price_to_sales': 5.8,
-                    'price_to_cash_flow': 18.2,
-                    'enterprise_value_to_ebitda': 15.6,
-                    'book_value_per_share': 4.2
-                },
-                'analysis_summary': {
-                    'strengths': [
-                        'Strong revenue growth',
-                        'Healthy profit margins',
-                        'Low debt levels',
-                        'Consistent dividend payments'
-                    ],
-                    'weaknesses': [
-                        'High valuation multiples',
-                        'Increased competition',
-                        'Market saturation risk'
-                    ],
-                    'recommendation': 'BUY',
-                    'confidence_level': 'High',
-                    'time_horizon': '12 months'
-                }
-            }
-            
-            logger.info(f"Rendering fundamental analysis for {ticker}")
-            result = render_template('analysis/fundamental.html', 
-                                   symbol=ticker,
-                                   ticker=ticker,
-                                   analysis_data=fundamental_data,
-                                   data=fundamental_data,
-                                   stock_info=fundamental_data)
-            return result
-        else:
-            logger.info("Fundamental analysis - no ticker provided")
+
+        if not (ticker and ticker.strip()):
             return render_template('analysis/fundamental_select.html')
-            
+
+        ticker = ticker.strip().upper()
+        logger.info(f"Fundamental analysis requested for: {ticker}")
+
+        info = {}
+        try:
+            import yfinance as yf
+            info = yf.Ticker(ticker).info or {}
+        except Exception as yf_err:
+            logger.warning(f"yfinance .info failed for {ticker}: {yf_err}")
+
+        if not info or not info.get('regularMarketPrice') and not info.get('currentPrice'):
+            return render_template(
+                'analysis/fundamental.html',
+                symbol=ticker,
+                ticker=ticker,
+                analysis_data=None,
+                data=None,
+                stock_info=None,
+                error=f'Vi fant ikke komplette fundamentals for {ticker} akkurat nå.',
+            )
+
+        def _g(k, default=None):
+            v = info.get(k)
+            return v if v not in (None, 'N/A') else default
+
+        fundamental_data = {
+            'ticker': ticker,
+            'company_name': _g('longName') or _g('shortName') or ticker,
+            'longName': _g('longName') or _g('shortName') or ticker,
+            'sector': _g('sector'),
+            'industry': _g('industry'),
+            'market_cap': _g('marketCap'),
+            'marketCap': _g('marketCap'),
+            'beta': _g('beta'),
+            'revenue': _g('totalRevenue'),
+            'revenue_growth': (_g('revenueGrowth') * 100) if _g('revenueGrowth') is not None else None,
+            'eps_growth': (_g('earningsGrowth') * 100) if _g('earningsGrowth') is not None else None,
+            'financial_metrics': {
+                'pe_ratio': _g('trailingPE'),
+                'peg_ratio': _g('pegRatio'),
+                'price_to_book': _g('priceToBook'),
+                'debt_to_equity': _g('debtToEquity'),
+                'roe': (_g('returnOnEquity') * 100) if _g('returnOnEquity') is not None else None,
+                'roa': (_g('returnOnAssets') * 100) if _g('returnOnAssets') is not None else None,
+                'current_ratio': _g('currentRatio'),
+                'quick_ratio': _g('quickRatio'),
+                'profit_margin': (_g('profitMargins') * 100) if _g('profitMargins') is not None else None,
+                'operating_margin': (_g('operatingMargins') * 100) if _g('operatingMargins') is not None else None,
+            },
+            'valuation': {
+                'current_price': _g('currentPrice') or _g('regularMarketPrice'),
+                'target_price': _g('targetMeanPrice'),
+                'fair_value': None,  # No fabricated fair-value model
+                'upside_potential': None,
+                'rating': _g('recommendationKey', '').upper() if _g('recommendationKey') else None,
+                'analyst_rating': _g('recommendationKey', '').replace('_', ' ').title() if _g('recommendationKey') else None,
+                'price_target_confidence': None,
+            },
+            'growth_metrics': {
+                'dividend_yield': (_g('dividendYield') * 100) if _g('dividendYield') is not None else None,
+                'eps_growth_ttm': (_g('earningsQuarterlyGrowth') * 100) if _g('earningsQuarterlyGrowth') is not None else None,
+                'revenue_growth_ttm': (_g('revenueGrowth') * 100) if _g('revenueGrowth') is not None else None,
+            },
+            'key_ratios': {
+                'price_to_sales': _g('priceToSalesTrailing12Months'),
+                'price_to_cash_flow': _g('priceToCashflow'),
+                'enterprise_value_to_ebitda': _g('enterpriseToEbitda'),
+                'book_value_per_share': _g('bookValue'),
+            },
+            'source': 'yfinance',
+            'analysis_summary': None,  # No fabricated "BUY/SELL" narrative
+        }
+
+        # Compute upside_potential if both prices are available
+        cp = fundamental_data['valuation']['current_price']
+        tp = fundamental_data['valuation']['target_price']
+        if cp and tp:
+            try:
+                fundamental_data['valuation']['upside_potential'] = round(((tp / cp) - 1) * 100, 2)
+            except Exception:
+                pass
+
+        return render_template(
+            'analysis/fundamental.html',
+            symbol=ticker,
+            ticker=ticker,
+            analysis_data=fundamental_data,
+            data=fundamental_data,
+            stock_info=fundamental_data,
+        )
     except Exception as e:
         logger.error(f'Error in fundamental analysis for {ticker}: {str(e)}')
         flash(f'Feil ved lasting av fundamental analyse: {str(e)}', 'error')
-        return render_template('analysis/fundamental_select.html', 
-                             error=f"Kunne ikke laste fundamental analyse for {ticker}")
+        return render_template(
+            'analysis/fundamental_select.html',
+            error=f"Kunne ikke laste fundamental analyse for {ticker}",
+        )
 
 @analysis.route('/technical-analysis/<symbol>')
 @access_required
@@ -2425,87 +2463,23 @@ def _legacy_recommendation_full(ticker=None):  # pragma: no cover
                          last_updated=datetime.now())
 
 @analysis.route('/prediction')
-@access_required  
+@access_required
 def prediction():
-    """AI prediction analysis page"""
-    # Demo predictions data
-    predictions_oslo = {
-        'DNB.OL': {
-            'price_prediction': 185.50,
-            'confidence': 78,
-            'trend': 'UP',
-            'data_period': '60 dager',
-            'trend_period': '5-30 dager',
-            'last_price': 175.20,
-            'next_price': 185.50,
-            'change_percent': 5.88,
-            'confidence': 'HIGH'
-        },
-        'EQNR.OL': {
-            'price_prediction': 290.25,
-            'confidence': 82,
-            'trend': 'UP',
-            'data_period': '60 dager', 
-            'trend_period': '5-30 dager',
-            'last_price': 278.40,
-            'next_price': 290.25,
-            'change_percent': 4.26,
-            'confidence': 'HIGH'
-        },
-        'TEL.OL': {
-            'price_prediction': 165.75,
-            'confidence': 75,
-            'trend': 'STABLE',
-            'data_period': '60 dager',
-            'trend_period': '5-30 dager',
-            'last_price': 162.30,
-            'next_price': 165.75,
-            'change_percent': 2.13,
-            'confidence': 'MEDIUM'
-        }
-    }
-    
-    # Demo global predictions data
-    predictions_global = {
-        'AAPL': {
-            'price_prediction': 195.75,
-            'confidence': 85,
-            'trend': 'UP',
-            'data_period': '60 dager',
-            'trend_period': '5-30 dager',
-            'last_price': 185.20,
-            'next_price': 195.75,
-            'change_percent': 5.69,
-            'confidence': 'HIGH'
-        },
-        'TSLA': {
-            'price_prediction': 245.80,
-            'confidence': 79,
-            'trend': 'UP',
-            'data_period': '60 dager', 
-            'trend_period': '5-30 dager',
-            'last_price': 238.45,
-            'next_price': 245.80,
-            'change_percent': 3.08,
-            'confidence': 'MEDIUM'
-        },
-        'MSFT': {
-            'price_prediction': 425.30,
-            'confidence': 88,
-            'trend': 'UP',
-            'data_period': '60 dager',
-            'trend_period': '5-30 dager',
-            'last_price': 415.25,
-            'next_price': 425.30,
-            'change_percent': 2.42,
-            'confidence': 'HIGH'
-        }
-    }
-    
-    return render_template('analysis/prediction.html', 
-                         title='AI Prognoser',
-                         predictions_oslo=predictions_oslo,
-                         predictions_global=predictions_global)
+    """AI prediction analysis page.
+
+    EKTE_ONLY policy: vi har ingen produserende ML-modell for prisprognoser.
+    Tidligere returnerte ruten hardkodet 'demo'-prediksjoner med fiktive
+    kursmål og confidence-tall — det bryter EKTE_ONLY. Vi returnerer derfor
+    tomme dicts og lar templatet vise et ærlig 'Ingen prediksjoner
+    tilgjengelig'-tomstate.
+    """
+    return render_template(
+        'analysis/prediction.html',
+        title='AI Prognoser',
+        predictions_oslo={},
+        predictions_global={},
+        notice='Reelle AI-prediksjoner er ikke aktive. Funksjonen kommer når en validert ML-modell er på plass.',
+    )
 
 @analysis.route('/currency-overview')
 @premium_required
