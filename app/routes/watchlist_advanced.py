@@ -870,12 +870,12 @@ def send_weekly_email(user, report_data):
         
         msg = EmailMessage(
             subject=subject,
-            recipients=[user.email],
-            html=html_content,
-            sender=current_app.config.get('MAIL_DEFAULT_SENDER')
+            to=[user.email],
+            from_email=current_app.config.get('MAIL_DEFAULT_SENDER'),
         )
-        
-        mail.send(msg)
+        msg.content_subtype = 'html'
+        msg.body = html_content
+        msg.send()  # flask-mailman API
         current_app.logger.info(f"Ukentlig rapport sendt til {user.email}")
         
     except Exception as e:

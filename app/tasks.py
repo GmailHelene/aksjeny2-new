@@ -239,7 +239,7 @@ def send_email_alert(email: str, title: str, message: str):
             """
         )
         
-        mail.send(msg)
+        msg.send()  # flask-mailman API
         logger.info(f"Email alert sent to {email}")
         return True
         

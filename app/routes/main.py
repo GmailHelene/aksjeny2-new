@@ -1475,7 +1475,8 @@ Aksjeradar-teamet''',
                     from_email=current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@aksjeradar.trade'),
                     to=[user.email],
                 )
-                mail.send(msg)
+                # flask-mailman API: msg.send() (not mail.send(msg))
+                msg.send()
                 flash('En e-post med instruksjoner for å tilbakestille passordet har blitt sendt.', 'info')
             except Exception as e:
                 current_app.logger.error(f"Failed to send reset email: {e}")
@@ -1611,7 +1612,8 @@ Aksjeradar-teamet''',
             from_email=current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@aksjeradar.trade'),
             to=[email],
         )
-        mail.send(msg)
+        # flask-mailman API: msg.send() (not mail.send(msg))
+        msg.send()
         flash(f'Invitasjon sendt til {email}!', 'success')
     except Exception as e:
         current_app.logger.error(f"Failed to send referral email: {e}")

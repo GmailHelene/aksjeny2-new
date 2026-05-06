@@ -275,11 +275,11 @@ class WeeklyReportService:
             
             msg = EmailMessage(
                 subject=f"🚀 Din ukentlige AI aksje-rapport - {report_data['date']}",
-                recipients=[user_email],
-                html=html_content
+                to=[user_email],
             )
-            
-            mail.send(msg)
+            msg.content_subtype = 'html'
+            msg.body = html_content
+            msg.send()  # flask-mailman API
             return True
             
         except Exception as e:
