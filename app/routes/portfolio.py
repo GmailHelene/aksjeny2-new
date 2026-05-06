@@ -179,8 +179,16 @@ def portfolio_overview():
             current_app.logger.info(f"No portfolios found for user {current_user.id}")
             return render_template('portfolio/index.html', **context)
         
-        # Get the first portfolio to display (or could be selected portfolio)
+        # Pick portfolio from ?portfolio_id= if provided and owned by user, else first
         primary_portfolio = user_portfolios[0]
+        try:
+            requested_id = request.args.get('portfolio_id', type=int)
+            if requested_id:
+                match = next((p for p in user_portfolios if p.id == requested_id), None)
+                if match:
+                    primary_portfolio = match
+        except Exception as sel_err:
+            current_app.logger.debug(f"portfolio_id selection skipped: {sel_err}")
         current_app.logger.info(f"Using portfolio {primary_portfolio.id} as primary")
         
         # Get stocks in the primary portfolio

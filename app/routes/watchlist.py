@@ -9,7 +9,7 @@ import re
 
 watchlist = Blueprint('watchlist', __name__, url_prefix='/watchlist')
 
-_TICKER_RE = re.compile(r'^[A-Z0-9][A-Z0-9\.-]{0,19}$')
+_TICKER_RE = re.compile(r'^[\^A-Z0-9][A-Z0-9\.\-/=]{0,19}$')
 
 def _valid_symbol(symbol: str) -> bool:
     if not symbol:

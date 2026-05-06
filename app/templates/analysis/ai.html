@@ -104,15 +104,15 @@
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-sm-6">
-                                            <p><strong>Navn:</strong> {{ analysis.name or 'N/A' }}</p>
-                                            <p><strong>Nåværende pris:</strong> 
-                                                <span class="h5 {% if analysis.change_percent and analysis.change_percent >= 0 %}text-success{% else %}text-danger{% endif %}">
-                                                    {% if analysis.current_price is not none %}{{ "%.2f"|format(analysis.current_price) }}{% else %}N/A{% endif %}
+                                            <p><strong>Navn:</strong> {{ analysis.get('name') or 'N/A' }}</p>
+                                            <p><strong>Nåværende pris:</strong>
+                                                <span class="h5 {% if analysis.get('change_percent') and analysis.get('change_percent') >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                                    {% if analysis.get('current_price') is not none %}{{ "%.2f"|format(analysis.get('current_price')) }}{% else %}N/A{% endif %}
                                                 </span>
                                             </p>
-                                            <p><strong>Endring:</strong> 
-                                                <span class="{% if analysis.change_percent and analysis.change_percent >= 0 %}text-success{% else %}text-danger{% endif %}">
-                                                    {% if analysis.change is not none and analysis.change_percent is not none %}{{ "%.2f"|format(analysis.change) }} ({{ "%.2f"|format(analysis.change_percent) }}%){% else %}N/A{% endif %}
+                                            <p><strong>Endring:</strong>
+                                                <span class="{% if analysis.get('change_percent') and analysis.get('change_percent') >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                                    {% if analysis.get('change') is not none and analysis.get('change_percent') is not none %}{{ "%.2f"|format(analysis.get('change')) }} ({{ "%.2f"|format(analysis.get('change_percent')) }}%){% else %}N/A{% endif %}
                                                 </span>
                                             </p>
                                         </div>

@@ -37,7 +37,7 @@
       <div class="row mb-4">
         <div class="col-md-6">
           <label for="portfolioSelect" class="form-label">Velg portefølje:</label>
-          <select class="form-select" id="portfolioSelect" onchange="switchPortfolio(this.value)">
+          <select class="form-select" id="portfolioSelect" onchange="window.location.href='{{ url_for('portfolio.portfolio_overview') }}?portfolio_id=' + this.value">
             {% for p in portfolios %}
               <option value="{{ p.id }}" {% if portfolio and p.id == portfolio.id %}selected{% endif %}>{{ p.name }}</option>
             {% endfor %}

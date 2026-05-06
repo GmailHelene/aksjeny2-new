@@ -12,7 +12,7 @@ from ..utils.access_control_unified import get_access_level
 
 profile = Blueprint('profile', __name__)
 logger = logging.getLogger(__name__)
-_SYMBOL_PATTERN = re.compile(r'^[A-Z0-9][A-Z0-9\.\-]{0,19}$')
+_SYMBOL_PATTERN = re.compile(r'^[\^A-Z0-9][A-Z0-9\.\-/=]{0,19}$')
 
 @profile.route('/')
 @login_required

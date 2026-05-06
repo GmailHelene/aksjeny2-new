@@ -112,20 +112,9 @@
 <!-- Key Metrics -->
 <section id="metrics" class="py-5">
     <div class="container">
-        {% if metrics_error %}
-        <div class="alert alert-warning text-center" role="alert">
-            {{ metrics_error }}
-        </div>
-        {% endif %}
         <div class="text-center mb-4">
                 <h2 class="fw-bold">Nøkkeltall og Vekstmuligheter</h2>
-                <p class="text-muted">
-                    {% if metrics.total_users is none %}
-                        Ekte brukertall midlertidig utilgjengelig. Viser siden uten tall.
-                    {% else %}
-                        Dokumentert vekst og markedspotensial
-                    {% endif %}
-                </p>
+                <p class="text-muted">Dokumentert vekst og markedspotensial</p>
         </div>
         
         <div class="row g-4 mb-5">
