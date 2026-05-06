@@ -639,49 +639,107 @@ def create_watchlist():
 @watchlist_bp.route('/<int:id>')
 @login_required
 def view_watchlist(id):
-    """Vis spesifikk watchlist"""
+    """Vis spesifikk watchlist med ekte markedsdata."""
     watchlist = Watchlist.query.filter_by(id=id, user_id=current_user.id).first_or_404()
-    
-    # Hent ferske data for alle aksjer
+
     analyzer = WatchlistAnalyzer()
     stock_data = []
-    
+
     for item in watchlist.items:
         try:
             data = analyzer.get_stock_data(item.symbol)
             if data:
-                # Generer alerts for denne aksjen using the new notification settings
-                user_preferences = current_user.get_notification_settings()
-                alerts = analyzer.analyze_alerts(data, user_preferences)
-                data['alerts'] = alerts
+                try:
+                    user_preferences = current_user.get_notification_settings()
+                    data['alerts'] = analyzer.analyze_alerts(data, user_preferences)
+                except Exception:
+                    data['alerts'] = []
+                # Compute change_pct against entry_price if user set it
+                if item.entry_price and data.get('current_price'):
+                    try:
+                        data['vs_entry_pct'] = round(((data['current_price'] / item.entry_price) - 1) * 100, 2)
+                    except Exception:
+                        data['vs_entry_pct'] = None
+                data['item_id'] = item.id
+                data['notes'] = item.notes
+                data['entry_price'] = item.entry_price
+                data['target_price'] = item.target_price
+                data['stop_loss'] = item.stop_loss
                 stock_data.append(data)
             else:
-                # Fallback: show basic info even if data fetch fails
-                fallback_data = {
+                # No fabricated fallback (EKTE_ONLY). Show the row with
+                # null prices and a clear indicator.
+                stock_data.append({
                     'symbol': item.symbol,
                     'name': item.symbol,
-                    'current_price': 100.0 + (hash(item.symbol) % 100),
-                    'price_change': ((hash(item.symbol) % 21) - 10) / 100,
-                    'volume': 1000000 + (hash(item.symbol) % 500000),
-                    'note': 'Demo data - kunne ikke hente ferske priser',
-                    'alerts': []
-                }
-                stock_data.append(fallback_data)
+                    'current_price': None,
+                    'price_change': None,
+                    'volume': None,
+                    'unavailable': True,
+                    'item_id': item.id,
+                    'notes': item.notes,
+                    'entry_price': item.entry_price,
+                    'target_price': item.target_price,
+                    'stop_loss': item.stop_loss,
+                    'alerts': [],
+                })
         except Exception as e:
             current_app.logger.error(f"Error getting data for {item.symbol}: {e}")
-            # Still show the stock with fallback data
-            fallback_data = {
+            stock_data.append({
                 'symbol': item.symbol,
                 'name': item.symbol,
-                'current_price': 100.0,
-                'price_change': 0.0,
-                'volume': 1000000,
-                'note': 'Feil ved henting av data',
-                'alerts': []
-            }
-            stock_data.append(fallback_data)
-    
+                'current_price': None,
+                'price_change': None,
+                'volume': None,
+                'unavailable': True,
+                'item_id': item.id,
+                'notes': item.notes,
+                'entry_price': item.entry_price,
+                'target_price': item.target_price,
+                'stop_loss': item.stop_loss,
+                'alerts': [],
+            })
+
     return render_template('watchlist/view.html', watchlist=watchlist, stock_data=stock_data)
+
+
+@watchlist_bp.route('/<int:id>/rename', methods=['POST'])
+@login_required
+def rename_watchlist(id):
+    """Rename a watchlist (JSON: { name, description })."""
+    watchlist = Watchlist.query.filter_by(id=id, user_id=current_user.id).first()
+    if not watchlist:
+        return jsonify({'success': False, 'error': 'not_found'}), 404
+    data = request.get_json(silent=True) or request.form
+    new_name = (data.get('name') or '').strip()
+    if not new_name or len(new_name) > 100:
+        return jsonify({'success': False, 'error': 'Ugyldig navn (1-100 tegn)'}), 400
+    watchlist.name = new_name
+    new_desc = data.get('description')
+    if new_desc is not None:
+        watchlist.description = new_desc.strip() or None
+    db.session.commit()
+    return jsonify({'success': True, 'watchlist': watchlist.to_dict()})
+
+
+@watchlist_bp.route('/<int:id>/settings', methods=['POST'])
+@login_required
+def update_watchlist_settings(id):
+    """Toggle per-watchlist alert flags."""
+    watchlist = Watchlist.query.filter_by(id=id, user_id=current_user.id).first()
+    if not watchlist:
+        return jsonify({'success': False, 'error': 'not_found'}), 404
+    data = request.get_json(silent=True) or request.form.to_dict()
+    bool_fields = ['price_alerts_enabled', 'technical_alerts_enabled',
+                   'news_alerts_enabled', 'weekly_report_enabled']
+    for f in bool_fields:
+        if f in data:
+            v = data[f]
+            if isinstance(v, str):
+                v = v.lower() in ('true', '1', 'on', 'yes')
+            setattr(watchlist, f, bool(v))
+    db.session.commit()
+    return jsonify({'success': True, 'settings': {f: getattr(watchlist, f) for f in bool_fields}})
 
 @watchlist_bp.route('/<int:id>/add_stock', methods=['POST'])
 @login_required
