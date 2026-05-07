@@ -645,27 +645,48 @@ def view_watchlist(id):
     analyzer = WatchlistAnalyzer()
     stock_data = []
 
+    # Use alternative_data_service which has the full fallback chain
+    # (Finnhub for US, yfinance lib for .OL, multiple scrapers).
+    try:
+        from app.services.alternative_data import alternative_data_service
+    except Exception:
+        alternative_data_service = None
+
     for item in watchlist.items:
         try:
-            data = analyzer.get_stock_data(item.symbol)
-            if data:
+            data = alternative_data_service.get_stock_data(item.symbol) if alternative_data_service else None
+            # alternative_data returns last_price/change_percent — normalize to
+            # the field names the watchlist template expects.
+            if data and data.get('last_price'):
+                normalized = {
+                    'symbol': item.symbol,
+                    'name': data.get('name') or item.symbol,
+                    'current_price': data.get('last_price'),
+                    'price_change': data.get('change'),
+                    'price_change_pct': data.get('change_percent'),
+                    'volume': data.get('volume'),
+                    'high': data.get('high'),
+                    'low': data.get('low'),
+                    'open': data.get('open'),
+                    'source': data.get('source'),
+                    'signal': None,
+                }
                 try:
                     user_preferences = current_user.get_notification_settings()
-                    data['alerts'] = analyzer.analyze_alerts(data, user_preferences)
+                    normalized['alerts'] = analyzer.analyze_alerts(normalized, user_preferences)
                 except Exception:
-                    data['alerts'] = []
-                # Compute change_pct against entry_price if user set it
-                if item.entry_price and data.get('current_price'):
+                    normalized['alerts'] = []
+                if item.entry_price and normalized.get('current_price'):
                     try:
-                        data['vs_entry_pct'] = round(((data['current_price'] / item.entry_price) - 1) * 100, 2)
+                        normalized['vs_entry_pct'] = round(((normalized['current_price'] / item.entry_price) - 1) * 100, 2)
                     except Exception:
-                        data['vs_entry_pct'] = None
-                data['item_id'] = item.id
-                data['notes'] = item.notes
-                data['entry_price'] = item.entry_price
-                data['target_price'] = item.target_price
-                data['stop_loss'] = item.stop_loss
-                stock_data.append(data)
+                        normalized['vs_entry_pct'] = None
+                normalized['item_id'] = item.id
+                normalized['notes'] = item.notes
+                normalized['entry_price'] = item.entry_price
+                normalized['target_price'] = item.target_price
+                normalized['stop_loss'] = item.stop_loss
+                stock_data.append(normalized)
             else:
                 # No fabricated fallback (EKTE_ONLY). Show the row with
                 # null prices and a clear indicator.

@@ -25,7 +25,7 @@
 </div>
 {% endblock %}
 
-{% block scripts %}
+{% block extra_js %}
 {% if current_user.is_authenticated and (current_user.id == post.author_id or current_user.is_admin) %}
 <script>
 document.getElementById('delete-post-form').addEventListener('submit', function(e) {

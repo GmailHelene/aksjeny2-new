@@ -166,7 +166,11 @@
                             {% endif %}
                             <span class="ml-3"><strong>Siste sjekk:</strong>
                                 {% if service_status.last_check == 'Aldri sjekket' or service_status.last_check == 'Ukjent' or not service_status.last_check %}
-                                    <span class="text-muted">Aldri sjekket</span>
+                                  {% if service_status.monitoring_active %}
+                                    <span class="text-info">Pågår – overvåking kjører i bakgrunnen (sjekkes hvert {{ service_status.check_interval_minutes or 5 }}. min)</span>
+                                  {% else %}
+                                    <span class="text-muted">Ikke startet</span>
+                                  {% endif %}
                                 {% else %}
                                     {{ service_status.last_check }}
                                 {% endif %}
