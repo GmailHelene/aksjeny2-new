@@ -112,15 +112,16 @@
                                     <tbody>
                                         {% for trade in trades[:5] %}
                                         <tr>
-                                            <td><small>{{ trade.transaction_date }}</small></td>
-                                            <td><small>{{ trade.reporting_name[:20] }}...</small></td>
+                                            <td><small>{{ trade.transaction_date or '—' }}</small></td>
+                                            <td><small>{{ (trade.reporting_name or '')[:20] }}{% if trade.reporting_name and trade.reporting_name|length > 20 %}…{% endif %}</small></td>
                                             <td>
-                                                <span class="badge {% if 'Purchase' in trade.transaction_type %}bg-success{% else %}bg-danger{% endif %}">
-                                                    {% if 'Purchase' in trade.transaction_type %}KJØP{% else %}SALG{% endif %}
+                                                {% set ttype = trade.transaction_type or '' %}
+                                                <span class="badge {% if 'Purchase' in ttype %}bg-success{% else %}bg-danger{% endif %}">
+                                                    {% if 'Purchase' in ttype %}KJØP{% else %}SALG{% endif %}
                                                 </span>
                                             </td>
-                                            <td><small>{{ "{:,}".format(trade.securities_transacted) }}</small></td>
-                                            <td><small>${{ "%.2f"|format(trade.price) }}</small></td>
+                                            <td><small>{% if trade.securities_transacted %}{{ "{:,}".format(trade.securities_transacted|int) }}{% else %}—{% endif %}</small></td>
+                                            <td><small>{% if trade.price %}${{ "%.2f"|format(trade.price) }}{% else %}—{% endif %}</small></td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -166,17 +167,19 @@
                                 {% if earnings_calendar %}
                                 {% for earning in earnings_calendar %}
                                 <tr>
-                                    <td><strong>{{ earning.symbol }}</strong></td>
-                                    <td>{{ earning.date }}</td>
+                                    <td><strong>{{ earning.symbol or '—' }}</strong></td>
+                                    <td>{{ earning.date or '—' }}</td>
                                     <td>
                                         {% if earning.when == 'bmc' %}
                                             <span class="badge bg-info">Før åpning</span>
-                                        {% else %}
+                                        {% elif earning.when == 'amc' %}
                                             <span class="badge bg-warning">Etter stenging</span>
+                                        {% else %}
+                                            <span class="badge bg-light text-muted">—</span>
                                         {% endif %}
                                     </td>
-                                    <td>{{ "%.2f"|format(earning.eps_estimated) if earning.eps_estimated else '-' }}</td>
-                                    <td>{{ "{:,.0f}".format(earning.revenue_estimated/1000000) }}M kr</td>
+                                    <td>{{ "%.2f"|format(earning.eps_estimated) if earning.eps_estimated else '—' }}</td>
+                                    <td>{% if earning.revenue_estimated %}{{ "{:,.0f}".format(earning.revenue_estimated / 1000000) }}M kr{% else %}—{% endif %}</td>
                                     <td>
                                         {% if earning.eps_actual %}
                                             <span class="badge bg-success">Rapportert</span>
@@ -210,12 +213,13 @@
                 <div class="card-body">
                     <div class="row">
                         {% for sector in sector_performance %}
+                        {% set chg = sector.get('change_percentage') if sector is mapping else (sector.change_percentage|default(None)) %}
                         <div class="col-md-6 col-lg-4 mb-3">
-                            <div class="card h-100 {% if sector.change_percentage > 0 %}border-success{% elif sector.change_percentage < 0 %}border-danger{% else %}border-secondary{% endif %}">
+                            <div class="card h-100 {% if chg and chg > 0 %}border-success{% elif chg and chg < 0 %}border-danger{% else %}border-secondary{% endif %}">
                                 <div class="card-body text-center">
-                                    <h6 class="card-title">{{ sector.sector }}</h6>
-                                    <div class="display-6 {% if sector.change_percentage > 0 %}text-success{% elif sector.change_percentage < 0 %}text-danger{% else %}text-secondary{% endif %}">
-                                        {% if sector.change_percentage > 0 %}+{% endif %}{{ "%.2f"|format(sector.change_percentage) }}%
+                                    <h6 class="card-title">{{ sector.sector if sector is mapping else (sector.sector|default('—')) }}</h6>
+                                    <div class="display-6 {% if chg and chg > 0 %}text-success{% elif chg and chg < 0 %}text-danger{% else %}text-secondary{% endif %}">
+                                        {% if chg is not none %}{% if chg > 0 %}+{% endif %}{{ "%.2f"|format(chg) }}%{% else %}—{% endif %}
                                     </div>
                                 </div>
                             </div>

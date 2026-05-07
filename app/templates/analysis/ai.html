@@ -148,16 +148,16 @@
                                 </div>
                                 <div class="card-body">
                                     <p><strong>Signal:</strong> 
-                                        <span class="badge {% if analysis.signal == 'Buy' %}bg-success{% elif analysis.signal == 'Sell' %}bg-danger{% else %}bg-warning{% endif %}">
-                                            {{ analysis.signal }}
+                                        <span class="badge {% if analysis.get('signal') == 'Buy' %}bg-success{% elif analysis.get('signal') == 'Sell' %}bg-danger{% else %}bg-warning{% endif %}">
+                                            {{ analysis.get('signal') or 'N/A' }}
                                         </span>
                                     </p>
-                                    <p><strong>RSI:</strong> {% if analysis.rsi is not none %}{{ "%.1f"|format(analysis.rsi) }}{% else %}N/A{% endif %}</p>
-                                    {% if analysis.data_source %}
-                                    <p><strong>Datakilde:</strong> {{ analysis.data_source }}</p>
+                                    <p><strong>RSI:</strong> {% if analysis.get('rsi') is not none %}{{ "%.1f"|format(analysis.get('rsi')) }}{% else %}N/A{% endif %}</p>
+                                    {% if analysis.get('data_source') %}
+                                    <p><strong>Datakilde:</strong> {{ analysis.get('data_source') }}</p>
                                     {% endif %}
-                                    {% if analysis.timestamp %}
-                                    <p><strong>Sist oppdatert:</strong> {{ analysis.timestamp[:19] }}</p>
+                                    {% if analysis.get('timestamp') %}
+                                    <p><strong>Sist oppdatert:</strong> {{ analysis.get('timestamp')[:19] }}</p>
                                     {% endif %}
                                 </div>
                             </div>
