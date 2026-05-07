@@ -86,21 +86,8 @@ def index():
                            snapshot=snapshot)
 
 
-@norwegian_intel.route('/social-sentiment')
-@login_required
-def social_sentiment():
-    """Social sentiment — requires paid Twitter/X API; placeholder for now."""
-    return render_template(
-        'norwegian_intel/placeholder.html',
-        title='Sosial sentiment',
-        feature='Sosial sentiment',
-        explanation=(
-            'Sosial sentiment for norske aksjer krever tilgang til Twitter/X '
-            'eller Reddit-API for live-skraping av meldinger. Dette er '
-            'betalt-APIer som ikke er konfigurert. Når en kilde er på plass '
-            'aktiveres analysen automatisk.'
-        ),
-    )
+# /social-sentiment fjernet — krever Twitter/Reddit paid API som ikke
+# er konfigurert. Direkte tilgang gir nå 404.
 
 
 @norwegian_intel.route('/oil-correlation')
@@ -148,22 +135,8 @@ def oil_correlation():
     )
 
 
-@norwegian_intel.route('/government-impact')
-@login_required
-def government_impact():
-    """Government policy impact — needs a structured policy data feed; honest placeholder."""
-    return render_template(
-        'norwegian_intel/placeholder.html',
-        title='Regjeringsanalyse',
-        feature='Regjeringsanalyse',
-        explanation=(
-            'Strukturert analyse av regjeringsvedtaks innvirkning på sektorer '
-            'krever en kuratert policy-database (f.eks. Stortinget API + manuell '
-            'tagging). Vi har ingen slik feed konfigurert. For aktuelle '
-            'beslutninger henviser vi til '
-            'stortinget.no/saker og regjeringen.no/no/aktuelt.'
-        ),
-    )
+# /government-impact fjernet — krever strukturert policy-database
+# som ikke er konfigurert. Direkte tilgang gir nå 404.
 
 
 @norwegian_intel.route('/shipping-intelligence')
