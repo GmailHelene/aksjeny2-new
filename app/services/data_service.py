@@ -3116,23 +3116,27 @@ class DataService:
         try:
             logger.info("🔄 Loading Oslo Børs overview with REAL DATA from get_stock_info")
             
-            # UTVIDET Oslo Børs ticker liste - økt fra 20 til 50+ aktier
+            # Oslo Børs / Euronext Oslo — verified active tickers (curated 2025).
+            # Removed delisted/renamed: STL (now EQNR), FRONTL (now FRO),
+            # SCATEC (now SCATC), SDRL, EMAS, GRONG, JPRO, MEDI, RAHF, ZAL,
+            # SALMON, TECH, ULTI, XEN, CLOUD, DIGI, AEGA, SCANA, THIN, OTELLO,
+            # FJORD, HAVI, LIFECARE — many of these never existed or were
+            # delisted. Kept the ~30 most-traded large/mid caps.
             oslo_tickers = [
-                # Olsenbanden (store selskaper)
-                'EQNR.OL', 'DNB.OL', 'TEL.OL', 'MOWI.OL', 'NHY.OL', 'AKER.OL', 'YAR.OL', 'STL.OL',
-                'SALM.OL', 'NEL.OL', 'REC.OL', 'TGS.OL', 'PGS.OL', 'SCATEC.OL',
-                'AKERBP.OL', 'FRONTL.OL', 'GOGL.OL', 'KOG.OL', 'LSG.OL', 'MPCC.OL',
-                
-                # Tilleggsaktier for økt volum
-                'ORK.OL', 'OTELLO.OL', 'PHO.OL', 'PCIB.OL', 'PROT.OL', 'QFRE.OL',
-                'RAHF.OL', 'SDRL.OL', 'SUBC.OL', 'THIN.OL', 'XXL.OL', 'ZAL.OL',
-                'BOUVET.OL', 'BWE.OL', 'CRAYN.OL', 'DANO.OL', 'ENDUR.OL', 'BAKKA.OL',
-                'EMAS.OL', 'FJORD.OL', 'GRONG.OL', 'HAVI.OL', 'IDEX.OL', 'JPRO.OL',
-                'KID.OL', 'LIFECARE.OL', 'MEDI.OL', 'NORBIT.OL', 'OPERA.OL', 'PARETO.OL',
-                
-                # Flere aktive handlende aksjer
-                'QUANTAF.OL', 'REACH.OL', 'SALMON.OL', 'TECH.OL', 'ULTI.OL', 'VISTIN.OL',
-                'WAWI.OL', 'XEN.OL', 'B2HOLD.OL', 'BONHR.OL', 'CLOUD.OL', 'DIGI.OL'
+                # OBX / largest by mcap
+                'EQNR.OL', 'DNB.OL', 'TEL.OL', 'MOWI.OL', 'NHY.OL', 'AKER.OL',
+                'YAR.OL', 'AKERBP.OL', 'ORK.OL', 'KOG.OL', 'GJF.OL', 'STB.OL',
+                'SUBC.OL', 'TGS.OL', 'BAKKA.OL',
+                # Mid-cap, aktive
+                'SALM.OL', 'LSG.OL', 'NEL.OL', 'REC.OL', 'PGS.OL', 'GOGL.OL',
+                'MPCC.OL', 'BWE.OL', 'WAWI.OL', 'NORBIT.OL', 'OPERA.OL',
+                'PARETO.OL', 'KID.OL', 'BOUVET.OL', 'BONHR.OL', 'CRAYN.OL',
+                'XXL.OL', 'PCIB.OL', 'PHO.OL', 'IDEX.OL', 'B2HOLD.OL',
+                'VISTIN.OL', 'ENDUR.OL', 'BEWI.OL',
+                # Frontline (Oslo-listet)
+                'FRO.OL',
+                # Scatec (riktig kode)
+                'SCATC.OL',
             ]
             
             oslo_stocks = {}

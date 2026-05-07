@@ -1947,11 +1947,10 @@ def favorites_legacy():
 
 @main.route('/watchlist')
 def watchlist_legacy():
-    """Legacy watchlist path placeholder returning a lightweight page or redirect if not logged in."""
+    """Redirect /watchlist (no trailing slash) to the real /watchlist/ page."""
     if not current_user.is_authenticated:
         return redirect(url_for('main.login'))
-    # Provide minimal HTML so status_code==200 satisfies broad test
-    return render_template('simple_watchlist_placeholder.html', title='Watchlist'), 200
+    return redirect('/watchlist/', code=301)
 
 @main.route('/admin/cache')
 def cache_management():

@@ -201,34 +201,76 @@ class AlternativeDataService:
         
         return None
     
+    def get_stock_data_from_yfinance_lib(self, symbol):
+        """Use the yfinance Python library directly.
+
+        Yahoo's chart API now requires session cookies + crumb token; the
+        yfinance library handles that automatically. Works for Oslo Børs
+        (.OL), US, crypto (-USD) and forex (=X).
+        """
+        try:
+            self._rate_limit_delay('yfinance_lib')
+            import yfinance as yf
+            ticker = yf.Ticker(symbol)
+            # 2-day history is enough to compute change + previous close
+            hist = ticker.history(period='2d', interval='1d', auto_adjust=False)
+            if hist is None or len(hist) == 0:
+                return None
+            last = hist.iloc[-1]
+            prev_close = float(hist.iloc[-2]['Close']) if len(hist) >= 2 else None
+            current = float(last['Close']) if last['Close'] else None
+            if not current:
+                return None
+            change = (current - prev_close) if prev_close else 0.0
+            change_pct = ((change / prev_close) * 100) if prev_close else 0.0
+            return {
+                'symbol': symbol,
+                'last_price': round(current, 2),
+                'change': round(change, 2),
+                'change_percent': round(change_pct, 2),
+                'volume': int(last.get('Volume') or 0),
+                'high': round(float(last.get('High') or 0), 2) or None,
+                'low': round(float(last.get('Low') or 0), 2) or None,
+                'open': round(float(last.get('Open') or 0), 2) or None,
+                'source': 'yfinance',
+            }
+        except Exception as e:
+            logger.debug(f"yfinance lib failed for {symbol}: {e}")
+            return None
+
     def scrape_yahoo_finance(self, symbol):
-        """Scrape data directly from Yahoo Finance query API"""
+        """Scrape data directly from Yahoo Finance query API.
+
+        Yahoo now requires cookies/crumb for many requests. We try the
+        chart endpoint first; if that returns 401/429 or empty, the
+        caller will fall back to yfinance lib via the orchestrator.
+        """
         try:
             self._rate_limit_delay('yahoo')
-            
-            # Use Yahoo Finance query API endpoint directly
+
             url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
             headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                'Accept': 'application/json'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+                'Accept': 'application/json',
+                'Accept-Language': 'en-US,en;q=0.9',
             }
-            
+
             response = self.session.get(url, headers=headers, timeout=15)
-            
+
             if response.status_code == 200:
                 data = response.json()
-                
+
                 if 'chart' in data and 'result' in data['chart'] and data['chart']['result']:
                     result = data['chart']['result'][0]
                     meta = result.get('meta', {})
-                    
+
                     current_price = meta.get('regularMarketPrice')
-                    prev_close = meta.get('previousClose')
-                    
+                    prev_close = meta.get('previousClose') or meta.get('chartPreviousClose')
+
                     if current_price and prev_close:
                         change = current_price - prev_close
                         change_percent = (change / prev_close) * 100
-                        
+
                         return {
                             'symbol': symbol,
                             'last_price': round(current_price, 2),
@@ -238,12 +280,11 @@ class AlternativeDataService:
                             'high': meta.get('regularMarketDayHigh'),
                             'low': meta.get('regularMarketDayLow'),
                             'open': meta.get('regularMarketOpen'),
-                            'source': 'Yahoo Finance Direct API'
+                            'source': 'Yahoo Finance Direct API',
                         }
-                        
         except Exception as e:
-            logger.warning(f"Yahoo Finance scraping failed for {symbol}: {e}")
-        
+            logger.debug(f"Yahoo Finance scraping failed for {symbol}: {e}")
+
         return None
     
     def scrape_google_finance(self, symbol):
@@ -465,30 +506,33 @@ class AlternativeDataService:
             # 5. Enhanced fallback (only if all fail)
             
             data_sources = []
+            is_oslo = symbol.upper().endswith('.OL')
 
-            # 1) Finnhub /quote first if key configured — fast, reliable,
-            #    works for both US and (some) international tickers.
-            if FINNHUB_API_KEY:
-                data_sources.append(('Finnhub', self.get_stock_data_from_finnhub))
-
-            # 2) Yahoo Finance Direct API as backup
-            data_sources.append(('Yahoo Finance Direct API', self.scrape_yahoo_finance))
-
-            # 3) Oslo Børs for Norwegian stocks
-            if symbol.endswith('.OL'):
+            # For Oslo Børs: yfinance lib handles cookie/crumb properly,
+            # which the raw Yahoo HTTP API often fails on for .OL.
+            if is_oslo:
+                data_sources.append(('yfinance lib', self.get_stock_data_from_yfinance_lib))
                 data_sources.append(('Oslo Børs', self.get_oslo_bors_data))
+                data_sources.append(('Yahoo Finance Direct API', self.scrape_yahoo_finance))
+            else:
+                # 1) Finnhub /quote first for US tickers (skipped for non-US in
+                #    the function itself).
+                if FINNHUB_API_KEY:
+                    data_sources.append(('Finnhub', self.get_stock_data_from_finnhub))
+                # 2) yfinance lib (handles cookies/crumb)
+                data_sources.append(('yfinance lib', self.get_stock_data_from_yfinance_lib))
+                # 3) Yahoo direct HTTP as backup
+                data_sources.append(('Yahoo Finance Direct API', self.scrape_yahoo_finance))
         except Exception as e:
             logger.error(f"Critical error in get_stock_data setup for {symbol}: {e}")
             return self.get_enhanced_fallback_data(symbol)
 
         try:
-            # 4) Alpha Vantage as additional fallback if key configured
-            if ALPHA_VANTAGE_API_KEY:
+            # Last-resort scrapers (often blocked / unreliable)
+            if ALPHA_VANTAGE_API_KEY and not is_oslo:
                 data_sources.append(('Alpha Vantage', self.get_stock_data_from_alpha_vantage))
-
-            # 5) Web scraping fallbacks (often blocked)
             data_sources.append(('Google Finance', self.scrape_google_finance))
-            if not symbol.endswith('.OL'):
+            if not is_oslo:
                 data_sources.append(('MarketWatch', self.scrape_marketwatch))
             
             # Try each source in order with timeout protection
