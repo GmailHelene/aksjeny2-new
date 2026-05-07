@@ -543,22 +543,65 @@ def recommendations(symbol=None):
             movers.sort(key=lambda x: x[1], reverse=True)
             top = movers[:5]
             featured = []
+
+            # Try yfinance .info for real analyst consensus data
+            try:
+                import yfinance as yf
+                _yf_available = True
+            except Exception:
+                _yf_available = False
+
             for sym, pct, data in top:
                 price = data.get('last_price') or data.get('price') or 0
+                target_price = None
+                rating = None
+                rating_label = None
+                analyst_count = None
+                confidence = None
+                upside = None
+                if _yf_available:
+                    try:
+                        info = yf.Ticker(sym).info or {}
+                        target_price = info.get('targetMeanPrice')
+                        analyst_count = info.get('numberOfAnalystOpinions')
+                        rec_key = info.get('recommendationKey')
+                        if rec_key:
+                            rating = rec_key.upper()
+                            rating_label = rec_key.replace('_', ' ').title()
+                        # recommendationMean: 1.0 (Strong Buy) to 5.0 (Sell)
+                        rec_mean = info.get('recommendationMean')
+                        if rec_mean is not None:
+                            try:
+                                # Convert to a 0-100 confidence-style number
+                                # 1.0 → 100, 3.0 → 50, 5.0 → 0
+                                confidence = max(0, min(100, round((5 - float(rec_mean)) * 25)))
+                            except Exception:
+                                confidence = None
+                        if price and target_price:
+                            try:
+                                upside = round(((float(target_price) / float(price)) - 1) * 100, 1)
+                            except Exception:
+                                upside = None
+                    except Exception as info_err:
+                        logger.debug(f"yfinance .info failed for {sym}: {info_err}")
+
                 featured.append({
                     'symbol': sym,
                     'name': data.get('name', sym),
                     'current_price': price,
-                    'target_price': None,  # Ikke generere fiktivt kursmål
-                    'upside': None,        # Ingen kalkulert oppside
-                    'rating': 'HOLD',      # Nøytral; vi genererer ikke AI rating
-                    'confidence': 0,       # Ingen AI confidence
+                    'target_price': target_price,
+                    'upside': upside,
+                    'rating': rating or 'HOLD',
+                    'rating_label': rating_label,
+                    'confidence': confidence,
                     'risk_level': None,
-                    'timeframe': None,
-                    'reasons': ["Nylig positiv kursbevegelse" if pct > 0 else "Nylig negativ kursbevegelse"],
+                    'timeframe': '12 mnd' if target_price else None,
+                    'reasons': [
+                        "Nylig positiv kursbevegelse" if pct > 0 else "Nylig negativ kursbevegelse"
+                    ],
                     'sector': data.get('sector'),
-                    'analyst_count': None,
-                    'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M')
+                    'analyst_count': analyst_count,
+                    'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M'),
                 })
 
             # Market outlook avledet

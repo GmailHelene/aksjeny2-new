@@ -140,7 +140,7 @@
                                             <td class="text-end">{{ stock.get('rsi','-') }}</td>
                                             <td><span class="badge bg-secondary">{{ stock.get('recommendation','-') }}</span></td>
                                             <td class="text-end">
-                                                <button type="button" class="btn btn-sm btn-outline-success" data-ticker="{{ stock.get('ticker','') }}" onclick="window.toggleFavorite('{{ stock.get('ticker','') }}', {button: this, favoritedText: '<i class=\"bi bi-heart-fill\"></i>', unfavoritedText: '<i class=\"bi bi-heart\"></i>'})"><i class="bi bi-heart"></i></button>
+                                                <button type="button" class="btn btn-sm btn-outline-warning btn-star-favorite" title="Legg til favoritt" data-ticker="{{ stock.get('ticker','') }}" onclick="toggleFavorite('{{ stock.get('ticker','') }}', this)"><i class="bi bi-star"></i> Favoritt</button>
                                                 <a class="btn btn-sm btn-outline-primary" href="{{ url_for('stocks.details', symbol=stock.get('ticker','')) }}" title="Detaljer"><i class="bi bi-box-arrow-up-right"></i></a>
                                             </td>
                                         </tr>
