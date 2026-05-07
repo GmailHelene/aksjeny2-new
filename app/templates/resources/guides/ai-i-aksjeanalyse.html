@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% block title %}{{ guide.title }} | Aksjeradar{% endblock %}
+{% block description %}Hvordan AI-verktøy kan forbedre dine investeringsbeslutninger — fra mønstergjenkjenning til sentiment-analyse. Hva AI er bra til, og hvor du må være kritisk.{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 820px;">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('resources.index') }}">Ressurser</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('resources.guides') }}">Guider</a></li>
+      <li class="breadcrumb-item active">{{ guide.title }}</li>
+    </ol>
+  </nav>
+
+  <article>
+    <header class="mb-4">
+      <h1 class="display-6 fw-bold">{{ guide.title }}</h1>
+      <p class="lead text-muted">{{ guide.description }}</p>
+      <div class="d-flex gap-3 small text-muted">
+        <span><i class="bi bi-bar-chart me-1"></i>{{ guide.difficulty }}</span>
+        <span><i class="bi bi-clock me-1"></i>{{ guide.time_to_read }}</span>
+      </div>
+    </header>
+
+    <h2 class="h4 mt-4">Hva betyr "AI i aksjeanalyse"?</h2>
+    <p>
+      "AI" er et bredt begrep. I aksjekontekst dekker det alt fra enkle
+      regelbaserte algoritmer til store språkmodeller (LLM-er) som GPT, samt
+      maskinlæringsmodeller trent på historiske kursdata.
+    </p>
+    <p>
+      Hovedkategoriene du møter:
+    </p>
+    <ul>
+      <li><strong>Mønstergjenkjenning:</strong> ML-modeller som identifiserer chart-mønstre eller forecaster bevegelser</li>
+      <li><strong>Sentiment-analyse:</strong> NLP som leser tusenvis av nyheter og sosiale medier per dag og rangerer stemning</li>
+      <li><strong>Anomali-deteksjon:</strong> oppdager unormale kursbevegelser eller volumendringer</li>
+      <li><strong>Porteføljeoptimalisering:</strong> matematiske modeller som finner risiko/avkastnings-balanse</li>
+      <li><strong>LLM-assistanse:</strong> ChatGPT-lignende verktøy for å oppsummere rapporter og besvare spørsmål</li>
+    </ul>
+
+    <h2 class="h4 mt-4">Hva AI er bra til</h2>
+
+    <h3 class="h5 mt-3">1. Bearbeide enorme datamengder</h3>
+    <p>
+      Et menneske kan lese kanskje 10–20 årsrapporter på en uke. En AI-modell
+      kan parse 10 000 selskaper på sekunder, hente nøkkeltall og rangere etter
+      kriterier. Bra for screening — finne kandidater du vil undersøke nærmere.
+    </p>
+
+    <h3 class="h5 mt-3">2. Sentiment-overvåkning</h3>
+    <p>
+      Å lese stemningen i 5000 tweets eller nyhetsartikler per dag er umulig
+      manuelt. NLP-modeller scorer enkelt aggregert sentiment per ticker.
+      Brukbart som tidlig advarsel når noe endrer seg.
+    </p>
+
+    <h3 class="h5 mt-3">3. Mønstergjenkjenning i sanntid</h3>
+    <p>
+      ML-modeller kan oppdage chart-mønstre på flere tidsrammer samtidig og
+      varsle om utbrudd raskere enn et menneske kan reagere.
+    </p>
+
+    <h3 class="h5 mt-3">4. Backtesting og scenario-analyse</h3>
+    <p>
+      AI-verktøy gjør det enkelt å teste investeringsstrategier mot historiske
+      data — "hva hvis jeg hadde kjøpt hver gang RSI gikk under 30?" — i løpet
+      av sekunder.
+    </p>
+
+    <h2 class="h4 mt-4">Hvor du må være kritisk</h2>
+
+    <h3 class="h5 mt-3">1. AI predikerer ikke fremtiden</h3>
+    <p>
+      En modell trent på historiske data kan fortelle deg hva som har vært, ikke
+      hva som vil skje. Markeder skifter regimer (lavrente til høyrente, fred til
+      krig, COVID-sjokk osv.) — modellen "vet" ikke om regimskifter før den
+      ser dem i data.
+    </p>
+
+    <h3 class="h5 mt-3">2. Hallusinasjoner i LLM-er</h3>
+    <p>
+      Generative AI-er som ChatGPT kan finne opp tall, sitater, og hele finansielle
+      rapporter som ikke finnes. <strong>Aldri stol blindt på et LLM-output for
+      faktapåstander.</strong> Verifiser alltid mot en pålitelig kilde
+      (årsrapport, finansavis, regulert datatjeneste).
+    </p>
+
+    <h3 class="h5 mt-3">3. "Black box"-problemet</h3>
+    <p>
+      Komplekse ML-modeller kan være vanskelige å forstå. Hvis modellen sier
+      "kjøp", men du ikke vet hvorfor, kan du heller ikke vurdere om logikken
+      gir mening i en ny situasjon.
+    </p>
+
+    <h3 class="h5 mt-3">4. Overfitting</h3>
+    <p>
+      En modell som perfekt passer historiske data, gjør ofte dårlig på fremtidige
+      data. Statistikk-falske kan konstrueres — bare fordi en regel ga gevinst
+      i 2018–2022 betyr det ikke at den vil gi gevinst i 2026+.
+    </p>
+
+    <h3 class="h5 mt-3">5. Markedet adapterer seg</h3>
+    <p>
+      Hvis nok aktører bruker samme AI-modell, blir signalene innpriset. En
+      strategi som fungerte i 2020 kan være verdiløs i 2026 fordi alle kjenner den.
+    </p>
+
+    <h2 class="h4 mt-4">Hvordan integrere AI fornuftig</h2>
+    <ol>
+      <li>
+        <strong>AI som verktøy, ikke beslutter.</strong> Modellen foreslår — du
+        bestemmer. Forstå alltid <em>hvorfor</em> en anbefaling gis.
+      </li>
+      <li>
+        <strong>Triangulér flere kilder.</strong> Hvis AI sier kjøp, sjekk
+        teknisk + fundamentalt + nyhetsbildet før du trykker bestill.
+      </li>
+      <li>
+        <strong>Bruk AI til screening, ikke trade-utløsning.</strong> La modellen
+        finne 20 kandidater, gjør egen analyse på topp 5.
+      </li>
+      <li>
+        <strong>Vær skeptisk til "garanterte" signaler.</strong> Hvis noen selger
+        en AI som lover 30 %+ årlig avkastning, er svaret nesten alltid svindel
+        eller selektivt utvalgte tall.
+      </li>
+      <li>
+        <strong>Posisjonsstørrelse.</strong> Selv en god AI-modell tar feil. Risikér
+        aldri mer enn du kan tape, uansett hvor sikker modellen virker.
+      </li>
+    </ol>
+
+    <h2 class="h4 mt-4">AI i Aksjeradar</h2>
+    <p>
+      Vi følger en streng <strong>EKTE-data-policy</strong>: vi viser bare reelle
+      tall fra pålitelige kilder, og fabrikerer aldri "AI-prediksjoner". Når du
+      ser anbefalinger, kursmål eller signaler i appen, kommer de fra:
+    </p>
+    <ul>
+      <li><a href="{{ url_for('analysis.recommendations') }}">/analysis/recommendations</a> — Wall Street analytiker-konsensus (ikke vår egen prediksjon)</li>
+      <li><a href="{{ url_for('analysis.prediction') }}">/analysis/prediction</a> — analytiker-kursmål (12 mnd) fra dekkende analytikerhus</li>
+      <li><a href="{{ url_for('analysis.sentiment') }}">/analysis/sentiment</a> — sentiment-data fra Finnhub når tilgjengelig</li>
+      <li><a href="{{ url_for('analysis.technical') }}">/analysis/technical</a> — beregnede indikatorer (RSI/MACD/MA) på ekte historiske priser</li>
+    </ul>
+    <p>
+      Vi har for tiden <em>ingen</em> egen ML-modell som lager prisprognoser —
+      og vi sier det ærlig istedenfor å vise oppdiktede tall.
+    </p>
+
+    <hr class="my-4">
+    <p class="text-muted small mb-0">
+      <i class="bi bi-info-circle me-1"></i>
+      AI-verktøy er kraftige, men ikke magiske. De som tjener mest på AI i
+      finans er de som forstår både teknologien og dens begrensninger. Bruk dem
+      som hjelpemiddel — ikke som erstatning for egen vurdering og disiplin.
+    </p>
+  </article>
+
+  <div class="d-flex justify-content-between mt-5">
+    <a href="{{ url_for('resources.guide_detail', slug='innsidehandel') }}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> Forrige: Innsidehandel
+    </a>
+    <a href="{{ url_for('resources.guides') }}" class="btn btn-primary">
+      Til alle guider <i class="bi bi-arrow-right"></i>
+    </a>
+  </div>
+</div>
+{% endblock %}

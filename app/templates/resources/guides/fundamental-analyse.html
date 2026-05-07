@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block title %}{{ guide.title }} | Aksjeradar{% endblock %}
+{% block description %}Fundamental analyse for nybegynnere — lær P/E, P/B, ROE, gjeldsgrad og kontantstrømmer. Hvordan vurdere om en aksje er over- eller underpriset.{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 820px;">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('resources.index') }}">Ressurser</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('resources.guides') }}">Guider</a></li>
+      <li class="breadcrumb-item active">{{ guide.title }}</li>
+    </ol>
+  </nav>
+
+  <article>
+    <header class="mb-4">
+      <h1 class="display-6 fw-bold">{{ guide.title }}</h1>
+      <p class="lead text-muted">{{ guide.description }}</p>
+      <div class="d-flex gap-3 small text-muted">
+        <span><i class="bi bi-bar-chart me-1"></i>{{ guide.difficulty }}</span>
+        <span><i class="bi bi-clock me-1"></i>{{ guide.time_to_read }}</span>
+      </div>
+    </header>
+
+    <h2 class="h4 mt-4">Hva er fundamental analyse?</h2>
+    <p>
+      Fundamental analyse er prosessen med å vurdere et selskaps reelle verdi
+      basert på dets finansielle helse, forretningsmodell og fremtidsutsikter.
+      Målet er å finne ut om aksjen handler over eller under sin "indre verdi".
+    </p>
+    <p>
+      Sentralt i fundamental analyse er å sammenligne aksjens markedspris mot
+      hva selskapet faktisk tjener, eier og leverer.
+    </p>
+
+    <h2 class="h4 mt-4">De viktigste nøkkeltallene</h2>
+
+    <h3 class="h5 mt-3">P/E-ratio (Price-to-Earnings)</h3>
+    <p>
+      <strong>P/E = Aksjekurs / Resultat per aksje (EPS)</strong>
+    </p>
+    <p>
+      Forteller hvor mange ganger årsresultatet du betaler for å eie en aksje.
+      En P/E på 20 betyr at du betaler 20 kr for hver krone selskapet tjener årlig.
+    </p>
+    <ul>
+      <li><strong>P/E under 10:</strong> ofte undervurdert (eller dårlig fremtidsutsikt)</li>
+      <li><strong>P/E 10–20:</strong> "rimelig" for modne selskaper</li>
+      <li><strong>P/E 20–40:</strong> typisk for vekstselskaper</li>
+      <li><strong>P/E over 40:</strong> høy forventning til vekst — risikabelt hvis ikke innfridd</li>
+    </ul>
+    <p class="alert alert-info small">
+      <i class="bi bi-info-circle me-1"></i>
+      Sammenlign P/E med <em>bransjesnittet</em>. En tech-aksje med P/E 30 kan være billig,
+      mens en bank-aksje med P/E 30 kan være dyr.
+    </p>
+
+    <h3 class="h5 mt-3">P/B-ratio (Price-to-Book)</h3>
+    <p>
+      <strong>P/B = Aksjekurs / Bokført egenkapital per aksje</strong>
+    </p>
+    <p>
+      Sammenligner markedsverdi med regnskapsmessig verdi. P/B under 1 betyr at
+      aksjen handles under bokført verdi — kan være billig, eller varsel om
+      problemer. Mest relevant for kapitaltunge bransjer (banker, eiendom, industri).
+    </p>
+
+    <h3 class="h5 mt-3">ROE (Return on Equity)</h3>
+    <p>
+      <strong>ROE = Årets resultat / Egenkapital</strong>
+    </p>
+    <p>
+      Måler hvor effektivt selskapet bruker eiernes penger til å skape overskudd.
+      Norske banker har typisk ROE 10–15 %, mens tech-giganter kan ha 30 %+.
+    </p>
+
+    <h3 class="h5 mt-3">Gjeldsgrad (Debt-to-Equity)</h3>
+    <p>
+      <strong>D/E = Total gjeld / Egenkapital</strong>
+    </p>
+    <p>
+      Forteller hvor mye selskapet finansierer driften med lån vs. egenkapital.
+    </p>
+    <ul>
+      <li><strong>Under 0.5:</strong> lav gjeldseksponering — solid balanse</li>
+      <li><strong>0.5–1.5:</strong> normalt for de fleste bransjer</li>
+      <li><strong>Over 2.0:</strong> høy gjeld — sårbart ved rentehopp eller resesjon</li>
+    </ul>
+
+    <h3 class="h5 mt-3">Utbytteyield (Dividend Yield)</h3>
+    <p>
+      <strong>Yield = Årlig utbytte per aksje / Aksjekurs × 100</strong>
+    </p>
+    <p>
+      Forteller årlig avkastning du får i form av utbytte. Høy yield (5%+) er
+      attraktivt for inntektssøkere, men sjekk alltid at utbyttet er bærekraftig
+      i forhold til selskapets resultat.
+    </p>
+
+    <h3 class="h5 mt-3">Fri kontantstrøm (Free Cash Flow, FCF)</h3>
+    <p>
+      Penger selskapet faktisk har igjen etter løpende drift og investeringer.
+      Mange vil si dette er den ærligste indikatoren — du kan ikke betale utbytte
+      med "papiroverskudd". Et selskap med stabil og voksende FCF er ofte sunnere
+      enn ett med høyere bokført resultat men svak kontantstrøm.
+    </p>
+
+    <h2 class="h4 mt-4">Slik vurderer du en aksje fundamentalt</h2>
+    <ol>
+      <li><strong>Forstå forretningen.</strong> Hva tjener selskapet penger på? Hvem er kundene? Hva er konkurransefortrinnet?</li>
+      <li><strong>Les årsrapporten.</strong> Spesielt resultatregnskap, balanse og kontantstrøm.</li>
+      <li><strong>Beregn nøkkeltall.</strong> P/E, P/B, ROE, D/E, FCF — sammenlign med 5 års historikk og bransje.</li>
+      <li><strong>Vurder vekst.</strong> Vokser inntekter og resultat? Hvor lenge har trenden vart?</li>
+      <li><strong>Sjekk ledelsen og eierstrukturen.</strong> Innsidekjøp er ofte et godt signal — se vår
+        <a href="{{ url_for('resources.guide_detail', slug='innsidehandel') }}">guide om innsidehandel</a>.</li>
+      <li><strong>Sammenlign med konkurrenter.</strong> Aldri vurder et selskap isolert.</li>
+    </ol>
+
+    <h2 class="h4 mt-4">Slik bruker du Aksjeradar til fundamental analyse</h2>
+    <ol>
+      <li>Gå til <a href="{{ url_for('analysis.fundamental') }}">/analysis/fundamental</a> og søk en ticker</li>
+      <li>Du får P/E, P/B, ROE, gjeldsgrad, marginer, utbytteyield, vekst-tall — alle hentet direkte fra yfinance</li>
+      <li>Bruk <a href="{{ url_for('analysis.warren_buffett') }}">Warren Buffett-screen</a> for value-investerings-perspektiv</li>
+      <li>Kombiner med <a href="{{ url_for('resources.guide_detail', slug='teknisk-analyse') }}">teknisk analyse</a> for timing</li>
+    </ol>
+
+    <h2 class="h4 mt-4">Vanlige fallgruver</h2>
+    <ul>
+      <li><strong>"Billig" er ikke alltid bra.</strong> En aksje med P/E 5 kan være dødsdømt. Spør hvorfor markedet priser den lavt.</li>
+      <li><strong>Engangstall.</strong> Et selskap kan ha unormalt høyt resultat ett år (salg av eiendel, etc.). Bruk gjennomsnitt over 3–5 år.</li>
+      <li><strong>Ikke ignorer gjelden.</strong> En selskap med flott P/E kan kollapse ved rentehopp hvis D/E er for høy.</li>
+      <li><strong>Inflasjon påvirker tall.</strong> 10 % vekst i inntekter under 8 % inflasjon = bare 2 % reell vekst.</li>
+    </ul>
+
+    <hr class="my-4">
+    <p class="text-muted small mb-0">
+      <i class="bi bi-info-circle me-1"></i>
+      Fundamental analyse gir et bilde av selskapet i dag, ikke en garanti for
+      morgendagen. Markedet kan holde aksjer overpriset eller underpriset i
+      lengre perioder. Tålmodighet er ofte den viktigste investorferdigheten.
+    </p>
+  </article>
+
+  <div class="d-flex justify-content-between mt-5">
+    <a href="{{ url_for('resources.guide_detail', slug='teknisk-analyse') }}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> Forrige: Teknisk analyse
+    </a>
+    <a href="{{ url_for('resources.guide_detail', slug='innsidehandel') }}" class="btn btn-primary">
+      Neste: Innsidehandel <i class="bi bi-arrow-right"></i>
+    </a>
+  </div>
+</div>
+{% endblock %}

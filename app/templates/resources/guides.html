@@ -111,9 +111,9 @@
                 <p class="text-muted mb-3">{{ guide.description }}</p>
 
                 <div class="d-flex justify-content-between align-items-center">
-                    <button class="btn btn-secondary btn-sm" disabled title="Innhold under utarbeidelse">
-                        <i class="bi bi-hourglass-split"></i> Kommer snart
-                    </button>
+                    <a href="{{ url_for('resources.guide_detail', slug=guide.slug) }}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-play-circle"></i> Start guide
+                    </a>
                 </div>
             </div>
         </div>

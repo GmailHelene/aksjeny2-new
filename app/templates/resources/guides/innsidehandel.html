@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% block title %}{{ guide.title }} | Aksjeradar{% endblock %}
+{% block description %}Hvordan tolke innsidehandel-signaler og bruke informasjon om kjøp og salg fra ledelse, styre og storaksjonærer i din investeringsstrategi.{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 820px;">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('resources.index') }}">Ressurser</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('resources.guides') }}">Guider</a></li>
+      <li class="breadcrumb-item active">{{ guide.title }}</li>
+    </ol>
+  </nav>
+
+  <article>
+    <header class="mb-4">
+      <h1 class="display-6 fw-bold">{{ guide.title }}</h1>
+      <p class="lead text-muted">{{ guide.description }}</p>
+      <div class="d-flex gap-3 small text-muted">
+        <span><i class="bi bi-bar-chart me-1"></i>{{ guide.difficulty }}</span>
+        <span><i class="bi bi-clock me-1"></i>{{ guide.time_to_read }}</span>
+      </div>
+    </header>
+
+    <h2 class="h4 mt-4">Hva er innsidehandel?</h2>
+    <p>
+      Innsidehandel betyr kjøp eller salg av aksjer foretatt av personer med
+      tilgang til ikke-offentlig informasjon om selskapet — typisk ledelse,
+      styremedlemmer, og personer som eier mer enn 5 % av aksjene.
+    </p>
+    <p>
+      <strong>Lovlig innsidehandel</strong> er rapportert handel utført utenfor
+      perioder med kursrelevant informasjon. Det er offentlig informasjon — og
+      ofte et nyttig signal om hva insidere tror om eget selskap.
+      <strong>Ulovlig innsidehandel</strong> (handel basert på upublisert
+      kursrelevant info) er straffbart.
+    </p>
+
+    <h2 class="h4 mt-4">Hvor finner du data?</h2>
+    <ul>
+      <li>
+        <strong>Norge:</strong>
+        <a href="https://www.oslobors.no/markedsaktivitet/#/details/EQNR.OSE/insider" target="_blank">Oslo Børs innsidemeldinger</a>
+        og <a href="https://ssr.finanstilsynet.no/" target="_blank">Finanstilsynets register for short-meldinger og innsidetransaksjoner</a>
+      </li>
+      <li><strong>USA:</strong> SEC Form 4-rapporter (sec.gov/edgar) — alle insider-transaksjoner offentlig innen 2 dager</li>
+      <li><strong>Aksjeradar:</strong>
+        <a href="{{ url_for('market_intel.insider_trading') }}">/market-intel/insider-trading</a>
+        viser aggregerte tall via Finnhub for amerikanske aksjer
+      </li>
+    </ul>
+
+    <h2 class="h4 mt-4">Hvilke signaler skal du se etter?</h2>
+
+    <h3 class="h5 mt-3">Sterke positive signaler</h3>
+    <ul>
+      <li>
+        <strong>Klyngekjøp:</strong> flere insidere kjøper innen kort tid — sterkt signal.
+        Tilfeldig kjøp av én leder kan bare være rebalansering, men 5 ledere som
+        kjøper i samme uke betyr som regel at noe positivt er på gang.
+      </li>
+      <li>
+        <strong>CEO/CFO-kjøp i åpne markedet:</strong> de som har best informasjon kjøper
+        med egne penger. Vekt mer enn styremedlemmers handler.
+      </li>
+      <li>
+        <strong>Store kjøp etter kursfall:</strong> insidere som kjøper på dipp signaliserer
+        at de mener prisen er attraktiv.
+      </li>
+    </ul>
+
+    <h3 class="h5 mt-3">Sterke negative signaler</h3>
+    <ul>
+      <li>
+        <strong>Klyngesalg:</strong> flere insidere selger samtidig — vurder forsiktig
+      </li>
+      <li>
+        <strong>CEO/CFO-salg av store andeler:</strong> spesielt hvis det skjer rett før
+        en svak rapport eller dårlige nyheter
+      </li>
+    </ul>
+
+    <h3 class="h5 mt-3">Signaler som er svakere enn de ser ut</h3>
+    <ul>
+      <li>
+        <strong>Salg gjennom 10b5-1-planer (USA):</strong> rutinemessige forhåndsplanlagte salg.
+        Ikke nødvendigvis dårlig signal — leder selger for å diversifisere.
+      </li>
+      <li>
+        <strong>Innløsning av opsjoner:</strong> ofte tilknyttet skatt eller program-rebalansering,
+        ikke et reelt salgssignal.
+      </li>
+      <li>
+        <strong>Små handler:</strong> 1000 kroner kjøp av en milliardær betyr ingenting.
+        Se på <em>verdien</em>, ikke antall transaksjoner.
+      </li>
+    </ul>
+
+    <h2 class="h4 mt-4">Hvordan tolke statistikk</h2>
+    <p>
+      Akademisk forskning (Lakonishok & Lee 2001, Cohen et al. 2012) viser at
+      innsidekjøp historisk har gitt 5–10 % meravkastning over 12 måneder
+      sammenlignet med markedet. Salg er svakere prediktor — insidere kan ha
+      tusen grunner til å selge (skatt, hus, diversifisering).
+    </p>
+    <p>
+      <strong>Tommelfingerregel:</strong> innsidekjøp er en bullish indikasjon, salg er
+      mer mixed. Et selskap der insidere kjøper jevnt over 6 måneder er ofte mer
+      interessant enn ett uten innsideaktivitet.
+    </p>
+
+    <h2 class="h4 mt-4">Slik bruker du innsidehandel i strategien</h2>
+    <ol>
+      <li>
+        <strong>Bruk det som ett av flere signaler.</strong> Ikke kjøp aksjer kun
+        fordi en CFO kjøpte — kombinér med <a href="{{ url_for('resources.guide_detail', slug='fundamental-analyse') }}">fundamental analyse</a>
+      </li>
+      <li>
+        <strong>Se etter mønstre over tid.</strong> Klyngekjøp i en sektor kan signalere at
+        bransjeproffsene ser bedring komme.
+      </li>
+      <li>
+        <strong>Overvåk dine watchlist-aksjer.</strong> På
+        <a href="{{ url_for('watchlist_advanced.watchlist_index') }}">/watchlist</a>
+        får du varsler når noe skjer på aksjene du følger.
+      </li>
+      <li>
+        <strong>Vær skeptisk til timing.</strong> Insidere har som alle andre tap. Et innsidekjøp
+        garanterer ikke kursoppgang — det betyr bare at noen med bedre kjennskap
+        til selskapet tror tilstrekkelig på det til å bruke egne penger.
+      </li>
+    </ol>
+
+    <h2 class="h4 mt-4">Lov-rammeverket i Norge</h2>
+    <p>
+      Innsidemeldinger reguleres av <strong>verdipapirhandelloven §3-4</strong>.
+      Insidere må melde alle transaksjoner i selskapet de jobber i innen 2 dager.
+      Brudd kan straffes med bøter eller fengsel.
+    </p>
+    <p>
+      Som investor: aldri handle på informasjon du har fått privat fra noen i
+      selskapet før den er offentlig publisert. Det er ikke smart investering —
+      det er kriminell handling.
+    </p>
+
+    <hr class="my-4">
+    <p class="text-muted small mb-0">
+      <i class="bi bi-info-circle me-1"></i>
+      Denne guiden er informasjon, ikke investeringsråd. Innsidedata er ett
+      verktøy blant mange — alltid kombinert med egen analyse og risikoforståelse.
+    </p>
+  </article>
+
+  <div class="d-flex justify-content-between mt-5">
+    <a href="{{ url_for('resources.guide_detail', slug='fundamental-analyse') }}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> Forrige: Fundamental analyse
+    </a>
+    <a href="{{ url_for('resources.guide_detail', slug='ai-i-aksjeanalyse') }}" class="btn btn-primary">
+      Neste: AI i aksjeanalyse <i class="bi bi-arrow-right"></i>
+    </a>
+  </div>
+</div>
+{% endblock %}

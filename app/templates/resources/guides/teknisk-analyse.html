@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% block title %}{{ guide.title }} | Aksjeradar{% endblock %}
+{% block description %}Komplett innføring i teknisk analyse: gleitende gjennomsnitt, RSI, MACD, Bollinger Bands og chart-mønstre — forklart med praktiske eksempler.{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 820px;">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('resources.index') }}">Ressurser</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('resources.guides') }}">Guider</a></li>
+      <li class="breadcrumb-item active">{{ guide.title }}</li>
+    </ol>
+  </nav>
+
+  <article>
+    <header class="mb-4">
+      <h1 class="display-6 fw-bold">{{ guide.title }}</h1>
+      <p class="lead text-muted">{{ guide.description }}</p>
+      <div class="d-flex gap-3 small text-muted">
+        <span><i class="bi bi-bar-chart me-1"></i>{{ guide.difficulty }}</span>
+        <span><i class="bi bi-clock me-1"></i>{{ guide.time_to_read }}</span>
+      </div>
+    </header>
+
+    <h2 class="h4 mt-4">Hva er teknisk analyse?</h2>
+    <p>
+      Teknisk analyse er metoden for å forutsi fremtidige kursbevegelser ved å studere
+      historiske priser og handelsvolum. I motsetning til <a href="{{ url_for('resources.guide_detail', slug='fundamental-analyse') }}">fundamental analyse</a>
+      som ser på selskapets finansielle helse, fokuserer teknisk analyse utelukkende
+      på det som vises i grafene.
+    </p>
+    <p class="mb-4">
+      <strong>Grunnpremisset:</strong> all relevant informasjon er allerede priset inn,
+      og kurser beveger seg i mønstre som har en tendens til å gjenta seg.
+    </p>
+
+    <h2 class="h4 mt-4">De viktigste indikatorene</h2>
+
+    <h3 class="h5 mt-3">Gleitende gjennomsnitt (Moving Averages)</h3>
+    <p>
+      Et gleitende gjennomsnitt jevner ut prisstøy ved å regne snittet over en gitt
+      periode. De vanligste er 50-dagers og 200-dagers MA.
+    </p>
+    <ul>
+      <li><strong>SMA 50 over SMA 200 (Golden Cross):</strong> sterkt bullish-signal</li>
+      <li><strong>SMA 50 under SMA 200 (Death Cross):</strong> sterkt bearish-signal</li>
+      <li><strong>Pris over MA:</strong> oppadgående trend</li>
+      <li><strong>Pris under MA:</strong> nedadgående trend</li>
+    </ul>
+
+    <h3 class="h5 mt-3">RSI (Relative Strength Index)</h3>
+    <p>
+      RSI måler styrken i kursbevegelser på en skala fra 0–100. Beregnes vanligvis
+      over 14 dager.
+    </p>
+    <ul>
+      <li><strong>Over 70:</strong> overkjøpt — kan indikere kommende reaksjon ned</li>
+      <li><strong>Under 30:</strong> oversolgt — kan indikere kommende reaksjon opp</li>
+      <li><strong>40–60:</strong> nøytralt område</li>
+    </ul>
+    <p class="alert alert-warning small">
+      <i class="bi bi-exclamation-triangle me-1"></i>
+      <strong>Viktig:</strong> i sterke trender kan RSI bli liggende på over 70 eller under 30
+      i lange perioder. RSI alene gir aldri fullt signal.
+    </p>
+
+    <h3 class="h5 mt-3">MACD (Moving Average Convergence Divergence)</h3>
+    <p>
+      MACD er forskjellen mellom 12-dagers og 26-dagers eksponentielt gleitende
+      gjennomsnitt. En 9-dagers EMA av MACD-linjen kalles "signal-linjen".
+    </p>
+    <ul>
+      <li><strong>MACD krysser opp gjennom signal-linjen:</strong> bullish</li>
+      <li><strong>MACD krysser ned gjennom signal-linjen:</strong> bearish</li>
+      <li><strong>MACD over null:</strong> oppadgående momentum</li>
+      <li><strong>Divergens (pris og MACD beveger seg motsatt):</strong> tegn på trend-svekkelse</li>
+    </ul>
+
+    <h3 class="h5 mt-3">Bollinger Bands</h3>
+    <p>
+      Bollinger Bands består av tre linjer: en 20-dagers SMA i midten, og to bånd 2
+      standardavvik over og under. Båndene utvider seg ved høy volatilitet og
+      kontraherer ved lav.
+    </p>
+    <ul>
+      <li><strong>Pris ved øvre bånd:</strong> overkjøpt-tendens</li>
+      <li><strong>Pris ved nedre bånd:</strong> oversolgt-tendens</li>
+      <li><strong>"Squeeze" (smale bånd):</strong> ofte forløper for stort utbrudd</li>
+    </ul>
+
+    <h2 class="h4 mt-4">Chart-mønstre</h2>
+    <p>De vanligste mønstrene tradere ser etter:</p>
+    <ul>
+      <li><strong>Hode-og-skuldre:</strong> reverseringssignal — etter en oppgang varsler den fall</li>
+      <li><strong>Dobbel topp / dobbel bunn:</strong> reverseringer ved tydelige nivåer</li>
+      <li><strong>Trekant (ascending/descending/symmetrical):</strong> konsolidering før utbrudd</li>
+      <li><strong>Flagg og vimpler:</strong> kort konsolidering i en sterk trend, ofte fortsettelse</li>
+    </ul>
+
+    <h2 class="h4 mt-4">Slik bruker du Aksjeradar til teknisk analyse</h2>
+    <ol>
+      <li>Gå til <a href="{{ url_for('analysis.technical') }}">/analysis/technical</a> og søk etter en aksje</li>
+      <li>Studér RSI, MACD og 50/200-dagers MA — alle vises som standard</li>
+      <li>Bytt til <a href="{{ url_for('analysis.tradingview') }}">/analysis/tradingview</a> for interaktiv chart med flere tidsrammer</li>
+      <li>Sjekk volum — store volumer ved utbrudd bekrefter signalet</li>
+      <li>Ikke baser handler på én indikator alene — kombinér 2–3 for konfirmasjon</li>
+    </ol>
+
+    <h2 class="h4 mt-4">Vanlige feil å unngå</h2>
+    <ul>
+      <li><strong>Overdreven indikator-bruk:</strong> 10 indikatorer gir ikke 10x bedre signaler — de korrelerer ofte. Velg 3–4 du forstår godt.</li>
+      <li><strong>Ignorere overordnet trend:</strong> trade i retning trenden. "The trend is your friend".</li>
+      <li><strong>Ingen stop-loss:</strong> teknisk analyse handler om sannsynligheter, ikke sikkerhet. Beskytt deg.</li>
+      <li><strong>Tolke mønstre i ettertid:</strong> det er enkelt å se "hode-og-skuldre" overalt på gamle grafer. Disiplin: definer reglene før, ikke etter.</li>
+    </ul>
+
+    <hr class="my-4">
+    <p class="text-muted small mb-0">
+      <i class="bi bi-info-circle me-1"></i>
+      Teknisk analyse er et verktøy for å vurdere sannsynligheter, ikke sikkerhet.
+      Historisk avkastning er ingen garanti for fremtidig avkastning. Gjør alltid
+      egne vurderinger og tilpass posisjonsstørrelsen til din risikotoleranse.
+    </p>
+  </article>
+
+  <div class="d-flex justify-content-between mt-5">
+    <a href="{{ url_for('resources.guides') }}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> Til alle guider
+    </a>
+    <a href="{{ url_for('resources.guide_detail', slug='fundamental-analyse') }}" class="btn btn-primary">
+      Neste: Fundamental analyse <i class="bi bi-arrow-right"></i>
+    </a>
+  </div>
+</div>
+{% endblock %}

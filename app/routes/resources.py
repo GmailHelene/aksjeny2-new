@@ -235,42 +235,55 @@ def tool_comparison():
     return render_template('resources/tool_comparison.html',
                          title="Verktøy-sammenligning")
 
+_GUIDES = [
+    {
+        'slug': 'teknisk-analyse',
+        'title': 'Hvordan bruke teknisk analyse',
+        'description': 'Komplett guide til tekniske indikatorer og chart-mønstre',
+        'category': 'technical',
+        'difficulty': 'Beginner',
+        'time_to_read': '15 min',
+    },
+    {
+        'slug': 'fundamental-analyse',
+        'title': 'Fundamental analyse for nybegynnere',
+        'description': 'Lær å analysere selskapers finansielle data og verdsettelse',
+        'category': 'fundamental',
+        'difficulty': 'Beginner',
+        'time_to_read': '20 min',
+    },
+    {
+        'slug': 'innsidehandel',
+        'title': 'Forstå innsidehandel-signaler',
+        'description': 'Hvordan tolke og bruke innsidehandel i din investeringsstrategi',
+        'category': 'insider',
+        'difficulty': 'Intermediate',
+        'time_to_read': '12 min',
+    },
+    {
+        'slug': 'ai-i-aksjeanalyse',
+        'title': 'AI i aksjeanalyse',
+        'description': 'Hvordan AI-verktøy kan forbedre dine investeringsbeslutninger',
+        'category': 'ai',
+        'difficulty': 'Intermediate',
+        'time_to_read': '18 min',
+    },
+]
+
+
 @resources_bp.route('/guides')
-@access_required 
+@access_required
 def guides():
-    """Show analysis guides and tutorials"""
-    
-    guides = [
-        {
-            'title': 'Hvordan bruke teknisk analyse',
-            'description': 'Komplett guide til tekniske indikatorer og chart-mønstre',
-            'category': 'technical',
-            'difficulty': 'Beginner',
-            'time_to_read': '15 min'
-        },
-        {
-            'title': 'Fundamental analyse for nybegynnere', 
-            'description': 'Lær å analysere selskapers finansielle data og verdsettelse',
-            'category': 'fundamental',
-            'difficulty': 'Beginner',
-            'time_to_read': '20 min'
-        },
-        {
-            'title': 'Forstå innsidehandel-signaler',
-            'description': 'Hvordan tolke og bruke innsidehandel i din investeringsstrategi',
-            'category': 'insider',
-            'difficulty': 'Intermediate',
-            'time_to_read': '12 min'
-        },
-        {
-            'title': 'AI i aksjeanalyse',
-            'description': 'Hvordan AI-verktøy kan forbedre dine investeringsbeslutninger',
-            'category': 'ai',
-            'difficulty': 'Intermediate', 
-            'time_to_read': '18 min'
-        }
-    ]
-    
-    return render_template('resources/guides.html',
-                         guides=guides,
-                         title="Analyse-guider")
+    """Liste over analyse-guider."""
+    return render_template('resources/guides.html', guides=_GUIDES, title="Analyse-guider")
+
+
+@resources_bp.route('/guides/<slug>')
+@access_required
+def guide_detail(slug):
+    """Render en konkret guide-artikkel."""
+    guide = next((g for g in _GUIDES if g['slug'] == slug), None)
+    if not guide:
+        return render_template('errors/404.html'), 404
+    template = f'resources/guides/{slug}.html'
+    return render_template(template, guide=guide, title=guide['title'])
