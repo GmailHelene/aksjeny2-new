@@ -198,30 +198,48 @@ def create_app(config_class=None):
         except Exception as ce_all:
             app.logger.warning(f"db.create_all early bootstrap failed: {ce_all}")
         ensure_required_tables()
-        # Defensive column-size migration: werkzeug's scrypt password hashes
-        # are ~160 chars, but old DB schemas have users.password_hash as
-        # VARCHAR(128). Without this, registration fails with
-        # 'value too long for type character varying(128)'.
+        # Defensive schema migrations for users table.
+        # Postgres only — applied idempotently each startup, no-op when up to date.
         try:
             from sqlalchemy import text as _sa_text
-            with db.engine.connect() as _conn:
-                # Postgres only: ALTER COLUMN type if currently <256
-                if db.engine.dialect.name == 'postgresql':
+            if db.engine.dialect.name == 'postgresql':
+                with db.engine.connect() as _conn:
+                    # 1) password_hash size: scrypt hashes need >=160 chars,
+                    #    old schemas had VARCHAR(128) -> registrering feiler
                     res = _conn.execute(_sa_text(
                         "SELECT character_maximum_length FROM information_schema.columns "
                         "WHERE table_name='users' AND column_name='password_hash'"
                     )).scalar()
                     if res is not None and res < 256:
                         app.logger.info(
-                            f"Migrating users.password_hash VARCHAR({res}) -> VARCHAR(256) "
-                            "to fit scrypt hashes"
+                            f"Migrating users.password_hash VARCHAR({res}) -> VARCHAR(256)"
                         )
                         _conn.execute(_sa_text(
                             "ALTER TABLE users ALTER COLUMN password_hash TYPE VARCHAR(256)"
                         ))
                         _conn.commit()
+
+                    # 2) Notification preferences columns — added later to model
+                    #    but old DBs may mangle dem. ADD IF NOT EXISTS er idempotent.
+                    notification_cols = [
+                        ('email_notifications_enabled', 'BOOLEAN', 'TRUE'),
+                        ('price_alerts_enabled', 'BOOLEAN', 'TRUE'),
+                        ('market_news_enabled', 'BOOLEAN', 'TRUE'),
+                        ('portfolio_updates_enabled', 'BOOLEAN', 'TRUE'),
+                        ('ai_insights_enabled', 'BOOLEAN', 'TRUE'),
+                        ('weekly_reports_enabled', 'BOOLEAN', 'TRUE'),
+                    ]
+                    for col_name, col_type, default_val in notification_cols:
+                        try:
+                            _conn.execute(_sa_text(
+                                f"ALTER TABLE users ADD COLUMN IF NOT EXISTS "
+                                f"{col_name} {col_type} DEFAULT {default_val}"
+                            ))
+                        except Exception as col_err:
+                            app.logger.debug(f"add column {col_name} skipped: {col_err}")
+                    _conn.commit()
         except Exception as _migr_err:
-            app.logger.warning(f"password_hash column migration skipped: {_migr_err}")
+            app.logger.warning(f"users-tabell migrering hoppet over: {_migr_err}")
 
         try:
             inspector_post = _inspect(db.engine)

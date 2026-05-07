@@ -69,16 +69,14 @@ def delete_post(post_id):
 def index():
     """Forum main page with real statistics"""
     try:
-        # Get real forum statistics
-        total_posts = ForumPost.query.count()
-        total_topics = ForumPost.query.count()  # Each post is a topic for now
+        # Skjul soft-deleted innlegg fra alle public lister
+        active_posts = ForumPost.query.filter_by(is_active=True)
+        total_posts = active_posts.count()
+        total_topics = total_posts  # 1:1 for nå
         total_members = User.query.count()
-        
-        # Get recent posts for the main listing
-        posts = ForumPost.query.order_by(ForumPost.created_at.desc()).limit(20).all()
-        
-        # Get recent topics for sidebar
-        recent_topics = ForumPost.query.order_by(ForumPost.created_at.desc()).limit(5).all()
+
+        posts = active_posts.order_by(ForumPost.created_at.desc()).limit(20).all()
+        recent_topics = active_posts.order_by(ForumPost.created_at.desc()).limit(5).all()
         
         # Calculate online users (simplified: users active in last hour)
         one_hour_ago = datetime.now() - timedelta(hours=1)
@@ -493,12 +491,13 @@ def api_search():
 
 @forum.route('/<int:post_id>')
 def view(post_id):
-    post = ForumPost.query.get_or_404(post_id)
+    # Skjul soft-deleted innlegg fra public visning
+    post = ForumPost.query.filter_by(id=post_id, is_active=True).first_or_404()
     return render_template('forum/view.html', post=post)
 
 @forum.route('/api/posts')
 def api_posts():
-    posts = ForumPost.query.order_by(ForumPost.created_at.desc()).all()
+    posts = ForumPost.query.filter_by(is_active=True).order_by(ForumPost.created_at.desc()).all()
     return jsonify([post.to_dict() for post in posts])
 
 @forum.route('/api/post/<int:post_id>')
