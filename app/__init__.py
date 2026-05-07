@@ -198,6 +198,31 @@ def create_app(config_class=None):
         except Exception as ce_all:
             app.logger.warning(f"db.create_all early bootstrap failed: {ce_all}")
         ensure_required_tables()
+        # Defensive column-size migration: werkzeug's scrypt password hashes
+        # are ~160 chars, but old DB schemas have users.password_hash as
+        # VARCHAR(128). Without this, registration fails with
+        # 'value too long for type character varying(128)'.
+        try:
+            from sqlalchemy import text as _sa_text
+            with db.engine.connect() as _conn:
+                # Postgres only: ALTER COLUMN type if currently <256
+                if db.engine.dialect.name == 'postgresql':
+                    res = _conn.execute(_sa_text(
+                        "SELECT character_maximum_length FROM information_schema.columns "
+                        "WHERE table_name='users' AND column_name='password_hash'"
+                    )).scalar()
+                    if res is not None and res < 256:
+                        app.logger.info(
+                            f"Migrating users.password_hash VARCHAR({res}) -> VARCHAR(256) "
+                            "to fit scrypt hashes"
+                        )
+                        _conn.execute(_sa_text(
+                            "ALTER TABLE users ALTER COLUMN password_hash TYPE VARCHAR(256)"
+                        ))
+                        _conn.commit()
+        except Exception as _migr_err:
+            app.logger.warning(f"password_hash column migration skipped: {_migr_err}")
+
         try:
             inspector_post = _inspect(db.engine)
             existing_post = sorted(inspector_post.get_table_names())

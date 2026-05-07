@@ -3180,25 +3180,16 @@ class DataService:
                     logger.info(f"✅ Early break: Got {successful_fetches} real stocks, sufficient for Oslo Børs")
                     break
             
-            # Always combine real data with guaranteed data to ensure we have 40+ stocks
-            logger.info(f"🔄 Got {successful_fetches} real stocks, combining with guaranteed data to ensure 40+ stocks")
-            guaranteed_data = DataService._get_guaranteed_oslo_data()
-            
-            # Convert guaranteed_data to proper format and combine with any real data we got
-            combined_stocks = oslo_stocks.copy()
-            existing_tickers = set(oslo_stocks.keys())
-            
-            for ticker, info in guaranteed_data.items():
-                if ticker not in existing_tickers:
-                    combined_stocks[ticker] = DataService._create_guaranteed_stock_data(ticker, info)
-            
-            logger.info(f"✅ Combined Oslo data: {len(combined_stocks)} total stocks ({successful_fetches} real + {len(guaranteed_data) - successful_fetches} guaranteed)")
-            return combined_stocks
-            
+            # EKTE_ONLY: returner kun reelle data fra get_stock_info.
+            # Tidligere ble 'guaranteed data' (hash-baserte fake-priser)
+            # supplert inn for å fylle ut til 40+ aksjer — det bryter EKTE-
+            # politikken og spammet logger med 'Missing base_price'-warnings.
+            logger.info(f"✅ Oslo data: {successful_fetches} reelle aksjer (ingen fake-supplering)")
+            return oslo_stocks
+
         except Exception as e:
             logger.error(f"Error in get_oslo_bors_overview: {e}")
-            logger.info("🔄 Using emergency fallback for Oslo Børs")
-            return DataService._get_guaranteed_oslo_data()
+            return {}
     
     @staticmethod
     def _get_enhanced_stock_data(ticker, is_oslo=False):
@@ -4135,8 +4126,9 @@ class DataService:
                             volume=normalized_volume
                         )
                         
-                        # Calculate signal
+                        # Calculate signal + simple confidence (proportional to |change_pct|)
                         signal = currency_info.get('signal', DataService._calculate_signal(change_pct))
+                        confidence = min(abs(change_pct) * 20, 100) if change_pct else 50
                         trend = 'Neutral'
                         if change_pct > 0.5:
                             trend = 'Bullish'
@@ -4151,7 +4143,6 @@ class DataService:
                             'change': currency_info.get('change', 0),
                             'change_percent': change_pct,
                             'open': currency_info.get('open', price),
-                            'signal': signal,
                             'high': currency_info.get('high', price * 1.01),
                             'low': currency_info.get('low', price * 0.99),
                             'volume': normalized_volume,
