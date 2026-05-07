@@ -34,55 +34,60 @@ HEADERS = {
 }
 
 def fetch_economic_indicators_real() -> Dict[str, Any]:
-    """Fetch macro indicators (Brent oil spot proxy + NOK/EUR FX rate).
+    """Fetch macro indicators via yfinance — single reliable source.
 
-    Data sources (no fabrication):
-      - Brent oil: https://www.investing.com/commodities/brent-oil (HTML scrape fallback) OR empty if blocked.
-      - FX NOK/EUR: ECB rates (https://api.exchangerate.host/latest?base=EUR) -> invert for EUR/NOK.
+    Real-time/delayed data via yfinance for:
+      - BZ=F: Brent crude oil futures (USD/barrel)
+      - CL=F: WTI crude oil futures (USD/barrel)
+      - EURNOK=X: EUR/NOK FX rate
+      - USDNOK=X: USD/NOK FX rate
+      - GC=F: Gold futures (USD/oz)
+      - ^TNX: US 10-year Treasury yield (%)
 
-    Returns dict with available keys only. Missing values omitted instead of faked.
+    Returns dict with whatever fields succeeded. Empty dict if all fail.
     Cached for 5 minutes.
     """
     cache_key = 'econ:macro'
     cached = _cache_get(cache_key)
     if cached is not None:
         return cached
+
     result: Dict[str, Any] = {}
-    # Fetch Brent oil (best-effort)
     try:
-        import re
-        from bs4 import BeautifulSoup  # noqa: F401
-        # Lightweight attempt; if site blocks bots this will fail gracefully
-        resp = requests.get('https://www.investing.com/commodities/brent-oil', timeout=10, headers=HEADERS)
-        if resp.status_code == 200 and '<html' in resp.text.lower():
-            m = re.search(r"data-test=\"instrument-price-last\"[^>]*>([0-9.,]+)<", resp.text)
-            if m:
-                price_str = m.group(1).replace(',', '')
-                try:
-                    result['brent_oil_usd'] = float(price_str)
-                except ValueError:
-                    pass
+        import yfinance as yf
     except Exception as e:
-        logger.warning(f"Brent oil fetch failed: {e}")
+        logger.warning(f"economic_indicators: yfinance import failed: {e}")
+        _cache_set(cache_key, result, ttl=120)
+        return result
 
-    # Fetch EUR base FX rates and derive EUR/NOK and NOK/EUR
-    try:
-        fx_resp = requests.get('https://api.exchangerate.host/latest?base=EUR&symbols=NOK', timeout=8, headers=HEADERS)
-        if fx_resp.status_code == 200:
-            js = fx_resp.json()
-            nok_rate = (js.get('rates') or {}).get('NOK')
-            if isinstance(nok_rate, (int, float)):
-                result['eur_nok'] = nok_rate
-                try:
-                    result['nok_eur'] = 1.0 / nok_rate if nok_rate else None
-                except Exception:
-                    pass
-    except Exception as e:
-        logger.warning(f"FX rate fetch failed: {e}")
+    targets = [
+        ('BZ=F', 'brent_oil_usd'),
+        ('CL=F', 'wti_oil_usd'),
+        ('EURNOK=X', 'eur_nok'),
+        ('USDNOK=X', 'usd_nok'),
+        ('GC=F', 'gold_usd'),
+        ('^TNX', 'us_10y_yield_pct'),
+    ]
+    for symbol, key in targets:
+        try:
+            t = yf.Ticker(symbol)
+            hist = t.history(period='2d', interval='1d', auto_adjust=False)
+            if hist is not None and len(hist) > 0:
+                last_close = float(hist.iloc[-1]['Close'])
+                if last_close and last_close > 0:
+                    result[key] = round(last_close, 4)
+        except Exception as e:
+            logger.debug(f"economic_indicators: {symbol} fetch failed: {e}")
 
-    # EKTE_ONLY: never fabricate economic indicators. Empty dict = no data.
+    # Derive nok_eur if eur_nok was returned
+    if 'eur_nok' in result and result['eur_nok']:
+        try:
+            result['nok_eur'] = round(1.0 / result['eur_nok'], 5)
+        except Exception:
+            pass
+
     if not result:
-        logger.info("Economic indicators: no live data — returning empty dict")
+        logger.info("Economic indicators: no live data via yfinance — returning empty")
 
     _cache_set(cache_key, result, ttl=300)
     return result

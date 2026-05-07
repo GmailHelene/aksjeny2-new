@@ -81,29 +81,57 @@
         </div>
         {% endif %}
 
-        {% if economic_indicators.get('gdp_growth') %}
+        {% if economic_indicators.get('wti_oil_usd') %}
         <div class="col-md-6 col-lg-3 mb-4">
             <div class="card border-0 shadow-sm">
                 <div class="card-body text-center">
-                    <h6 class="card-title text-muted">BNP Vekst</h6>
-                    <div class="display-6 text-success">
-                        {{ "%.2f"|format(economic_indicators.gdp_growth) }}%
+                    <h6 class="card-title text-muted">WTI Olje</h6>
+                    <div class="display-6 text-warning">
+                        ${{ "%.2f"|format(economic_indicators.wti_oil_usd) }}
                     </div>
-                    <small class="text-muted">År-på-år</small>
+                    <small class="text-muted">Per fat</small>
                 </div>
             </div>
         </div>
         {% endif %}
 
-        {% if economic_indicators.get('inflation_rate') %}
+        {% if economic_indicators.get('usd_nok') %}
         <div class="col-md-6 col-lg-3 mb-4">
             <div class="card border-0 shadow-sm">
                 <div class="card-body text-center">
-                    <h6 class="card-title text-muted">Inflasjon</h6>
-                    <div class="display-6 text-warning">
-                        {{ "%.2f"|format(economic_indicators.inflation_rate) }}%
+                    <h6 class="card-title text-muted">USD/NOK</h6>
+                    <div class="display-6 text-info">
+                        {{ "%.4f"|format(economic_indicators.usd_nok) }}
                     </div>
-                    <small class="text-muted">År-på-år</small>
+                    <small class="text-muted">FX rate</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if economic_indicators.get('gold_usd') %}
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="card-title text-muted">Gull</h6>
+                    <div class="display-6 text-warning">
+                        ${{ "%.2f"|format(economic_indicators.gold_usd) }}
+                    </div>
+                    <small class="text-muted">Per oz</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if economic_indicators.get('us_10y_yield_pct') %}
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="card-title text-muted">US 10Y Rente</h6>
+                    <div class="display-6 text-secondary">
+                        {{ "%.2f"|format(economic_indicators.us_10y_yield_pct) }}%
+                    </div>
+                    <small class="text-muted">Treasury yield</small>
                 </div>
             </div>
         </div>
