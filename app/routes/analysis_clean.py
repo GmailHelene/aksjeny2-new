@@ -544,9 +544,9 @@ def recommendations(symbol=None):
             top = movers[:5]
             featured = []
 
-            # Try yfinance .info for real analyst consensus data
+            # Hent analyst-consensus via cached yfinance .info
             try:
-                import yfinance as yf
+                from app.services.alternative_data import alternative_data_service as _ads
                 _yf_available = True
             except Exception:
                 _yf_available = False
@@ -561,7 +561,7 @@ def recommendations(symbol=None):
                 upside = None
                 if _yf_available:
                     try:
-                        info = yf.Ticker(sym).info or {}
+                        info = _ads.get_yfinance_info(sym) or {}
                         target_price = info.get('targetMeanPrice')
                         analyst_count = info.get('numberOfAnalystOpinions')
                         rec_key = info.get('recommendationKey')

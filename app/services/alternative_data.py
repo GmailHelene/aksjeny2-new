@@ -30,20 +30,44 @@ class AlternativeDataService:
         self.session.timeout = 2.0  # Very short timeout to avoid delays
         self.last_request_time = {}
         self.min_request_interval = 0.1  # Reduced to 0.1 seconds
-        self.cache = {}  # Simple cache
-        self.cache_duration = 300  # 5 minutes cache
+        self.cache = {}  # Simple in-memory cache (per-worker)
+        # 15-minutter cache reduserer yfinance-belastning fra Railway-IP
+        # uten at data blir for utdatert for praktisk bruk.
+        self.cache_duration = 900
     
     def _get_cached_data(self, key):
-        """Get cached data if still valid"""
+        """Get cached data if still valid.
+
+        Two-tier cache: in-memory (per-worker, fast) → DB (shared across
+        workers, persists across restarts). DB tier solves Railway's
+        multi-worker yfinance rate-limit problem.
+        """
+        # 1) Memory tier — fastest
         if key in self.cache:
             data, timestamp = self.cache[key]
             if time.time() - timestamp < self.cache_duration:
                 return data
+
+        # 2) DB tier — shared across workers
+        try:
+            from app.models import StockDataCache
+            db_data = StockDataCache.get(key, max_age_seconds=self.cache_duration)
+            if db_data is not None:
+                # Promote to memory tier for next call
+                self.cache[key] = (db_data, time.time())
+                return db_data
+        except Exception:
+            pass
         return None
-    
+
     def _set_cached_data(self, key, data):
-        """Cache data with timestamp"""
+        """Cache data in both memory and DB tiers."""
         self.cache[key] = (data, time.time())
+        try:
+            from app.models import StockDataCache
+            StockDataCache.put(key, data)
+        except Exception:
+            pass
     
     def _rate_limit_delay(self, source):
         """Implement minimal rate limiting for performance"""
@@ -201,6 +225,64 @@ class AlternativeDataService:
         
         return None
     
+    def get_yfinance_info(self, symbol):
+        """Cached wrapper around yfinance.Ticker(symbol).info.
+
+        Returns a dict with full company fundamentals (trailingPE, marketCap,
+        targetMeanPrice, recommendationKey, etc.) cached in DB for 15 min.
+        Hit rate goes up dramatically once warm — Railway IP gets fewer
+        Yahoo calls = fewer rate-limits.
+
+        Returns {} on failure rather than None to simplify caller logic.
+        """
+        cache_key = f"yf_info:{symbol.upper()}"
+        cached = self._get_cached_data(cache_key)
+        if cached is not None:
+            return cached
+        try:
+            self._rate_limit_delay('yfinance_info')
+            import yfinance as yf
+            info = yf.Ticker(symbol).info or {}
+            # Trim to commonly-needed fields to keep cache small + JSON-safe
+            cleaned = {}
+            for k in (
+                'longName', 'shortName', 'sector', 'industry', 'currency',
+                'currentPrice', 'regularMarketPrice', 'previousClose',
+                'open', 'dayHigh', 'dayLow', 'volume', 'marketCap',
+                'trailingPE', 'forwardPE', 'pegRatio', 'priceToBook',
+                'priceToSalesTrailing12Months', 'priceToCashflow', 'bookValue',
+                'returnOnEquity', 'returnOnAssets', 'profitMargins',
+                'operatingMargins', 'currentRatio', 'quickRatio',
+                'debtToEquity', 'totalRevenue', 'revenueGrowth',
+                'earningsGrowth', 'earningsQuarterlyGrowth',
+                'dividendYield', 'beta', 'enterpriseToEbitda',
+                'targetMeanPrice', 'targetHighPrice', 'targetLowPrice',
+                'recommendationKey', 'recommendationMean',
+                'numberOfAnalystOpinions',
+                'shortPercentOfFloat', 'sharesShort', 'shortRatio',
+                'sharesShortPriorMonth', 'floatShares',
+                'fiftyTwoWeekHigh', 'fiftyTwoWeekLow',
+            ):
+                v = info.get(k)
+                if v is not None:
+                    # Convert pandas/numpy types to native Python for JSON
+                    try:
+                        cleaned[k] = float(v) if isinstance(v, (int, float)) else v
+                    except Exception:
+                        cleaned[k] = v
+            if cleaned:
+                self._set_cached_data(cache_key, cleaned)
+            return cleaned
+        except Exception as e:
+            logger.debug(f"yfinance .info failed for {symbol}: {e}")
+            # Cache empty result for shorter time to avoid hammering on failures
+            try:
+                from app.models import StockDataCache
+                StockDataCache.put(cache_key, {})
+            except Exception:
+                pass
+            return {}
+
     def get_stock_data_from_yfinance_lib(self, symbol):
         """Use the yfinance Python library directly.
 

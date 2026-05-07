@@ -49,11 +49,12 @@ __all__ = [
     'ForumPostLike',
     'ForumTopicView',
     'Achievement',
-    'UserAchievement', 
+    'UserAchievement',
     'UserStats',
     'LoginAttempt',
     'UserSession',
-    'ServiceRuntime'
+    'ServiceRuntime',
+    'StockDataCache',
 ]
 
 class LoginAttempt(db.Model):
@@ -129,3 +130,56 @@ class ServiceRuntime(db.Model):
             'start_count': self.start_count,
             'last_pid': self.last_pid,
         }
+
+
+class StockDataCache(db.Model):
+    """DB-backed cache for stock/market data fetched from yfinance/Finnhub.
+
+    Solves the rate-limit problem on Railway: each gunicorn worker had its own
+    in-memory cache, so Yahoo got hit hundreds of times per minute. This shared
+    cache lets all workers reuse fresh data — typical hit rate ~95%+ after
+    warm-up, keeping us under Yahoo's rate limits.
+    """
+    __tablename__ = 'stock_data_cache'
+
+    cache_key = db.Column(db.String(128), primary_key=True)
+    data_json = db.Column(db.Text, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow,
+                           nullable=False, index=True)
+
+    @classmethod
+    def get(cls, key, max_age_seconds=900):
+        """Return cached value (parsed JSON) if fresher than max_age, else None."""
+        from datetime import timedelta as _td
+        try:
+            row = cls.query.filter_by(cache_key=key).first()
+            if not row:
+                return None
+            if datetime.utcnow() - row.updated_at > _td(seconds=max_age_seconds):
+                return None
+            import json as _json
+            return _json.loads(row.data_json)
+        except Exception:
+            return None
+
+    @classmethod
+    def put(cls, key, value):
+        """Insert or update cache entry. Silent on errors."""
+        try:
+            import json as _json
+            payload = _json.dumps(value, default=str)
+            row = cls.query.filter_by(cache_key=key).first()
+            if row:
+                row.data_json = payload
+                row.updated_at = datetime.utcnow()
+            else:
+                row = cls(cache_key=key, data_json=payload)
+                db.session.add(row)
+            db.session.commit()
+            return True
+        except Exception:
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
+            return False

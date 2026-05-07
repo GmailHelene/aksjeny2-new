@@ -144,7 +144,7 @@ def create_app(config_class=None):
     migrate = Migrate(app, db)
 
     def ensure_required_tables():
-        """Ensure critical tables (price_alerts, email_queue) exist before background services start."""
+        """Ensure critical tables exist before background services start."""
         try:
             from sqlalchemy import inspect
             inspector = inspect(db.engine)
@@ -153,16 +153,21 @@ def create_app(config_class=None):
                 required.append('price_alerts')
             if not inspector.has_table('email_queue'):
                 required.append('email_queue')
+            if not inspector.has_table('stock_data_cache'):
+                required.append('stock_data_cache')
             if not required:
                 return
             app.logger.warning(f"Ensuring missing tables: {required}")
             from .models.price_alert import PriceAlert, EmailQueue  # noqa
+            from .models import StockDataCache  # noqa
             for tbl in required:
                 try:
                     if tbl == 'price_alerts':
-                        PriceAlert.__table__.create(db.engine)  # type: ignore
+                        PriceAlert.__table__.create(db.engine)
                     elif tbl == 'email_queue':
-                        EmailQueue.__table__.create(db.engine)  # type: ignore
+                        EmailQueue.__table__.create(db.engine)
+                    elif tbl == 'stock_data_cache':
+                        StockDataCache.__table__.create(db.engine)
                     app.logger.info(f"Created table '{tbl}' via ensure_required_tables")
                 except Exception as ce:
                     app.logger.error(f"Failed creating table '{tbl}': {ce}")

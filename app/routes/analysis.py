@@ -1918,11 +1918,11 @@ def short_analysis(ticker=None):
         if cached_data:
             return cached_data
 
-        # Try real short-interest data from yfinance .info
+        # Try real short-interest data via cached yfinance .info
         short_data = None
         try:
-            import yfinance as yf
-            info = yf.Ticker(ticker_up).info or {}
+            from app.services.alternative_data import alternative_data_service
+            info = alternative_data_service.get_yfinance_info(ticker_up) or {}
             short_pct = info.get('shortPercentOfFloat')
             shares_short = info.get('sharesShort')
             short_ratio = info.get('shortRatio')
@@ -2034,10 +2034,10 @@ def fundamental():
 
         info = {}
         try:
-            import yfinance as yf
-            info = yf.Ticker(ticker).info or {}
+            from app.services.alternative_data import alternative_data_service
+            info = alternative_data_service.get_yfinance_info(ticker) or {}
         except Exception as yf_err:
-            logger.warning(f"yfinance .info failed for {ticker}: {yf_err}")
+            logger.warning(f"cached .info failed for {ticker}: {yf_err}")
 
         if not info or not info.get('regularMarketPrice') and not info.get('currentPrice'):
             return render_template(
@@ -2488,12 +2488,12 @@ def prediction():
     def _build(symbol_list):
         out = {}
         try:
-            import yfinance as yf
+            from app.services.alternative_data import alternative_data_service
         except Exception:
             return out
         for sym in symbol_list:
             try:
-                info = yf.Ticker(sym).info or {}
+                info = alternative_data_service.get_yfinance_info(sym) or {}
                 price = info.get('currentPrice') or info.get('regularMarketPrice')
                 target = info.get('targetMeanPrice')
                 rec_key = (info.get('recommendationKey') or '').upper()
