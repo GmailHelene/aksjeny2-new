@@ -2101,115 +2101,79 @@ def compare():
 
         from flask import current_app
         ekte_only = current_app.config.get('EKTE_ONLY') if current_app else False
+        # Use yfinance lib directly — handles cookie/crumb properly for .OL
+        # and US tickers. Replaces the fragile SafeYfinance wrapper.
         try:
-            try:
-                from app.services.market_data_service import MarketDataService
-                mds = MarketDataService()
-            except Exception:
-                mds = None
-            try:
-                from app.services.data_service import SafeYfinance
-                safe_yf = SafeYfinance()
-            except Exception:
-                safe_yf = None
-
+            import yfinance as yf
+            yf_history_cache = {}
             for symbol in symbols:
                 quote = None
-                if mds:
-                    try:
-                        # Attempt to use internal service cache method if exists
-                        fetch_func = getattr(mds, 'get_quote', None)
-                        if fetch_func:
-                            quote = fetch_func(symbol)
-                    except Exception as e:
-                        warnings.append(f"quote_fetch_failed:{symbol}:{e}")
-                if not quote and safe_yf:
-                    try:
-                        hist = safe_yf.get_ticker_history(symbol, period='5d', interval='1d') or []
-                        if hist is not None and hasattr(hist, 'values'):
-                            # If pandas dataframe, convert to list of dicts
-                            hist_list = []
-                            for idx, row in hist.iterrows():
-                                hist_list.append({
-                                    'date': str(idx.date()) if hasattr(idx, 'date') else str(idx),
-                                    'close': row.get('Close') or row.get('close'),
-                                    'volume': row.get('Volume') or row.get('volume')
-                                })
-                            hist = hist_list
-                        if hist:
-                            last = hist[-1] if isinstance(hist, list) else hist.iloc[-1] if hasattr(hist, 'iloc') else hist[-1]
-                            prev = hist[-2] if len(hist) > 1 else last
-                            price = last.get('close') if isinstance(last, dict) else last.get('Close')
-                            prev_close = prev.get('close') if isinstance(prev, dict) else prev.get('Close')
-                            change = (price - prev_close) if price and prev_close else 0.0
-                            change_pct = (change / prev_close) * 100 if prev_close else 0.0
-                            quote = {
-                                'price': round(price, 2) if price else None,
-                                'change': round(change, 2),
-                                'change_percent': round(change_pct, 2)
-                            }
-                    except Exception as e:
-                        warnings.append(f"yfinance_history_failed:{symbol}:{e}")
+                try:
+                    t = yf.Ticker(symbol)
+                    hist = t.history(period='1mo', interval='1d', auto_adjust=False)
+                    yf_history_cache[symbol] = hist
+                    if hist is not None and len(hist) > 0:
+                        price = float(hist.iloc[-1]['Close'])
+                        prev_close = float(hist.iloc[-2]['Close']) if len(hist) >= 2 else price
+                        change = price - prev_close
+                        change_pct = (change / prev_close) * 100 if prev_close else 0.0
+                        info = t.info or {}
+                        name = info.get('longName') or info.get('shortName') or symbol
+                        quote = {
+                            'price': round(price, 2),
+                            'change': round(change, 2),
+                            'change_percent': round(change_pct, 2),
+                            'name': name,
+                        }
+                except Exception as e:
+                    warnings.append(f"yfinance_failed:{symbol}:{e}")
 
                 if quote:
                     comparison_data[symbol] = {
-                        'name': symbol,
+                        'name': quote.get('name') or symbol,
                         'price': quote.get('price'),
                         'change': quote.get('change'),
-                        'change_percent': quote.get('change_percent')
+                        'change_percent': quote.get('change_percent'),
                     }
-                    ticker_names[symbol] = symbol
+                    ticker_names[symbol] = quote.get('name') or symbol
                     current_prices[symbol] = quote.get('price') or 0.0
                     price_changes[symbol] = quote.get('change_percent') or 0.0
                 else:
-                    # Tom fallback i EKTE_ONLY, ikke fabrikkér tall
                     comparison_data[symbol] = {
                         'name': symbol,
                         'price': None,
                         'change': None,
-                        'change_percent': None
+                        'change_percent': None,
                     }
                     ticker_names[symbol] = symbol
                     current_prices[symbol] = 0.0
                     price_changes[symbol] = 0.0
         except Exception as e:
             warnings.append(f"comparison_block_error:{e}")
+            yf_history_cache = {}
 
         # Historikk for chart: hent ekte; hvis ikke tilgjengelig -> tom
+        # Build chart_data from the yf_history_cache populated above
         chart_data = {}
-        from datetime import datetime, timedelta
-        if safe_yf:
-            for symbol in symbols:
-                try:
-                    hist = safe_yf.get_ticker_history(symbol, period='1mo', interval='1d')
-                    if hist is not None:
-                        # Handle pandas DataFrame
-                        if hasattr(hist, 'values'):
-                            chart_data[symbol] = []
-                            for idx, row in hist.iterrows():
-                                chart_data[symbol].append({
-                                    'date': str(idx.date()) if hasattr(idx, 'date') else str(idx),
-                                    'close': float(row.get('Close') or row.get('close') or 0),
-                                    'volume': float(row.get('Volume') or row.get('volume') or 0)
-                                })
-                        # Handle list of dicts
-                        elif isinstance(hist, list):
-                            chart_data[symbol] = [
-                                {
-                                    'date': h.get('date') or h.get('timestamp') or '',
-                                    'close': float(h.get('close') or h.get('Close') or 0),
-                                    'volume': float(h.get('volume') or h.get('Volume') or 0)
-                                } for h in hist if h.get('close') or h.get('Close')
-                            ]
-                        else:
-                            chart_data[symbol] = []
-                    else:
-                        chart_data[symbol] = []
-                except Exception as e:
-                    warnings.append(f"history_chart_failed:{symbol}:{e}")
-                    chart_data[symbol] = []
-        else:
-            for symbol in symbols:
+        for symbol in symbols:
+            hist = yf_history_cache.get(symbol)
+            if hist is not None and hasattr(hist, 'iterrows') and len(hist) > 0:
+                rows = []
+                for idx, row in hist.iterrows():
+                    try:
+                        close_val = float(row.get('Close') or 0)
+                        vol_val = float(row.get('Volume') or 0)
+                    except Exception:
+                        continue
+                    if close_val <= 0:
+                        continue
+                    rows.append({
+                        'date': str(idx.date()) if hasattr(idx, 'date') else str(idx),
+                        'close': close_val,
+                        'volume': vol_val,
+                    })
+                chart_data[symbol] = rows
+            else:
                 chart_data[symbol] = []
 
         # Tekniske indikatorer (ekte beregning hvis mulig)

@@ -250,7 +250,9 @@ window.toggleFavorite = async function(ticker, btn) {
 };
 </script>
 
-<!-- Optional richer manager (handles many other buttons too); above fallback -->
-<!-- ensures the star button works even if this fails to load. -->
-<script src="{{ url_for('static', filename='js/portfolio-actions-enhanced.js') }}"></script>
+<!-- portfolio-actions-enhanced.js fjernet her: den ble lastet etter
+     vår inline-script og overskrev window.toggleFavorite med en versjon
+     som ikke alltid initialiserer riktig på listesider, og brakk
+     stjerne-knappen. Vår inline-versjon over er selvstendig og kaller
+     /stocks/api/favorites/toggle/<ticker> direkte. -->
 {% endblock %}

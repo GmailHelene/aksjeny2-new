@@ -1,14 +1,70 @@
 {% extends 'base.html' %}
-{% block title %}Norge Oversikt{% endblock %}
+{% block title %}Norge Oversikt | Aksjeradar{% endblock %}
 {% block content %}
-<div class="container mt-4">
-  <h2>Norge Oversikt</h2>
-  <p class="text-muted">Norsk markedsinnsikt — sider under utvikling. Ingen falske data genereres.</p>
-  <div class="row mt-3">
-    <div class="col-md-3 mb-3"><a class="btn btn-primary w-100" href="{{ url_for('norwegian_intel.social_sentiment') }}">Sosial sentiment</a></div>
-    <div class="col-md-3 mb-3"><a class="btn btn-warning w-100" href="{{ url_for('norwegian_intel.oil_correlation') }}">Olje-korrelasjon</a></div>
-    <div class="col-md-3 mb-3"><a class="btn btn-info w-100" href="{{ url_for('norwegian_intel.government_impact') }}">Regjeringsanalyse</a></div>
-    <div class="col-md-3 mb-3"><a class="btn btn-success w-100" href="{{ url_for('norwegian_intel.shipping_intelligence') }}">Shipping</a></div>
+<div class="container py-4">
+  <h1 class="h3 mb-3"><i class="bi bi-flag-fill text-danger me-2"></i>Norge Oversikt</h1>
+  <p class="text-muted">Norsk markedsinnsikt med reell data via yfinance.</p>
+
+  {% if snapshot %}
+  <div class="row g-3 mb-4">
+    {% for key, item in snapshot.items() %}
+    <div class="col-md-6 col-lg-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <small class="text-muted d-block">{{ item.label }}</small>
+          <span class="h4 d-block mb-0">{{ item.value }}</span>
+          <span class="{{ 'text-success' if item.change_pct > 0 else ('text-danger' if item.change_pct < 0 else 'text-muted') }}">
+            {{ '+' if item.change_pct > 0 else '' }}{{ "%.2f"|format(item.change_pct) }}%
+          </span>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="alert alert-warning">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    Klarte ikke å hente markedssnapshot akkurat nå.
+  </div>
+  {% endif %}
+
+  <div class="row g-3">
+    <div class="col-md-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5><i class="bi bi-fuel-pump-fill text-warning me-2"></i>Olje-korrelasjon</h5>
+          <p class="text-muted small">Pearson-korrelasjon mellom Brent crude og norske energiaksjer over 3 måneder.</p>
+          <a class="btn btn-outline-warning" href="{{ url_for('norwegian_intel.oil_correlation') }}">Se korrelasjon →</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5><i class="bi bi-globe2 text-success me-2"></i>Shipping Intelligence</h5>
+          <p class="text-muted small">BDRY (Baltic Dry Index proxy) korrelasjon mot norske shipping-aksjer.</p>
+          <a class="btn btn-outline-success" href="{{ url_for('norwegian_intel.shipping_intelligence') }}">Se shipping →</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5><i class="bi bi-chat-square-heart text-primary me-2"></i>Sosial sentiment</h5>
+          <p class="text-muted small">Krever Twitter/Reddit-API. Ikke konfigurert ennå.</p>
+          <a class="btn btn-outline-primary" href="{{ url_for('norwegian_intel.social_sentiment') }}">Detaljer →</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5><i class="bi bi-building text-info me-2"></i>Regjeringsanalyse</h5>
+          <p class="text-muted small">Krever strukturert policy-database. Ikke konfigurert ennå.</p>
+          <a class="btn btn-outline-info" href="{{ url_for('norwegian_intel.government_impact') }}">Detaljer →</a>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}

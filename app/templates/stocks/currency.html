@@ -327,5 +327,7 @@ window.toggleFavorite = async function(ticker, btn) {
 };
 </script>
 
-<script src="{{ url_for('static', filename='js/portfolio-actions-enhanced.js') }}"></script>
+<!-- portfolio-actions-enhanced.js fjernet for å unngå override av
+     vår inline window.toggleFavorite. Inline-versjon over er
+     selvstendig og kaller /stocks/api/favorites/toggle/ direkte. -->
 {% endblock %}
