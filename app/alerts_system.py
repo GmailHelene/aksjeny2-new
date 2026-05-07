@@ -16,10 +16,14 @@ import threading
 import time
 from dataclasses import dataclass, asdict
 
-# Deprecation: This module (alerts_system) is legacy and replaced by price_monitor_service + EmailQueue.
+# Deprecation: This module is legacy and replaced by price_monitor_service.
+# Log at debug level only — has been emitting WARNING on every import which
+# spams Railway logs without providing actionable info.
 import logging as _legacy_logging
 if not globals().get('_ALERTS_SYSTEM_DEPRECATED_LOGGED'):
-    _legacy_logging.warning("DEPRECATED: app.alerts_system is legacy; new price alert functionality uses price_monitor_service.")
+    _legacy_logging.getLogger(__name__).debug(
+        "app.alerts_system is legacy; functionality moved to price_monitor_service."
+    )
     globals()['_ALERTS_SYSTEM_DEPRECATED_LOGGED'] = True
 
 class AlertType(Enum):

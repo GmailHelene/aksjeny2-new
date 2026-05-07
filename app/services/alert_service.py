@@ -15,10 +15,9 @@ except Exception:  # pragma: no cover
 
 logger = logging.getLogger(__name__)
 
-# Deprecation notice: This legacy AlertService is superseded by price_monitor_service + EmailQueue.
-# It is retained only for backward compatibility and should not be started automatically.
+# Legacy: superseded by price_monitor_service + EmailQueue. Log at debug level only.
 if not globals().get('_ALERT_SERVICE_DEPRECATED_LOGGED'):
-    logger.warning("DEPRECATED: app.services.alert_service.AlertService is legacy and should not be used for monitoring. Use price_monitor_service instead.")
+    logger.debug("app.services.alert_service.AlertService is legacy; use price_monitor_service.")
     globals()['_ALERT_SERVICE_DEPRECATED_LOGGED'] = True
 
 

@@ -93,8 +93,17 @@ class AlternativeDataService:
         return None
     
     def get_stock_data_from_finnhub(self, symbol):
-        """Get stock data from Finnhub /quote endpoint."""
+        """Get stock data from Finnhub /quote endpoint.
+
+        Finnhub's free tier only supports US-listed tickers — Oslo Børs (.OL),
+        crypto with -USD suffix, and forex (=X) all return HTTP 403. Skip
+        early so we don't spam logs / waste rate-limit budget on those.
+        """
         if not FINNHUB_API_KEY:
+            return None
+        # Free tier doesn't cover non-US listings
+        upper = symbol.upper()
+        if upper.endswith('.OL') or upper.endswith('-USD') or upper.endswith('=X') or upper.startswith('^'):
             return None
         try:
             self._rate_limit_delay('finnhub')
@@ -107,7 +116,9 @@ class AlternativeDataService:
 
             response = self.session.get(url, params=params, timeout=10)
             if response.status_code != 200:
-                logger.warning(f"Finnhub HTTP {response.status_code} for {symbol}")
+                # 403 is expected for unsupported markets on free tier — log at debug
+                level = logger.debug if response.status_code == 403 else logger.warning
+                level(f"Finnhub HTTP {response.status_code} for {symbol}")
                 return None
             data = response.json()
             current = data.get('c')
