@@ -217,7 +217,22 @@
     {% else %}
         <div class="alert alert-warning">
             <i class="bi bi-exclamation-triangle me-2"></i>
-            Ingen short interest-data tilgjengelig for {{ ticker }} enda. Prøv en annen ticker eller kom tilbake senere.
+            <strong>Ingen short interest-data for {{ ticker }}.</strong>
+            {% if ticker.endswith('.OL') %}
+            <div class="small mt-2 mb-0">
+              Short-interesse er bare tilgjengelig for amerikanske aksjer fra våre kilder
+              (yfinance/FINRA). Norske aksjer rapporterer short-posisjoner kun via
+              Finanstilsynet — som ikke har offentlig API.
+              <a href="https://ssr.finanstilsynet.no/" target="_blank" rel="noopener">
+                Sjekk Finanstilsynets register direkte →
+              </a>
+            </div>
+            {% else %}
+            <div class="small mt-2 mb-0">
+              Tickeren har enten ingen short-interesse, eller kilden mangler data
+              akkurat nå. Prøv en mer omsatt amerikansk aksje (f.eks. AAPL, TSLA).
+            </div>
+            {% endif %}
         </div>
     {% endif %}
 </div>

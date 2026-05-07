@@ -2474,20 +2474,70 @@ def _legacy_recommendation_full(ticker=None):  # pragma: no cover
 @analysis.route('/prediction')
 @access_required
 def prediction():
-    """AI prediction analysis page.
+    """Pris-forventninger basert på reell analytiker-konsensus.
 
-    EKTE_ONLY policy: vi har ingen produserende ML-modell for prisprognoser.
-    Tidligere returnerte ruten hardkodet 'demo'-prediksjoner med fiktive
-    kursmål og confidence-tall — det bryter EKTE_ONLY. Vi returnerer derfor
-    tomme dicts og lar templatet vise et ærlig 'Ingen prediksjoner
-    tilgjengelig'-tomstate.
+    Vi har ingen egen ML-modell, men yfinance .info eksponerer
+    Wall Street analytiker-kursmål (targetMeanPrice) og rating
+    (recommendationKey + recommendationMean). Det er reell data —
+    ikke en prognose vi finner på selv.
     """
+    oslo_tickers = ['EQNR.OL', 'DNB.OL', 'TEL.OL', 'MOWI.OL', 'NHY.OL', 'YAR.OL', 'AKER.OL', 'AKERBP.OL']
+    global_tickers = ['AAPL', 'MSFT', 'GOOGL', 'TSLA', 'NVDA', 'META', 'AMZN', 'JPM']
+    crypto_tickers = ['BTC-USD', 'ETH-USD', 'SOL-USD', 'BNB-USD']
+
+    def _build(symbol_list):
+        out = {}
+        try:
+            import yfinance as yf
+        except Exception:
+            return out
+        for sym in symbol_list:
+            try:
+                info = yf.Ticker(sym).info or {}
+                price = info.get('currentPrice') or info.get('regularMarketPrice')
+                target = info.get('targetMeanPrice')
+                rec_key = (info.get('recommendationKey') or '').upper()
+                if not price:
+                    continue
+                change_pct = None
+                if target:
+                    try:
+                        change_pct = round(((float(target) / float(price)) - 1) * 100, 2)
+                    except Exception:
+                        pass
+                signal_label = None
+                if rec_key:
+                    if rec_key in ('STRONG_BUY', 'BUY'):
+                        signal_label = 'BUY'
+                    elif rec_key in ('STRONG_SELL', 'SELL'):
+                        signal_label = 'SELL'
+                    else:
+                        signal_label = 'HOLD'
+                out[sym] = {
+                    'last_price': round(float(price), 2),
+                    'next_price': round(float(target), 2) if target else None,
+                    'change_percent': change_pct,
+                    'trend': 'UP' if (change_pct or 0) > 1 else ('DOWN' if (change_pct or 0) < -1 else 'STABLE'),
+                    'signal': signal_label,
+                    'confidence': 'HIGH' if info.get('numberOfAnalystOpinions', 0) >= 10 else (
+                        'MEDIUM' if info.get('numberOfAnalystOpinions', 0) >= 3 else 'LOW'
+                    ),
+                    'analyst_count': info.get('numberOfAnalystOpinions'),
+                    'data_period': '12 mnd analytiker-konsensus',
+                    'trend_period': 'kursmål',
+                }
+            except Exception as e:
+                logger.debug(f"prediction: yfinance .info failed for {sym}: {e}")
+                continue
+        return out
+
     return render_template(
         'analysis/prediction.html',
-        title='AI Prognoser',
-        predictions_oslo={},
-        predictions_global={},
-        notice='Reelle AI-prediksjoner er ikke aktive. Funksjonen kommer når en validert ML-modell er på plass.',
+        title='Pris-forventninger',
+        predictions_oslo=_build(oslo_tickers),
+        predictions_global=_build(global_tickers),
+        predictions_crypto=_build(crypto_tickers),
+        notice='Tall er Wall Street analytiker-konsensus (12-måneders kursmål) — ikke våre egne AI-prediksjoner.',
     )
 
 @analysis.route('/currency-overview')

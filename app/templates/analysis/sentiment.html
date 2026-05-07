@@ -472,17 +472,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
             
-            <!-- Sentiment History Chart -->
-            {% if sentiment_data.get('history') %}
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Sentiment Utvikling (30 dager)</h5>
-                </div>
-                <div class="card-body position-relative">
-                    <canvas id="sentimentChart" height="200"></canvas>
-                </div>
-            </div>
-            {% endif %}
+            {# Removed: duplicate canvas with same id="sentimentChart" caused
+               the second instance to render empty (getElementById returns
+               only the first match). The Sentiment Trend chart above
+               already covers this. #}
         </div>
         
         <div class="col-lg-4">

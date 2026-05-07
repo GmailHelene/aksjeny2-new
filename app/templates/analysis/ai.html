@@ -117,26 +117,26 @@
                                             </p>
                                         </div>
                                         <div class="col-sm-6">
-                                            <p><strong>Høy:</strong> {% if analysis.high is not none %}{{ "%.2f"|format(analysis.high) }}{% else %}N/A{% endif %}</p>
-                                            <p><strong>Lav:</strong> {% if analysis.low is not none %}{{ "%.2f"|format(analysis.low) }}{% else %}N/A{% endif %}</p>
-                                            <p><strong>Åpning:</strong> {% if analysis.open is not none %}{{ "%.2f"|format(analysis.open) }}{% else %}N/A{% endif %}</p>
-                                            <p><strong>Volum:</strong> {% if analysis.volume is not none %}{{ "{:,}".format(analysis.volume) }}{% else %}N/A{% endif %}</p>
+                                            <p><strong>Høy:</strong> {% if analysis.get('high') is not none %}{{ "%.2f"|format(analysis.get('high')) }}{% else %}N/A{% endif %}</p>
+                                            <p><strong>Lav:</strong> {% if analysis.get('low') is not none %}{{ "%.2f"|format(analysis.get('low')) }}{% else %}N/A{% endif %}</p>
+                                            <p><strong>Åpning:</strong> {% if analysis.get('open') is not none %}{{ "%.2f"|format(analysis.get('open')) }}{% else %}N/A{% endif %}</p>
+                                            <p><strong>Volum:</strong> {% if analysis.get('volume') is not none %}{{ "{:,}".format(analysis.get('volume')) }}{% else %}N/A{% endif %}</p>
                                         </div>
                                     </div>
-                                    {% if analysis.market_cap is not none %}
-                                    <p><strong>Markedsverdi:</strong> {{ "{:,}".format(analysis.market_cap) }}</p>
+                                    {% if analysis.get('market_cap') is not none %}
+                                    <p><strong>Markedsverdi:</strong> {{ "{:,}".format(analysis.get('market_cap')) }}</p>
                                     {% endif %}
-                                    {% if analysis.sector %}
-                                    <p><strong>Sektor:</strong> {{ analysis.sector }}</p>
+                                    {% if analysis.get('sector') %}
+                                    <p><strong>Sektor:</strong> {{ analysis.get('sector') }}</p>
                                     {% endif %}
-                                    {% if analysis.industry %}
-                                    <p><strong>Industri:</strong> {{ analysis.industry }}</p>
+                                    {% if analysis.get('industry') %}
+                                    <p><strong>Industri:</strong> {{ analysis.get('industry') }}</p>
                                     {% endif %}
-                                    {% if analysis.description %}
-                                    <p><strong>Beskrivelse:</strong> {{ analysis.description[:200] }}{% if analysis.description|length > 200 %}...{% endif %}</p>
+                                    {% if analysis.get('description') %}
+                                    <p><strong>Beskrivelse:</strong> {{ analysis.get('description')[:200] }}{% if analysis.get('description')|length > 200 %}...{% endif %}</p>
                                     {% endif %}
-                                    {% if analysis.website %}
-                                    <p><strong>Nettside:</strong> <a href="{{ analysis.website }}" target="_blank">{{ analysis.website }}</a></p>
+                                    {% if analysis.get('website') %}
+                                    <p><strong>Nettside:</strong> <a href="{{ analysis.get('website') }}" target="_blank">{{ analysis.get('website') }}</a></p>
                                     {% endif %}
                                 </div>
                             </div>
