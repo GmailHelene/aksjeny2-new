@@ -149,7 +149,14 @@ class PriceMonitorService:
                         logger.warning(f"Could not get price for {symbol}")
                 except Exception as e:
                     logger.error(f"Error checking alerts for {symbol}: {e}")
-            
+
+            # Also check watchlist-item-based alerts (target_price / stop_loss)
+            # for users with Watchlist.price_alerts_enabled = True
+            try:
+                self._check_watchlist_alerts()
+            except Exception as wl_err:
+                logger.error(f"Error checking watchlist alerts: {wl_err}")
+
             # Commit all changes
             db.session.commit()
             
@@ -183,6 +190,105 @@ class PriceMonitorService:
             logger.error(f"Error getting price for {symbol}: {e}")
             return None
     
+    def _check_watchlist_alerts(self):
+        """Check WatchlistItem-based price alerts (target_price / stop_loss).
+
+        For each active watchlist with price_alerts_enabled=True, iterate items.
+        If current price has crossed target_price (above) or stop_loss (below),
+        record a WatchlistAlert and email the user. To avoid spam, we only
+        trigger when there is no unread WatchlistAlert of the same type for
+        the same item in the last 24 hours.
+        """
+        from datetime import datetime as _dt, timedelta as _td
+        try:
+            from ..models.watchlist import Watchlist, WatchlistItem, WatchlistAlert
+            from ..models.user import User
+        except Exception as e:
+            logger.warning(f"watchlist alerts: model import failed: {e}")
+            return
+
+        try:
+            watchlists = Watchlist.query.filter_by(price_alerts_enabled=True).all()
+        except Exception as e:
+            logger.warning(f"watchlist alerts: query failed (table missing?): {e}")
+            return
+
+        if not watchlists:
+            return
+
+        cutoff = _dt.utcnow() - _td(hours=24)
+        cache = {}  # symbol -> price (1 fetch per cycle)
+
+        for wl in watchlists:
+            user = User.query.get(wl.user_id)
+            if not user or not user.email:
+                continue
+            for item in wl.items:
+                if not (item.target_price or item.stop_loss):
+                    continue
+                sym = item.symbol.upper()
+                if sym not in cache:
+                    cache[sym] = self._get_current_price(sym)
+                price = cache[sym]
+                if not price:
+                    continue
+
+                events = []
+                if item.target_price and price >= float(item.target_price):
+                    events.append(('target_hit', f'{sym} har nådd målpris {item.target_price}',
+                                   f'Vurder gevinstrealisering. Pris nå: {price:.2f}'))
+                if item.stop_loss and price <= float(item.stop_loss):
+                    events.append(('stop_loss_hit', f'{sym} har nådd stop-loss {item.stop_loss}',
+                                   f'Vurder stopp-handling. Pris nå: {price:.2f}'))
+
+                for alert_type, title, msg in events:
+                    # Spam-guard: skip if we already alerted same type recently
+                    try:
+                        recent = WatchlistAlert.query.filter(
+                            WatchlistAlert.watchlist_item_id == item.id,
+                            WatchlistAlert.alert_type == alert_type,
+                            WatchlistAlert.triggered_at >= cutoff,
+                        ).first()
+                        if recent:
+                            continue
+                    except Exception:
+                        pass
+
+                    try:
+                        wa = WatchlistAlert(
+                            watchlist_item_id=item.id,
+                            alert_type=alert_type,
+                            severity='high' if alert_type == 'stop_loss_hit' else 'medium',
+                            title=title,
+                            message=msg,
+                            action_recommended='Sjekk aksjedetaljer og porteføljen din.',
+                            triggered_at=_dt.utcnow(),
+                            alert_data={'price': price, 'target': item.target_price, 'stop': item.stop_loss},
+                        )
+                        db.session.add(wa)
+                    except Exception as e:
+                        logger.error(f"watchlist alerts: insert failed for {sym}: {e}")
+                        continue
+
+                    # Email via Brevo HTTP API
+                    try:
+                        from app.services.email_service import send_transactional
+                        body = (
+                            f"Hei {user.username or ''},\n\n"
+                            f"En aksje i din watchlist '{wl.name}' har utløst et varsel:\n\n"
+                            f"  {title}\n"
+                            f"  {msg}\n\n"
+                            f"Logg inn på aksjeradar.trade for å se detaljer.\n"
+                        )
+                        send_transactional(
+                            subject=f"🚨 Watchlist-varsel: {sym}",
+                            body=body,
+                            to_email=user.email,
+                        )
+                        logger.info(f"watchlist alert email sent to {user.email} for {sym} ({alert_type})")
+                    except Exception as e:
+                        logger.error(f"watchlist alerts: email send failed: {e}")
+
     def _check_alerts_for_symbol(self, symbol: str, current_price: float, alerts: List[PriceAlert]):
         """Check all alerts for a specific symbol"""
         triggered_alerts = []
