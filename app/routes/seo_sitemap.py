@@ -48,13 +48,34 @@ def sitemap():
         {'url': '/portfolio/', 'priority': '0.7', 'changefreq': 'weekly'},
         {'url': '/portfolio/watchlist', 'priority': '0.7', 'changefreq': 'daily'},
         
-        # Education and guides
-        {'url': '/investment-guides/', 'priority': '0.6', 'changefreq': 'monthly'},
-        {'url': '/investment-guides/index', 'priority': '0.6', 'changefreq': 'monthly'},
-        
+        # Education and guides — real article URLs
+        {'url': '/resources/', 'priority': '0.6', 'changefreq': 'monthly'},
+        {'url': '/resources/guides', 'priority': '0.7', 'changefreq': 'monthly'},
+        {'url': '/resources/guides/teknisk-analyse', 'priority': '0.7', 'changefreq': 'monthly'},
+        {'url': '/resources/guides/fundamental-analyse', 'priority': '0.7', 'changefreq': 'monthly'},
+        {'url': '/resources/guides/innsidehandel', 'priority': '0.7', 'changefreq': 'monthly'},
+        {'url': '/resources/guides/ai-i-aksjeanalyse', 'priority': '0.7', 'changefreq': 'monthly'},
+
+        # Market intel
+        {'url': '/market-intel', 'priority': '0.7', 'changefreq': 'daily'},
+        {'url': '/market-intel/insider-trading', 'priority': '0.7', 'changefreq': 'daily'},
+        {'url': '/market-intel/sector-analysis', 'priority': '0.7', 'changefreq': 'daily'},
+        {'url': '/market-intel/economic-indicators', 'priority': '0.7', 'changefreq': 'daily'},
+        {'url': '/market-intel/earnings-calendar', 'priority': '0.7', 'changefreq': 'daily'},
+
+        # Norwegian intel — sterkt SEO-relevant for norske søkeord
+        {'url': '/norwegian-intel/', 'priority': '0.7', 'changefreq': 'daily'},
+        {'url': '/norwegian-intel/oil-correlation', 'priority': '0.7', 'changefreq': 'daily'},
+        {'url': '/norwegian-intel/shipping-intelligence', 'priority': '0.7', 'changefreq': 'daily'},
+
+        # Forum + blog
+        {'url': '/forum/', 'priority': '0.6', 'changefreq': 'daily'},
+        {'url': '/blog/', 'priority': '0.6', 'changefreq': 'weekly'},
+
         # Business pages
-        {'url': '/pricing/pricing/', 'priority': '0.6', 'changefreq': 'monthly'},
-    {'url': '/investor/', 'priority': '0.7', 'changefreq': 'monthly'},
+        {'url': '/pricing', 'priority': '0.6', 'changefreq': 'monthly'},
+        {'url': '/investor/', 'priority': '0.7', 'changefreq': 'monthly'},
+        {'url': '/investor/overview', 'priority': '0.6', 'changefreq': 'monthly'},
         {'url': '/about', 'priority': '0.5', 'changefreq': 'monthly'},
         {'url': '/contact', 'priority': '0.5', 'changefreq': 'monthly'},
         {'url': '/privacy', 'priority': '0.3', 'changefreq': 'yearly'},
